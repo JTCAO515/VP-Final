@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm build
+      - run: pnpm test
+
+  # Reserved: evals gate. Becomes required once packages/ai ships its first
+  # prompt profile (V2 Issue #9) — any PR touching prompts/models must pass.
+  evals:
+    runs-on: ubuntu-latest
+    if: false
+    steps:
+      - run: echo "evals gate placeholder"
