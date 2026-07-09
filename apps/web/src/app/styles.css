@@ -146,6 +146,13 @@ a {
   margin: 8px 0 0;
 }
 
+.poiLink {
+  color: var(--gold);
+  display: inline-block;
+  margin-top: 12px;
+  text-decoration: none;
+}
+
 .poiCard span,
 .sceneTags span {
   color: var(--muted);
