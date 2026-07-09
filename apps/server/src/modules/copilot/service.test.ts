@@ -44,6 +44,31 @@ describe("createCopilotPipeline", () => {
     expect(result.trace.appliedPatchCount).toBe(0);
   });
 
+  it("returns disclosed commercial actions only for commerce intent", async () => {
+    const pipeline = createCopilotPipeline({ tripService: createInMemoryTripService() });
+
+    const result = await pipeline.run({ message: "Can I book a Shanghai hotel?" });
+
+    expect(result.envelope.intent).toBe("commerce_intent");
+    expect(result.envelope.commercialActions[0]).toMatchObject({
+      kind: "outbound_link",
+      partner: "tripcom",
+    });
+    expect(result.envelope.commercialActions[0]?.disclosure).toContain("commission");
+  });
+
+  it("returns editable human help prefill when handoff is needed", async () => {
+    const pipeline = createCopilotPipeline({ tripService: createInMemoryTripService() });
+
+    const result = await pipeline.run({ message: "I need human help to call a Beijing hotel" });
+
+    expect(result.envelope.intent).toBe("human_help");
+    expect(result.envelope.humanHelp).toMatchObject({
+      kind: "task",
+      city: "Beijing",
+    });
+  });
+
   it("rejects generator output that does not match CopilotEnvelope", async () => {
     const pipeline = createCopilotPipeline({
       tripService: createInMemoryTripService(),

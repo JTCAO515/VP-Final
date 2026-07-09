@@ -150,6 +150,8 @@ export function CopilotShell() {
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
   const [trip, setTrip] = useState<TripState | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [shareError, setShareError] = useState<string | null>(null);
 
   const displayTrip = trip ?? demoTrip;
   const selectedDay = displayTrip?.days[selectedDayIndex] ?? displayTrip?.days[0] ?? null;
@@ -371,6 +373,27 @@ export function CopilotShell() {
     window.localStorage.setItem(LAST_TRIP_ID_KEY, claimedTrip.id);
   }
 
+  async function shareTrip() {
+    if (!trip) return;
+    setShareError(null);
+    const ownerAnonId = anonId ?? ensureAnonId();
+    const storedUserId = window.localStorage.getItem(AUTH_USER_ID_KEY);
+    const response = await fetch(`/api/trips/${trip.id}/share`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        anonId: ownerAnonId,
+        ...(storedUserId ? { userId: storedUserId } : {}),
+      }),
+    });
+    const data = (await response.json()) as { ok: boolean; url?: string; error?: string };
+    if (!response.ok || !data.ok || !data.url) {
+      setShareError(data.error ?? "Could not create a share link.");
+      return;
+    }
+    setShareUrl(new URL(data.url, window.location.origin).toString());
+  }
+
   return (
     <main className="shell copilotShell">
       <header className="copilotTopbar">
@@ -403,9 +426,24 @@ export function CopilotShell() {
             </div>
             <div className="toolbarActions">
               <span className="readiness">Readiness {readiness}%</span>
+              <button disabled={!trip} onClick={() => void shareTrip()} type="button">
+                Share
+              </button>
               <button type="button">Add Block</button>
             </div>
           </div>
+          {shareUrl || shareError ? (
+            <div className={shareUrl ? "shareNotice" : "shareNotice error"}>
+              {shareUrl ? (
+                <>
+                  <span>Read-only share link ready</span>
+                  <a href={shareUrl}>{shareUrl}</a>
+                </>
+              ) : (
+                <span>{shareError}</span>
+              )}
+            </div>
+          ) : null}
 
           <div className="dayTabs" aria-label="Trip days">
             {displayTrip?.days.map((day, index) => (
@@ -474,12 +512,7 @@ export function CopilotShell() {
               <article className={`railMessage ${message.role}`} key={`${message.role}-${index}`}>
                 <b>{message.role === "user" ? "You" : "Copilot"}</b>
                 <p>{message.body}</p>
-                {message.envelope?.toolCards.map((card) => (
-                  <div className="toolCard railToolCard" key={card.id}>
-                    <b>{card.title}</b>
-                    <span>{card.body}</span>
-                  </div>
-                ))}
+                {message.envelope ? <MessageEnhancements envelope={message.envelope} /> : null}
               </article>
             ))}
           </div>
@@ -510,6 +543,70 @@ export function CopilotShell() {
         </aside>
       </section>
     </main>
+  );
+}
+
+function MessageEnhancements({ envelope }: { envelope: CopilotEnvelope }) {
+  const toolCards = envelope.toolCards;
+  const citations = envelope.citations.slice(0, 3);
+  const commercialActions =
+    envelope.intent === "commerce_intent"
+      ? envelope.commercialActions.filter((action) => action.url)
+      : [];
+
+  if (envelope.intent !== "commerce_intent" && envelope.commercialActions.length > 0) {
+    console.warn("Dropped commercialActions outside commerce_intent", envelope.commercialActions);
+  }
+
+  return (
+    <>
+      {toolCards.map((card) => (
+        <div className="toolCard railToolCard" key={card.id}>
+          <b>{card.title}</b>
+          <span>{card.body}</span>
+          <a href={toolCardHref(card.kind)}>{toolCardCta(card.kind)}</a>
+        </div>
+      ))}
+
+      {commercialActions.length ? (
+        <div className="commercialActions">
+          <span>Affiliate disclosure: VisePanda may earn a commission from partner links.</span>
+          {commercialActions.map((action) => (
+            <a href={commercialActionHref(action)} key={action.id}>
+              {action.label}
+              <small>{action.disclosure}</small>
+            </a>
+          ))}
+        </div>
+      ) : null}
+
+      {envelope.humanHelp ? (
+        <a className="humanHelpCta" href={humanHelpHref(envelope.humanHelp)}>
+          Send to Human Help
+        </a>
+      ) : null}
+
+      {citations.length ? (
+        <div className="citations">
+          <span>Sources</span>
+          {citations.map((citation) => {
+            const href = citationHref(citation.fact_id);
+            const label = citation.label ?? citation.fact_id;
+            return href ? (
+              <a href={href} key={citation.fact_id}>
+                {label}
+                <small>{citation.source ?? citation.fact_id}</small>
+              </a>
+            ) : (
+              <span key={citation.fact_id}>
+                {label}
+                <small>{citation.source ?? citation.fact_id}</small>
+              </span>
+            );
+          })}
+        </div>
+      ) : null}
+    </>
   );
 }
 
@@ -585,4 +682,52 @@ function readStringArray(value: unknown): string[] {
 function statusLabel(status: NonNullable<TripBlock["status"]>): string {
   if (status === "needs_attention") return "Needs attention";
   return status.replace("_", " ");
+}
+
+function toolCardHref(kind: CopilotEnvelope["toolCards"][number]["kind"]): string {
+  const hrefs: Record<CopilotEnvelope["toolCards"][number]["kind"], string> = {
+    payment: "/guides/payment",
+    network: "/guides/network",
+    transport: "/explore",
+    emergency: "/human-help",
+    show_to_local: "/human-help",
+  };
+  return hrefs[kind];
+}
+
+function toolCardCta(kind: CopilotEnvelope["toolCards"][number]["kind"]): string {
+  const labels: Record<CopilotEnvelope["toolCards"][number]["kind"], string> = {
+    payment: "Open payment guide",
+    network: "Open network guide",
+    transport: "Explore routes",
+    emergency: "Request help",
+    show_to_local: "Prepare a local card",
+  };
+  return labels[kind];
+}
+
+function commercialActionHref(action: CopilotEnvelope["commercialActions"][number]): string {
+  const params = new URLSearchParams({
+    partner: action.partner,
+    url: action.url ?? "",
+    source: "copilot",
+    intent: "commerce_intent",
+    entityId: action.id,
+  });
+  return `/outbound?${params.toString()}`;
+}
+
+function humanHelpHref(help: NonNullable<CopilotEnvelope["humanHelp"]>): string {
+  const params = new URLSearchParams({
+    kind: help.kind === "quote" ? "other" : "other",
+    description: help.prefill,
+  });
+  if (help.city) params.set("city", help.city);
+  return `/human-help?${params.toString()}`;
+}
+
+function citationHref(factId: string): string | null {
+  if (factId.startsWith("guide:")) return `/guides/${encodeURIComponent(factId.slice(6))}`;
+  if (factId.startsWith("poi:")) return "/explore";
+  return null;
 }

@@ -26,6 +26,7 @@ export const trips = pgTable(
     id: uuid("id").primaryKey().defaultRandom(),
     owner: uuid("owner").references(() => users.id, { onDelete: "cascade" }),
     anonId: text("anon_id"),
+    shareToken: text("share_token"),
     headVersion: integer("head_version").notNull().default(0),
     snapshotJsonb: jsonb("snapshot_jsonb").notNull().default({}),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -34,6 +35,7 @@ export const trips = pgTable(
   (table) => ({
     ownerIdx: index("trips_owner_idx").on(table.owner),
     anonIdx: index("trips_anon_id_idx").on(table.anonId),
+    shareTokenUnique: uniqueIndex("trips_share_token_unique").on(table.shareToken),
     headVersionCheck: check("trips_head_version_check", sql`${table.headVersion} >= 0`),
     ownerOrAnonCheck: check(
       "trips_owner_or_anon_check",

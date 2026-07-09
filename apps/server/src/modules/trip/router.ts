@@ -21,6 +21,10 @@ const TripClaimInputSchema = z.object({
   userId: z.string().uuid(),
   email: z.string().email().optional(),
 });
+const TripShareInputSchema = TripGetInputSchema.merge(TripOwnerInputSchema);
+const TripSharedLookupInputSchema = z.object({
+  token: z.string().min(1),
+});
 
 export const tripRouter = router({
   claimAnonymous: publicProcedure.input(TripClaimInputSchema).mutation(({ ctx, input }) => {
@@ -35,5 +39,11 @@ export const tripRouter = router({
   }),
   list: publicProcedure.input(TripOwnerInputSchema).query(({ ctx, input }) => {
     return ctx.tripService.list(input);
+  }),
+  createShareToken: publicProcedure.input(TripShareInputSchema).mutation(({ ctx, input }) => {
+    return ctx.tripService.createShareToken(input.id, input);
+  }),
+  shared: publicProcedure.input(TripSharedLookupInputSchema).query(({ ctx, input }) => {
+    return ctx.tripService.getByShareToken(input.token);
   }),
 });

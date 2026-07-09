@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import type { HumanTask } from "@visepanda/domain";
 
 type SubmitState = "idle" | "submitting" | "sent" | "error";
@@ -8,6 +8,16 @@ type SubmitState = "idle" | "submitting" | "sent" | "error";
 export default function HumanHelpPage() {
   const [state, setState] = useState<SubmitState>("idle");
   const [task, setTask] = useState<HumanTask | null>(null);
+  const [city, setCity] = useState("");
+  const [kind, setKind] = useState("other");
+  const [description, setDescription] = useState("");
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setCity(params.get("city") ?? "");
+    setKind(params.get("kind") ?? "other");
+    setDescription(params.get("description") ?? "");
+  }, []);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -52,11 +62,22 @@ export default function HumanHelpPage() {
         <form className="panel helpForm" onSubmit={(event) => void submit(event)}>
           <label>
             City
-            <input name="city" placeholder="Shanghai" required />
+            <input
+              name="city"
+              onChange={(event) => setCity(event.target.value)}
+              placeholder="Shanghai"
+              required
+              value={city}
+            />
           </label>
           <label>
             Task type
-            <select name="kind" required>
+            <select
+              name="kind"
+              onChange={(event) => setKind(event.target.value)}
+              required
+              value={kind}
+            >
               <option value="call_restaurant">Call restaurant</option>
               <option value="ticket_help">Ticket help</option>
               <option value="translation_help">Translation help</option>
@@ -69,8 +90,10 @@ export default function HumanHelpPage() {
             <textarea
               minLength={10}
               name="description"
+              onChange={(event) => setDescription(event.target.value)}
               placeholder="Example: Please call this restaurant and confirm whether they can hold a table for two at 7pm."
               required
+              value={description}
             />
           </label>
           <label>
