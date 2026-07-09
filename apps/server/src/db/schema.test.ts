@@ -7,6 +7,7 @@ import {
   poiCommercialLinks,
   poiFacts,
   pois,
+  telemetryEvents,
   toolCalls,
   tripEvents,
   trips,
@@ -37,5 +38,10 @@ describe("database schema", () => {
   it("maps the outbound commerce tables", () => {
     expect(partners.trackingParam.name).toBe("tracking_param");
     expect(outboundClicks.targetUrl.name).toBe("target_url");
+  });
+
+  it("maps the telemetry events table", () => {
+    expect(telemetryEvents.anonId.name).toBe("anon_id");
+    expect(telemetryEvents.propsJsonb.name).toBe("props_jsonb");
   });
 });

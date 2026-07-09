@@ -263,9 +263,36 @@ export const outboundClicks = pgTable(
   }),
 );
 
+export const telemetryEvents = pgTable(
+  "events",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id").references(() => users.id, { onDelete: "set null" }),
+    anonId: text("anon_id").notNull(),
+    surface: text("surface").notNull(),
+    action: text("action").notNull(),
+    entityType: text("entity_type").notNull(),
+    entityId: text("entity_id"),
+    intent: text("intent"),
+    partner: text("partner"),
+    clickId: uuid("click_id"),
+    propsJsonb: jsonb("props_jsonb").notNull().default({}),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    anonCreatedIdx: index("events_anon_created_idx").on(table.anonId, table.createdAt),
+    actionCreatedIdx: index("events_action_created_idx").on(table.action, table.createdAt),
+    surfaceCheck: check(
+      "events_surface_check",
+      sql`${table.surface} in ('web', 'mobile', 'server', 'ops')`,
+    ),
+  }),
+);
+
 export const usersRelations = relations(users, ({ many }) => ({
   trips: many(trips),
   agentRuns: many(agentRuns),
+  events: many(telemetryEvents),
 }));
 
 export const tripsRelations = relations(trips, ({ one, many }) => ({
@@ -330,5 +357,12 @@ export const outboundClicksRelations = relations(outboundClicks, ({ one }) => ({
   partnerConfig: one(partners, {
     fields: [outboundClicks.partner],
     references: [partners.key],
+  }),
+}));
+
+export const telemetryEventsRelations = relations(telemetryEvents, ({ one }) => ({
+  user: one(users, {
+    fields: [telemetryEvents.userId],
+    references: [users.id],
   }),
 }));
