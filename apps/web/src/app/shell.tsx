@@ -167,12 +167,17 @@ export function CopilotShell() {
     const nextAnonId = ensureAnonId();
     setAnonId(nextAnonId);
 
-    const tripId = window.localStorage.getItem(LAST_TRIP_ID_KEY);
-    if (tripId) void loadTrip(tripId, nextAnonId);
-
     const storedUserId = window.localStorage.getItem(AUTH_USER_ID_KEY);
+    const storedEmail = window.localStorage.getItem(AUTH_EMAIL_KEY);
+    const tripId = window.localStorage.getItem(LAST_TRIP_ID_KEY);
+    if (tripId) {
+      void loadTrip(tripId, {
+        anonId: nextAnonId,
+        ...(storedUserId ? { userId: storedUserId } : {}),
+      });
+    }
+
     if (storedUserId) {
-      const storedEmail = window.localStorage.getItem(AUTH_EMAIL_KEY);
       void claimAnonymousTrips({
         anonId: nextAnonId,
         userId: storedUserId,
@@ -201,12 +206,13 @@ export function CopilotShell() {
     setSelectedDayIndex(Math.max(0, displayTrip.days.length - 1));
   }, [displayTrip, selectedDayIndex]);
 
-  async function loadTrip(tripId: string, ownerAnonId = anonId) {
-    if (!ownerAnonId) return;
+  async function loadTrip(tripId: string, owner: { anonId?: string; userId?: string }) {
+    if (!owner.anonId && !owner.userId) return;
     try {
-      const response = await fetch(
-        `/api/trips/${tripId}?anonId=${encodeURIComponent(ownerAnonId)}`,
-      );
+      const params = new URLSearchParams();
+      if (owner.anonId) params.set("anonId", owner.anonId);
+      if (owner.userId) params.set("userId", owner.userId);
+      const response = await fetch(`/api/trips/${tripId}?${params.toString()}`);
       const data = (await response.json()) as { ok: boolean; trip?: unknown };
       if (!response.ok || !data.ok) return;
       setTrip(TripStateSchema.parse(data.trip));
@@ -264,7 +270,13 @@ export function CopilotShell() {
       if (nextTrip) window.localStorage.setItem(LAST_TRIP_ID_KEY, nextTrip.id);
 
       if (nextTrip?.days.some((day) => day.blocks.length === 0)) {
-        await completeTrip(nextTrip.id, ownerAnonId);
+        await completeTrip(nextTrip.id, ownerAnonId).catch((error: unknown) => {
+          setProgress((current) => ({
+            ...current,
+            status: "failed",
+            error: error instanceof Error ? error.message : "Trip completion failed.",
+          }));
+        });
       }
     } catch (error) {
       setProgress({
