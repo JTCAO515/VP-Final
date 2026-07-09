@@ -16,4 +16,23 @@ describe("copilotRouter", () => {
     expect(result.trip?.title).toBe("China trip draft");
     expect(result.trace.retrievedFactIds).toEqual(["stub:china-execution-basics"]);
   });
+
+  it("runs second-pass completion through the app router", async () => {
+    const caller = appRouter.createCaller({
+      tripService: createInMemoryTripService([
+        {
+          id: "trip-shell",
+          title: "Shell",
+          destinationCountry: "CN",
+          days: [{ id: "day-1", dayNumber: 1, city: "Shanghai", title: "Arrival", blocks: [] }],
+        },
+      ]),
+    });
+
+    await expect(caller.copilot.completeTrip({ tripId: "trip-shell" })).resolves.toMatchObject({
+      status: "completed",
+      completedDays: 1,
+      totalDays: 1,
+    });
+  });
 });

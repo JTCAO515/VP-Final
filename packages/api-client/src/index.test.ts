@@ -1,5 +1,5 @@
 import type { inferRouterInputs, inferRouterOutputs } from "@trpc/server";
-import type { CopilotEnvelope, TripState } from "@visepanda/domain";
+import type { CopilotEnvelope, GenerationProgress, TripState } from "@visepanda/domain";
 import { expect, expectTypeOf, it } from "vitest";
 import { createApiClient } from "./index.js";
 import type { AppRouter } from "./index.js";
@@ -23,4 +23,5 @@ it("keeps client inputs and outputs tied to the app router", () => {
   expect(copilotInput.message).toBe("Plan a trip");
   expectTypeOf<Outputs["copilot"]["run"]["envelope"]>().toEqualTypeOf<CopilotEnvelope>();
   expectTypeOf<Outputs["copilot"]["run"]["trip"]>().toEqualTypeOf<TripState | null>();
+  expectTypeOf<Outputs["copilot"]["completeTrip"]>().toEqualTypeOf<GenerationProgress>();
 });
