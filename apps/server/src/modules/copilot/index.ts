@@ -10,4 +10,6 @@ export {
   defaultRetrieveContext,
   defaultRouteIntent,
 } from "./service.js";
+export { CompleteTripInputSchema, createTwoPassWorker } from "./twoPassWorker.js";
 export type { CopilotRunInput, CopilotRunResult, RetrievalFact } from "./service.js";
+export type { CompleteTripInput } from "./twoPassWorker.js";

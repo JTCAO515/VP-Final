@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CopilotEnvelopeSchema } from "./index.js";
+import { CopilotEnvelopeSchema, GenerationProgressSchema } from "./index.js";
 
 const message = {
   headline: "Plan updated",
@@ -46,5 +46,19 @@ describe("CopilotEnvelopeSchema", () => {
     });
 
     expect(parsed.commercialActions[0]?.partner).toBe("tripcom");
+  });
+});
+
+describe("GenerationProgressSchema", () => {
+  it("defaults counters for visible two-pass progress", () => {
+    const parsed = GenerationProgressSchema.parse({ status: "skeleton" });
+
+    expect(parsed).toEqual({
+      status: "skeleton",
+      completedDays: 0,
+      totalDays: 0,
+      attempts: 0,
+      error: null,
+    });
   });
 });

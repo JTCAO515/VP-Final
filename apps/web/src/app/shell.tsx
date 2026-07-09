@@ -5,6 +5,7 @@ import {
   applyPatch,
   CopilotEnvelopeSchema,
   type CopilotEnvelope,
+  type GenerationProgress,
   type TripState,
 } from "@visepanda/domain";
 
@@ -92,7 +93,13 @@ const detailedEnvelope = CopilotEnvelopeSchema.parse({
 
 export function CopilotShell() {
   const [input, setInput] = useState("Plan a 2 day Shanghai trip");
-  const [isCompleting, setIsCompleting] = useState(false);
+  const [progress, setProgress] = useState<GenerationProgress>({
+    status: "idle",
+    completedDays: 0,
+    totalDays: 0,
+    attempts: 0,
+    error: null,
+  });
   const [trip, setTrip] = useState<TripState | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([
     { role: "assistant", body: "Ask for a China trip plan and I will render it on the canvas." },
@@ -113,7 +120,22 @@ export function CopilotShell() {
       { role: "assistant", body: skeletonEnvelope.message.body, envelope: skeletonEnvelope },
     ]);
     setTrip(skeletonTrip);
-    setIsCompleting(true);
+    setProgress({
+      status: "skeleton",
+      completedDays: 0,
+      totalDays: skeletonTrip?.days.length ?? 0,
+      attempts: 0,
+      error: null,
+    });
+
+    window.setTimeout(() => {
+      setProgress((current) => ({
+        ...current,
+        status: "completing",
+        completedDays: Math.max(1, current.completedDays),
+        attempts: current.attempts + 1,
+      }));
+    }, 350);
 
     window.setTimeout(() => {
       setTrip((current) => applyEnvelope(current, detailedEnvelope));
@@ -121,7 +143,12 @@ export function CopilotShell() {
         ...current,
         { role: "assistant", body: detailedEnvelope.message.body, envelope: detailedEnvelope },
       ]);
-      setIsCompleting(false);
+      setProgress((current) => ({
+        ...current,
+        status: "completed",
+        completedDays: current.totalDays,
+        attempts: current.attempts + 1,
+      }));
     }, 700);
   }
 
@@ -132,7 +159,7 @@ export function CopilotShell() {
           <h1>China Travel AI Copilot</h1>
           <p>Conversation on the left. Deterministic TripState canvas on the right.</p>
         </div>
-        <div className="status">{isCompleting ? "Completing details" : "Ready"}</div>
+        <div className="status">{progressLabel(progress)}</div>
       </section>
 
       <section className="workspace">
@@ -216,4 +243,12 @@ export function CopilotShell() {
 
 function applyEnvelope(current: TripState | null, envelope: CopilotEnvelope): TripState | null {
   return envelope.tripActions.reduce((next, patch) => applyPatch(next, patch), current);
+}
+
+function progressLabel(progress: GenerationProgress): string {
+  if (progress.status === "idle") return "Ready";
+  if (progress.status === "completed") return "Details complete";
+  if (progress.status === "failed") return "Completion failed";
+
+  return `${progress.completedDays}/${progress.totalDays} days`;
 }

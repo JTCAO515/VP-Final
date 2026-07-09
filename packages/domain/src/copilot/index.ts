@@ -57,6 +57,14 @@ export const CopilotDebugSchema = z.object({
   toolsUsed: z.array(z.string().min(1)).default([]),
 });
 
+export const GenerationProgressSchema = z.object({
+  status: z.enum(["idle", "skeleton", "completing", "completed", "failed"]),
+  completedDays: z.number().int().nonnegative().default(0),
+  totalDays: z.number().int().nonnegative().default(0),
+  attempts: z.number().int().nonnegative().default(0),
+  error: z.string().nullable().default(null),
+});
+
 export const CopilotEnvelopeSchema = z
   .object({
     intent: CopilotIntentSchema,
@@ -83,3 +91,4 @@ export const CopilotEnvelopeSchema = z
 
 export type CopilotIntent = z.infer<typeof CopilotIntentSchema>;
 export type CopilotEnvelope = z.infer<typeof CopilotEnvelopeSchema>;
+export type GenerationProgress = z.infer<typeof GenerationProgressSchema>;
