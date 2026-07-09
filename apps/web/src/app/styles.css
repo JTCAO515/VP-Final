@@ -29,7 +29,8 @@ body {
 }
 
 button,
-input {
+input,
+a {
   font: inherit;
 }
 
@@ -64,6 +65,7 @@ input {
   border-radius: 999px;
   color: var(--gold);
   padding: 10px 14px;
+  text-decoration: none;
   white-space: nowrap;
 }
 
@@ -73,6 +75,75 @@ input {
   grid-template-columns: minmax(320px, 0.9fr) minmax(420px, 1.1fr);
   margin: 0 auto;
   max-width: 1180px;
+}
+
+.exploreFilters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0 auto 20px;
+  max-width: 1180px;
+}
+
+.exploreFilters button {
+  background: #171512;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--text);
+  cursor: pointer;
+  padding: 10px 14px;
+}
+
+.exploreFilters button.active {
+  border-color: var(--accent);
+  color: var(--gold);
+}
+
+.poiGrid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  margin: 0 auto;
+  max-width: 1180px;
+}
+
+.poiCard {
+  background: color-mix(in srgb, var(--panel), transparent 4%);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 18px;
+}
+
+.poiCard div:first-child,
+.sceneTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.poiCard h2 {
+  margin: 14px 0 0;
+}
+
+.poiCard p {
+  color: var(--muted);
+  margin: 8px 0 0;
+}
+
+.poiCard span,
+.sceneTags span {
+  color: var(--muted);
+}
+
+.sceneTags {
+  margin-top: 16px;
+}
+
+.sceneTags span {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--gold);
+  padding: 6px 9px;
 }
 
 .panel {

@@ -49,6 +49,16 @@ export type PoiFact = z.infer<typeof PoiFactSchema>;
 export type Poi = z.infer<typeof PoiSchema>;
 export type KnowledgeGap = z.infer<typeof KnowledgeGapSchema>;
 
+export const TRAVELER_SCENE_TAGS = [
+  "First time in China",
+  "Low Mandarin",
+  "Good in rain",
+  "Near metro",
+  "Avoid peak hours",
+] as const;
+
+export type TravelerSceneTag = (typeof TRAVELER_SCENE_TAGS)[number];
+
 export function isCurrentPoiFact(fact: PoiFact, now = new Date()): boolean {
   return !fact.expiresAt || Date.parse(fact.expiresAt) >= now.getTime();
 }
@@ -60,4 +70,19 @@ export function updatePoiFact(pois: Poi[], factId: string, value: Record<string,
       fact.id === factId ? { ...fact, value, version: fact.version + 1 } : fact,
     ),
   }));
+}
+
+export function derivePoiSceneTags(poi: Poi, now = new Date()): TravelerSceneTag[] {
+  const tags = new Set<TravelerSceneTag>();
+
+  for (const fact of poi.facts) {
+    if (!isCurrentPoiFact(fact, now)) continue;
+    if (fact.factType === "metro_access") tags.add("Near metro");
+    if (fact.factType === "english_menu") tags.add("Low Mandarin");
+    if (fact.factType === "rainy_fit") tags.add("Good in rain");
+    if (fact.factType === "booking_required") tags.add("First time in China");
+    if (fact.factType === "reservation_helpful") tags.add("Avoid peak hours");
+  }
+
+  return [...tags];
 }
