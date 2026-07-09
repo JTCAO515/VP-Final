@@ -1,0 +1,110 @@
+import type { KnowledgeGap, Poi } from "./index.js";
+
+export const INITIAL_POIS: Poi[] = [
+  {
+    id: "poi-shanghai-yu-garden",
+    city: "Shanghai",
+    category: "attraction",
+    nameEn: "Yu Garden",
+    nameZh: "豫园",
+    address: "279 Yuyuan Old St",
+    sourceIds: { editorial: "vp-shanghai-001" },
+    commercialLinks: [],
+    facts: [
+      {
+        id: "fact-yu-garden-metro",
+        poiId: "poi-shanghai-yu-garden",
+        factType: "metro_access",
+        value: { label: "Easy by metro", line: "Line 10 / Yuyuan Garden" },
+        confidence: 0.9,
+        source: "editorial",
+        verifiedAt: "2026-07-09T00:00:00.000Z",
+        expiresAt: null,
+        version: 1,
+      },
+    ],
+  },
+  {
+    id: "poi-shanghai-lost-heaven",
+    city: "Shanghai",
+    category: "food",
+    nameEn: "Lost Heaven",
+    nameZh: "花马天堂",
+    sourceIds: { editorial: "vp-shanghai-002" },
+    commercialLinks: [],
+    facts: [
+      {
+        id: "fact-lost-heaven-english",
+        poiId: "poi-shanghai-lost-heaven",
+        factType: "english_menu",
+        value: { label: "English menu likely available" },
+        confidence: 0.8,
+        source: "editorial",
+        verifiedAt: "2026-07-09T00:00:00.000Z",
+        expiresAt: null,
+        version: 1,
+      },
+    ],
+  },
+  {
+    id: "poi-beijing-forbidden-city",
+    city: "Beijing",
+    category: "attraction",
+    nameEn: "Forbidden City",
+    nameZh: "故宫",
+    sourceIds: { editorial: "vp-beijing-001" },
+    commercialLinks: [],
+    facts: [
+      {
+        id: "fact-forbidden-city-booking",
+        poiId: "poi-beijing-forbidden-city",
+        factType: "booking_required",
+        value: { label: "Timed ticket booking required", passportName: true },
+        confidence: 0.95,
+        source: "editorial",
+        verifiedAt: "2026-07-09T00:00:00.000Z",
+        expiresAt: null,
+        version: 1,
+      },
+    ],
+  },
+  {
+    id: "poi-beijing-dadong",
+    city: "Beijing",
+    category: "food",
+    nameEn: "Da Dong Roast Duck",
+    nameZh: "大董烤鸭",
+    sourceIds: { editorial: "vp-beijing-002" },
+    commercialLinks: [],
+    facts: [
+      {
+        id: "fact-dadong-reservation",
+        poiId: "poi-beijing-dadong",
+        factType: "reservation_helpful",
+        value: { label: "Reserve ahead for dinner" },
+        confidence: 0.85,
+        source: "editorial",
+        verifiedAt: "2026-07-09T00:00:00.000Z",
+        expiresAt: null,
+        version: 1,
+      },
+    ],
+  },
+];
+
+export const INITIAL_KNOWLEDGE_GAPS: KnowledgeGap[] = [
+  {
+    id: "gap-payment-foreign-card",
+    questionPattern: "foreign card payment setup",
+    frequency: 12,
+    city: "Shanghai",
+    status: "open",
+  },
+  {
+    id: "gap-forbidden-city-passport-booking",
+    questionPattern: "passport ticket booking for Forbidden City",
+    frequency: 9,
+    city: "Beijing",
+    status: "open",
+  },
+];

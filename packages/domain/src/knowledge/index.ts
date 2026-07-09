@@ -52,3 +52,12 @@ export type KnowledgeGap = z.infer<typeof KnowledgeGapSchema>;
 export function isCurrentPoiFact(fact: PoiFact, now = new Date()): boolean {
   return !fact.expiresAt || Date.parse(fact.expiresAt) >= now.getTime();
 }
+
+export function updatePoiFact(pois: Poi[], factId: string, value: Record<string, unknown>): Poi[] {
+  return pois.map((poi) => ({
+    ...poi,
+    facts: poi.facts.map((fact) =>
+      fact.id === factId ? { ...fact, value, version: fact.version + 1 } : fact,
+    ),
+  }));
+}

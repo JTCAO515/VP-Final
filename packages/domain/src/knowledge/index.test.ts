@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { PoiSchema, isCurrentPoiFact, type PoiFact } from "./index.js";
+import { PoiSchema, isCurrentPoiFact, updatePoiFact, type PoiFact } from "./index.js";
+import { INITIAL_POIS } from "./seed.js";
 
 const fact: PoiFact = {
   id: "fact-1",
@@ -36,5 +37,16 @@ describe("isCurrentPoiFact", () => {
         new Date("2026-07-09T00:00:00.000Z"),
       ),
     ).toBe(false);
+  });
+});
+
+describe("updatePoiFact", () => {
+  it("updates a fact in a POI collection", () => {
+    const updated = updatePoiFact(INITIAL_POIS, "fact-yu-garden-metro", {
+      label: "Updated metro note",
+    });
+
+    expect(updated[0]?.facts[0]?.value).toEqual({ label: "Updated metro note" });
+    expect(updated[0]?.facts[0]?.version).toBe(2);
   });
 });
