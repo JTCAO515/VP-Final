@@ -50,12 +50,8 @@ export type TripBlock = z.infer<typeof TripBlockSchema>;
 export type TripDay = z.infer<typeof TripDaySchema>;
 export type TripState = z.infer<typeof TripStateSchema>;
 
-const TripStateFieldsSchema = TripStateSchema.omit({ id: true, days: true })
-  .partial()
-  .strict();
-const TripDayFieldsSchema = TripDaySchema.omit({ id: true, blocks: true })
-  .partial()
-  .strict();
+const TripStateFieldsSchema = TripStateSchema.omit({ id: true, days: true }).partial().strict();
+const TripDayFieldsSchema = TripDaySchema.omit({ id: true, blocks: true }).partial().strict();
 const TripBlockFieldsSchema = TripBlockSchema.omit({ id: true }).partial().strict();
 
 export const TripPatchOperationSchema = z.discriminatedUnion("op", [
@@ -117,7 +113,7 @@ export function applyPatch(current: TripState | null, patch: TripPatch): TripSta
         break;
       case "update_trip":
         next = requireTrip(next, operation.op);
-        next = normalizeTrip({ ...next, ...operation.fields });
+        next = normalizeTrip(withDefinedFields(next, operation.fields));
         break;
       case "upsert_day":
         next = requireTrip(next, operation.op);
@@ -188,13 +184,19 @@ export function diffTrips(previous: TripState | null, next: TripState): TripPatc
 
 function normalizeTrip(trip: TripState): TripState {
   const parsed = TripStateSchema.parse(trip);
-  assertUnique(parsed.days.map((day) => day.id), "TripDay id");
+  assertUnique(
+    parsed.days.map((day) => day.id),
+    "TripDay id",
+  );
   assertUnique(
     parsed.days.map((day) => String(day.dayNumber)),
     "TripDay dayNumber",
   );
   for (const day of parsed.days) {
-    assertUnique(day.blocks.map((block) => block.id), `TripBlock id in ${day.id}`);
+    assertUnique(
+      day.blocks.map((block) => block.id),
+      `TripBlock id in ${day.id}`,
+    );
   }
   return {
     ...parsed,
@@ -229,7 +231,7 @@ function updateDay(
     days: replaceAt(
       trip.days,
       index,
-      TripDaySchema.parse({ ...existing, ...operation.fields }),
+      TripDaySchema.parse(withDefinedFields(existing, operation.fields)),
     ),
   });
 }
@@ -246,7 +248,7 @@ function deleteDay(
 
 function updateDayBlocks(
   trip: TripState,
-  operation: { dayId?: string; dayNumber?: number },
+  operation: DaySelector,
   update: (blocks: TripBlock[]) => TripBlock[],
 ): TripState {
   const index = findDayIndex(trip, operation);
@@ -258,16 +260,18 @@ function updateDayBlocks(
   });
 }
 
-function findDayIndex(
-  trip: TripState,
-  operation: { dayId?: string; dayNumber?: number },
-): number {
+function findDayIndex(trip: TripState, operation: DaySelector): number {
   const index = trip.days.findIndex((day) => matchesDay(day, operation));
   if (index < 0) throw new Error("TripDay not found");
   return index;
 }
 
-function matchesDay(day: TripDay, operation: { dayId?: string; dayNumber?: number }): boolean {
+type DaySelector = {
+  dayId?: string | undefined;
+  dayNumber?: number | undefined;
+};
+
+function matchesDay(day: TripDay, operation: DaySelector): boolean {
   if (!operation.dayId && !operation.dayNumber) {
     throw new Error("A dayId or dayNumber is required");
   }
@@ -279,10 +283,17 @@ function upsertById<T extends { id: string }>(items: T[], item: T): T[] {
   return index < 0 ? [...items, item] : replaceAt(items, index, item);
 }
 
+function withDefinedFields<T extends object>(
+  base: T,
+  fields: Partial<Record<keyof T, unknown>>,
+): T {
+  return Object.fromEntries(
+    Object.entries({ ...base, ...fields }).filter(([, value]) => value !== undefined),
+  ) as T;
+}
+
 function replaceAt<T>(items: T[], index: number, item: T): T[] {
-  return items.map((candidate, candidateIndex) =>
-    candidateIndex === index ? item : candidate,
-  );
+  return items.map((candidate, candidateIndex) => (candidateIndex === index ? item : candidate));
 }
 
 function changedTripFields(

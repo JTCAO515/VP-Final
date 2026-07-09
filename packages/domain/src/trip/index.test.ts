@@ -132,10 +132,7 @@ describe("applyPatch", () => {
       ],
     });
 
-    expect(withBlock.days[0]?.blocks.map((block) => block.id)).toEqual([
-      "block-1",
-      "block-2",
-    ]);
+    expect(withBlock.days[0]?.blocks.map((block) => block.id)).toEqual(["block-1", "block-2"]);
 
     const deleted = applyPatch(withBlock, {
       operations: [{ op: "delete_block", dayNumber: 1, blockId: "block-1" }],
@@ -152,9 +149,7 @@ describe("diffTrips", () => {
 
   it("returns a create patch when no previous trip exists", () => {
     expect(diffTrips(null, shanghaiTrip)).toEqual({
-      operations: [
-        { op: "create_trip", trip: TripStateSchema.parse(shanghaiTrip) },
-      ],
+      operations: [{ op: "create_trip", trip: TripStateSchema.parse(shanghaiTrip) }],
     });
   });
 
