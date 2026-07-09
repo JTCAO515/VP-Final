@@ -164,6 +164,11 @@ export function CopilotShell() {
           Explore
         </a>
       </section>
+      <section className="guideLinks" aria-label="China travel guides">
+        <a href="/guides/payment">Payment guide</a>
+        <a href="/guides/esim">eSIM guide</a>
+        <a href="/guides/network">Network guide</a>
+      </section>
 
       <section className="workspace">
         <div className="panel chat">

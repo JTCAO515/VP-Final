@@ -77,6 +77,22 @@ a {
   max-width: 1180px;
 }
 
+.guideLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0 auto 20px;
+  max-width: 1180px;
+}
+
+.guideLinks a {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--text);
+  padding: 8px 12px;
+  text-decoration: none;
+}
+
 .exploreFilters {
   display: flex;
   flex-wrap: wrap;
@@ -144,6 +160,52 @@ a {
   border-radius: 999px;
   color: var(--gold);
   padding: 6px 9px;
+}
+
+.guidePage .hero {
+  align-items: flex-start;
+}
+
+.guidePage .hero h1 {
+  margin-top: 18px;
+  max-width: 880px;
+}
+
+.guideArticle {
+  display: grid;
+  gap: 22px;
+  margin: 0 auto;
+  max-width: 840px;
+}
+
+.guideArticle section {
+  background: color-mix(in srgb, var(--panel), transparent 4%);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 22px;
+}
+
+.guideArticle h2 {
+  margin: 0 0 12px;
+}
+
+.guideArticle p {
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.guideArticle details {
+  border-top: 1px solid var(--line);
+  padding: 14px 0;
+}
+
+.guideArticle details:first-of-type {
+  border-top: 0;
+}
+
+.guideArticle summary {
+  cursor: pointer;
+  font-weight: 700;
 }
 
 .panel {
