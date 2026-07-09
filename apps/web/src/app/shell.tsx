@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import {
   applyPatch,
   CopilotEnvelopeSchema,
@@ -14,6 +14,39 @@ type ChatMessage = {
   body: string;
   envelope?: CopilotEnvelope;
 };
+
+const activities = [
+  {
+    title: "Yu Garden (豫园)",
+    detail: "Classical Ming Dynasty garden · Passport at entry",
+    time: "09:00",
+    alert: "Tickets selling fast today — only 12 left online. Book now.",
+    tags: ["Booking Required", "Near Metro L10"],
+    actions: ["Book Ticket", "Show to Local"],
+    active: true,
+  },
+  {
+    title: "Lunch · Nanxiang Steamed Bun",
+    detail: "Famous xiaolongbao near Yu Garden",
+    time: "12:00",
+    tags: ["Cash preferred", "Queue expected"],
+    actions: ["Baidu Maps"],
+  },
+  {
+    title: "Shanghai Tower Observatory",
+    detail: "World's 2nd tallest building · 632m",
+    time: "14:30",
+    tags: ["Near Metro L2/L14", "Foreign card OK"],
+    actions: ["Book Ticket", "Baidu Maps"],
+  },
+  {
+    title: "Dinner · Jian Guo 328",
+    detail: "Classic Shanghai home cooking",
+    time: "19:00",
+    tags: ["Reservation useful", "Show address"],
+    actions: ["Show to Local"],
+  },
+];
 
 const skeletonEnvelope = CopilotEnvelopeSchema.parse({
   intent: "trip_create",
@@ -31,11 +64,12 @@ const skeletonEnvelope = CopilotEnvelopeSchema.parse({
             id: "trip-shanghai-demo",
             title: "Shanghai first-timer",
             destinationCountry: "CN",
-            startDate: "2026-03-12",
-            endDate: "2026-03-14",
+            startDate: "2026-07-14",
+            endDate: "2026-07-16",
             days: [
               { id: "day-1", dayNumber: 1, city: "Shanghai", title: "Arrival", blocks: [] },
               { id: "day-2", dayNumber: 2, city: "Shanghai", title: "Old town", blocks: [] },
+              { id: "day-3", dayNumber: 3, city: "Shanghai", title: "Skyline", blocks: [] },
             ],
           },
         },
@@ -91,24 +125,31 @@ const detailedEnvelope = CopilotEnvelopeSchema.parse({
   ],
 });
 
+const initialTrip = applyEnvelope(applyEnvelope(null, skeletonEnvelope), detailedEnvelope);
+
 export function CopilotShell() {
-  const [input, setInput] = useState("Plan a 2 day Shanghai trip");
+  const [input, setInput] = useState(
+    "Plan my first 2 days in Shanghai with payment and metro tips",
+  );
   const [progress, setProgress] = useState<GenerationProgress>({
-    status: "idle",
-    completedDays: 0,
-    totalDays: 0,
+    status: "completed",
+    completedDays: 3,
+    totalDays: 3,
     attempts: 0,
     error: null,
   });
-  const [trip, setTrip] = useState<TripState | null>(null);
+  const [trip, setTrip] = useState<TripState | null>(initialTrip);
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { role: "assistant", body: "Ask for a China trip plan and I will render it on the canvas." },
+    {
+      role: "assistant",
+      body: "Good morning! It is Day 2 in Shanghai. Yu Garden tickets are going fast — only 12 left for today. Want me to book them now?",
+    },
+    { role: "user", body: "Yes, book now please." },
+    {
+      role: "assistant",
+      body: "Done! 2 tickets booked for Yu Garden at 09:00. Confirmation sent to your email. I've updated your Trip Canvas.",
+    },
   ]);
-
-  const totalBlocks = useMemo(
-    () => trip?.days.reduce((sum, day) => sum + day.blocks.length, 0) ?? 0,
-    [trip],
-  );
 
   function submitPrompt() {
     const prompt = input.trim();
@@ -152,38 +193,117 @@ export function CopilotShell() {
     }, 700);
   }
 
-  return (
-    <main className="shell">
-      <section className="hero">
-        <div>
-          <h1>China Travel AI Copilot</h1>
-          <p>Conversation on the left. Deterministic TripState canvas on the right.</p>
-        </div>
-        <div className="status">{progressLabel(progress)}</div>
-        <a className="status" href="/explore">
-          Explore
-        </a>
-      </section>
-      <section className="guideLinks" aria-label="China travel guides">
-        <a href="/guides/payment">Payment guide</a>
-        <a href="/guides/esim">eSIM guide</a>
-        <a href="/guides/network">Network guide</a>
-        <a href="/human-help">Human Help</a>
-      </section>
+  const isWorking = progress.status === "skeleton" || progress.status === "completing";
 
-      <section className="workspace">
-        <div className="panel chat">
-          <div className="panelHeader">
-            <h2>Copilot</h2>
-            <span>{messages.length} messages</span>
+  return (
+    <main className="shell copilotShell">
+      <header className="copilotTopbar">
+        <a className="brandMark" href="/">
+          <span>V</span>
+          <b>VisePanda</b>
+        </a>
+        <nav className="primaryNav" aria-label="Primary navigation">
+          <a className="active" href="/">
+            Copilot
+          </a>
+          <a href="/explore">Explore</a>
+          <a href="/guides/payment">Tools</a>
+          <a href="/human-help">Help</a>
+        </nav>
+        <div className="tripMeta">
+          <span>Shanghai & Beijing · 8 Days</span>
+          <i aria-hidden="true" />
+        </div>
+      </header>
+
+      <section className="copilotLayout">
+        <div className="tripCanvas">
+          <div className="canvasToolbar">
+            <div>
+              <h1>Trip Canvas</h1>
+              <span>{trip ? `${trip.days.length} days planned` : "No trip yet"}</span>
+            </div>
+            <div className="toolbarActions">
+              <span className="readiness">Readiness 85%</span>
+              <button type="button">Add Block</button>
+            </div>
           </div>
-          <div className="messages">
+
+          <div className="dayTabs" aria-label="Trip days">
+            {["Day 1 · Jul 14", "Day 2 · Jul 15", "Day 3 · Jul 16"].map((day, index) => (
+              <button className={index === 1 ? "selected" : ""} key={day} type="button">
+                {day}
+                <span>Shanghai</span>
+              </button>
+            ))}
+            <button type="button">+ Day</button>
+          </div>
+
+          <section className="dayStage">
+            <div className="dayHeading">
+              <div>
+                <h2>Day 2 · Jul 15</h2>
+                <p>Shanghai · {activities.length} activities</p>
+              </div>
+              <div className="dayStepper" aria-hidden="true">
+                <span>‹</span>
+                <span>›</span>
+              </div>
+            </div>
+
+            <div className="timeline">
+              {activities.map((activity) => (
+                <article
+                  className={`activityCard ${activity.active ? "urgent" : ""}`}
+                  key={activity.title}
+                >
+                  <div className="timelineDot" aria-hidden="true" />
+                  <div className="activityHeader">
+                    <div>
+                      <h3>{activity.title}</h3>
+                      <p>{activity.detail}</p>
+                    </div>
+                    <time>{activity.time}</time>
+                  </div>
+                  {activity.alert ? <div className="activityAlert">{activity.alert}</div> : null}
+                  <div className="activityTags">
+                    {activity.tags.map((tag) => (
+                      <span key={tag}>{tag}</span>
+                    ))}
+                  </div>
+                  <div className="activityActions">
+                    {activity.actions.map((action) => (
+                      <button
+                        className={action.includes("Book") ? "solid" : ""}
+                        key={action}
+                        type="button"
+                      >
+                        {action}
+                      </button>
+                    ))}
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+        </div>
+
+        <aside className="copilotRail" aria-label="Copilot conversation">
+          <div className="railHeader">
+            <div>
+              <strong>Copilot</strong>
+              <span>{progressLabel(progress)}</span>
+            </div>
+            <span className="online">Online</span>
+          </div>
+
+          <div className="railMessages">
             {messages.map((message, index) => (
-              <article className={`message ${message.role}`} key={`${message.role}-${index}`}>
-                <strong>{message.role === "user" ? "You" : "Copilot"}</strong>
+              <article className={`railMessage ${message.role}`} key={`${message.role}-${index}`}>
+                <b>{message.role === "user" ? "You" : "Copilot"}</b>
                 <p>{message.body}</p>
                 {message.envelope?.toolCards.map((card) => (
-                  <div className="toolCard" key={card.id}>
+                  <div className="toolCard railToolCard" key={card.id}>
                     <b>{card.title}</b>
                     <span>{card.body}</span>
                   </div>
@@ -191,8 +311,15 @@ export function CopilotShell() {
               </article>
             ))}
           </div>
+
+          <div className="quickReplies">
+            <button type="button">Book all tickets</button>
+            <button type="button">Optimize today</button>
+            <button type="button">Human help</button>
+          </div>
+
           <form
-            className="composer"
+            className="railComposer"
             onSubmit={(event) => {
               event.preventDefault();
               submitPrompt();
@@ -201,50 +328,14 @@ export function CopilotShell() {
             <input
               aria-label="Trip prompt"
               onChange={(event) => setInput(event.target.value)}
+              placeholder="Ask anything about your trip..."
               value={input}
             />
-            <button type="submit">Generate</button>
+            <button disabled={isWorking} type="submit">
+              Send
+            </button>
           </form>
-        </div>
-
-        <div className="panel canvas">
-          <div className="panelHeader">
-            <h2>Trip canvas</h2>
-            <span>{trip ? `${trip.days.length} days · ${totalBlocks} blocks` : "No trip yet"}</span>
-          </div>
-          {trip ? (
-            <div className="trip">
-              <div>
-                <h3>{trip.title}</h3>
-                <p>
-                  {trip.startDate} → {trip.endDate}
-                </p>
-              </div>
-              {trip.days.map((day) => (
-                <article className="day" key={day.id}>
-                  <div>
-                    <b>Day {day.dayNumber}</b>
-                    <span>{day.city}</span>
-                  </div>
-                  <h4>{day.title}</h4>
-                  {day.blocks.length === 0 ? (
-                    <p className="skeletonLine">Skeleton day. Details are being generated.</p>
-                  ) : (
-                    day.blocks.map((block) => (
-                      <div className="block" key={block.id}>
-                        <span>{block.startTime ?? "Flexible"}</span>
-                        <strong>{block.title}</strong>
-                        <small>{block.description}</small>
-                      </div>
-                    ))
-                  )}
-                </article>
-              ))}
-            </div>
-          ) : (
-            <div className="empty">Generate a trip to see the canvas patch apply in real time.</div>
-          )}
-        </div>
+        </aside>
       </section>
     </main>
   );
