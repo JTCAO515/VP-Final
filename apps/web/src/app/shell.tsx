@@ -168,6 +168,7 @@ export function CopilotShell() {
         <a href="/guides/payment">Payment guide</a>
         <a href="/guides/esim">eSIM guide</a>
         <a href="/guides/network">Network guide</a>
+        <a href="/human-help">Human Help</a>
       </section>
 
       <section className="workspace">

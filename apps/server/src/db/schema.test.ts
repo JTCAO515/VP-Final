@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   agentRuns,
+  humanTasks,
   knowledgeGaps,
   outboundClicks,
   partners,
@@ -43,5 +44,11 @@ describe("database schema", () => {
   it("maps the telemetry events table", () => {
     expect(telemetryEvents.anonId.name).toBe("anon_id");
     expect(telemetryEvents.propsJsonb.name).toBe("props_jsonb");
+  });
+
+  it("maps the human task quote fields", () => {
+    expect(humanTasks.status.name).toBe("status");
+    expect(humanTasks.priceUsd.name).toBe("price_usd");
+    expect(humanTasks.paymentLink.name).toBe("payment_link");
   });
 });

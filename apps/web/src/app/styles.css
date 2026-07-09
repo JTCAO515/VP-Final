@@ -30,6 +30,8 @@ body {
 
 button,
 input,
+select,
+textarea,
 a {
   font: inherit;
 }
@@ -296,6 +298,84 @@ a {
   padding: 14px;
 }
 
+.helpGrid {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: minmax(320px, 0.95fr) minmax(280px, 0.55fr);
+  margin: 0 auto;
+  max-width: 980px;
+}
+
+.helpForm {
+  display: grid;
+  gap: 16px;
+  min-height: auto;
+}
+
+.helpForm label {
+  color: var(--muted);
+  display: grid;
+  gap: 8px;
+}
+
+.helpForm input,
+.helpForm select,
+.helpForm textarea {
+  background: #0f0e0d;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  color: var(--text);
+  min-width: 0;
+  padding: 14px;
+}
+
+.helpForm textarea {
+  min-height: 150px;
+  resize: vertical;
+}
+
+.helpForm button {
+  background: var(--accent);
+  border: 0;
+  border-radius: 14px;
+  color: white;
+  cursor: pointer;
+  font-weight: 700;
+  padding: 14px 18px;
+}
+
+.helpAside {
+  min-height: auto;
+}
+
+.helpAside h2 {
+  margin: 0;
+}
+
+.helpAside p,
+.formStatus {
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.confirmation {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  display: grid;
+  gap: 6px;
+  margin-top: 18px;
+  padding: 14px;
+}
+
+.confirmation span,
+.confirmation small {
+  color: var(--muted);
+}
+
+.mutedBox {
+  color: var(--muted);
+}
+
 .composer button {
   background: var(--accent);
   border: 0;
@@ -343,6 +423,10 @@ a {
   }
 
   .workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .helpGrid {
     grid-template-columns: 1fr;
   }
 

@@ -27,4 +27,7 @@ it("keeps client inputs and outputs tied to the app router", () => {
   expectTypeOf<Outputs["knowledge"]["listPois"]>().toEqualTypeOf<Poi[]>();
   expectTypeOf<Outputs["knowledge"]["updateFact"]>().toEqualTypeOf<Poi[]>();
   expectTypeOf<Inputs["telemetry"]["track"]["action"]>().toEqualTypeOf<string>();
+  expectTypeOf<Inputs["task"]["create"]["kind"]>().toEqualTypeOf<
+    "call_restaurant" | "ticket_help" | "translation_help" | "transport_help" | "other"
+  >();
 });

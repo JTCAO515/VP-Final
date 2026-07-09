@@ -28,7 +28,8 @@ body {
 }
 
 button,
-input {
+input,
+select {
   font: inherit;
 }
 
@@ -114,6 +115,14 @@ input {
   padding: 8px 10px;
 }
 
+select {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  min-width: 160px;
+  padding: 8px 10px;
+}
+
 button {
   background: var(--accent);
   border: 0;
@@ -139,4 +148,13 @@ button:disabled {
 .empty {
   color: var(--muted);
   padding: 18px;
+}
+
+.taskQuote {
+  display: grid;
+  gap: 8px;
+}
+
+.taskQuote input {
+  min-width: 220px;
 }
