@@ -3,11 +3,13 @@ import {
   CopilotEnvelopeSchema,
   CopilotIntentSchema,
   TripStateSchema,
+  type CopilotEnvelope,
   type CopilotIntent,
   type TripPatch,
   type TripState,
 } from "@visepanda/domain";
 import { z } from "zod";
+import type { KnowledgeService } from "../knowledge/service.js";
 import type { TripOwner, TripService } from "../trip/service.js";
 
 export const CopilotRunInputSchema = z.object({
@@ -57,12 +59,14 @@ type CopilotGenerationRequest = CopilotRequest & {
 
 export type CopilotPipelineDependencies = {
   tripService: TripService;
+  knowledgeService?: KnowledgeService;
   routeIntent?: RouteIntent;
   retrieveContext?: RetrieveContext;
   generateEnvelope?: GenerateEnvelope;
 };
 
 export function createCopilotPipeline({
+  knowledgeService,
   tripService,
   routeIntent = defaultRouteIntent,
   retrieveContext = defaultRetrieveContext,
@@ -86,6 +90,13 @@ export function createCopilotPipeline({
       const envelope = CopilotEnvelopeSchema.parse(
         await generateEnvelope({ ...request, intent, retrievedFacts }),
       );
+      if (knowledgeService && shouldRecordKnowledgeGap(envelope)) {
+        const city = detectCity(parsedInput.message);
+        await knowledgeService.recordGap({
+          question: parsedInput.message,
+          ...(city ? { city } : {}),
+        });
+      }
       let trip = currentTrip;
       const appliedOperations: TripPatch["operations"] = [];
 
@@ -272,8 +283,27 @@ function inferCity(message: string): string {
   return "Shanghai";
 }
 
+function detectCity(message: string): string | undefined {
+  if (/\bbeijing\b/i.test(message)) return "Beijing";
+  if (/\bchengdu\b/i.test(message)) return "Chengdu";
+  if (/\bshanghai\b/i.test(message)) return "Shanghai";
+  return undefined;
+}
+
 function inferTripDays(message: string): number {
   const match = message.match(/\b([1-9]|1[0-4])\s*(?:day|days)\b/i);
   if (!match?.[1]) return 2;
   return Number(match[1]);
+}
+
+function shouldRecordKnowledgeGap(envelope: CopilotEnvelope): boolean {
+  if (envelope.intent !== "question" && envelope.intent !== "chat_only") return false;
+  const body = envelope.message.body.toLowerCase();
+  return (
+    envelope.citations.length === 0 ||
+    body.includes("unknown") ||
+    body.includes("don't know") ||
+    body.includes("do not know") ||
+    body.includes("could not answer")
+  );
 }

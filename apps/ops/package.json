@@ -11,6 +11,7 @@
     "lint": "prettier --check src"
   },
   "dependencies": {
+    "@visepanda/app-server": "workspace:*",
     "@visepanda/domain": "workspace:*",
     "next": "15",
     "react": "19",

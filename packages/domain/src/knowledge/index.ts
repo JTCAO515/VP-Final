@@ -12,6 +12,7 @@ export const PoiFactSchema = z.object({
   verifiedAt: z.string().datetime(),
   expiresAt: z.string().datetime().nullable().default(null),
   version: z.number().int().positive(),
+  status: z.enum(["active", "deprecated"]).default("active"),
 });
 
 export const PoiCommercialLinkSchema = z.object({
@@ -42,6 +43,13 @@ export const KnowledgeGapSchema = z.object({
   frequency: z.number().int().positive(),
   city: z.string().optional(),
   status: z.enum(["open", "resolved", "ignored"]),
+  resolvedAt: z.string().datetime().optional(),
+  resolutionTarget: z
+    .object({
+      kind: z.enum(["poi_fact", "guide"]),
+      id: z.string().min(1),
+    })
+    .optional(),
 });
 
 export type PoiCategory = z.infer<typeof PoiCategorySchema>;
@@ -60,14 +68,29 @@ export const TRAVELER_SCENE_TAGS = [
 export type TravelerSceneTag = (typeof TRAVELER_SCENE_TAGS)[number];
 
 export function isCurrentPoiFact(fact: PoiFact, now = new Date()): boolean {
-  return !fact.expiresAt || Date.parse(fact.expiresAt) >= now.getTime();
+  return (
+    fact.status === "active" && (!fact.expiresAt || Date.parse(fact.expiresAt) >= now.getTime())
+  );
 }
 
-export function updatePoiFact(pois: Poi[], factId: string, value: Record<string, unknown>): Poi[] {
+export function updatePoiFact(
+  pois: Poi[],
+  factId: string,
+  value: Record<string, unknown>,
+  fields: Partial<Pick<PoiFact, "confidence" | "source" | "expiresAt" | "status">> = {},
+): Poi[] {
   return pois.map((poi) => ({
     ...poi,
     facts: poi.facts.map((fact) =>
-      fact.id === factId ? { ...fact, value, version: fact.version + 1 } : fact,
+      fact.id === factId
+        ? {
+            ...fact,
+            ...fields,
+            value,
+            verifiedAt: new Date().toISOString(),
+            version: fact.version + 1,
+          }
+        : fact,
     ),
   }));
 }

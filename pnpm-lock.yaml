@@ -39,6 +39,9 @@ importers:
 
   apps/ops:
     dependencies:
+      '@visepanda/app-server':
+        specifier: workspace:*
+        version: link:../server
       '@visepanda/domain':
         specifier: workspace:*
         version: link:../../packages/domain
