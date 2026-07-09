@@ -4,6 +4,7 @@ import {
   index,
   integer,
   jsonb,
+  numeric,
   pgTable,
   text,
   timestamp,
@@ -62,8 +63,71 @@ export const tripEvents = pgTable(
   }),
 );
 
+export const agentRuns = pgTable(
+  "agent_runs",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    tripId: uuid("trip_id").references(() => trips.id, { onDelete: "set null" }),
+    intent: text("intent"),
+    status: text("status").notNull(),
+    inputJsonb: jsonb("input_jsonb").notNull().default({}),
+    outputJsonb: jsonb("output_jsonb").notNull().default({}),
+    error: text("error"),
+    modelProvider: text("model_provider"),
+    model: text("model"),
+    effort: text("effort"),
+    costUsd: numeric("cost_usd", { precision: 12, scale: 6 }).notNull().default("0"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+  },
+  (table) => ({
+    userCreatedIdx: index("agent_runs_user_created_idx").on(table.userId, table.createdAt),
+    tripCreatedIdx: index("agent_runs_trip_created_idx").on(table.tripId, table.createdAt),
+    statusCheck: check(
+      "agent_runs_status_check",
+      sql`${table.status} in ('started', 'succeeded', 'failed')`,
+    ),
+    effortCheck: check(
+      "agent_runs_effort_check",
+      sql`${table.effort} is null or ${table.effort} in ('low', 'medium', 'high')`,
+    ),
+    costCheck: check("agent_runs_cost_usd_check", sql`${table.costUsd} >= 0`),
+  }),
+);
+
+export const toolCalls = pgTable(
+  "tool_calls",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    agentRunId: uuid("agent_run_id")
+      .notNull()
+      .references(() => agentRuns.id, { onDelete: "cascade" }),
+    toolName: text("tool_name").notNull(),
+    status: text("status").notNull(),
+    inputJsonb: jsonb("input_jsonb").notNull().default({}),
+    outputJsonb: jsonb("output_jsonb").notNull().default({}),
+    error: text("error"),
+    startedAt: timestamp("started_at", { withTimezone: true }).notNull().defaultNow(),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+  },
+  (table) => ({
+    agentRunStartedIdx: index("tool_calls_agent_run_started_idx").on(
+      table.agentRunId,
+      table.startedAt,
+    ),
+    statusCheck: check(
+      "tool_calls_status_check",
+      sql`${table.status} in ('started', 'succeeded', 'failed')`,
+    ),
+  }),
+);
+
 export const usersRelations = relations(users, ({ many }) => ({
   trips: many(trips),
+  agentRuns: many(agentRuns),
 }));
 
 export const tripsRelations = relations(trips, ({ one, many }) => ({
@@ -72,11 +136,31 @@ export const tripsRelations = relations(trips, ({ one, many }) => ({
     references: [users.id],
   }),
   events: many(tripEvents),
+  agentRuns: many(agentRuns),
 }));
 
 export const tripEventsRelations = relations(tripEvents, ({ one }) => ({
   trip: one(trips, {
     fields: [tripEvents.tripId],
     references: [trips.id],
+  }),
+}));
+
+export const agentRunsRelations = relations(agentRuns, ({ one, many }) => ({
+  user: one(users, {
+    fields: [agentRuns.userId],
+    references: [users.id],
+  }),
+  trip: one(trips, {
+    fields: [agentRuns.tripId],
+    references: [trips.id],
+  }),
+  toolCalls: many(toolCalls),
+}));
+
+export const toolCallsRelations = relations(toolCalls, ({ one }) => ({
+  agentRun: one(agentRuns, {
+    fields: [toolCalls.agentRunId],
+    references: [agentRuns.id],
   }),
 }));
