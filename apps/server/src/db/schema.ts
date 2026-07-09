@@ -24,9 +24,8 @@ export const trips = pgTable(
   "trips",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    owner: uuid("owner")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
+    owner: uuid("owner").references(() => users.id, { onDelete: "cascade" }),
+    anonId: text("anon_id"),
     headVersion: integer("head_version").notNull().default(0),
     snapshotJsonb: jsonb("snapshot_jsonb").notNull().default({}),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -34,7 +33,12 @@ export const trips = pgTable(
   },
   (table) => ({
     ownerIdx: index("trips_owner_idx").on(table.owner),
+    anonIdx: index("trips_anon_id_idx").on(table.anonId),
     headVersionCheck: check("trips_head_version_check", sql`${table.headVersion} >= 0`),
+    ownerOrAnonCheck: check(
+      "trips_owner_or_anon_check",
+      sql`${table.owner} is not null or ${table.anonId} is not null`,
+    ),
   }),
 );
 

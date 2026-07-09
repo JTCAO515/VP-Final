@@ -1,11 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   applyPatch,
   CopilotEnvelopeSchema,
+  GenerationProgressSchema,
+  TripStateSchema,
   type CopilotEnvelope,
   type GenerationProgress,
+  type TripBlock,
   type TripState,
 } from "@visepanda/domain";
 
@@ -15,40 +18,30 @@ type ChatMessage = {
   envelope?: CopilotEnvelope;
 };
 
-const activities = [
-  {
-    title: "Yu Garden (豫园)",
-    detail: "Classical Ming Dynasty garden · Passport at entry",
-    time: "09:00",
-    alert: "Tickets selling fast today — only 12 left online. Book now.",
-    tags: ["Booking Required", "Near Metro L10"],
-    actions: ["Book Ticket", "Show to Local"],
-    active: true,
-  },
-  {
-    title: "Lunch · Nanxiang Steamed Bun",
-    detail: "Famous xiaolongbao near Yu Garden",
-    time: "12:00",
-    tags: ["Cash preferred", "Queue expected"],
-    actions: ["Baidu Maps"],
-  },
-  {
-    title: "Shanghai Tower Observatory",
-    detail: "World's 2nd tallest building · 632m",
-    time: "14:30",
-    tags: ["Near Metro L2/L14", "Foreign card OK"],
-    actions: ["Book Ticket", "Baidu Maps"],
-  },
-  {
-    title: "Dinner · Jian Guo 328",
-    detail: "Classic Shanghai home cooking",
-    time: "19:00",
-    tags: ["Reservation useful", "Show address"],
-    actions: ["Show to Local"],
-  },
-];
+type CopilotSuccessResponse = {
+  ok: true;
+  envelope: unknown;
+  progress: unknown;
+  trip: unknown;
+};
 
-const skeletonEnvelope = CopilotEnvelopeSchema.parse({
+type CompleteSuccessResponse = {
+  ok: true;
+  progress: unknown;
+  trip: unknown;
+};
+
+type ErrorResponse = {
+  ok: false;
+  error: string;
+};
+
+const ANON_ID_KEY = "visepanda.anonId";
+const LAST_TRIP_ID_KEY = "visepanda.lastTripId";
+const AUTH_USER_ID_KEY = "visepanda.auth.userId";
+const AUTH_EMAIL_KEY = "visepanda.auth.email";
+
+const fallbackSkeletonEnvelope = CopilotEnvelopeSchema.parse({
   intent: "trip_create",
   message: {
     headline: "Shanghai skeleton ready",
@@ -61,7 +54,7 @@ const skeletonEnvelope = CopilotEnvelopeSchema.parse({
         {
           op: "create_trip",
           trip: {
-            id: "trip-shanghai-demo",
+            id: "08fc00bc-89f0-48c7-8cb6-a13d0e4f4c60",
             title: "Shanghai first-timer",
             destinationCountry: "CN",
             startDate: "2026-07-14",
@@ -86,7 +79,7 @@ const skeletonEnvelope = CopilotEnvelopeSchema.parse({
   ],
 });
 
-const detailedEnvelope = CopilotEnvelopeSchema.parse({
+const fallbackDetailedEnvelope = CopilotEnvelopeSchema.parse({
   intent: "trip_edit",
   message: {
     headline: "Details added",
@@ -118,6 +111,11 @@ const detailedEnvelope = CopilotEnvelopeSchema.parse({
             startTime: "09:00",
             address: "279 Yuyuan Old St",
             status: "planned",
+            metadata: {
+              alert: "Tickets selling fast today — book before you go.",
+              tags: ["Booking Required", "Near Metro L10"],
+              actions: ["Book Ticket", "Show to Local"],
+            },
           },
         },
       ],
@@ -125,40 +123,200 @@ const detailedEnvelope = CopilotEnvelopeSchema.parse({
   ],
 });
 
-const initialTrip = applyEnvelope(applyEnvelope(null, skeletonEnvelope), detailedEnvelope);
+const demoTrip = applyEnvelope(
+  applyEnvelope(null, fallbackSkeletonEnvelope),
+  fallbackDetailedEnvelope,
+);
+
+const initialMessages: ChatMessage[] = [
+  {
+    role: "assistant",
+    body: "Good morning! It is Day 2 in Shanghai. Yu Garden tickets are going fast — want me to help you plan around payment, metro, and tickets?",
+  },
+];
 
 export function CopilotShell() {
+  const [anonId, setAnonId] = useState<string | null>(null);
   const [input, setInput] = useState(
     "Plan my first 2 days in Shanghai with payment and metro tips",
   );
   const [progress, setProgress] = useState<GenerationProgress>({
-    status: "completed",
-    completedDays: 3,
-    totalDays: 3,
+    status: "idle",
+    completedDays: 0,
+    totalDays: 0,
     attempts: 0,
     error: null,
   });
-  const [trip, setTrip] = useState<TripState | null>(initialTrip);
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      role: "assistant",
-      body: "Good morning! It is Day 2 in Shanghai. Yu Garden tickets are going fast — only 12 left for today. Want me to book them now?",
-    },
-    { role: "user", body: "Yes, book now please." },
-    {
-      role: "assistant",
-      body: "Done! 2 tickets booked for Yu Garden at 09:00. Confirmation sent to your email. I've updated your Trip Canvas.",
-    },
-  ]);
+  const [selectedDayIndex, setSelectedDayIndex] = useState(0);
+  const [trip, setTrip] = useState<TripState | null>(null);
+  const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
 
-  function submitPrompt() {
+  const displayTrip = trip ?? demoTrip;
+  const selectedDay = displayTrip?.days[selectedDayIndex] ?? displayTrip?.days[0] ?? null;
+  const isWorking = progress.status === "skeleton" || progress.status === "completing";
+  const useMockFallback = process.env.NEXT_PUBLIC_COPILOT_MOCK === "1";
+
+  const readiness = useMemo(() => {
+    const blocks = displayTrip?.days.flatMap((day) => day.blocks) ?? [];
+    if (blocks.length === 0) return 0;
+    const ready = blocks.filter((block) => block.status === "ready" || block.status === "done");
+    return Math.round((ready.length / blocks.length) * 100);
+  }, [displayTrip]);
+
+  useEffect(() => {
+    const nextAnonId = ensureAnonId();
+    setAnonId(nextAnonId);
+
+    const tripId = window.localStorage.getItem(LAST_TRIP_ID_KEY);
+    if (tripId) void loadTrip(tripId, nextAnonId);
+
+    const storedUserId = window.localStorage.getItem(AUTH_USER_ID_KEY);
+    if (storedUserId) {
+      const storedEmail = window.localStorage.getItem(AUTH_EMAIL_KEY);
+      void claimAnonymousTrips({
+        anonId: nextAnonId,
+        userId: storedUserId,
+        ...(storedEmail ? { email: storedEmail } : {}),
+      });
+    }
+
+    function handleAuthSession(event: Event) {
+      const detail = (event as CustomEvent<{ userId?: string; email?: string }>).detail;
+      if (!detail?.userId) return;
+      window.localStorage.setItem(AUTH_USER_ID_KEY, detail.userId);
+      if (detail.email) window.localStorage.setItem(AUTH_EMAIL_KEY, detail.email);
+      void claimAnonymousTrips({
+        anonId: nextAnonId,
+        userId: detail.userId,
+        ...(detail.email ? { email: detail.email } : {}),
+      });
+    }
+
+    window.addEventListener("visepanda:supabase-auth", handleAuthSession);
+    return () => window.removeEventListener("visepanda:supabase-auth", handleAuthSession);
+  }, []);
+
+  useEffect(() => {
+    if (!displayTrip || selectedDayIndex < displayTrip.days.length) return;
+    setSelectedDayIndex(Math.max(0, displayTrip.days.length - 1));
+  }, [displayTrip, selectedDayIndex]);
+
+  async function loadTrip(tripId: string, ownerAnonId = anonId) {
+    if (!ownerAnonId) return;
+    try {
+      const response = await fetch(
+        `/api/trips/${tripId}?anonId=${encodeURIComponent(ownerAnonId)}`,
+      );
+      const data = (await response.json()) as { ok: boolean; trip?: unknown };
+      if (!response.ok || !data.ok) return;
+      setTrip(TripStateSchema.parse(data.trip));
+    } catch {
+      // Loading a saved anonymous trip is a convenience; the composer still works if it fails.
+    }
+  }
+
+  async function submitPrompt() {
     const prompt = input.trim();
-    if (!prompt) return;
+    if (!prompt || isWorking) return;
 
-    const skeletonTrip = applyEnvelope(null, skeletonEnvelope);
+    if (useMockFallback) {
+      runMockFlow(prompt);
+      return;
+    }
+
+    const ownerAnonId = anonId ?? ensureAnonId();
+    if (!anonId) setAnonId(ownerAnonId);
+    const tripId = trip?.id ?? crypto.randomUUID();
+    setMessages((current) => [...current, { role: "user", body: prompt }]);
+    setProgress({
+      status: "skeleton",
+      completedDays: 0,
+      totalDays: trip?.days.length ?? 0,
+      attempts: 0,
+      error: null,
+    });
+
+    try {
+      const response = await fetch("/api/copilot", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          message: prompt,
+          tripId,
+          anonId: ownerAnonId,
+          currentTrip: trip,
+        }),
+      });
+      const data = (await response.json()) as CopilotSuccessResponse | ErrorResponse;
+      if (!response.ok || !data.ok) {
+        throw new Error(data.ok ? "Copilot request failed." : data.error);
+      }
+
+      const envelope = CopilotEnvelopeSchema.parse(data.envelope);
+      const nextTrip = TripStateSchema.nullable().parse(data.trip);
+      const nextProgress = GenerationProgressSchema.parse(data.progress);
+      setMessages((current) => [
+        ...current,
+        { role: "assistant", body: envelope.message.body, envelope },
+      ]);
+      setTrip(nextTrip);
+      setProgress(nextProgress);
+      if (nextTrip) window.localStorage.setItem(LAST_TRIP_ID_KEY, nextTrip.id);
+
+      if (nextTrip?.days.some((day) => day.blocks.length === 0)) {
+        await completeTrip(nextTrip.id, ownerAnonId);
+      }
+    } catch (error) {
+      setProgress({
+        status: "failed",
+        completedDays: 0,
+        totalDays: trip?.days.length ?? 0,
+        attempts: 1,
+        error: error instanceof Error ? error.message : "Copilot connection failed.",
+      });
+      setMessages((current) => [
+        ...current,
+        {
+          role: "assistant",
+          body: "I could not connect to the Copilot service. Please retry in a moment.",
+        },
+      ]);
+    }
+  }
+
+  async function completeTrip(tripId: string, ownerAnonId: string) {
+    setProgress((current) => ({
+      ...current,
+      status: "completing",
+      attempts: current.attempts + 1,
+    }));
+
+    const response = await fetch("/api/copilot/complete", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ tripId, anonId: ownerAnonId }),
+    });
+    const data = (await response.json()) as CompleteSuccessResponse | ErrorResponse;
+    if (!response.ok || !data.ok) {
+      throw new Error(data.ok ? "Trip completion failed." : data.error);
+    }
+
+    const nextTrip = TripStateSchema.nullable().parse(data.trip);
+    setProgress(GenerationProgressSchema.parse(data.progress));
+    setTrip(nextTrip);
+    if (nextTrip) window.localStorage.setItem(LAST_TRIP_ID_KEY, nextTrip.id);
+  }
+
+  function runMockFlow(prompt: string) {
+    const skeletonTrip = applyEnvelope(null, fallbackSkeletonEnvelope);
     setMessages([
+      ...messages,
       { role: "user", body: prompt },
-      { role: "assistant", body: skeletonEnvelope.message.body, envelope: skeletonEnvelope },
+      {
+        role: "assistant",
+        body: fallbackSkeletonEnvelope.message.body,
+        envelope: fallbackSkeletonEnvelope,
+      },
     ]);
     setTrip(skeletonTrip);
     setProgress({
@@ -170,20 +328,7 @@ export function CopilotShell() {
     });
 
     window.setTimeout(() => {
-      setProgress((current) => ({
-        ...current,
-        status: "completing",
-        completedDays: Math.max(1, current.completedDays),
-        attempts: current.attempts + 1,
-      }));
-    }, 350);
-
-    window.setTimeout(() => {
-      setTrip((current) => applyEnvelope(current, detailedEnvelope));
-      setMessages((current) => [
-        ...current,
-        { role: "assistant", body: detailedEnvelope.message.body, envelope: detailedEnvelope },
-      ]);
+      setTrip((current) => applyEnvelope(current, fallbackDetailedEnvelope));
       setProgress((current) => ({
         ...current,
         status: "completed",
@@ -193,7 +338,26 @@ export function CopilotShell() {
     }, 700);
   }
 
-  const isWorking = progress.status === "skeleton" || progress.status === "completing";
+  async function claimAnonymousTrips({
+    anonId: ownerAnonId,
+    userId,
+    email,
+  }: {
+    anonId: string;
+    userId: string;
+    email?: string;
+  }) {
+    const response = await fetch("/api/trips/claim", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ anonId: ownerAnonId, userId, email }),
+    });
+    const data = (await response.json()) as { ok: boolean; trips?: unknown[] };
+    if (!response.ok || !data.ok || !data.trips?.[0]) return;
+    const claimedTrip = TripStateSchema.parse(data.trips[0]);
+    setTrip(claimedTrip);
+    window.localStorage.setItem(LAST_TRIP_ID_KEY, claimedTrip.id);
+  }
 
   return (
     <main className="shell copilotShell">
@@ -211,7 +375,9 @@ export function CopilotShell() {
           <a href="/human-help">Help</a>
         </nav>
         <div className="tripMeta">
-          <span>Shanghai & Beijing · 8 Days</span>
+          <span>
+            {displayTrip ? `${displayTrip.title} · ${displayTrip.days.length} Days` : "Ready"}
+          </span>
           <i aria-hidden="true" />
         </div>
       </header>
@@ -221,19 +387,24 @@ export function CopilotShell() {
           <div className="canvasToolbar">
             <div>
               <h1>Trip Canvas</h1>
-              <span>{trip ? `${trip.days.length} days planned` : "No trip yet"}</span>
+              <span>{displayTrip ? `${displayTrip.days.length} days planned` : "No trip yet"}</span>
             </div>
             <div className="toolbarActions">
-              <span className="readiness">Readiness 85%</span>
+              <span className="readiness">Readiness {readiness}%</span>
               <button type="button">Add Block</button>
             </div>
           </div>
 
           <div className="dayTabs" aria-label="Trip days">
-            {["Day 1 · Jul 14", "Day 2 · Jul 15", "Day 3 · Jul 16"].map((day, index) => (
-              <button className={index === 1 ? "selected" : ""} key={day} type="button">
-                {day}
-                <span>Shanghai</span>
+            {displayTrip?.days.map((day, index) => (
+              <button
+                className={index === selectedDayIndex ? "selected" : ""}
+                key={day.id}
+                onClick={() => setSelectedDayIndex(index)}
+                type="button"
+              >
+                Day {day.dayNumber}
+                <span>{day.city ?? "China"}</span>
               </button>
             ))}
             <button type="button">+ Day</button>
@@ -242,8 +413,14 @@ export function CopilotShell() {
           <section className="dayStage">
             <div className="dayHeading">
               <div>
-                <h2>Day 2 · Jul 15</h2>
-                <p>Shanghai · {activities.length} activities</p>
+                <h2>
+                  {selectedDay
+                    ? `Day ${selectedDay.dayNumber} · ${selectedDay.title ?? "Plan"}`
+                    : "No day selected"}
+                </h2>
+                <p>
+                  {selectedDay?.city ?? "China"} · {selectedDay?.blocks.length ?? 0} activities
+                </p>
               </div>
               <div className="dayStepper" aria-hidden="true">
                 <span>‹</span>
@@ -252,38 +429,21 @@ export function CopilotShell() {
             </div>
 
             <div className="timeline">
-              {activities.map((activity) => (
-                <article
-                  className={`activityCard ${activity.active ? "urgent" : ""}`}
-                  key={activity.title}
-                >
-                  <div className="timelineDot" aria-hidden="true" />
+              {selectedDay?.blocks.length ? (
+                selectedDay.blocks.map((block) => <ActivityCard block={block} key={block.id} />)
+              ) : (
+                <article className="activityCard">
                   <div className="activityHeader">
                     <div>
-                      <h3>{activity.title}</h3>
-                      <p>{activity.detail}</p>
+                      <h3>Details are being prepared</h3>
+                      <p>Ask Copilot to fill this day with execution-ready blocks.</p>
                     </div>
-                    <time>{activity.time}</time>
                   </div>
-                  {activity.alert ? <div className="activityAlert">{activity.alert}</div> : null}
                   <div className="activityTags">
-                    {activity.tags.map((tag) => (
-                      <span key={tag}>{tag}</span>
-                    ))}
-                  </div>
-                  <div className="activityActions">
-                    {activity.actions.map((action) => (
-                      <button
-                        className={action.includes("Book") ? "solid" : ""}
-                        key={action}
-                        type="button"
-                      >
-                        {action}
-                      </button>
-                    ))}
+                    <span>{progressLabel(progress)}</span>
                   </div>
                 </article>
-              ))}
+              )}
             </div>
           </section>
         </div>
@@ -322,7 +482,7 @@ export function CopilotShell() {
             className="railComposer"
             onSubmit={(event) => {
               event.preventDefault();
-              submitPrompt();
+              void submitPrompt();
             }}
           >
             <input
@@ -332,7 +492,7 @@ export function CopilotShell() {
               value={input}
             />
             <button disabled={isWorking} type="submit">
-              Send
+              {isWorking ? "Working" : "Send"}
             </button>
           </form>
         </aside>
@@ -341,14 +501,76 @@ export function CopilotShell() {
   );
 }
 
+function ActivityCard({ block }: { block: TripBlock }) {
+  const metadata = block.metadata ?? {};
+  const tags = readStringArray(metadata.tags);
+  const actions = readStringArray(metadata.actions);
+  const alert = typeof metadata.alert === "string" ? metadata.alert : null;
+
+  return (
+    <article className={`activityCard ${block.status === "needs_attention" ? "urgent" : ""}`}>
+      <div className="timelineDot" aria-hidden="true" />
+      <div className="activityHeader">
+        <div>
+          <h3>{block.title}</h3>
+          <p>{block.description ?? block.address ?? "Execution details pending"}</p>
+        </div>
+        {block.startTime ? <time>{block.startTime}</time> : null}
+      </div>
+      {alert ? <div className="activityAlert">{alert}</div> : null}
+      <div className="activityTags">
+        {block.status ? <span>{statusLabel(block.status)}</span> : null}
+        {block.address ? <span>Address ready</span> : null}
+        {tags.map((tag) => (
+          <span key={tag}>{tag}</span>
+        ))}
+      </div>
+      <div className="activityActions">
+        {(actions.length > 0 ? actions : defaultActions(block)).map((action) => (
+          <button className={action.includes("Book") ? "solid" : ""} key={action} type="button">
+            {action}
+          </button>
+        ))}
+      </div>
+    </article>
+  );
+}
+
 function applyEnvelope(current: TripState | null, envelope: CopilotEnvelope): TripState | null {
   return envelope.tripActions.reduce((next, patch) => applyPatch(next, patch), current);
 }
 
+function defaultActions(block: TripBlock): string[] {
+  if (block.address) return ["Show to Local"];
+  if (block.type === "transport") return ["Route"];
+  return ["Ask Copilot"];
+}
+
+function ensureAnonId(): string {
+  const existing = window.localStorage.getItem(ANON_ID_KEY);
+  if (existing) return existing;
+  const anonId = `anon_${crypto.randomUUID()}`;
+  window.localStorage.setItem(ANON_ID_KEY, anonId);
+  return anonId;
+}
+
 function progressLabel(progress: GenerationProgress): string {
   if (progress.status === "idle") return "Ready";
-  if (progress.status === "completed") return "Details complete";
-  if (progress.status === "failed") return "Completion failed";
+  if (progress.status === "skeleton") return "Building skeleton";
+  if (progress.status === "completing") {
+    return `Filling details ${progress.completedDays}/${progress.totalDays}`;
+  }
+  if (progress.status === "completed") return "Complete";
+  return progress.error ? `Failed: ${progress.error}` : "Completion failed";
+}
 
-  return `${progress.completedDays}/${progress.totalDays} days`;
+function readStringArray(value: unknown): string[] {
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === "string")
+    : [];
+}
+
+function statusLabel(status: NonNullable<TripBlock["status"]>): string {
+  if (status === "needs_attention") return "Needs attention";
+  return status.replace("_", " ");
 }

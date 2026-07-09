@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { appRouter } from "../../router.js";
+import { createInMemoryTripService } from "../trip/service.js";
 import { createInMemoryKnowledgeService } from "./service.js";
 
 const nowExpired = "2026-07-08T00:00:00.000Z";
@@ -7,11 +8,7 @@ const nowExpired = "2026-07-08T00:00:00.000Z";
 describe("knowledgeRouter", () => {
   it("lists POIs and hides expired facts", async () => {
     const caller = appRouter.createCaller({
-      tripService: {
-        create: async (trip) => trip,
-        save: async (trip) => trip,
-        get: async () => null,
-      },
+      tripService: createInMemoryTripService(),
       knowledgeService: createInMemoryKnowledgeService([
         {
           id: "poi-yu-garden",
@@ -57,11 +54,7 @@ describe("knowledgeRouter", () => {
   it("reflects edited facts through the read API", async () => {
     const knowledgeService = createInMemoryKnowledgeService();
     const caller = appRouter.createCaller({
-      tripService: {
-        create: async (trip) => trip,
-        save: async (trip) => trip,
-        get: async () => null,
-      },
+      tripService: createInMemoryTripService(),
       knowledgeService,
     });
 

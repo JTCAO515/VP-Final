@@ -19,6 +19,7 @@ describe("database schema", () => {
   it("maps the v1 auth/trip tables", () => {
     expect(users.id.name).toBe("id");
     expect(trips.owner.name).toBe("owner");
+    expect(trips.anonId.name).toBe("anon_id");
     expect(tripEvents.tripId.name).toBe("trip_id");
   });
 

@@ -11,9 +11,10 @@ describe("copilotRouter", () => {
     const result = await caller.copilot.run({
       message: "Plan a Beijing trip",
       tripId: "trip-beijing",
+      anonId: "anon-beijing",
     });
 
-    expect(result.trip?.title).toBe("China trip draft");
+    expect(result.trip?.title).toBe("Beijing first-timer");
     expect(result.trace.retrievedFactIds).toEqual(["stub:china-execution-basics"]);
   });
 
