@@ -1,0 +1,46 @@
+{
+  "suite": "trip_generation",
+  "version": 1,
+  "cases": [
+    {
+      "id": "beijing-first-timer-3d",
+      "prompt": "Plan a first-time 3 day Beijing trip focused on classic sights and easy transport.",
+      "expectedIntent": "trip_create",
+      "requiredPatchOps": ["create_trip"],
+      "mustMention": ["Beijing", "3 day"],
+      "risk": "low"
+    },
+    {
+      "id": "shanghai-family-food-2d",
+      "prompt": "Create a relaxed 2 day Shanghai itinerary for a family that wants local food and one museum.",
+      "expectedIntent": "trip_create",
+      "requiredPatchOps": ["create_trip"],
+      "mustMention": ["Shanghai", "family", "food"],
+      "risk": "low"
+    },
+    {
+      "id": "chengdu-vegetarian-edit",
+      "prompt": "Update my Chengdu plan so lunches are vegetarian-friendly and not too spicy.",
+      "expectedIntent": "trip_edit",
+      "requiredPatchOps": ["update_trip"],
+      "mustMention": ["vegetarian", "spicy"],
+      "risk": "low"
+    },
+    {
+      "id": "payment-help-question",
+      "prompt": "How should I prepare Alipay and WeChat Pay before landing in China?",
+      "expectedIntent": "question",
+      "requiredPatchOps": [],
+      "mustMention": ["Alipay", "WeChat Pay"],
+      "risk": "medium"
+    },
+    {
+      "id": "human-help-restaurant-call",
+      "prompt": "I need a person to call a restaurant in Beijing and confirm my reservation.",
+      "expectedIntent": "human_help",
+      "requiredPatchOps": [],
+      "mustMention": ["call", "reservation"],
+      "risk": "medium"
+    }
+  ]
+}

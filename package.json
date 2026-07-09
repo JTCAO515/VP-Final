@@ -5,6 +5,8 @@
   "engines": { "node": ">=20" },
   "scripts": {
     "build": "turbo run build",
+    "evals": "pnpm evals:trip_generation",
+    "evals:trip_generation": "node evals/run-trip-generation.mjs",
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint"
