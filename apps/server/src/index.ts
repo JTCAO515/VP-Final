@@ -5,3 +5,6 @@ import { DOMAIN_VERSION } from "@visepanda/domain";
 
 export const APP = "server";
 export const domainVersion = DOMAIN_VERSION;
+
+export { appRouter } from "./router.js";
+export type { AppRouter } from "./router.js";
