@@ -11,9 +11,12 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "prettier --check src"
   },
+  "dependencies": {
+    "zod": "^3.24.1"
+  },
   "devDependencies": {
+    "prettier": "^3.4.2",
     "typescript": "^5.7.2",
-    "vitest": "^2.1.8",
-    "prettier": "^3.4.2"
+    "vitest": "^2.1.8"
   }
 }
