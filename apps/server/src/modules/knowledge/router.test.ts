@@ -1,0 +1,56 @@
+import { describe, expect, it } from "vitest";
+import { appRouter } from "../../router.js";
+import { createInMemoryKnowledgeService } from "./service.js";
+
+const nowExpired = "2026-07-08T00:00:00.000Z";
+
+describe("knowledgeRouter", () => {
+  it("lists POIs and hides expired facts", async () => {
+    const caller = appRouter.createCaller({
+      tripService: {
+        create: async (trip) => trip,
+        save: async (trip) => trip,
+        get: async () => null,
+      },
+      knowledgeService: createInMemoryKnowledgeService([
+        {
+          id: "poi-yu-garden",
+          city: "Shanghai",
+          category: "attraction",
+          nameEn: "Yu Garden",
+          sourceIds: {},
+          commercialLinks: [],
+          facts: [
+            {
+              id: "fact-current",
+              poiId: "poi-yu-garden",
+              factType: "metro_access",
+              value: { easy: true },
+              confidence: 0.9,
+              source: "editor",
+              verifiedAt: "2026-07-01T00:00:00.000Z",
+              expiresAt: null,
+              version: 1,
+            },
+            {
+              id: "fact-expired",
+              poiId: "poi-yu-garden",
+              factType: "hours",
+              value: { note: "old" },
+              confidence: 0.9,
+              source: "editor",
+              verifiedAt: "2026-01-01T00:00:00.000Z",
+              expiresAt: nowExpired,
+              version: 1,
+            },
+          ],
+        },
+      ]),
+    });
+
+    const pois = await caller.knowledge.listPois({ city: "Shanghai", category: "attraction" });
+
+    expect(pois).toHaveLength(1);
+    expect(pois[0]?.facts.map((fact) => fact.id)).toEqual(["fact-current"]);
+  });
+});
