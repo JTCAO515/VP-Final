@@ -23,7 +23,8 @@
     "@trpc/server": "^11.18.0",
     "@visepanda/domain": "workspace:*",
     "drizzle-orm": "^0.45.2",
-    "postgres": "^3.4.9"
+    "postgres": "^3.4.9",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "@types/node": "^26.1.1",
