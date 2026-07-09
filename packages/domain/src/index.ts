@@ -10,4 +10,5 @@ export * from "./errors/index.js";
 export * from "./events/index.js";
 export * from "./knowledge/index.js";
 export * from "./knowledge/seed.js";
+export * from "./task/index.js";
 export * from "./trip/index.js";

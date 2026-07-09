@@ -289,10 +289,45 @@ export const telemetryEvents = pgTable(
   }),
 );
 
+export const humanTasks = pgTable(
+  "human_tasks",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id").references(() => users.id, { onDelete: "set null" }),
+    city: text("city").notNull(),
+    kind: text("kind").notNull(),
+    description: text("description").notNull(),
+    contact: text("contact").notNull(),
+    status: text("status").notNull().default("requested"),
+    priceUsd: numeric("price_usd", { precision: 12, scale: 2 }),
+    paymentLink: text("payment_link"),
+    operatorNote: text("operator_note"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    statusCreatedIdx: index("human_tasks_status_created_idx").on(table.status, table.createdAt),
+    cityStatusIdx: index("human_tasks_city_status_idx").on(table.city, table.status),
+    statusCheck: check(
+      "human_tasks_status_check",
+      sql`${table.status} in ('requested', 'triaged', 'quoted', 'payment_pending', 'paid', 'fulfilling', 'done', 'cancelled')`,
+    ),
+    kindCheck: check(
+      "human_tasks_kind_check",
+      sql`${table.kind} in ('call_restaurant', 'ticket_help', 'translation_help', 'transport_help', 'other')`,
+    ),
+    priceCheck: check(
+      "human_tasks_price_usd_check",
+      sql`${table.priceUsd} is null or ${table.priceUsd} >= 0`,
+    ),
+  }),
+);
+
 export const usersRelations = relations(users, ({ many }) => ({
   trips: many(trips),
   agentRuns: many(agentRuns),
   events: many(telemetryEvents),
+  humanTasks: many(humanTasks),
 }));
 
 export const tripsRelations = relations(trips, ({ one, many }) => ({
@@ -363,6 +398,13 @@ export const outboundClicksRelations = relations(outboundClicks, ({ one }) => ({
 export const telemetryEventsRelations = relations(telemetryEvents, ({ one }) => ({
   user: one(users, {
     fields: [telemetryEvents.userId],
+    references: [users.id],
+  }),
+}));
+
+export const humanTasksRelations = relations(humanTasks, ({ one }) => ({
+  user: one(users, {
+    fields: [humanTasks.userId],
     references: [users.id],
   }),
 }));
