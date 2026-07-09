@@ -1,0 +1,83 @@
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { derivePoiSceneTags } from "@visepanda/domain";
+import { findPoiEntry, poiDescription, poiEntries } from "../../poiSeo";
+
+export const revalidate = 86400;
+
+type Props = {
+  params: Promise<{ city: string; poi: string }>;
+};
+
+export function generateStaticParams() {
+  return poiEntries().map((entry) => ({
+    city: entry.citySlug,
+    poi: entry.poiSlug,
+  }));
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { city, poi } = await params;
+  const entry = findPoiEntry(city, poi);
+  if (!entry) return {};
+
+  return {
+    title: `${entry.poi.nameEn} guide | ${entry.poi.city}`,
+    description: poiDescription(entry.poi),
+    openGraph: {
+      title: `${entry.poi.nameEn} in ${entry.poi.city}`,
+      description: poiDescription(entry.poi),
+      type: "article",
+    },
+  };
+}
+
+export default async function PoiPage({ params }: Props) {
+  const { city, poi } = await params;
+  const entry = findPoiEntry(city, poi);
+  if (!entry) notFound();
+
+  const tags = derivePoiSceneTags(entry.poi);
+
+  return (
+    <main className="shell guidePage">
+      <section className="hero">
+        <div>
+          <a className="status" href="/explore">
+            Explore
+          </a>
+          <h1>{entry.poi.nameEn}</h1>
+          <p>{poiDescription(entry.poi)}</p>
+        </div>
+      </section>
+
+      <article className="guideArticle">
+        <section>
+          <h2>Travel fit</h2>
+          {tags.length > 0 ? (
+            <div className="sceneTags">
+              {tags.map((tag) => (
+                <span key={tag}>{tag}</span>
+              ))}
+            </div>
+          ) : (
+            <p>No verified fit tags yet.</p>
+          )}
+        </section>
+
+        <section>
+          <h2>Known facts</h2>
+          {entry.poi.facts.map((fact) => (
+            <p key={fact.id}>
+              <strong>{fact.factType}:</strong> {factValue(fact.value)}
+            </p>
+          ))}
+        </section>
+      </article>
+    </main>
+  );
+}
+
+function factValue(value: Record<string, unknown>): string {
+  return typeof value.label === "string" ? value.label : JSON.stringify(value);
+}
