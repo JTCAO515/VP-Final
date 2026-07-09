@@ -53,4 +53,26 @@ describe("knowledgeRouter", () => {
     expect(pois).toHaveLength(1);
     expect(pois[0]?.facts.map((fact) => fact.id)).toEqual(["fact-current"]);
   });
+
+  it("reflects edited facts through the read API", async () => {
+    const knowledgeService = createInMemoryKnowledgeService();
+    const caller = appRouter.createCaller({
+      tripService: {
+        create: async (trip) => trip,
+        save: async (trip) => trip,
+        get: async () => null,
+      },
+      knowledgeService,
+    });
+
+    await caller.knowledge.updateFact({
+      factId: "fact-yu-garden-metro",
+      value: { label: "Metro exit note updated from ops" },
+    });
+
+    const pois = await caller.knowledge.listPois({ city: "Shanghai", category: "attraction" });
+
+    expect(pois[0]?.facts[0]?.value).toEqual({ label: "Metro exit note updated from ops" });
+    expect(pois[0]?.facts[0]?.version).toBe(2);
+  });
 });

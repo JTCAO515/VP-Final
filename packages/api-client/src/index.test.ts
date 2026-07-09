@@ -25,4 +25,5 @@ it("keeps client inputs and outputs tied to the app router", () => {
   expectTypeOf<Outputs["copilot"]["run"]["trip"]>().toEqualTypeOf<TripState | null>();
   expectTypeOf<Outputs["copilot"]["completeTrip"]>().toEqualTypeOf<GenerationProgress>();
   expectTypeOf<Outputs["knowledge"]["listPois"]>().toEqualTypeOf<Poi[]>();
+  expectTypeOf<Outputs["knowledge"]["updateFact"]>().toEqualTypeOf<Poi[]>();
 });

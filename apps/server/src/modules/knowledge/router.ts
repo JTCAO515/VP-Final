@@ -10,9 +10,17 @@ const ListPoisInputSchema = z
   })
   .optional();
 
+const UpdateFactInputSchema = z.object({
+  factId: z.string().min(1),
+  value: z.record(z.unknown()),
+});
+
 export const knowledgeRouter = router({
   listPois: publicProcedure.input(ListPoisInputSchema).query(({ ctx, input }) => {
     return (ctx.knowledgeService ?? createInMemoryKnowledgeService()).listPois(toPoiFilter(input));
+  }),
+  updateFact: publicProcedure.input(UpdateFactInputSchema).mutation(({ ctx, input }) => {
+    return (ctx.knowledgeService ?? createInMemoryKnowledgeService()).updateFact(input);
   }),
 });
 
