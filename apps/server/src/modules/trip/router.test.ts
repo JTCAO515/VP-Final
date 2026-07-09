@@ -44,4 +44,20 @@ describe("tripRouter", () => {
       }),
     ).resolves.toEqual(trip);
   });
+
+  it("creates public read-only share tokens for owned trips", async () => {
+    const caller = appRouter.createCaller({
+      tripService: createInMemoryTripService(),
+    });
+
+    await caller.trip.create({ trip, owner: { anonId: "anon-share" } });
+    await expect(
+      caller.trip.createShareToken({ id: trip.id, anonId: "anon-other" }),
+    ).resolves.toBeNull();
+
+    const shared = await caller.trip.createShareToken({ id: trip.id, anonId: "anon-share" });
+
+    expect(shared?.token).toMatch(/^share_/);
+    await expect(caller.trip.shared({ token: shared?.token ?? "" })).resolves.toEqual(trip);
+  });
 });

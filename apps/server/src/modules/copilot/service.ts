@@ -202,6 +202,45 @@ export function defaultGenerateEnvelope({
     };
   }
 
+  if (intent === "commerce_intent") {
+    return {
+      intent,
+      message: {
+        headline: "Booking options ready",
+        body: "I found a partner booking route. Please review the partner page before paying.",
+        highlights: ["Partner link", "Review before purchase"],
+      },
+      commercialActions: [
+        {
+          id: "commercial-tripcom-hotels",
+          kind: "outbound_link",
+          label: "Open Trip.com hotels",
+          partner: "tripcom",
+          disclosure: "Partner link; VisePanda may earn a commission.",
+          click_id: crypto.randomUUID(),
+          url: "https://www.trip.com/hotels/",
+        },
+      ],
+      citations: [{ fact_id: "guide:payment", label: "Payment guide", source: "VisePanda" }],
+    };
+  }
+
+  if (intent === "human_help") {
+    return {
+      intent,
+      message: {
+        headline: "Human help draft ready",
+        body: "I prepared a manual-help request. Please review it before sending.",
+        highlights: ["Human review required"],
+      },
+      humanHelp: {
+        kind: "task",
+        city: inferCity(message),
+        prefill: message,
+      },
+    };
+  }
+
   return {
     intent,
     message: {
@@ -211,7 +250,9 @@ export function defaultGenerateEnvelope({
         : "I can answer now, or create a trip shell when you ask me to plan one.",
       highlights: [],
     },
-    citations: [{ fact_id: "stub:china-execution-basics", label: "Stub retrieval" }],
+    citations: [
+      { fact_id: "stub:china-execution-basics", label: "Stub retrieval", source: "VisePanda" },
+    ],
   };
 }
 

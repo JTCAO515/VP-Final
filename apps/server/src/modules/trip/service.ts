@@ -33,18 +33,26 @@ export type TripClaimInput = {
   email?: string | undefined;
 };
 
+export type TripShareToken = {
+  token: string;
+  trip: TripState;
+};
+
 export type TripService = {
   create(trip: TripState, options?: TripSaveOptions): Promise<TripState>;
   save(trip: TripState, options?: TripSaveOptions): Promise<TripState>;
   get(id: string, owner?: TripOwner): Promise<TripState | null>;
   list(owner: TripOwner): Promise<TripState[]>;
   claimAnonymousTrips(input: TripClaimInput): Promise<{ claimed: number; trips: TripState[] }>;
+  createShareToken(id: string, owner?: TripOwner): Promise<TripShareToken | null>;
+  getByShareToken(token: string): Promise<TripState | null>;
   getEvents(id: string): Promise<TripEvent[]>;
 };
 
 export function createInMemoryTripService(seed: TripState[] = []): TripService {
   const trips = new Map(seed.map((trip) => [trip.id, trip]));
   const tripOwners = new Map<string, TripOwner>();
+  const shareTokens = new Map<string, string>();
   const events = new Map<string, TripEvent[]>();
 
   for (const trip of seed) {
@@ -100,6 +108,17 @@ export function createInMemoryTripService(seed: TripState[] = []): TripService {
       }
       return { claimed: claimed.length, trips: claimed };
     },
+    async createShareToken(id, owner) {
+      const trip = await this.get(id, owner);
+      if (!trip) return null;
+      const token = createShareTokenValue();
+      shareTokens.set(token, id);
+      return { token, trip };
+    },
+    async getByShareToken(token) {
+      const tripId = shareTokens.get(token);
+      return tripId ? (trips.get(tripId) ?? null) : null;
+    },
     async getEvents(id) {
       return events.get(id) ?? [];
     },
@@ -120,4 +139,8 @@ export function ownerMatches(stored: TripOwner | undefined, requested: TripOwner
   if (requested.userId && stored.userId === requested.userId) return true;
   if (requested.anonId && stored.anonId === requested.anonId) return true;
   return false;
+}
+
+export function createShareTokenValue(): string {
+  return `share_${crypto.randomUUID().replaceAll("-", "")}`;
 }

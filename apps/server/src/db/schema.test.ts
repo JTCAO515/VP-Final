@@ -20,6 +20,7 @@ describe("database schema", () => {
     expect(users.id.name).toBe("id");
     expect(trips.owner.name).toBe("owner");
     expect(trips.anonId.name).toBe("anon_id");
+    expect(trips.shareToken.name).toBe("share_token");
     expect(tripEvents.tripId.name).toBe("trip_id");
   });
 

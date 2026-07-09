@@ -209,6 +209,29 @@ button:disabled {
   padding: 0 14px;
 }
 
+.shareNotice {
+  align-items: center;
+  background: var(--jade-soft);
+  border-bottom: 1px solid var(--line);
+  color: var(--jade);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 14px;
+  font-weight: 800;
+  gap: 10px;
+  padding: 12px 28px;
+}
+
+.shareNotice.error {
+  background: var(--red-soft);
+  color: var(--red);
+}
+
+.shareNotice a {
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
 .dayTabs {
   align-items: center;
   border-bottom: 1px solid var(--line);
@@ -461,6 +484,45 @@ button:disabled {
   margin-top: 0;
 }
 
+.railToolCard a,
+.humanHelpCta,
+.commercialActions a,
+.citations a {
+  color: var(--red);
+  font-size: 13px;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.commercialActions,
+.citations {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+}
+
+.commercialActions > span,
+.citations > span,
+.citations small,
+.commercialActions small {
+  color: var(--muted);
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.humanHelpCta {
+  background: var(--red);
+  border-radius: 12px;
+  color: #fff;
+  display: inline-flex;
+  justify-content: center;
+  padding: 12px 14px;
+}
+
 .quickReplies {
   border-top: 1px solid var(--line);
   display: flex;
@@ -552,11 +614,30 @@ button:disabled {
 }
 
 .workspace,
-.helpGrid {
+.helpGrid,
+.sharedTripGrid {
   display: grid;
   gap: 20px;
   grid-template-columns: minmax(320px, 0.9fr) minmax(420px, 1.1fr);
   padding: 0 20px 48px;
+}
+
+.sharedTrip {
+  background: var(--bg);
+  padding-bottom: 56px;
+}
+
+.sharedHero {
+  align-items: end;
+}
+
+.sharedTripGrid {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.sharedBlocks {
+  display: grid;
+  gap: 10px;
 }
 
 .guideLinks,
@@ -592,7 +673,8 @@ button:disabled {
 .guideArticle section,
 .panel,
 .helpForm,
-.helpAside {
+.helpAside,
+.sharedDay {
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 12px;

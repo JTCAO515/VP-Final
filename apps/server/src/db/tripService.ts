@@ -5,6 +5,7 @@ import { tripEvents, trips, users } from "./schema.js";
 import {
   normalizeOwner,
   ownerMatches,
+  createShareTokenValue,
   type TripEventSource,
   type TripOwner,
   type TripService,
@@ -88,6 +89,27 @@ export function createDbTripService(db: Db): TripService {
         claimed: rows.length,
         trips: rows.map((row) => TripStateSchema.parse(row.snapshotJsonb)),
       };
+    },
+    async createShareToken(id, owner) {
+      const row = await getTripRow(db, id);
+      if (!row) return null;
+      if (owner && !ownerMatches(rowOwner(row), owner)) return null;
+
+      const token = row.shareToken ?? createShareTokenValue();
+      const [updated] = await db
+        .update(trips)
+        .set({ shareToken: token })
+        .where(eq(trips.id, id))
+        .returning({ snapshotJsonb: trips.snapshotJsonb });
+
+      return {
+        token,
+        trip: TripStateSchema.parse((updated ?? row).snapshotJsonb),
+      };
+    },
+    async getByShareToken(token) {
+      const [row] = await db.select().from(trips).where(eq(trips.shareToken, token)).limit(1);
+      return row ? TripStateSchema.parse(row.snapshotJsonb) : null;
     },
     async getEvents(id) {
       const rows = await db
