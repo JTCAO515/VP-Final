@@ -19,6 +19,7 @@ const fact: PoiFact = {
   verifiedAt: "2026-07-01T00:00:00.000Z",
   expiresAt: null,
   version: 1,
+  status: "active",
 };
 
 describe("PoiSchema", () => {
@@ -44,6 +45,10 @@ describe("isCurrentPoiFact", () => {
         new Date("2026-07-09T00:00:00.000Z"),
       ),
     ).toBe(false);
+  });
+
+  it("hides deprecated facts", () => {
+    expect(isCurrentPoiFact({ ...fact, status: "deprecated" })).toBe(false);
   });
 });
 

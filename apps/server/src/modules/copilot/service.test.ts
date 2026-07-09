@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { createInMemoryKnowledgeService } from "../knowledge/service.js";
 import { createInMemoryTripService } from "../trip/service.js";
 import { createCopilotPipeline, defaultRouteIntent } from "./service.js";
 
@@ -67,6 +68,29 @@ describe("createCopilotPipeline", () => {
       kind: "task",
       city: "Beijing",
     });
+  });
+
+  it("records knowledge gaps for uncited question answers", async () => {
+    const knowledgeService = createInMemoryKnowledgeService([], []);
+    const pipeline = createCopilotPipeline({
+      knowledgeService,
+      tripService: createInMemoryTripService(),
+      generateEnvelope: () => ({
+        intent: "question",
+        message: { headline: "Unknown", body: "I do not know yet.", highlights: [] },
+        citations: [],
+      }),
+    });
+
+    await pipeline.run({ message: "What is the newest payment rule in Shanghai?" });
+
+    await expect(knowledgeService.listGaps({ status: "open" })).resolves.toMatchObject([
+      {
+        city: "Shanghai",
+        frequency: 1,
+        questionPattern: "what is the newest payment rule in shanghai",
+      },
+    ]);
   });
 
   it("rejects generator output that does not match CopilotEnvelope", async () => {

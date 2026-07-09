@@ -7,6 +7,9 @@ export const copilotRouter = router({
     return createTwoPassWorker({ tripService: ctx.tripService }).completeTrip(input);
   }),
   run: publicProcedure.input(CopilotRunInputSchema).mutation(({ ctx, input }) => {
-    return createCopilotPipeline({ tripService: ctx.tripService }).run(input);
+    return createCopilotPipeline({
+      ...(ctx.knowledgeService ? { knowledgeService: ctx.knowledgeService } : {}),
+      tripService: ctx.tripService,
+    }).run(input);
   }),
 });

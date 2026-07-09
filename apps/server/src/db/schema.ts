@@ -169,6 +169,7 @@ export const poiFacts = pgTable(
     verifiedAt: timestamp("verified_at", { withTimezone: true }).notNull(),
     expiresAt: timestamp("expires_at", { withTimezone: true }),
     version: integer("version").notNull().default(1),
+    status: text("status").notNull().default("active"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
@@ -178,6 +179,7 @@ export const poiFacts = pgTable(
       sql`${table.confidence} >= 0 and ${table.confidence} <= 1`,
     ),
     versionCheck: check("poi_facts_version_check", sql`${table.version} > 0`),
+    statusCheck: check("poi_facts_status_check", sql`${table.status} in ('active', 'deprecated')`),
   }),
 );
 
@@ -189,6 +191,8 @@ export const knowledgeGaps = pgTable(
     frequency: integer("frequency").notNull().default(1),
     city: text("city"),
     status: text("status").notNull().default("open"),
+    resolvedAt: timestamp("resolved_at", { withTimezone: true }),
+    resolutionTargetJsonb: jsonb("resolution_target_jsonb"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },

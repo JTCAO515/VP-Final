@@ -44,9 +44,12 @@ select {
 
 .topbar div,
 .topbar nav,
-.rowActions {
+.rowActions,
+.filters,
+.inlineForm {
   align-items: center;
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
 }
 
@@ -115,6 +118,15 @@ input {
   padding: 8px 10px;
 }
 
+.inlineForm {
+  border-bottom: 1px solid var(--line);
+  padding: 14px;
+}
+
+.inlineForm input {
+  min-width: 150px;
+}
+
 select {
   background: #fff;
   border: 1px solid var(--line);
@@ -138,6 +150,21 @@ button:disabled {
   opacity: 0.55;
 }
 
+.filters {
+  border-bottom: 1px solid var(--line);
+  padding: 14px;
+}
+
+.filters button {
+  background: var(--soft);
+  color: var(--text);
+}
+
+.filters button.selected {
+  background: var(--accent);
+  color: #fff;
+}
+
 .pill {
   background: var(--soft);
   border-radius: 999px;
@@ -148,6 +175,10 @@ button:disabled {
 .empty {
   color: var(--muted);
   padding: 18px;
+}
+
+.danger {
+  color: var(--accent);
 }
 
 .taskQuote {
