@@ -160,6 +160,9 @@ export function CopilotShell() {
           <p>Conversation on the left. Deterministic TripState canvas on the right.</p>
         </div>
         <div className="status">{progressLabel(progress)}</div>
+        <a className="status" href="/explore">
+          Explore
+        </a>
       </section>
 
       <section className="workspace">

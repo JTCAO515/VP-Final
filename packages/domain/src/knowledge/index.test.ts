@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { PoiSchema, isCurrentPoiFact, updatePoiFact, type PoiFact } from "./index.js";
+import {
+  PoiSchema,
+  derivePoiSceneTags,
+  isCurrentPoiFact,
+  updatePoiFact,
+  type Poi,
+  type PoiFact,
+} from "./index.js";
 import { INITIAL_POIS } from "./seed.js";
 
 const fact: PoiFact = {
@@ -48,5 +55,43 @@ describe("updatePoiFact", () => {
 
     expect(updated[0]?.facts[0]?.value).toEqual({ label: "Updated metro note" });
     expect(updated[0]?.facts[0]?.version).toBe(2);
+  });
+});
+
+describe("derivePoiSceneTags", () => {
+  it("derives traveler scene tags from current facts", () => {
+    expect(derivePoiSceneTags(INITIAL_POIS[0] as Poi)).toEqual(["Near metro"]);
+    expect(derivePoiSceneTags(INITIAL_POIS[1] as Poi)).toEqual(["Low Mandarin"]);
+  });
+
+  it("does not invent tags without facts", () => {
+    expect(
+      derivePoiSceneTags({
+        id: "poi-empty",
+        city: "Shanghai",
+        category: "shopping",
+        nameEn: "Empty Mall",
+        sourceIds: {},
+        commercialLinks: [],
+        facts: [],
+      }),
+    ).toEqual([]);
+  });
+
+  it("ignores expired facts", () => {
+    expect(
+      derivePoiSceneTags(
+        {
+          id: "poi-expired",
+          city: "Beijing",
+          category: "attraction",
+          nameEn: "Old Fact",
+          sourceIds: {},
+          commercialLinks: [],
+          facts: [{ ...fact, factType: "rainy_fit", expiresAt: "2026-07-08T00:00:00.000Z" }],
+        },
+        new Date("2026-07-09T00:00:00.000Z"),
+      ),
+    ).toEqual([]);
   });
 });
