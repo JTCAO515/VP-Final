@@ -8,3 +8,7 @@ export const domainVersion = DOMAIN_VERSION;
 
 export { appRouter } from "./router.js";
 export type { AppRouter } from "./router.js";
+export { createDb } from "./db/client.js";
+export { createDbTripService } from "./db/tripService.js";
+export { createInMemoryTripService } from "./modules/trip/service.js";
+export type { TripOwner, TripService } from "./modules/trip/service.js";

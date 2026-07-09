@@ -4,17 +4,19 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "next build",
+    "build": "pnpm --filter @visepanda/app-server build && next build",
     "dev": "next dev",
     "test": "vitest run --passWithNoTests",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "prettier --check src"
   },
   "dependencies": {
+    "@visepanda/app-server": "workspace:*",
     "@visepanda/domain": "workspace:*",
     "next": "15",
     "react": "19",
-    "react-dom": "19"
+    "react-dom": "19",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "@types/react": "^19.2.17",

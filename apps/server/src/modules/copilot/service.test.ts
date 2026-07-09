@@ -24,6 +24,7 @@ describe("createCopilotPipeline", () => {
     const result = await pipeline.run({
       message: "Plan my China trip",
       tripId: "trip-1",
+      anonId: "anon-1",
     });
 
     expect(result.envelope.intent).toBe("trip_create");

@@ -12,7 +12,12 @@ it("keeps client inputs and outputs tied to the app router", () => {
   type Inputs = inferRouterInputs<AppRouter>;
   type Outputs = inferRouterOutputs<AppRouter>;
 
-  expectTypeOf<Inputs["trip"]["get"]>().toEqualTypeOf<{ id: string }>();
+  expectTypeOf<Inputs["trip"]["get"]>().toEqualTypeOf<{
+    id: string;
+    userId?: string | undefined;
+    anonId?: string | undefined;
+    email?: string | undefined;
+  }>();
   expectTypeOf<Outputs["trip"]["create"]>().toEqualTypeOf<TripState>();
   expectTypeOf<Outputs["trip"]["get"]>().toEqualTypeOf<TripState | null>();
   const copilotInput: Inputs["copilot"]["run"] = {

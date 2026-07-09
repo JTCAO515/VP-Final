@@ -8,9 +8,21 @@
       "types": "./src/index.ts",
       "default": "./dist/index.js"
     },
+    "./db": {
+      "types": "./src/db/client.ts",
+      "default": "./dist/db/client.js"
+    },
+    "./db-trip-service": {
+      "types": "./src/db/tripService.ts",
+      "default": "./dist/db/tripService.js"
+    },
     "./router": {
       "types": "./src/router.ts",
       "default": "./dist/router.js"
+    },
+    "./trip-service": {
+      "types": "./src/modules/trip/service.ts",
+      "default": "./dist/modules/trip/service.js"
     }
   },
   "scripts": {

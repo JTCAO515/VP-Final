@@ -19,6 +19,7 @@ describe("createTwoPassWorker", () => {
 
     const progress = await worker.completeTrip({ tripId: skeletonTrip.id });
     const completedTrip = await tripService.get(skeletonTrip.id);
+    const events = await tripService.getEvents(skeletonTrip.id);
 
     expect(progress).toEqual({
       status: "completed",
@@ -31,6 +32,7 @@ describe("createTwoPassWorker", () => {
       "Arrival details",
       "Old town details",
     ]);
+    expect(events.map((event) => event.version)).toEqual([1, 2]);
   });
 
   it("retries a failed day before succeeding", async () => {
