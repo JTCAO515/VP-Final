@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   agentRuns,
   knowledgeGaps,
+  outboundClicks,
+  partners,
   poiCommercialLinks,
   poiFacts,
   pois,
@@ -30,5 +32,10 @@ describe("database schema", () => {
     expect(poiFacts.factType.name).toBe("fact_type");
     expect(knowledgeGaps.questionPattern.name).toBe("question_pattern");
     expect(poiCommercialLinks.poiId.name).toBe("poi_id");
+  });
+
+  it("maps the outbound commerce tables", () => {
+    expect(partners.trackingParam.name).toBe("tracking_param");
+    expect(outboundClicks.targetUrl.name).toBe("target_url");
   });
 });

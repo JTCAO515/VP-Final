@@ -221,6 +221,48 @@ export const poiCommercialLinks = pgTable(
   }),
 );
 
+export const partners = pgTable(
+  "partners",
+  {
+    key: text("key").primaryKey(),
+    hosts: jsonb("hosts").notNull().default([]),
+    categories: jsonb("categories").notNull().default([]),
+    cities: jsonb("cities").notNull().default([]),
+    trackingParam: text("tracking_param").notNull(),
+    status: text("status").notNull().default("pending"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    statusIdx: index("partners_status_idx").on(table.status),
+    statusCheck: check(
+      "partners_status_check",
+      sql`${table.status} in ('pending', 'active', 'inactive')`,
+    ),
+  }),
+);
+
+export const outboundClicks = pgTable(
+  "outbound_clicks",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    partner: text("partner")
+      .notNull()
+      .references(() => partners.key, { onDelete: "restrict" }),
+    targetUrl: text("target_url").notNull(),
+    source: text("source"),
+    intent: text("intent"),
+    entityId: text("entity_id"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    partnerCreatedIdx: index("outbound_clicks_partner_created_idx").on(
+      table.partner,
+      table.createdAt,
+    ),
+  }),
+);
+
 export const usersRelations = relations(users, ({ many }) => ({
   trips: many(trips),
   agentRuns: many(agentRuns),
@@ -277,5 +319,16 @@ export const poiCommercialLinksRelations = relations(poiCommercialLinks, ({ one 
   poi: one(pois, {
     fields: [poiCommercialLinks.poiId],
     references: [pois.id],
+  }),
+}));
+
+export const partnersRelations = relations(partners, ({ many }) => ({
+  outboundClicks: many(outboundClicks),
+}));
+
+export const outboundClicksRelations = relations(outboundClicks, ({ one }) => ({
+  partnerConfig: one(partners, {
+    fields: [outboundClicks.partner],
+    references: [partners.key],
   }),
 }));
