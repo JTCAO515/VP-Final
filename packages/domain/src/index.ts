@@ -4,4 +4,7 @@
 
 export const DOMAIN_VERSION = "0.0.1";
 
+export * from "./copilot/index.js";
+export * from "./errors/index.js";
+export * from "./events/index.js";
 export * from "./trip/index.js";
