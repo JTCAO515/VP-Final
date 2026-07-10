@@ -61,6 +61,10 @@ about: Standard V2 issue (fields per frozen baseline §9)
 
 ## Dependencies
 
+## Operator action impact
+
+<!-- none | register ID(s), named placeholders, owner, external setup/decision, verification gate -->
+
 ## Work size
 
 <!-- XS <=0.5d | S <=1d | M <=3d | L <=5d; larger work must be split -->
