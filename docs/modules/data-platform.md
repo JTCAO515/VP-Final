@@ -32,6 +32,9 @@ commercial evidence, Human Tasks, and telemetry. Repository migrations are the s
 
 - Public POI and current fact reads may be exposed through explicit grants plus RLS.
 - Traveler-owned data requires verified identity and owner policies.
+- Trip rows require one exclusive authenticated or signed-anonymous owner. Owner-scoped conditional
+  writes and event append occur in one transaction; public share tokens are revocable read-only
+  capabilities. See [ADR-0004](../adr/ADR-0004-identity-trip-ownership-security.md).
 - Partner config, outbound clicks, telemetry, Human Tasks, and internal aggregates are server-only.
 - Ops users access data through protected server routes, not broad direct table grants.
 - Service-role and database credentials never enter a public client.

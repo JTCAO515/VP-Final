@@ -67,7 +67,7 @@ The following are cross-module interfaces and require explicit review before con
 | Interface | Authority | Compatibility rule |
 | --- | --- | --- |
 | Domain entities and enums | `packages/domain` Zod schemas | schema-first PR; no duplicated client enum |
-| Trip mutation | `TripPatch` + deterministic `applyPatch` | AI and clients never write Trip directly |
+| Trip mutation | `TripPatch` + deterministic `applyPatch` + server request identity | AI and clients never write Trip directly; owner/version check is mandatory |
 | Server API | tRPC routers and exported service interfaces | typed errors; auth and idempotency documented |
 | Telemetry | domain event schema | no ad hoc event names or sensitive payloads |
 | Persistence | append-only Supabase migrations + RLS | landed migration never rewritten |

@@ -29,6 +29,30 @@ routing, retrieval, generation, and day completion still have deterministic defa
 release requires verified session identity, real provider routing, durable tracing, and honest
 failure behavior.
 
+## Identity and Trip Authorization Flow
+
+```mermaid
+sequenceDiagram
+  participant B as Browser
+  participant W as Web route
+  participant I as Identity context
+  participant T as Trip service
+  participant D as Postgres
+
+  B->>W: Request + cookies + trip id + expectedVersion
+  W->>I: Verify Supabase SSR session or signed anonymous cookie
+  I-->>W: Effective owner context
+  W->>T: Owner-scoped operation
+  T->>D: Conditional owner/version read or write
+  D-->>T: Trip, 404, or version conflict
+  T-->>W: Typed result
+  W-->>B: Honest 401 / 404 / 409 / success response
+```
+
+Client-supplied `userId`, `anonId`, email, owner, and `currentTrip` cannot authorize a request.
+Anonymous claim requires both the verified user and current signed anonymous session. Share tokens are
+public read-only capabilities. The binding contract is [ADR-0004](../adr/ADR-0004-identity-trip-ownership-security.md).
+
 ## Two-Pass Trip Generation
 
 1. The first pass returns a Trip skeleton quickly.

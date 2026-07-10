@@ -8,6 +8,7 @@ New ADRs are append-only and use the next numeric prefix.
 | [ADR-0001](ADR-0001-repo-and-v1-disposition.md) | Accepted | V2 lives in the standalone `JTCAO515/VP-Final` repository; V1 is a separate wind-down line. |
 | [ADR-0002](ADR-0002-documentation-as-code.md) | Accepted | Documentation is registered, generated, impact-mapped, and checked as code. |
 | [ADR-0003](ADR-0003-qian-systems-engineering-workflow.md) | Accepted | 钱学森 Skills is the permanent closed-loop engineering workflow. |
+| [ADR-0004](ADR-0004-identity-trip-ownership-security.md) | Accepted | Server-verified identity, exclusive Trip ownership, read-only sharing, and optimistic concurrency are mandatory before public persistence. |
 
 ## When to Add an ADR
 

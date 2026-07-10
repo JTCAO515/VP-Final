@@ -37,3 +37,9 @@ Every interface baseline documents:
 AI returns a typed Copilot envelope and optional TripPatch. Deterministic domain code validates and
 applies the patch. No API, UI, provider, or worker may directly rewrite a Trip snapshot to imitate a
 patch.
+
+Private Trip routes derive owner identity from server request context, never from input fields. Existing
+Trip mutations require `expectedVersion`, use a conditional owner/version update, and return typed
+`409 TRIP_VERSION_CONFLICT` on stale state. Claim uses the verified user plus the current signed
+anonymous session; share is an opaque read-only capability. See
+[ADR-0004](../adr/ADR-0004-identity-trip-ownership-security.md).
