@@ -30,7 +30,10 @@ describe("anonymous request identity", () => {
     delete process.env.SUPABASE_ANON_KEY;
 
     const response = NextResponse.next();
-    const identity = await resolveRequestIdentity(new Request("https://example.test/api/copilot"), response);
+    const identity = await resolveRequestIdentity(
+      new Request("https://example.test/api/copilot"),
+      response,
+    );
 
     expect(identity.kind).toBe("anonymous");
     const cookie = response.cookies.get(ANONYMOUS_SESSION_COOKIE);
@@ -54,9 +57,9 @@ describe("anonymous request identity", () => {
     delete process.env.SUPABASE_URL;
     delete process.env.SUPABASE_ANON_KEY;
 
-    await expect(resolveRequestIdentity(new Request("https://example.test/api/copilot"), NextResponse.next())).rejects.toThrow(
-      "Anonymous session configuration is unavailable.",
-    );
+    await expect(
+      resolveRequestIdentity(new Request("https://example.test/api/copilot"), NextResponse.next()),
+    ).rejects.toThrow("Anonymous session configuration is unavailable.");
 
     if (previousSecret) process.env.VISEPANDA_ANON_SESSION_SECRET = previousSecret;
     else delete process.env.VISEPANDA_ANON_SESSION_SECRET;

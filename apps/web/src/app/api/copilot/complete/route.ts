@@ -2,7 +2,11 @@ import { GenerationProgressSchema, TripStateSchema } from "@visepanda/domain";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getServerCaller } from "../../_server";
-import { applyIdentityCookies, identityFields, resolveRequestIdentity } from "../../../../lib/requestIdentity";
+import {
+  applyIdentityCookies,
+  identityFields,
+  resolveRequestIdentity,
+} from "../../../../lib/requestIdentity";
 
 const CompleteRequestSchema = z.object({
   tripId: z.string().uuid(),
@@ -16,7 +20,10 @@ export async function POST(request: Request) {
   const identity = await resolveRequestIdentity(request, cookieResponse);
   const parsed = CompleteRequestSchema.safeParse(await request.json());
   if (!parsed.success) {
-    return applyIdentityCookies(NextResponse.json({ ok: false, error: "Invalid completion request." }, { status: 400 }), cookieResponse);
+    return applyIdentityCookies(
+      NextResponse.json({ ok: false, error: "Invalid completion request." }, { status: 400 }),
+      cookieResponse,
+    );
   }
 
   try {
@@ -29,12 +36,15 @@ export async function POST(request: Request) {
 
     return applyIdentityCookies(NextResponse.json({ ok: true, progress, trip }), cookieResponse);
   } catch (error) {
-    return applyIdentityCookies(NextResponse.json(
-      {
-        ok: false,
-        error: error instanceof Error ? error.message : "Trip completion failed.",
-      },
-      { status: 502 },
-    ), cookieResponse);
+    return applyIdentityCookies(
+      NextResponse.json(
+        {
+          ok: false,
+          error: error instanceof Error ? error.message : "Trip completion failed.",
+        },
+        { status: 502 },
+      ),
+      cookieResponse,
+    );
   }
 }

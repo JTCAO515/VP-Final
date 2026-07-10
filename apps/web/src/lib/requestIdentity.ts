@@ -16,12 +16,17 @@ export function identityFields(identity: RequestIdentity): {
 } {
   if (identity.kind === "anonymous") return { anonId: identity.anonId };
   if (identity.kind === "authenticated") {
-    return identity.email ? { userId: identity.userId, email: identity.email } : { userId: identity.userId };
+    return identity.email
+      ? { userId: identity.userId, email: identity.email }
+      : { userId: identity.userId };
   }
   return {};
 }
 
-export async function resolveRequestIdentity(request: Request, response: NextResponse): Promise<RequestIdentity> {
+export async function resolveRequestIdentity(
+  request: Request,
+  response: NextResponse,
+): Promise<RequestIdentity> {
   const supabaseUrl = process.env.SUPABASE_URL;
   const supabaseKey = process.env.SUPABASE_ANON_KEY;
   if (supabaseUrl && supabaseKey) {
@@ -29,7 +34,9 @@ export async function resolveRequestIdentity(request: Request, response: NextRes
       cookies: {
         getAll: () => parseCookies(request.headers.get("cookie")),
         setAll: (cookies: { name: string; value: string; options: Record<string, unknown> }[]) =>
-          cookies.forEach((cookie) => response.cookies.set(cookie.name, cookie.value, cookie.options)),
+          cookies.forEach((cookie) =>
+            response.cookies.set(cookie.name, cookie.value, cookie.options),
+          ),
       },
     });
     const { data } = await supabase.auth.getUser();
@@ -47,7 +54,10 @@ export async function resolveRequestIdentity(request: Request, response: NextRes
     }
     return { kind: "none" };
   }
-  const existing = parseAnonymousSessionValue(readCookie(request.headers.get("cookie"), ANONYMOUS_SESSION_COOKIE), secret);
+  const existing = parseAnonymousSessionValue(
+    readCookie(request.headers.get("cookie"), ANONYMOUS_SESSION_COOKIE),
+    secret,
+  );
   const anonId = existing ?? randomBytes(32).toString("base64url");
   if (!existing) {
     response.cookies.set(ANONYMOUS_SESSION_COOKIE, createAnonymousSessionValue(secret, anonId), {
@@ -66,15 +76,22 @@ export function applyIdentityCookies(target: NextResponse, source: NextResponse)
   return target;
 }
 
-export function createAnonymousSessionValue(secret: string, anonId = randomBytes(32).toString("base64url")) {
+export function createAnonymousSessionValue(
+  secret: string,
+  anonId = randomBytes(32).toString("base64url"),
+) {
   const payload = `v1.${anonId}`;
   return `${payload}.${sign(payload, secret)}`;
 }
 
-export function parseAnonymousSessionValue(value: string | undefined, secret: string): string | null {
+export function parseAnonymousSessionValue(
+  value: string | undefined,
+  secret: string,
+): string | null {
   if (!value) return null;
   const [version, anonId, signature, extra] = value.split(".");
-  if (version !== "v1" || !anonId || !signature || extra || !/^[A-Za-z0-9_-]{43}$/.test(anonId)) return null;
+  if (version !== "v1" || !anonId || !signature || extra || !/^[A-Za-z0-9_-]{43}$/.test(anonId))
+    return null;
 
   const expected = Buffer.from(sign(`${version}.${anonId}`, secret));
   const actual = Buffer.from(signature);
