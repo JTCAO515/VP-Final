@@ -2,6 +2,7 @@ import { CopilotEnvelopeSchema, TripStateSchema } from "@visepanda/domain";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getServerCaller } from "../_server";
+import { applyIdentityCookies, identityFields, resolveRequestIdentity } from "../../../lib/requestIdentity";
 
 const CopilotRequestSchema = z.object({
   message: z.string().min(1),
@@ -13,17 +14,19 @@ const CopilotRequestSchema = z.object({
 });
 
 export async function POST(request: Request) {
+  const cookieResponse = NextResponse.next();
+  const identity = await resolveRequestIdentity(request, cookieResponse);
   const parsed = CopilotRequestSchema.safeParse(await request.json());
   if (!parsed.success) {
-    return NextResponse.json({ ok: false, error: "Invalid Copilot request." }, { status: 400 });
+    return applyIdentityCookies(NextResponse.json({ ok: false, error: "Invalid Copilot request." }, { status: 400 }), cookieResponse);
   }
 
   try {
-    const result = await getServerCaller().copilot.run(parsed.data);
+    const result = await getServerCaller(identity).copilot.run({ ...parsed.data, ...identityFields(identity) });
     const envelope = CopilotEnvelopeSchema.parse(result.envelope);
     const emptyDays = result.trip?.days.filter((day) => day.blocks.length === 0).length ?? 0;
 
-    return NextResponse.json({
+    return applyIdentityCookies(NextResponse.json({
       ok: true,
       envelope,
       trip: result.trip,
@@ -35,14 +38,14 @@ export async function POST(request: Request) {
         attempts: 0,
         error: null,
       },
-    });
+    }), cookieResponse);
   } catch (error) {
-    return NextResponse.json(
+    return applyIdentityCookies(NextResponse.json(
       {
         ok: false,
         error: error instanceof Error ? error.message : "Copilot request failed.",
       },
       { status: 502 },
-    );
+    ), cookieResponse);
   }
 }

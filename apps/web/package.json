@@ -11,6 +11,8 @@
     "lint": "prettier --check src"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.12.0",
+    "@supabase/supabase-js": "^2.110.2",
     "@visepanda/app-server": "workspace:*",
     "@visepanda/domain": "workspace:*",
     "next": "15",

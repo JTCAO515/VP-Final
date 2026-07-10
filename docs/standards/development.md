@@ -32,6 +32,10 @@ Use these exact labels in docs and PRs:
 - `planned`: accepted direction without implementation.
 - `degraded`: real capability is unavailable and the product reports that honestly.
 
+Supabase SSR dependencies are server-side identity adapters. Their environment values remain deployment
+secrets; a missing configuration may yield anonymous or unavailable state as defined by the active
+runtime contract, never a client-supplied authenticated identity.
+
 ## Dependency Policy
 
 - Prefer platform APIs and existing repository dependencies.

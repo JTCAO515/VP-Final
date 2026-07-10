@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "updatedAt": "2026-07-11",
-  "updatedBy": "Codex / Issue #133",
+  "updatedBy": "Codex / Issue #112",
   "baseBranch": "main",
   "lastVerifiedCommit": "8ebc87e",
   "currentPhase": "Phase 0 — production hardening",
@@ -9,11 +9,11 @@
   "lastCompleted": "Merged PRs #106, #107, #109, #136, #140, #149, #160, and #161 established the Node 22, Supabase security, ADR-0004 identity baseline, composite governance, canonical Phase 0/1 backlog, and dependency graph baselines.",
   "activeWork": [
     {
-      "ref": "Issue #133 / DOC-P0-03",
-      "title": "Freeze knowledge evidence and SEO index-quality policy",
-      "state": "In progress on codex/doc-p0-03-knowledge-evidence",
+      "ref": "Issue #112 / P0-03",
+      "title": "Establish Supabase Auth SSR and signed anonymous sessions",
+      "state": "In progress on codex/p0-03-auth-anon-session",
       "owner": "Codex / operator",
-      "next": "Validate ADR-0006, merge it, then complete DOC-P0-04 and DOC-P0-05 before dependent feature code."
+      "next": "Complete P0-03 identity tests and configuration contract, then land P0-04 to consume server identity on Trip routes."
     }
   ],
   "nextActions": [

@@ -38,6 +38,9 @@ P0-03/P0-04 replace them with server-issued anonymous session cookies and Supaba
 [ADR-0004](../adr/ADR-0004-identity-trip-ownership-security.md). New Web work must not add another
 client-owned owner/currentTrip path.
 
+P0-03 resolves identity at the Copilot API boundary and ignores body-provided owner fields there. Trip
+read/claim/share authorization remains P0-04 work and is not yet production-safe.
+
 The Human Help and outbound ledgers still contain app-local paths that must be consolidated into
 server services before public launch.
 

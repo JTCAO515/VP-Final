@@ -6,6 +6,7 @@ import {
   createInMemoryKnowledgeService,
   createInMemoryTripService,
   type KnowledgeService,
+  type RequestIdentity,
   type TripService,
 } from "@visepanda/app-server";
 
@@ -14,8 +15,9 @@ const store = globalThis as typeof globalThis & {
   __visepandaTripService?: TripService;
 };
 
-export function getServerCaller() {
+export function getServerCaller(identity?: RequestIdentity) {
   return appRouter.createCaller({
+    ...(identity ? { identity } : {}),
     knowledgeService: getKnowledgeService(),
     tripService: getTripService(),
   });

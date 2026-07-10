@@ -9,7 +9,7 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 ## Current Handoff Snapshot
 
-- **Updated:** 2026-07-11 by Codex / Issue #133
+- **Updated:** 2026-07-11 by Codex / Issue #112
 - **Base branch:** `main`
 - **Last fully verified commit:** `8ebc87e`
 - **Current phase:** Phase 0 — production hardening
@@ -20,7 +20,7 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 | Ref | Work | State | Owner | Next action |
 | --- | --- | --- | --- | --- |
-| Issue #133 / DOC-P0-03 | Freeze knowledge evidence and SEO index-quality policy | In progress on codex/doc-p0-03-knowledge-evidence | Codex / operator | Validate ADR-0006, merge it, then complete DOC-P0-04 and DOC-P0-05 before dependent feature code. |
+| Issue #112 / P0-03 | Establish Supabase Auth SSR and signed anonymous sessions | In progress on codex/p0-03-auth-anon-session | Codex / operator | Complete P0-03 identity tests and configuration contract, then land P0-04 to consume server identity on Trip routes. |
 
 ### Immediate Queue
 
