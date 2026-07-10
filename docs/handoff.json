@@ -1,26 +1,26 @@
 {
   "schemaVersion": 1,
   "updatedAt": "2026-07-11",
-  "updatedBy": "Codex / Issue #131",
+  "updatedBy": "Codex / Issue #132",
   "baseBranch": "main",
-  "lastVerifiedCommit": "5f92ff2",
+  "lastVerifiedCommit": "8ebc87e",
   "currentPhase": "Phase 0 — production hardening",
   "maturity": "Trusted demo skeleton; not yet a production-safe or billing-ready MVP.",
-  "lastCompleted": "Merged PRs #106, #107, #109, #136, #149, #160, and #161 established the Node 22, Supabase security, composite governance, canonical Phase 0/1 backlog, and dependency graph baselines.",
+  "lastCompleted": "Merged PRs #106, #107, #109, #136, #140, #149, #160, and #161 established the Node 22, Supabase security, ADR-0004 identity baseline, composite governance, canonical Phase 0/1 backlog, and dependency graph baselines.",
   "activeWork": [
     {
-      "ref": "Issue #131 / DOC-P0-01",
-      "title": "Freeze identity and Trip ownership security ADR",
-      "state": "In review on codex/doc-p0-01-identity-trip-adr",
+      "ref": "Issue #132 / DOC-P0-02",
+      "title": "Freeze runtime modes and production adapter ownership ADR",
+      "state": "In progress on codex/doc-p0-02-runtime-adapter-adr",
       "owner": "Codex / operator",
-      "next": "Resolve the rebase, validate ADR-0004 against current canonical dependencies, and merge it before starting P0-03 or P0-04 implementation."
+      "next": "Validate ADR-0005's mode/owner matrix, merge it, then complete DOC-P0-03 through DOC-P0-05 before dependent runtime code."
     }
   ],
   "nextActions": [
     {
       "priority": "P0",
-      "action": "Accept and merge DOC-P0-01 (#131), then complete DOC-P0-02 through DOC-P0-05 in graph order.",
-      "exitCriteria": "ADR-0004 has an owner/review date and frozen identity/ownership interface; dependent P0-03/P0-04 can begin only after acceptance."
+      "action": "Accept and merge DOC-P0-02 (#132), then complete DOC-P0-03 through DOC-P0-05 in graph order.",
+      "exitCriteria": "ADR-0005 has an owner/review date and frozen runtime mode/adapter interface; P0-06/P0-10/P0-20 remain constrained by it."
     },
     {
       "priority": "P0",
@@ -50,7 +50,8 @@
     "GOV-P0a metadata verification: #73 is the canonical P0-09 owner; open blocked-by references to completed baseline Issues were replaced with active canonical dependencies; closed duplicate #125 points to #124 and #130 points to #129.",
     "GOV-P0b metadata verification: canonical P0-13 through P0-20 are #150 through #157; V2-42 through V2-50 and V2-52 through V2-58 retain historical bodies with status:superseded and a top link to their sole canonical owner.",
     "GOV-P0c verification: docs/governance/phase-0-1-dependency-graph.md is registered as the dependency source of truth; #102 now links canonical owners, retained standalone V2 work, hard Stripe/Rescue gates, and the manual API validation procedure.",
-    "GOV-P0 merge evidence: PRs #149, #160, and #161 passed repository checks and merged to main; DOC-P0-01 is now the active documentation-first control action."
+    "GOV-P0 merge evidence: PRs #149, #160, and #161 passed repository checks and merged to main; DOC-P0-01 is now the active documentation-first control action.",
+    "DOC-P0-01 merge evidence: PR #140 passed database contracts, verify, docs, evals, and Vercel previews before merging; ADR-0004 is accepted and Issue #131 is closed."
   ],
   "readingOrder": [
     {

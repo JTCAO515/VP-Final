@@ -9,6 +9,7 @@ New ADRs are append-only and use the next numeric prefix.
 | [ADR-0002](ADR-0002-documentation-as-code.md) | Accepted | Documentation is registered, generated, impact-mapped, and checked as code. |
 | [ADR-0003](ADR-0003-qian-systems-engineering-workflow.md) | Accepted | 钱学森 Skills is the permanent closed-loop engineering workflow. |
 | [ADR-0004](ADR-0004-identity-trip-ownership-security.md) | Accepted | Server-verified identity, exclusive Trip ownership, read-only sharing, and optimistic concurrency are mandatory before public persistence. |
+| [ADR-0005](ADR-0005-runtime-modes-and-production-adapter-ownership.md) | Accepted | Explicit runtime modes, single durable production ownership, and fail-closed truthfulness are mandatory before public persistence. |
 
 ## When to Add an ADR
 

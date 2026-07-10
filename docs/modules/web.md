@@ -29,6 +29,10 @@ The current Next.js API layer creates an in-process server caller. If `DATABASE_
 knowledge use Postgres adapters; otherwise they fall back to process memory. This is useful for
 development but is forbidden for production by the deployment constraints.
 
+[ADR-0005](../adr/ADR-0005-runtime-modes-and-production-adapter-ownership.md) requires explicit mode
+selection: only `local-demo` may use labelled fixtures/memory; deployed modes must return honest
+degraded/unavailable states when a required durable dependency is absent.
+
 Current localStorage identity fields are a documented security debt, not an authorization mechanism.
 P0-03/P0-04 replace them with server-issued anonymous session cookies and Supabase SSR identity under
 [ADR-0004](../adr/ADR-0004-identity-trip-ownership-security.md). New Web work must not add another

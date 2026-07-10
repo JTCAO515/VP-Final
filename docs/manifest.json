@@ -637,6 +637,16 @@
       "summary": "Freezes server-verified identity, exclusive Trip ownership, read-only sharing, and optimistic concurrency before public persistence.",
       "sourcePrefixes": ["apps/server/src/modules/trip/", "apps/server/src/db/tripService.ts", "apps/web/src/app/api/trips/", "apps/web/src/app/api/copilot/"]
     },
+    {
+      "path": "docs/adr/ADR-0005-runtime-modes-and-production-adapter-ownership.md",
+      "title": "ADR-0005: Runtime Modes and Production Adapter Ownership",
+      "category": "decisions",
+      "type": "decision",
+      "status": "accepted",
+      "owner": "architecture / platform",
+      "summary": "Freezes explicit modes, durable production ownership, truthful health, and the prohibition on silent memory fallback.",
+      "sourcePrefixes": ["apps/server/", "apps/web/src/app/api/", "apps/web/src/app/", "infra/"]
+    },
 
     {
       "path": "docs/runbooks/README.md",
