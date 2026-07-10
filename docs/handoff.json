@@ -1,26 +1,26 @@
 {
   "schemaVersion": 1,
   "updatedAt": "2026-07-11",
-  "updatedBy": "Codex / Issue #139 GOV-P0c",
+  "updatedBy": "Codex / Issue #131",
   "baseBranch": "main",
-  "lastVerifiedCommit": "87744ed",
+  "lastVerifiedCommit": "5f92ff2",
   "currentPhase": "Phase 0 — production hardening",
   "maturity": "Trusted demo skeleton; not yet a production-safe or billing-ready MVP.",
-  "lastCompleted": "Merged PRs #106, #107, #109, and #136 established the Node 22, Supabase security, composite 钱学森 + Matt-inspired documentation, and Karpathy baselines. GOV-P0a made #73 the canonical P0-09 trace owner; GOV-P0b created canonical P0-13 through P0-20; GOV-P0c registered the dependency graph and rewrote #102 as the canonical control map. This branch records the post-merge handoff state.",
+  "lastCompleted": "Merged PRs #106, #107, #109, #136, #149, #160, and #161 established the Node 22, Supabase security, composite governance, canonical Phase 0/1 backlog, and dependency graph baselines.",
   "activeWork": [
     {
-      "ref": "DOC-P0-01 through DOC-P0-05",
-      "title": "Accept documentation-first Phase 0 baselines before feature implementation",
-      "state": "Next controlled work after GOV-P0a/b/c merge",
+      "ref": "Issue #131 / DOC-P0-01",
+      "title": "Freeze identity and Trip ownership security ADR",
+      "state": "In review on codex/doc-p0-01-identity-trip-adr",
       "owner": "Codex / operator",
-      "next": "Complete the accepted ADR/policy/register work in dependency order, then start only graph-ready Phase 0 feature Issues."
+      "next": "Resolve the rebase, validate ADR-0004 against current canonical dependencies, and merge it before starting P0-03 or P0-04 implementation."
     }
   ],
   "nextActions": [
     {
       "priority": "P0",
-      "action": "Accept and merge DOC-P0-01 through DOC-P0-05 in graph order before feature implementation.",
-      "exitCriteria": "Identity/ownership, runtime modes, knowledge/SEO evidence, Human Help boundaries, and the operator-action register are indexed and accepted."
+      "action": "Accept and merge DOC-P0-01 (#131), then complete DOC-P0-02 through DOC-P0-05 in graph order.",
+      "exitCriteria": "ADR-0004 has an owner/review date and frozen identity/ownership interface; dependent P0-03/P0-04 can begin only after acceptance."
     },
     {
       "priority": "P0",
@@ -49,7 +49,8 @@
     "Issue #135 local verification passed: both Skills validated, 66 controlled documents passed docs checks/impact, and pnpm typecheck, lint, test, build, and evals passed.",
     "GOV-P0a metadata verification: #73 is the canonical P0-09 owner; open blocked-by references to completed baseline Issues were replaced with active canonical dependencies; closed duplicate #125 points to #124 and #130 points to #129.",
     "GOV-P0b metadata verification: canonical P0-13 through P0-20 are #150 through #157; V2-42 through V2-50 and V2-52 through V2-58 retain historical bodies with status:superseded and a top link to their sole canonical owner.",
-    "GOV-P0c verification: docs/governance/phase-0-1-dependency-graph.md is registered as the dependency source of truth; #102 now links canonical owners, retained standalone V2 work, hard Stripe/Rescue gates, and the manual API validation procedure."
+    "GOV-P0c verification: docs/governance/phase-0-1-dependency-graph.md is registered as the dependency source of truth; #102 now links canonical owners, retained standalone V2 work, hard Stripe/Rescue gates, and the manual API validation procedure.",
+    "GOV-P0 merge evidence: PRs #149, #160, and #161 passed repository checks and merged to main; DOC-P0-01 is now the active documentation-first control action."
   ],
   "readingOrder": [
     {

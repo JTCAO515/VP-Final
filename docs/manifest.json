@@ -627,6 +627,16 @@
       "summary": "Adopts the closed-loop systems-engineering workflow across all project work.",
       "sourcePrefixes": []
     },
+    {
+      "path": "docs/adr/ADR-0004-identity-trip-ownership-security.md",
+      "title": "ADR-0004: Identity and Trip Ownership Security",
+      "category": "decisions",
+      "type": "decision",
+      "status": "accepted",
+      "owner": "security / architecture",
+      "summary": "Freezes server-verified identity, exclusive Trip ownership, read-only sharing, and optimistic concurrency before public persistence.",
+      "sourcePrefixes": ["apps/server/src/modules/trip/", "apps/server/src/db/tripService.ts", "apps/web/src/app/api/trips/", "apps/web/src/app/api/copilot/"]
+    },
 
     {
       "path": "docs/runbooks/README.md",

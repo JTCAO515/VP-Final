@@ -47,6 +47,8 @@ modules yet.
 - A module may not import another module's tables.
 - Production configuration may not silently select an in-memory adapter.
 - Public request identity must eventually come only from verified session context.
+- [ADR-0004](../adr/ADR-0004-identity-trip-ownership-security.md) freezes the target identity,
+  owner, share, claim, and optimistic-concurrency contract for P0-03/P0-04.
 
 ## Verification
 
