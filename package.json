@@ -2,7 +2,7 @@
   "name": "visepanda",
   "private": true,
   "packageManager": "pnpm@9.15.9",
-  "engines": { "node": ">=20" },
+  "engines": { "node": ">=22" },
   "scripts": {
     "build": "turbo run build",
     "evals": "pnpm evals:trip_generation",
