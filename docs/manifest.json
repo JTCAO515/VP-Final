@@ -647,6 +647,16 @@
       "summary": "Freezes explicit modes, durable production ownership, truthful health, and the prohibition on silent memory fallback.",
       "sourcePrefixes": ["apps/server/", "apps/web/src/app/api/", "apps/web/src/app/", "infra/"]
     },
+    {
+      "path": "docs/adr/ADR-0006-knowledge-evidence-and-index-quality.md",
+      "title": "ADR-0006: Knowledge Evidence and Index Quality",
+      "category": "decisions",
+      "type": "decision",
+      "status": "accepted",
+      "owner": "knowledge / architecture",
+      "summary": "Freezes evidence eligibility, citations, gap minimization, and quality-gated SEO indexing.",
+      "sourcePrefixes": ["packages/domain/src/knowledge/", "apps/server/src/modules/knowledge/", "apps/web/src/app/explore/", "apps/ops/"]
+    },
 
     {
       "path": "docs/runbooks/README.md",
