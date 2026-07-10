@@ -3,7 +3,7 @@
   "updatedAt": "2026-07-11",
   "updatedBy": "Codex / Issue #112",
   "baseBranch": "main",
-  "lastVerifiedCommit": "8ebc87e",
+  "lastVerifiedCommit": "f4e58ce",
   "currentPhase": "Phase 0 — production hardening",
   "maturity": "Trusted demo skeleton; not yet a production-safe or billing-ready MVP.",
   "lastCompleted": "Merged PRs #106, #107, #109, #136, #140, #149, #160, and #161 established the Node 22, Supabase security, ADR-0004 identity baseline, composite governance, canonical Phase 0/1 backlog, and dependency graph baselines.",
@@ -11,16 +11,16 @@
     {
       "ref": "Issue #112 / P0-03",
       "title": "Establish Supabase Auth SSR and signed anonymous sessions",
-      "state": "In progress on codex/p0-03-auth-anon-session",
+      "state": "Implementation complete on draft PR #164; live Supabase verification remains blocked by OA-001 through OA-003",
       "owner": "Codex / operator",
-      "next": "Complete P0-03 identity tests and configuration contract, then land P0-04 to consume server identity on Trip routes."
+      "next": "Operator configures and verifies OA-001 through OA-003; meanwhile P0-04 may consume the frozen, tested request identity contract without claiming live Auth evidence."
     }
   ],
   "nextActions": [
     {
       "priority": "P0",
-      "action": "Accept and merge DOC-P0-02 (#132), then complete DOC-P0-03 through DOC-P0-05 in graph order.",
-      "exitCriteria": "ADR-0005 has an owner/review date and frozen runtime mode/adapter interface; P0-06/P0-10/P0-20 remain constrained by it."
+      "action": "Review draft PR #164 for P0-03 and complete OA-001 through OA-003 live Auth verification.",
+      "exitCriteria": "Real login, refresh continuity, logout, expired session, signed anonymous continuity, and key rotation are verified without exposing credentials."
     },
     {
       "priority": "P0",
@@ -34,7 +34,7 @@
     }
   ],
   "blockers": [
-    "Web identity and object ownership still rely on client-supplied identity in the audited main branch.",
+    "Draft PR #164 implements trusted Copilot request identity and Auth routes, but live Supabase verification awaits OA-001 through OA-003 and Trip routes remain P0-04 work.",
     "Ops authentication/RBAC is not production-ready.",
     "Copilot model calls and knowledge retrieval remain deterministic/stubbed in the audited main branch.",
     "Human Task, outbound click, telemetry, and AI trace runtime persistence are incomplete.",
@@ -51,7 +51,8 @@
     "GOV-P0b metadata verification: canonical P0-13 through P0-20 are #150 through #157; V2-42 through V2-50 and V2-52 through V2-58 retain historical bodies with status:superseded and a top link to their sole canonical owner.",
     "GOV-P0c verification: docs/governance/phase-0-1-dependency-graph.md is registered as the dependency source of truth; #102 now links canonical owners, retained standalone V2 work, hard Stripe/Rescue gates, and the manual API validation procedure.",
     "GOV-P0 merge evidence: PRs #149, #160, and #161 passed repository checks and merged to main; DOC-P0-01 is now the active documentation-first control action.",
-    "DOC-P0-01 merge evidence: PR #140 passed database contracts, verify, docs, evals, and Vercel previews before merging; ADR-0004 is accepted and Issue #131 is closed."
+    "DOC-P0-01 merge evidence: PR #140 passed database contracts, verify, docs, evals, and Vercel previews before merging; ADR-0004 is accepted and Issue #131 is closed.",
+    "P0-03 local implementation evidence at f4e58ce: Web typecheck passed; 12 Vitest assertions passed across anonymous expiry/rotation, verified-user spoof resistance, login rejection/success, and logout; Next.js production build passed. Live Supabase behavior is not yet claimed."
   ],
   "readingOrder": [
     {
@@ -101,6 +102,10 @@
     {
       "path": "docs/runbooks/README.md",
       "reason": "Read the relevant operational procedure before deployment, migration, AI, knowledge, or Human Task work."
+    },
+    {
+      "path": "docs/governance/operator-action-register.md",
+      "reason": "Check unresolved third-party, secret, legal, DNS, deployment, and production-verification actions before claiming an external capability is live."
     }
   ]
 }

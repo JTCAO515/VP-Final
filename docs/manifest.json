@@ -586,6 +586,16 @@
       "summary": "Templates for explanations, constraints, ADRs, runbooks, reviews, and retrospectives.",
       "sourcePrefixes": []
     },
+    {
+      "path": "docs/governance/operator-action-register.md",
+      "title": "Operator Action Register",
+      "category": "governance",
+      "type": "constraint",
+      "status": "active",
+      "owner": "operator / overall design",
+      "summary": "Durable placeholders, owners, external setup gates, verification, rollback, and tutorial triggers for operator-only actions.",
+      "sourcePrefixes": []
+    },
 
     {
       "path": "docs/adr/README.md",
@@ -635,7 +645,12 @@
       "status": "accepted",
       "owner": "security / architecture",
       "summary": "Freezes server-verified identity, exclusive Trip ownership, read-only sharing, and optimistic concurrency before public persistence.",
-      "sourcePrefixes": ["apps/server/src/modules/trip/", "apps/server/src/db/tripService.ts", "apps/web/src/app/api/trips/", "apps/web/src/app/api/copilot/"]
+      "sourcePrefixes": [
+        "apps/server/src/modules/trip/",
+        "apps/server/src/db/tripService.ts",
+        "apps/web/src/app/api/trips/",
+        "apps/web/src/app/api/copilot/"
+      ]
     },
     {
       "path": "docs/adr/ADR-0005-runtime-modes-and-production-adapter-ownership.md",
@@ -655,7 +670,12 @@
       "status": "accepted",
       "owner": "knowledge / architecture",
       "summary": "Freezes evidence eligibility, citations, gap minimization, and quality-gated SEO indexing.",
-      "sourcePrefixes": ["packages/domain/src/knowledge/", "apps/server/src/modules/knowledge/", "apps/web/src/app/explore/", "apps/ops/"]
+      "sourcePrefixes": [
+        "packages/domain/src/knowledge/",
+        "apps/server/src/modules/knowledge/",
+        "apps/web/src/app/explore/",
+        "apps/ops/"
+      ]
     },
 
     {
