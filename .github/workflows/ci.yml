@@ -34,3 +34,17 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm evals
+
+  database-contracts:
+    name: Database contracts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v2
+        with:
+          version: 2.109.1
+          github-token: ${{ github.token }}
+      - run: supabase start --workdir infra
+      - run: supabase db reset --local --no-seed --workdir infra
+      - run: supabase test db supabase/tests/database --local --workdir infra
+      - run: supabase db advisors --local --type security --level warn --fail-on error --workdir infra
