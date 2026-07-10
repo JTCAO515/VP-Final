@@ -9,26 +9,26 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 ## Current Handoff Snapshot
 
-- **Updated:** 2026-07-11 by Codex / Issue #139 GOV-P0a
+- **Updated:** 2026-07-11 by Codex / Issue #139 GOV-P0b
 - **Base branch:** `main`
 - **Last fully verified commit:** `87744ed`
 - **Current phase:** Phase 0 — production hardening
 - **Maturity:** Trusted demo skeleton; not yet a production-safe or billing-ready MVP.
-- **Last completed control action:** Merged PRs #106, #107, #109, and #136 established the Node 22, Supabase security, composite 钱学森 + Matt-inspired documentation, and Karpathy baselines. GOV-P0a has converged closed/dead backlog references and made #73 the canonical P0-09 trace owner; this branch records the post-merge handoff state.
+- **Last completed control action:** Merged PRs #106, #107, #109, and #136 established the Node 22, Supabase security, composite 钱学森 + Matt-inspired documentation, and Karpathy baselines. GOV-P0a made #73 the canonical P0-09 trace owner; GOV-P0b created canonical P0-13 through P0-20 and migrated absorbed V2 scope without deleting history. This branch records the post-merge handoff state.
 
 ### Active Work
 
 | Ref | Work | State | Owner | Next action |
 | --- | --- | --- | --- | --- |
-| Issue #139 / GOV-P0b | Create canonical P0-13 through P0-20 and migrate absorbed Phase 0 scope | Next governance seam after GOV-P0a merge | Codex / operator | Create the missing canonical P0 Issues, preserve every unique V2 acceptance criterion, and mark absorbed V2 Issues status:superseded without closing them. |
+| Issue #139 / GOV-P0c | Register the canonical Phase 0/1 dependency graph and update the master backlog | Next governance seam after GOV-P0b merge | Codex / operator | Make the dependency graph the registered source of truth, regenerate Index, rewrite #102 to canonical mappings, and verify every open dependency resolves. |
 
 ### Immediate Queue
 
 | Priority | Control action | Exit criteria |
 | --- | --- | --- |
-| P0 | Complete GOV-P0b under Issue #139: create P0-13 through P0-20 and migrate historical V2 scope/acceptance into canonical owners. | Each canonical Phase 0 control action has one open owner; absorbed V2 Issues link to it with status:superseded and no acceptance content is lost. |
-| P0 | Complete GOV-P0c: register the Phase 0/1 dependency graph, update #102 to canonical mapping, and run documentation checks. | The dependency graph is the registered source of truth, Index is regenerated, all canonical blockers resolve, and hard payment/Rescue constraints are explicit. |
-| P0 | Only after GOV-P0a/b/c, complete DOC-P0-01 through DOC-P0-04 before their dependent feature work. | Identity/ownership, runtime modes, knowledge/SEO evidence, and Human Help service boundaries are accepted, indexed, and referenced by their dependent implementation Issues. |
+| P0 | Complete GOV-P0c: register the canonical Phase 0/1 dependency graph, update #102, and add dependency validation. | The registered graph is the source of truth, Index is regenerated, all open blocked-by references resolve, and hard payment/Rescue constraints are explicit. |
+| P0 | Complete DOC-P0-01 through DOC-P0-04 before dependent feature code. | Identity/ownership, runtime modes, knowledge/SEO evidence, and Human Help service boundaries are accepted, indexed, and referenced by their dependent implementation Issues. |
+| P0 | Start Phase 0 feature work only where the graph and document-first gates mark it ready. | No feature PR starts from a superseded V2 Issue or before its accepted ADR/policy and canonical dependency gates. |
 
 ### Current Blockers
 
@@ -47,6 +47,7 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 - Upstream karpathy-guidelines SKILL.md was compared with the installed global Skill at commit 2c606141936f1eeef17fa3043a72095b4765b9c2; SHA-256 matched.
 - Issue #135 local verification passed: both Skills validated, 66 controlled documents passed docs checks/impact, and pnpm typecheck, lint, test, build, and evals passed.
 - GOV-P0a metadata verification: #73 is the canonical P0-09 owner; open blocked-by references to completed baseline Issues were replaced with active canonical dependencies; closed duplicate #125 points to #124 and #130 points to #129.
+- GOV-P0b metadata verification: canonical P0-13 through P0-20 are #150 through #157; V2-42 through V2-50 and V2-52 through V2-58 retain historical bodies with status:superseded and a top link to their sole canonical owner.
 
 ## Mandatory Markdown Reading Order
 
