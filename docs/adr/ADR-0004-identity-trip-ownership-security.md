@@ -2,8 +2,8 @@
 
 Date: 2026-07-11
 Status: Accepted
-Deciders: operator / architecture owner
-Owner: security and architecture owner
+Deciders: JTCao (operator) / architecture owner
+Owner: JTCao (operator and architecture owner)
 Review date: before the merge of #112 or #113, and at the next security architecture review no later than 2026-08-11
 
 ## Context and Observed Deviation

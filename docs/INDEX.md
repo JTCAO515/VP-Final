@@ -9,24 +9,24 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 ## Current Handoff Snapshot
 
-- **Updated:** 2026-07-11 by Codex / Issue #139 GOV-P0c
+- **Updated:** 2026-07-11 by Codex / Issue #131
 - **Base branch:** `main`
-- **Last fully verified commit:** `87744ed`
+- **Last fully verified commit:** `5f92ff2`
 - **Current phase:** Phase 0 — production hardening
 - **Maturity:** Trusted demo skeleton; not yet a production-safe or billing-ready MVP.
-- **Last completed control action:** Merged PRs #106, #107, #109, and #136 established the Node 22, Supabase security, composite 钱学森 + Matt-inspired documentation, and Karpathy baselines. GOV-P0a made #73 the canonical P0-09 trace owner; GOV-P0b created canonical P0-13 through P0-20; GOV-P0c registered the dependency graph and rewrote #102 as the canonical control map. This branch records the post-merge handoff state.
+- **Last completed control action:** Merged PRs #106, #107, #109, #136, #149, #160, and #161 established the Node 22, Supabase security, composite governance, canonical Phase 0/1 backlog, and dependency graph baselines.
 
 ### Active Work
 
 | Ref | Work | State | Owner | Next action |
 | --- | --- | --- | --- | --- |
-| DOC-P0-01 through DOC-P0-05 | Accept documentation-first Phase 0 baselines before feature implementation | Next controlled work after GOV-P0a/b/c merge | Codex / operator | Complete the accepted ADR/policy/register work in dependency order, then start only graph-ready Phase 0 feature Issues. |
+| Issue #131 / DOC-P0-01 | Freeze identity and Trip ownership security ADR | In review on codex/doc-p0-01-identity-trip-adr | Codex / operator | Resolve the rebase, validate ADR-0004 against current canonical dependencies, and merge it before starting P0-03 or P0-04 implementation. |
 
 ### Immediate Queue
 
 | Priority | Control action | Exit criteria |
 | --- | --- | --- |
-| P0 | Accept and merge DOC-P0-01 through DOC-P0-05 in graph order before feature implementation. | Identity/ownership, runtime modes, knowledge/SEO evidence, Human Help boundaries, and the operator-action register are indexed and accepted. |
+| P0 | Accept and merge DOC-P0-01 (#131), then complete DOC-P0-02 through DOC-P0-05 in graph order. | ADR-0004 has an owner/review date and frozen identity/ownership interface; dependent P0-03/P0-04 can begin only after acceptance. |
 | P0 | Start only Phase 0 Issues whose document-first and canonical dependency gates are ready in the graph. | No feature PR starts from a superseded V2 Issue or before its accepted ADR/policy and canonical dependency gates. |
 | P0 | Before any external service claim, update the operator-action register with placeholder, owner, verification, and novice tutorial steps. | No third-party API, payment, deployment, DNS, or store capability is presented as live without recorded operator verification. |
 
@@ -49,6 +49,7 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 - GOV-P0a metadata verification: #73 is the canonical P0-09 owner; open blocked-by references to completed baseline Issues were replaced with active canonical dependencies; closed duplicate #125 points to #124 and #130 points to #129.
 - GOV-P0b metadata verification: canonical P0-13 through P0-20 are #150 through #157; V2-42 through V2-50 and V2-52 through V2-58 retain historical bodies with status:superseded and a top link to their sole canonical owner.
 - GOV-P0c verification: docs/governance/phase-0-1-dependency-graph.md is registered as the dependency source of truth; #102 now links canonical owners, retained standalone V2 work, hard Stripe/Rescue gates, and the manual API validation procedure.
+- GOV-P0 merge evidence: PRs #149, #160, and #161 passed repository checks and merged to main; DOC-P0-01 is now the active documentation-first control action.
 
 ## Mandatory Markdown Reading Order
 
@@ -174,6 +175,7 @@ Append-only records of accepted and superseded binding decisions.
 | [ADR-0001: Repository and V1 Disposition](adr/ADR-0001-repo-and-v1-disposition.md) | decision | accepted | operator | Establishes VP-Final as the V2 repository and separates V1 wind-down. |
 | [ADR-0002: Documentation as Code](adr/ADR-0002-documentation-as-code.md) | decision | accepted | overall design | Makes registry, index, link, freshness, and impact checks permanent. |
 | [ADR-0003: 钱学森 Skills](adr/ADR-0003-qian-systems-engineering-workflow.md) | decision | accepted | operator / overall design | Adopts the closed-loop systems-engineering workflow across all project work. |
+| [ADR-0004: Identity and Trip Ownership Security](adr/ADR-0004-identity-trip-ownership-security.md) | decision | accepted | security / architecture | Freezes server-verified identity, exclusive Trip ownership, read-only sharing, and optimistic concurrency before public persistence. |
 
 ## Runbooks
 
