@@ -6,6 +6,8 @@ Status: active
 - Every normal PR MUST reference an accepted Issue and classify its observed deviation D0-D3.
 - The Issue MUST remain executable without hidden chat history.
 - A PR MUST update mapped documentation and regenerate the index when registry content changes.
+- Every repository change MUST synchronize `docs/handoff.json` and regenerate `docs/INDEX.md`,
+  including documentation-only and governance changes.
 - Domain/interface changes MUST precede and unblock consumer changes; they MUST NOT be hidden in a UI PR.
 - Prompt/model/router changes MUST run relevant evals and report cost/quality implications.
 - Schema/migration/permission changes MUST run relevant database and RLS contract checks.

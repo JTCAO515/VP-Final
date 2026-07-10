@@ -97,3 +97,20 @@ Status: draft | historical
 ## Knowledge captured
 ## Follow-up Issues, ADRs, evals, facts, or no-action reason
 ```
+
+## Handoff Snapshot
+
+Keep this content in the repository's structured handoff source and generate it into the Index:
+
+```text
+updatedAt / updatedBy / baseBranch / lastVerifiedCommit
+currentPhase / maturity / lastCompleted
+activeWork: ref / title / state / owner / next
+nextActions: priority / action / exitCriteria
+blockers
+verification
+readingOrder: registered document path / reason
+```
+
+Update it for every repository change. Keep the full backlog in GitHub; the handoff contains only
+the immediate execution horizon.

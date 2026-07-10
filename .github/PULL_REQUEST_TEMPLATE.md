@@ -32,6 +32,10 @@ Closes #
 
 <!-- list registered docs changed and why; generated INDEX alone is not sufficient -->
 
+## Handoff synchronization
+
+<!-- summarize changes to docs/handoff.json and the generated Index -->
+
 ## Lifecycle follow-up
 
 <!-- Gate closed; production observation owner/date, or "none — complete at merge" -->
@@ -41,6 +45,7 @@ Closes #
 - [ ] Scope is one reviewable control action; no unrelated cleanup.
 - [ ] Interface baseline and consumers were reviewed when applicable.
 - [ ] Source changes update mapped documentation.
+- [ ] `docs/handoff.json` and the generated Index reflect the post-merge state.
 - [ ] Missing data and unavailable dependencies fail/degrade honestly.
 - [ ] Unrun checks and residual risk are disclosed.
 - [ ] `pnpm docs:check` and `pnpm docs:impact -- --base <ref>` pass.

@@ -6,7 +6,7 @@ the closed-loop workflow defined in `docs/methodology/qian-systems-engineering.m
 ## Read First
 
 1. `CONTEXT.md`
-2. `docs/INDEX.md`
+2. `docs/INDEX.md` current handoff snapshot and mandatory reading order
 3. `docs/architecture/top-level-design.md`
 4. Relevant module, constraint, ADR, and runbook documents
 5. The assigned GitHub Issue and current git state
@@ -32,6 +32,7 @@ pack. The frozen product baseline is `docs/planning/visepanda-v2-final-architect
 - One PR may change one module boundary, one contract, or one UI flow. Do not bundle unrelated cleanup.
 - Fill every PR template section: contracts, tests, evals, commercial tracking, rollback.
 - Update at least one mapped non-generated document for every source/config change.
+- Update `docs/handoff.json` for every repository change and regenerate `docs/INDEX.md`.
 
 ## Schema First
 

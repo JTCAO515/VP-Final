@@ -27,9 +27,10 @@ its mapped document change is incomplete.
 3. Update the smallest document that will become false after the source change.
 4. If a binding direction changes, add an ADR before changing constraints.
 5. Update the manifest when adding, moving, archiving, or changing ownership/status.
-6. Run `pnpm docs:index`, then `pnpm docs:check`.
-7. Run `pnpm docs:impact -- --base <ref>` against the intended merge base.
-8. List the documents and the observed deviation in the PR.
+6. Update `docs/handoff.json` with current work, blockers, evidence, and next actions.
+7. Run `pnpm docs:index`, then `pnpm docs:check`.
+8. Run `pnpm docs:impact -- --base <ref>` against the intended merge base.
+9. List the documents, handoff change, and observed deviation in the PR.
 
 ## 3. Required Writing Properties
 
@@ -56,6 +57,10 @@ The registry records:
 
 The checker rejects orphan Markdown, missing files, invalid metadata, broken local links, duplicate
 paths, or a stale generated index. `docs/INDEX.md` must never be edited manually.
+
+The Index also renders `docs/handoff.json`. Every repository change, including docs-only changes,
+must update this snapshot so a new human or Agent never inherits a stale execution state. See the
+[handoff workflow](handoff-workflow.md).
 
 ## 5. Review and Freshness
 

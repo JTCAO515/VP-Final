@@ -32,6 +32,7 @@ These rules are normative. Automated rules fail CI; semantic rules are mandatory
 | QSE-023 | Removal or retirement MUST update documentation, index mappings, flags, data retention, and runbooks in the same change program. | docs impact + review | retirement checklist |
 | QSE-024 | Agent tasks MUST use the minimum authoritative context pack and MUST inspect current git state before editing. | PR review | source references and clean scope |
 | QSE-025 | Unrelated cleanup MUST NOT be bundled into a control action; one PR changes one reviewable behavior or baseline. | reviewer gate | focused diff |
+| QSE-026 | Every repository change MUST update `docs/handoff.json`; the generated Index MUST expose current work, blockers, verification, next actions, and Markdown reading order. | `pnpm docs:check` + `pnpm docs:impact` | synchronized handoff and Index |
 
 ## Emergency Exception
 

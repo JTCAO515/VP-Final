@@ -11,6 +11,8 @@
   ],
   "ignoredMarkdown": ["docs/INDEX.md"],
   "impact": {
+    "handoffPath": "docs/handoff.json",
+    "requireHandoffForEveryChange": true,
     "sourcePrefixes": [
       "apps/",
       "packages/",
@@ -475,7 +477,7 @@
       "type": "constraint",
       "status": "active",
       "owner": "overall design",
-      "summary": "Twenty-five mandatory closed-loop systems-engineering rules and evidence gates.",
+      "summary": "Twenty-six mandatory closed-loop systems-engineering rules and evidence gates.",
       "sourcePrefixes": []
     },
 
@@ -503,6 +505,16 @@
         ".github/PULL_REQUEST_TEMPLATE.md",
         ".github/CODEOWNERS"
       ]
+    },
+    {
+      "path": "docs/governance/handoff-workflow.md",
+      "title": "Handoff Snapshot Workflow",
+      "category": "governance",
+      "type": "constraint",
+      "status": "active",
+      "owner": "overall design",
+      "summary": "Mandatory current-state, reading-order, verification, blocker, and next-action synchronization for every project change.",
+      "sourcePrefixes": ["scripts/docs/", ".github/", "package.json"]
     },
     {
       "path": "docs/governance/change-classification.md",

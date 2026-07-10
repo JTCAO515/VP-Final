@@ -14,6 +14,8 @@ context to drift apart.
 
 - `CONTEXT.md` owns canonical project language.
 - `docs/manifest.json` registers every controlled Markdown document.
+- `docs/handoff.json` records the current execution state and mandatory reading order for every
+  repository change.
 - `docs/INDEX.md` is generated from the registry and is not hand-edited.
 - CI validates registry coverage, metadata, local links, index freshness, and source-to-document
   impact.

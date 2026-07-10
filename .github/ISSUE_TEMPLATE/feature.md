@@ -45,6 +45,10 @@ about: Standard V2 issue (fields per frozen baseline §9)
 
 <!-- exact registered docs that must change; "none" is only valid for C0 editorial work -->
 
+## Handoff impact
+
+<!-- active work / blockers / verification / next action / reading-order change -->
+
 ## Dependencies
 
 ## Work size

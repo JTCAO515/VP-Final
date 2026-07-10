@@ -1,13 +1,14 @@
 # VisePanda Documentation
 
 This directory is the project knowledge base. Start with the generated [documentation
-index](INDEX.md), then follow the route that matches the work you are doing.
+index](INDEX.md). Its first sections contain the current handoff snapshot and mandatory Markdown
+reading order; only then follow the task-specific route.
 
 ## Reading Routes
 
 | Reader | Read in this order |
 | --- | --- |
-| New engineer or agent | [`CONTEXT.md`](../CONTEXT.md) → [system overview](architecture/system-overview.md) → [repository structure](architecture/repository-structure.md) → relevant module doc |
+| New engineer or agent | [Index handoff/reading order](INDEX.md) → [`CONTEXT.md`](../CONTEXT.md) → [overall design](architecture/top-level-design.md) → relevant module/constraint/Issue |
 | Feature implementer | Relevant module doc → [development standard](standards/development.md) → [iteration constraints](constraints/iteration.md) → assigned Issue |
 | API or schema author | [domain module](modules/domain.md) → [API constraints](standards/api-contracts.md) → [architecture constraints](constraints/architecture.md) |
 | Security or data work | [data platform](modules/data-platform.md) → [permission constraints](constraints/permissions.md) → [Supabase runbook](runbooks/supabase-migrations.md) |
@@ -29,6 +30,7 @@ index](INDEX.md), then follow the route that matches the work you are doing.
 ## Source of Truth
 
 - [`docs/manifest.json`](manifest.json) is the machine-readable document registry.
+- [`docs/handoff.json`](handoff.json) is the mandatory current-state and reading-order source.
 - [`docs/INDEX.md`](INDEX.md) is generated; run `pnpm docs:index` instead of editing it.
 - `pnpm docs:check` rejects missing registry entries, orphan documents, broken local links, invalid
   metadata, and a stale index.
@@ -47,5 +49,6 @@ index](INDEX.md), then follow the route that matches the work you are doing.
 
 ## Editing Rule
 
-Code changes require documentation changes. Update the smallest relevant document, regenerate the
-index if the registry changes, run the document checks, and list the changed docs in the PR.
+Every repository change updates `docs/handoff.json`; source/config changes also update the smallest
+mapped Markdown document. Regenerate the Index, run the document checks, and list both updates in
+the PR.

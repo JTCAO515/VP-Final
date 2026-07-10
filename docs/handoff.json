@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-07-10",
+  "updatedBy": "Codex / PR #109",
+  "baseBranch": "main",
+  "lastVerifiedCommit": "3b05bc8",
+  "currentPhase": "Phase 0 — production hardening",
+  "maturity": "Trusted demo skeleton; not yet a production-safe or billing-ready MVP.",
+  "lastCompleted": "Prepared 钱学森 Skills, the controlled 63-document registry, documentation CI, mandatory reading order, and synchronized handoff snapshot in PR #109.",
+  "activeWork": [
+    {
+      "ref": "PR #106",
+      "title": "Upgrade the runtime baseline to Node 22",
+      "state": "Open; mergeable; checks passing",
+      "owner": "Codex / operator",
+      "next": "Review and merge before dependent runtime work."
+    },
+    {
+      "ref": "PR #107",
+      "title": "Secure Supabase operational tables",
+      "state": "Open; mergeable; checks passing",
+      "owner": "Codex / operator",
+      "next": "Review and merge before production identity or Ops work."
+    },
+    {
+      "ref": "PR #109",
+      "title": "Adopt 钱学森 Skills and documentation-as-code",
+      "state": "Open; mergeable; checks passing",
+      "owner": "Codex / operator",
+      "next": "Review this handoff/index amendment, then merge the governance baseline."
+    }
+  ],
+  "nextActions": [
+    {
+      "priority": "P0",
+      "action": "Merge and reconcile PRs #106, #107, and #109 in dependency-safe order.",
+      "exitCriteria": "main contains Node 22, the Supabase security migration, and the governance/handoff checks with green CI."
+    },
+    {
+      "priority": "P0",
+      "action": "Re-audit all open Issues against real code maturity and rebuild the P0/P1/P2 dependency graph.",
+      "exitCriteria": "Every active Issue has an objective, subsystem, dependency, acceptance evidence, size, and current status; duplicates/stale plans are closed or relabelled."
+    },
+    {
+      "priority": "P0",
+      "action": "Finish the production safety chain before expanding features.",
+      "exitCriteria": "Verified identity/ownership, Ops RBAC, real AI/retrieval, durable task/outbound/telemetry paths, rate limits, observability, and rollback evidence."
+    }
+  ],
+  "blockers": [
+    "Web identity and object ownership still rely on client-supplied identity in the audited main branch.",
+    "Ops authentication/RBAC is not production-ready.",
+    "Copilot model calls and knowledge retrieval remain deterministic/stubbed in the audited main branch.",
+    "Human Task, outbound click, telemetry, and AI trace runtime persistence are incomplete.",
+    "Real payment evidence, rate limiting, observability, legal pages, and production smoke gates are incomplete."
+  ],
+  "verification": [
+    "At 3b05bc8: pnpm typecheck, lint, test, build, and evals passed.",
+    "Current PR amendment: 63 controlled Markdown documents passed coverage, metadata, heading, link, freshness, handoff schema, and impact checks.",
+    "PR #109 remote checks and both Vercel previews passed before this amendment."
+  ],
+  "readingOrder": [
+    {
+      "path": "CONTEXT.md",
+      "reason": "Learn the product thesis, canonical language, relationships, and truth hierarchy."
+    },
+    {
+      "path": "docs/architecture/top-level-design.md",
+      "reason": "Understand mission, controlled subsystems, interface baselines, observations, and lifecycle gates."
+    },
+    {
+      "path": "docs/methodology/qian-systems-engineering.md",
+      "reason": "Understand the required closed-loop workflow and D0-D3 correction model."
+    },
+    {
+      "path": "docs/planning/visepanda-v2-final-architecture.md",
+      "reason": "Read the frozen product, commercial, architecture, roadmap, and anti-goal baseline."
+    },
+    {
+      "path": "docs/planning/visepanda-v2-project-review-2026-07-10.md",
+      "reason": "Compare the frozen target with the latest evidence-based implementation audit."
+    },
+    {
+      "path": "docs/modules/README.md",
+      "reason": "Choose the module document that owns the assigned work and inspect its real maturity."
+    },
+    {
+      "path": "docs/constraints/README.md",
+      "reason": "Load the mandatory architecture, coding, business, permission, deployment, and iteration rules."
+    },
+    {
+      "path": "docs/adr/README.md",
+      "reason": "Check accepted decisions before proposing or implementing a direction change."
+    },
+    {
+      "path": "docs/runbooks/README.md",
+      "reason": "Read the relevant operational procedure before deployment, migration, AI, knowledge, or Human Task work."
+    }
+  ]
+}

@@ -14,7 +14,7 @@
 | # | 文档 | 作用 |
 |---|---|---|
 | 1 | [`CONTEXT.md`](CONTEXT.md) | 项目统一语言、边界与真理层级 |
-| 2 | [`docs/INDEX.md`](docs/INDEX.md) | 自动生成的完整知识库索引和阅读路线 |
+| 2 | [`docs/INDEX.md`](docs/INDEX.md) | 自动生成的当前接手快照、强制阅读顺序和完整知识库索引 |
 | 3 | [`docs/architecture/top-level-design.md`](docs/architecture/top-level-design.md) | 总体设计基线：目标、子系统、接口、观测和生命周期门禁 |
 | 4 | [`docs/methodology/qian-systems-engineering.md`](docs/methodology/qian-systems-engineering.md) | **钱学森 Skills**：项目永久闭环工程工作流 |
 | 5 | [`docs/planning/visepanda-v2-final-architecture.md`](docs/planning/visepanda-v2-final-architecture.md) | **冻结产品基线**：定位、架构、商业与路线图 |
@@ -63,6 +63,7 @@ TypeScript 单语言 monorepo（pnpm + turborepo）。Next.js 15（Web/Ops）· 
 6. **禁止跨模块碰表** — server 模块间只走显式服务接口。
 7. **代码动，文档必动** — 运行 `pnpm docs:check` 和 `pnpm docs:impact -- --base <ref>`。
 8. **钱学森 Skills 闭环** — 每项工作明确目标、子系统、观测、偏差、控制动作和复盘证据。
+9. **接手状态永远同步** — 每次仓库变更更新 `docs/handoff.json` 并重新生成 Index。
 
 ## 路线图（触发条件驱动，非日历）
 
