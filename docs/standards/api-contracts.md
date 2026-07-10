@@ -1,0 +1,39 @@
+# API and Interface Contract Standard
+
+Status: active
+
+## Contract Authority
+
+- Cross-module payloads are defined in `packages/domain` Zod schemas.
+- Server routers expose typed inputs, outputs, and errors.
+- `packages/api-client` consumes the server contract; clients do not hand-author equivalent payloads.
+- Public HTTP routes that cannot share tRPC types still parse with domain schemas and document their
+  stable response envelope.
+
+## Required Contract Properties
+
+Every interface baseline documents:
+
+- owner and consumers;
+- input/output schema and optionality;
+- authentication and authorization;
+- error codes and degraded behavior;
+- idempotency/retry behavior;
+- version/compatibility strategy;
+- telemetry and privacy impact.
+
+## Change Rules
+
+- Additive optional fields are preferred.
+- Breaking changes require a standalone contract PR, consumer inventory, migration plan, and ADR
+  when architecture or business behavior changes.
+- Consumers must tolerate absent optional fields and must not invent values.
+- Model/provider output is untrusted. Normalize and parse it before constructing a Copilot envelope.
+- Webhooks verify signatures and are idempotent before state mutation.
+- Retried write requests require an idempotency key or an equivalent deterministic conflict rule.
+
+## Trip Contract
+
+AI returns a typed Copilot envelope and optional TripPatch. Deterministic domain code validates and
+applies the patch. No API, UI, provider, or worker may directly rewrite a Trip snapshot to imitate a
+patch.

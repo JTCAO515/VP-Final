@@ -13,15 +13,23 @@
 
 | # | 文档 | 作用 |
 |---|---|---|
-| 1 | [`docs/planning/visepanda-v2-final-architecture.md`](docs/planning/visepanda-v2-final-architecture.md) | **冻结基线（FROZEN BASELINE）**——本仓库唯一规划输入。产品定位、技术架构、数据模型、AI 管道、商业闭环、路线图全在里面。修改规则见其附录 A：只接受「真实用户数据」或「硬决策落定」两种输入，走 diff 修正案，禁止全文重写 |
-| 2 | [`docs/adr/`](docs/adr/) | 已定决策记录。不要在 PR 里重新争论已裁决事项 |
-| 3 | [Issues](../../issues) | 首批任务 V2-02 ~ V2-20，对应基线 §8 二十项清单，**按序领取** |
+| 1 | [`CONTEXT.md`](CONTEXT.md) | 项目统一语言、边界与真理层级 |
+| 2 | [`docs/INDEX.md`](docs/INDEX.md) | 自动生成的完整知识库索引和阅读路线 |
+| 3 | [`docs/architecture/top-level-design.md`](docs/architecture/top-level-design.md) | 总体设计基线：目标、子系统、接口、观测和生命周期门禁 |
+| 4 | [`docs/methodology/qian-systems-engineering.md`](docs/methodology/qian-systems-engineering.md) | **钱学森 Skills**：项目永久闭环工程工作流 |
+| 5 | [`docs/planning/visepanda-v2-final-architecture.md`](docs/planning/visepanda-v2-final-architecture.md) | **冻结产品基线**：定位、架构、商业与路线图 |
+| 6 | [`docs/adr/`](docs/adr/) | 已接受决策；普通 PR 不重复争论 |
+| 7 | [Issues](https://github.com/JTCAO515/VP-Final/issues) | 可执行控制动作；按依赖和优先级认领 |
 
-## 当前状态
+## 当前状态（2026-07-10）
 
-- ✅ V2-01 Bootstrap 完成：monorepo 骨架、CI、模板、ADR、基线入库（`fc7c4e8`）
-- ⬜ 下一个可开工：**V2-02 `packages/domain` v1**（TripState/TripPatch/applyPatch）——无外部依赖
-- ⏳ 待操作者拍板（不阻塞 V2-02~V2-18）：D3 Human Task 支付路由、D4 公司实体/Stripe 收款主体（V2-19 上线前必须落定）、D5 品牌视觉时机 → 决策入口在 [VP-Codex-Final#169](https://github.com/JTCAO515/VP-Codex-Final/issues/169)
+- 已完成：monorepo、核心 domain、Trip/knowledge 数据模型与服务、Web/Ops 可演示骨架、
+  红金 Copilot 工作台及基础 CI/evals。
+- 当前阶段：**可信演示骨架**，尚非可公开收费的生产 MVP。
+- P0 阻塞：真实身份/授权、真实模型与知识检索、Human Task/outbound/telemetry 持久化、
+  Ops RBAC、支付证据、rate limit、observability、上线 runbook 与法律页。
+- 权威现状审计：[`docs/planning/visepanda-v2-project-review-2026-07-10.md`](docs/planning/visepanda-v2-project-review-2026-07-10.md)。
+- Phase 1 Mobile 仍应等待冻结基线的真实用户/Human Task 触发条件。
 
 ## 仓库结构
 
@@ -36,7 +44,7 @@ apps/server          模块化单体 API：copilot/trip/knowledge/task/commerce/
 apps/ops             运营台：知识编辑、人工任务调度、商家白名单（V2-13 落地）
 infra/               migrations、seeds、部署配置
 evals/               AI 行为回归：golden set + 跑分脚本（V2-09 落地）
-docs/                planning(基线) / adr(决策) / runbooks / commercial / compliance
+docs/                architecture / modules / standards / constraints / methodology / runbooks / planning
 ```
 
 ## 技术栈
@@ -53,6 +61,8 @@ TypeScript 单语言 monorepo（pnpm + turborepo）。Next.js 15（Web/Ops）· 
 4. **凡钱必进账本** — 任何付费/商业行为必须产出 ledger + telemetry 事件，并带测试。
 5. **提示词改动必带 evals** — `packages/ai` 首个 profile 落地后（V2-09），CI evals gate 转为必过。
 6. **禁止跨模块碰表** — server 模块间只走显式服务接口。
+7. **代码动，文档必动** — 运行 `pnpm docs:check` 和 `pnpm docs:impact -- --base <ref>`。
+8. **钱学森 Skills 闭环** — 每项工作明确目标、子系统、观测、偏差、控制动作和复盘证据。
 
 ## 路线图（触发条件驱动，非日历）
 
@@ -69,8 +79,13 @@ TypeScript 单语言 monorepo（pnpm + turborepo）。Next.js 15（Web/Ops）· 
 # Node >= 20, pnpm 9 (npm i -g pnpm@9)
 pnpm install
 pnpm build && pnpm test && pnpm typecheck && pnpm lint   # 全绿才算环境就绪
+pnpm docs:index && pnpm docs:check                       # 文档索引与知识库校验
+pnpm docs:impact -- --base origin/main                   # 代码与文档同步校验
 ```
 
 ## 协作方式
 
-本项目由 AI coding agent（Codex 等）+ 架构师（Claude）+ 操作者协作开发。领活流程：按序取 issue → 按 issue 模板补全字段 → 分支 `agent/<name>-<slug>` → PR 过全部硬门槛 → 架构师审查合并。Issue/PR 模板已内置必填字段（Domain schema impact / Commercial tracking / Evals / Rollback plan）。
+本项目由 AI coding agent、架构维护者与操作者协作开发。所有工作遵守
+[钱学森 Skills](docs/methodology/qian-systems-engineering.md)：目标评审 → 系统分解/接口冻结 →
+Issue → 代码/文档/测试 → 观测和偏差校验 → 复盘归档。Issue/PR 模板是强制证据清单，
+不是形式化备注。

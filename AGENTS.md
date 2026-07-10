@@ -1,22 +1,37 @@
 # VisePanda V2 Agent Rules
 
-This repository is the only development home for VisePanda V2. The frozen baseline is
-`docs/planning/visepanda-v2-final-architecture.md`; agent work follows baseline §9.
+This repository is the only development home for VisePanda V2. All work follows **钱学森 Skills**,
+the closed-loop workflow defined in `docs/methodology/qian-systems-engineering.md`.
 
 ## Read First
 
-1. `README.md`
-2. `docs/planning/visepanda-v2-final-architecture.md`
-3. `docs/adr/README.md`
-4. The GitHub issue assigned to you
+1. `CONTEXT.md`
+2. `docs/INDEX.md`
+3. `docs/architecture/top-level-design.md`
+4. Relevant module, constraint, ADR, and runbook documents
+5. The assigned GitHub Issue and current git state
+
+Do not reread every document. Use the generated index to build the minimum authoritative context
+pack. The frozen product baseline is `docs/planning/visepanda-v2-final-architecture.md`.
+
+## 钱学森 Skills Control Loop
+
+- Trace work to an accepted objective and subsystem.
+- Treat the Issue as a small, reversible control action with explicit observations.
+- Freeze schema/API/event/migration/state-machine interfaces before parallel consumer work.
+- Classify discovered deviation: D0 accepted, D1 local, D2 cross-system review, D3 operator/baseline.
+- For D2/D3, stop expanding implementation and escalate through contract review or ADR.
+- Code, docs, tests, rollout/rollback, and learning are one deliverable.
+- Multiple model answers are hypotheses, not votes or factual confirmation.
 
 ## Branch and PR Discipline
 
 - Work one issue at a time.
-- Use `agent/<issue-slug>` branches unless the operator gives an exact branch name.
+- Use the branch name assigned by the operator; otherwise follow the active repository convention.
 - Open PRs against the previous stacked branch or `main`, matching the issue sequence.
 - One PR may change one module boundary, one contract, or one UI flow. Do not bundle unrelated cleanup.
 - Fill every PR template section: contracts, tests, evals, commercial tracking, rollback.
+- Update at least one mapped non-generated document for every source/config change.
 
 ## Schema First
 
@@ -51,6 +66,8 @@ Run the broadest relevant subset before pushing. For stacked baseline work, pref
 
 ```bash
 pnpm typecheck && pnpm lint && pnpm build && pnpm test && pnpm evals
+pnpm docs:index && pnpm docs:check
+pnpm docs:impact -- --base origin/main
 ```
 
 If you cannot run a check, record the blocker and the exact command in the PR.

@@ -7,6 +7,9 @@
     "build": "turbo run build",
     "evals": "pnpm evals:trip_generation",
     "evals:trip_generation": "node evals/run-trip-generation.mjs",
+    "docs:index": "node scripts/docs/generate-index.mjs",
+    "docs:check": "node scripts/docs/check.mjs",
+    "docs:impact": "node scripts/docs/check-impact.mjs",
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint"
