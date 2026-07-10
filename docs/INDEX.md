@@ -9,26 +9,26 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 ## Current Handoff Snapshot
 
-- **Updated:** 2026-07-11 by Codex / Issue #135
+- **Updated:** 2026-07-11 by Codex / Issue #139 GOV-P0a
 - **Base branch:** `main`
 - **Last fully verified commit:** `87744ed`
 - **Current phase:** Phase 0 — production hardening
 - **Maturity:** Trusted demo skeleton; not yet a production-safe or billing-ready MVP.
-- **Last completed control action:** Merged PRs #106, #107, and #109 into main, closing the Node 22, Supabase security, and 钱学森 Skills documentation-governance baselines.
+- **Last completed control action:** Merged PRs #106, #107, #109, and #136 established the Node 22, Supabase security, composite 钱学森 + Matt-inspired documentation, and Karpathy baselines. GOV-P0a has converged closed/dead backlog references and made #73 the canonical P0-09 trace owner; this branch records the post-merge handoff state.
 
 ### Active Work
 
 | Ref | Work | State | Owner | Next action |
 | --- | --- | --- | --- | --- |
-| Issue #135 | Integrate Karpathy guidelines into the Qian workflow | In progress on codex/qian-karpathy-integration | Codex / operator | Validate the global Skill, project constraints, portable export, Claude prompt, and repository documentation gates; then open and merge the PR. |
+| Issue #139 / GOV-P0b | Create canonical P0-13 through P0-20 and migrate absorbed Phase 0 scope | Next governance seam after GOV-P0a merge | Codex / operator | Create the missing canonical P0 Issues, preserve every unique V2 acceptance criterion, and mark absorbed V2 Issues status:superseded without closing them. |
 
 ### Immediate Queue
 
 | Priority | Control action | Exit criteria |
 | --- | --- | --- |
-| P0 | Complete Issue #135 and merge the composite Qian + Matt-inspired docs + Karpathy baseline. | Global Codex and VisePanda project rules invoke both Skills; the portable export and Claude Code synchronization prompt pass validation. |
-| P0 | Execute ready documentation-first Issues #131, #132, #133, and #134 before dependent feature code. | Identity/ownership, runtime modes, knowledge/SEO evidence, and Human Help service boundaries are accepted, indexed, and referenced by their dependent implementation Issues. |
-| P0 | Update master backlog Issue #102 with the revised P0/P1/P2 dependency graph and document-first gate, then start only status:ready work. | Every active Issue has objective, subsystem, dependency, acceptance evidence, size, milestone, and state; no blocked feature is started early. |
+| P0 | Complete GOV-P0b under Issue #139: create P0-13 through P0-20 and migrate historical V2 scope/acceptance into canonical owners. | Each canonical Phase 0 control action has one open owner; absorbed V2 Issues link to it with status:superseded and no acceptance content is lost. |
+| P0 | Complete GOV-P0c: register the Phase 0/1 dependency graph, update #102 to canonical mapping, and run documentation checks. | The dependency graph is the registered source of truth, Index is regenerated, all canonical blockers resolve, and hard payment/Rescue constraints are explicit. |
+| P0 | Only after GOV-P0a/b/c, complete DOC-P0-01 through DOC-P0-04 before their dependent feature work. | Identity/ownership, runtime modes, knowledge/SEO evidence, and Human Help service boundaries are accepted, indexed, and referenced by their dependent implementation Issues. |
 
 ### Current Blockers
 
@@ -43,8 +43,10 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 - PR #106 merged at c7f3faa after verify, evals, and both Vercel previews passed.
 - PR #107 merged at 2fca99c after verify, evals, database contracts, and both Vercel previews passed.
 - PR #109 merged at 87744ed after documentation governance, verify, evals, database contracts, and both Vercel previews passed.
+- PR #136 merged the Karpathy integration into the composite 钱学森 workflow.
 - Upstream karpathy-guidelines SKILL.md was compared with the installed global Skill at commit 2c606141936f1eeef17fa3043a72095b4765b9c2; SHA-256 matched.
 - Issue #135 local verification passed: both Skills validated, 66 controlled documents passed docs checks/impact, and pnpm typecheck, lint, test, build, and evals passed.
+- GOV-P0a metadata verification: #73 is the canonical P0-09 owner; open blocked-by references to completed baseline Issues were replaced with active canonical dependencies; closed duplicate #125 points to #124 and #130 points to #129.
 
 ## Mandatory Markdown Reading Order
 
