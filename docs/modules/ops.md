@@ -36,6 +36,9 @@ Therefore Ops is a development shell, not an authorized production console.
 The role source must be trusted app metadata or an independent membership table. User-editable
 metadata is forbidden.
 
+Fact review, expiry, conflict resolution, and sanitized knowledge-gap handling follow
+[ADR-0006](../adr/ADR-0006-knowledge-evidence-and-index-quality.md).
+
 ## Verification
 
 ```bash

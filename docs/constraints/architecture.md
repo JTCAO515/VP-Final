@@ -17,6 +17,7 @@ Status: active
 - AI MUST only produce typed envelopes and TripPatch values; deterministic code MUST apply changes.
 - Trip events MUST be append-only where event persistence is active.
 - Execution facts MUST retain source, confidence, verification time, and freshness semantics.
+- Public facts, AI citations, and indexable guidance MUST meet [ADR-0006](../adr/ADR-0006-knowledge-evidence-and-index-quality.md); missing or conflicting evidence is omitted or reported as unknown.
 - Commercial links MUST pass through the outbound gateway and only active partners may be public.
 - Human Task transitions MUST use the accepted domain state machine.
 

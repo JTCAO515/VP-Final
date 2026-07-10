@@ -9,7 +9,7 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 ## Current Handoff Snapshot
 
-- **Updated:** 2026-07-11 by Codex / Issue #132
+- **Updated:** 2026-07-11 by Codex / Issue #133
 - **Base branch:** `main`
 - **Last fully verified commit:** `8ebc87e`
 - **Current phase:** Phase 0 — production hardening
@@ -20,7 +20,7 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 | Ref | Work | State | Owner | Next action |
 | --- | --- | --- | --- | --- |
-| Issue #132 / DOC-P0-02 | Freeze runtime modes and production adapter ownership ADR | In progress on codex/doc-p0-02-runtime-adapter-adr | Codex / operator | Validate ADR-0005's mode/owner matrix, merge it, then complete DOC-P0-03 through DOC-P0-05 before dependent runtime code. |
+| Issue #133 / DOC-P0-03 | Freeze knowledge evidence and SEO index-quality policy | In progress on codex/doc-p0-03-knowledge-evidence | Codex / operator | Validate ADR-0006, merge it, then complete DOC-P0-04 and DOC-P0-05 before dependent feature code. |
 
 ### Immediate Queue
 
@@ -178,6 +178,7 @@ Append-only records of accepted and superseded binding decisions.
 | [ADR-0003: 钱学森 Skills](adr/ADR-0003-qian-systems-engineering-workflow.md) | decision | accepted | operator / overall design | Adopts the closed-loop systems-engineering workflow across all project work. |
 | [ADR-0004: Identity and Trip Ownership Security](adr/ADR-0004-identity-trip-ownership-security.md) | decision | accepted | security / architecture | Freezes server-verified identity, exclusive Trip ownership, read-only sharing, and optimistic concurrency before public persistence. |
 | [ADR-0005: Runtime Modes and Production Adapter Ownership](adr/ADR-0005-runtime-modes-and-production-adapter-ownership.md) | decision | accepted | architecture / platform | Freezes explicit modes, durable production ownership, truthful health, and the prohibition on silent memory fallback. |
+| [ADR-0006: Knowledge Evidence and Index Quality](adr/ADR-0006-knowledge-evidence-and-index-quality.md) | decision | accepted | knowledge / architecture | Freezes evidence eligibility, citations, gap minimization, and quality-gated SEO indexing. |
 
 ## Runbooks
 
