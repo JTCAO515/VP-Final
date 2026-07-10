@@ -22,6 +22,8 @@ Status: active
   a separate opt-in verification.
 - Never make a failing test pass by restoring fabricated production fallback behavior.
 - Migration tests must verify schema, constraints, RLS, and idempotent local reset/apply behavior.
+- Runtime-mode tests must explicitly inject test/demo adapters and prove deployed modes do not silently
+  select memory after missing configuration or dependency failure.
 - AI eval output is evidence, not a substitute for schema and deterministic tests.
 
 ## Commands

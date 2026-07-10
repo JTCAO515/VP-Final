@@ -9,24 +9,24 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 ## Current Handoff Snapshot
 
-- **Updated:** 2026-07-11 by Codex / Issue #131
+- **Updated:** 2026-07-11 by Codex / Issue #132
 - **Base branch:** `main`
-- **Last fully verified commit:** `5f92ff2`
+- **Last fully verified commit:** `8ebc87e`
 - **Current phase:** Phase 0 — production hardening
 - **Maturity:** Trusted demo skeleton; not yet a production-safe or billing-ready MVP.
-- **Last completed control action:** Merged PRs #106, #107, #109, #136, #149, #160, and #161 established the Node 22, Supabase security, composite governance, canonical Phase 0/1 backlog, and dependency graph baselines.
+- **Last completed control action:** Merged PRs #106, #107, #109, #136, #140, #149, #160, and #161 established the Node 22, Supabase security, ADR-0004 identity baseline, composite governance, canonical Phase 0/1 backlog, and dependency graph baselines.
 
 ### Active Work
 
 | Ref | Work | State | Owner | Next action |
 | --- | --- | --- | --- | --- |
-| Issue #131 / DOC-P0-01 | Freeze identity and Trip ownership security ADR | In review on codex/doc-p0-01-identity-trip-adr | Codex / operator | Resolve the rebase, validate ADR-0004 against current canonical dependencies, and merge it before starting P0-03 or P0-04 implementation. |
+| Issue #132 / DOC-P0-02 | Freeze runtime modes and production adapter ownership ADR | In progress on codex/doc-p0-02-runtime-adapter-adr | Codex / operator | Validate ADR-0005's mode/owner matrix, merge it, then complete DOC-P0-03 through DOC-P0-05 before dependent runtime code. |
 
 ### Immediate Queue
 
 | Priority | Control action | Exit criteria |
 | --- | --- | --- |
-| P0 | Accept and merge DOC-P0-01 (#131), then complete DOC-P0-02 through DOC-P0-05 in graph order. | ADR-0004 has an owner/review date and frozen identity/ownership interface; dependent P0-03/P0-04 can begin only after acceptance. |
+| P0 | Accept and merge DOC-P0-02 (#132), then complete DOC-P0-03 through DOC-P0-05 in graph order. | ADR-0005 has an owner/review date and frozen runtime mode/adapter interface; P0-06/P0-10/P0-20 remain constrained by it. |
 | P0 | Start only Phase 0 Issues whose document-first and canonical dependency gates are ready in the graph. | No feature PR starts from a superseded V2 Issue or before its accepted ADR/policy and canonical dependency gates. |
 | P0 | Before any external service claim, update the operator-action register with placeholder, owner, verification, and novice tutorial steps. | No third-party API, payment, deployment, DNS, or store capability is presented as live without recorded operator verification. |
 
@@ -50,6 +50,7 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 - GOV-P0b metadata verification: canonical P0-13 through P0-20 are #150 through #157; V2-42 through V2-50 and V2-52 through V2-58 retain historical bodies with status:superseded and a top link to their sole canonical owner.
 - GOV-P0c verification: docs/governance/phase-0-1-dependency-graph.md is registered as the dependency source of truth; #102 now links canonical owners, retained standalone V2 work, hard Stripe/Rescue gates, and the manual API validation procedure.
 - GOV-P0 merge evidence: PRs #149, #160, and #161 passed repository checks and merged to main; DOC-P0-01 is now the active documentation-first control action.
+- DOC-P0-01 merge evidence: PR #140 passed database contracts, verify, docs, evals, and Vercel previews before merging; ADR-0004 is accepted and Issue #131 is closed.
 
 ## Mandatory Markdown Reading Order
 
@@ -176,6 +177,7 @@ Append-only records of accepted and superseded binding decisions.
 | [ADR-0002: Documentation as Code](adr/ADR-0002-documentation-as-code.md) | decision | accepted | overall design | Makes registry, index, link, freshness, and impact checks permanent. |
 | [ADR-0003: 钱学森 Skills](adr/ADR-0003-qian-systems-engineering-workflow.md) | decision | accepted | operator / overall design | Adopts the closed-loop systems-engineering workflow across all project work. |
 | [ADR-0004: Identity and Trip Ownership Security](adr/ADR-0004-identity-trip-ownership-security.md) | decision | accepted | security / architecture | Freezes server-verified identity, exclusive Trip ownership, read-only sharing, and optimistic concurrency before public persistence. |
+| [ADR-0005: Runtime Modes and Production Adapter Ownership](adr/ADR-0005-runtime-modes-and-production-adapter-ownership.md) | decision | accepted | architecture / platform | Freezes explicit modes, durable production ownership, truthful health, and the prohibition on silent memory fallback. |
 
 ## Runbooks
 
