@@ -9,24 +9,24 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 ## Current Handoff Snapshot
 
-- **Updated:** 2026-07-11 by Codex / Issue #133
+- **Updated:** 2026-07-11 by Codex / Issue #138
 - **Base branch:** `main`
-- **Last fully verified commit:** `8ebc87e`
+- **Last fully verified commit:** `6d6beb2`
 - **Current phase:** Phase 0 — production hardening
 - **Maturity:** Trusted demo skeleton; not yet a production-safe or billing-ready MVP.
-- **Last completed control action:** Merged PRs #106, #107, #109, #136, #140, #149, #160, and #161 established the Node 22, Supabase security, ADR-0004 identity baseline, composite governance, canonical Phase 0/1 backlog, and dependency graph baselines.
+- **Last completed control action:** Merged PRs #106, #107, #109, #136, #140, #149, #160, #161, #162, and #163 established Node 22, Supabase security, accepted ADR-0004 through ADR-0006, composite governance, and the canonical Phase 0/1 dependency graph.
 
 ### Active Work
 
 | Ref | Work | State | Owner | Next action |
 | --- | --- | --- | --- | --- |
-| Issue #133 / DOC-P0-03 | Freeze knowledge evidence and SEO index-quality policy | In progress on codex/doc-p0-03-knowledge-evidence | Codex / operator | Validate ADR-0006, merge it, then complete DOC-P0-04 and DOC-P0-05 before dependent feature code. |
+| Issue #138 / DOC-P0-05 | Add an operator-action register and beginner handoff tutorials | In progress on codex/doc-p0-05-operator-actions | Codex / operator | Validate and merge the register, templates, Agent gates, and tutorial workflow; then resume P0-03 while DOC-P0-04 remains operator-blocked. |
 
 ### Immediate Queue
 
 | Priority | Control action | Exit criteria |
 | --- | --- | --- |
-| P0 | Accept and merge DOC-P0-02 (#132), then complete DOC-P0-03 through DOC-P0-05 in graph order. | ADR-0005 has an owner/review date and frozen runtime mode/adapter interface; P0-06/P0-10/P0-20 remain constrained by it. |
+| P0 | Merge DOC-P0-05 (#138), then use its register for every unresolved external action. | The registered Index, AGENTS, Issue/PR templates, handoff, and Chinese tutorial template enforce named placeholders, owner/status, verification, rollback, and secret exclusion. |
 | P0 | Start only Phase 0 Issues whose document-first and canonical dependency gates are ready in the graph. | No feature PR starts from a superseded V2 Issue or before its accepted ADR/policy and canonical dependency gates. |
 | P0 | Before any external service claim, update the operator-action register with placeholder, owner, verification, and novice tutorial steps. | No third-party API, payment, deployment, DNS, or store capability is presented as live without recorded operator verification. |
 
@@ -51,6 +51,8 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 - GOV-P0c verification: docs/governance/phase-0-1-dependency-graph.md is registered as the dependency source of truth; #102 now links canonical owners, retained standalone V2 work, hard Stripe/Rescue gates, and the manual API validation procedure.
 - GOV-P0 merge evidence: PRs #149, #160, and #161 passed repository checks and merged to main; DOC-P0-01 is now the active documentation-first control action.
 - DOC-P0-01 merge evidence: PR #140 passed database contracts, verify, docs, evals, and Vercel previews before merging; ADR-0004 is accepted and Issue #131 is closed.
+- DOC-P0-02 and DOC-P0-03 merge evidence: PRs #162 and #163 accepted ADR-0005 and ADR-0006 after repository checks passed.
+- DOC-P0-05 working evidence: nine known operator actions are seeded with placeholders only; AGENTS and Issue/PR templates require register synchronization; the Chinese tutorial template includes console steps, verification, rollback, and common mistakes.
 
 ## Mandatory Markdown Reading Order
 
@@ -69,6 +71,7 @@ Issue, current branch/diff, and only the task-specific module/constraint/runbook
 10. [Karpathy Coding Discipline](constraints/karpathy-guidelines.md) — Apply explicit assumptions, minimum sufficient design, surgical diffs, and step-to-check verification during implementation.
 11. [ADR Index](adr/README.md) — Check accepted decisions before proposing or implementing a direction change.
 12. [Runbook Index](runbooks/README.md) — Read the relevant operational procedure before deployment, migration, AI, knowledge, or Human Task work.
+13. [Operator Action Register](governance/operator-action-register.md) — Check unresolved third-party, secret, legal, DNS, deployment, and production-verification actions before claiming an external capability is live.
 
 The handoff snapshot and reading order are generated from [`handoff.json`](handoff.json). Every
 repository change must update that file and regenerate this Index.
@@ -164,6 +167,8 @@ How documents, Issues, pull requests, decisions, and lifecycle evidence are mana
 | [Engineering Governance Guide](governance/README.md) | reference | active | documentation governance | Navigation for document and work governance. |
 | [Handoff Snapshot Workflow](governance/handoff-workflow.md) | constraint | active | overall design | Mandatory current-state, reading-order, verification, blocker, and next-action synchronization for every project change. |
 | [Issue and PR Workflow](governance/issue-pr-workflow.md) | constraint | active | overall design | Issue/PR lifecycle, merge gates, multi-Agent rules, and emergency fixes. |
+| [Operator Action Register](governance/operator-action-register.md) | constraint | active | operator / overall design | Authoritative status, placeholders, owners, external setup gates, verification, and rollback for operator-only actions. |
+| [Operator Action Tutorial Template](governance/operator-action-tutorial-template.md) | reference | active | operator / delivery agent | Beginner-friendly Chinese template for safely executing and verifying registered external actions without exposing secrets. |
 | [Phase 0/1 Dependency Graph](governance/phase-0-1-dependency-graph.md) | reference | active | overall design | Canonical Phase 0/1 Issue ownership, blockers, migration map, lifecycle gates, and backlog-validation procedure. |
 
 ## Architecture Decisions

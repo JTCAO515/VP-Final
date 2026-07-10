@@ -8,6 +8,8 @@ Governance documents define how decisions and work move through the repository.
 - [Handoff snapshot workflow](handoff-workflow.md)
 - [Change classification and sync map](change-classification.md)
 - [Issue and PR workflow](issue-pr-workflow.md)
+- [Operator action register](operator-action-register.md)
+- [Operator tutorial template](operator-action-tutorial-template.md)
 - [Document templates](document-templates.md)
 
 The automated registry and CI check the mechanical parts. Reviewers remain responsible for factual

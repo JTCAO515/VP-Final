@@ -40,6 +40,10 @@ Closes #
 
 <!-- summarize changes to docs/handoff.json and the generated Index -->
 
+## Operator actions
+
+<!-- none | register rows added/updated; placeholders only; disclose real vs mock verification -->
+
 ## Lifecycle follow-up
 
 <!-- Gate closed; production observation owner/date, or "none — complete at merge" -->
@@ -54,5 +58,6 @@ Closes #
 - [ ] Source changes update mapped documentation.
 - [ ] `docs/handoff.json` and the generated Index reflect the post-merge state.
 - [ ] Missing data and unavailable dependencies fail/degrade honestly.
+- [ ] External manual work is registered with owner/status/verification/rollback; no secret is present.
 - [ ] Unrun checks and residual risk are disclosed.
 - [ ] `pnpm docs:check` and `pnpm docs:impact -- --base <ref>` pass.
