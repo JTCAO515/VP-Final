@@ -9,28 +9,26 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 ## Current Handoff Snapshot
 
-- **Updated:** 2026-07-10 by Codex / PR #109
+- **Updated:** 2026-07-10 by Codex / PR #109 final synchronization
 - **Base branch:** `main`
-- **Last fully verified commit:** `3b05bc8`
+- **Last fully verified commit:** `2fca99c`
 - **Current phase:** Phase 0 — production hardening
 - **Maturity:** Trusted demo skeleton; not yet a production-safe or billing-ready MVP.
-- **Last completed control action:** Prepared 钱学森 Skills, the controlled 63-document registry, documentation CI, mandatory reading order, and synchronized handoff snapshot in PR #109.
+- **Last completed control action:** Merged the Node 22 runtime baseline (PR #106) and Supabase operational-table security baseline (PR #107) into main, then synchronized the 钱学森 Skills documentation baseline for PR #109.
 
 ### Active Work
 
 | Ref | Work | State | Owner | Next action |
 | --- | --- | --- | --- | --- |
-| PR #106 | Upgrade the runtime baseline to Node 22 | Open; mergeable; checks passing | Codex / operator | Review and merge before dependent runtime work. |
-| PR #107 | Secure Supabase operational tables | Open; mergeable; checks passing | Codex / operator | Review and merge before production identity or Ops work. |
-| PR #109 | Adopt 钱学森 Skills and documentation-as-code | Open; mergeable; checks passing | Codex / operator | Review this handoff/index amendment, then merge the governance baseline. |
+| PR #109 | Adopt 钱学森 Skills and documentation-as-code | Open; final synchronization after PRs #106 and #107 merged | Codex / operator | Run the documentation and repository gates, then merge the governance baseline into main. |
 
 ### Immediate Queue
 
 | Priority | Control action | Exit criteria |
 | --- | --- | --- |
-| P0 | Merge and reconcile PRs #106, #107, and #109 in dependency-safe order. | main contains Node 22, the Supabase security migration, and the governance/handoff checks with green CI. |
-| P0 | Re-audit all open Issues against real code maturity and rebuild the P0/P1/P2 dependency graph. | Every active Issue has an objective, subsystem, dependency, acceptance evidence, size, and current status; duplicates/stale plans are closed or relabelled. |
-| P0 | Finish the production safety chain before expanding features. | Verified identity/ownership, Ops RBAC, real AI/retrieval, durable task/outbound/telemetry paths, rate limits, observability, and rollback evidence. |
+| P0 | Merge PR #109 after its final handoff and Index checks pass. | main contains the controlled documentation registry, mandatory reading order, handoff snapshot, and documentation impact CI. |
+| P0 | Complete project constraint and explanatory documentation Issues before feature expansion. | Every active architectural, module, business, permission, deployment, and iteration constraint is indexed, assigned an owner, and enforced by an executable check where possible. |
+| P0 | Finish reclassifying the open backlog into the revised P0/P1/P2 dependency graph, then start the first unblocked production-safety Issue. | Every active Issue has an objective, subsystem, dependency, acceptance evidence, size, milestone, and current status; implementation starts only from status:ready. |
 
 ### Current Blockers
 
@@ -42,9 +40,9 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 ### Last Verification Evidence
 
-- At 3b05bc8: pnpm typecheck, lint, test, build, and evals passed.
-- Current PR amendment: 63 controlled Markdown documents passed coverage, metadata, heading, link, freshness, handoff schema, and impact checks.
-- PR #109 remote checks and both Vercel previews passed before this amendment.
+- PR #106 merged at c7f3faa after verify, evals, and both Vercel previews passed.
+- PR #107 merged at 2fca99c after verify, evals, database contracts, and both Vercel previews passed.
+- PR #109 previously passed documentation governance, verify, evals, and both Vercel previews; final post-merge synchronization is being reverified.
 
 ## Mandatory Markdown Reading Order
 

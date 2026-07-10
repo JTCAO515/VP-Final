@@ -1,50 +1,36 @@
 {
   "schemaVersion": 1,
   "updatedAt": "2026-07-10",
-  "updatedBy": "Codex / PR #109",
+  "updatedBy": "Codex / PR #109 final synchronization",
   "baseBranch": "main",
-  "lastVerifiedCommit": "3b05bc8",
+  "lastVerifiedCommit": "2fca99c",
   "currentPhase": "Phase 0 — production hardening",
   "maturity": "Trusted demo skeleton; not yet a production-safe or billing-ready MVP.",
-  "lastCompleted": "Prepared 钱学森 Skills, the controlled 63-document registry, documentation CI, mandatory reading order, and synchronized handoff snapshot in PR #109.",
+  "lastCompleted": "Merged the Node 22 runtime baseline (PR #106) and Supabase operational-table security baseline (PR #107) into main, then synchronized the 钱学森 Skills documentation baseline for PR #109.",
   "activeWork": [
-    {
-      "ref": "PR #106",
-      "title": "Upgrade the runtime baseline to Node 22",
-      "state": "Open; mergeable; checks passing",
-      "owner": "Codex / operator",
-      "next": "Review and merge before dependent runtime work."
-    },
-    {
-      "ref": "PR #107",
-      "title": "Secure Supabase operational tables",
-      "state": "Open; mergeable; checks passing",
-      "owner": "Codex / operator",
-      "next": "Review and merge before production identity or Ops work."
-    },
     {
       "ref": "PR #109",
       "title": "Adopt 钱学森 Skills and documentation-as-code",
-      "state": "Open; mergeable; checks passing",
+      "state": "Open; final synchronization after PRs #106 and #107 merged",
       "owner": "Codex / operator",
-      "next": "Review this handoff/index amendment, then merge the governance baseline."
+      "next": "Run the documentation and repository gates, then merge the governance baseline into main."
     }
   ],
   "nextActions": [
     {
       "priority": "P0",
-      "action": "Merge and reconcile PRs #106, #107, and #109 in dependency-safe order.",
-      "exitCriteria": "main contains Node 22, the Supabase security migration, and the governance/handoff checks with green CI."
+      "action": "Merge PR #109 after its final handoff and Index checks pass.",
+      "exitCriteria": "main contains the controlled documentation registry, mandatory reading order, handoff snapshot, and documentation impact CI."
     },
     {
       "priority": "P0",
-      "action": "Re-audit all open Issues against real code maturity and rebuild the P0/P1/P2 dependency graph.",
-      "exitCriteria": "Every active Issue has an objective, subsystem, dependency, acceptance evidence, size, and current status; duplicates/stale plans are closed or relabelled."
+      "action": "Complete project constraint and explanatory documentation Issues before feature expansion.",
+      "exitCriteria": "Every active architectural, module, business, permission, deployment, and iteration constraint is indexed, assigned an owner, and enforced by an executable check where possible."
     },
     {
       "priority": "P0",
-      "action": "Finish the production safety chain before expanding features.",
-      "exitCriteria": "Verified identity/ownership, Ops RBAC, real AI/retrieval, durable task/outbound/telemetry paths, rate limits, observability, and rollback evidence."
+      "action": "Finish reclassifying the open backlog into the revised P0/P1/P2 dependency graph, then start the first unblocked production-safety Issue.",
+      "exitCriteria": "Every active Issue has an objective, subsystem, dependency, acceptance evidence, size, milestone, and current status; implementation starts only from status:ready."
     }
   ],
   "blockers": [
@@ -55,9 +41,9 @@
     "Real payment evidence, rate limiting, observability, legal pages, and production smoke gates are incomplete."
   ],
   "verification": [
-    "At 3b05bc8: pnpm typecheck, lint, test, build, and evals passed.",
-    "Current PR amendment: 63 controlled Markdown documents passed coverage, metadata, heading, link, freshness, handoff schema, and impact checks.",
-    "PR #109 remote checks and both Vercel previews passed before this amendment."
+    "PR #106 merged at c7f3faa after verify, evals, and both Vercel previews passed.",
+    "PR #107 merged at 2fca99c after verify, evals, database contracts, and both Vercel previews passed.",
+    "PR #109 previously passed documentation governance, verify, evals, and both Vercel previews; final post-merge synchronization is being reverified."
   ],
   "readingOrder": [
     {
