@@ -9,26 +9,26 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 ## Current Handoff Snapshot
 
-- **Updated:** 2026-07-10 by Codex / PR #109 final synchronization
+- **Updated:** 2026-07-11 by Codex / Issue #135
 - **Base branch:** `main`
-- **Last fully verified commit:** `2fca99c`
+- **Last fully verified commit:** `87744ed`
 - **Current phase:** Phase 0 — production hardening
 - **Maturity:** Trusted demo skeleton; not yet a production-safe or billing-ready MVP.
-- **Last completed control action:** Merged the Node 22 runtime baseline (PR #106) and Supabase operational-table security baseline (PR #107) into main, then synchronized the 钱学森 Skills documentation baseline for PR #109.
+- **Last completed control action:** Merged PRs #106, #107, and #109 into main, closing the Node 22, Supabase security, and 钱学森 Skills documentation-governance baselines.
 
 ### Active Work
 
 | Ref | Work | State | Owner | Next action |
 | --- | --- | --- | --- | --- |
-| PR #109 | Adopt 钱学森 Skills and documentation-as-code | Open; final synchronization after PRs #106 and #107 merged | Codex / operator | Run the documentation and repository gates, then merge the governance baseline into main. |
+| Issue #135 | Integrate Karpathy guidelines into the Qian workflow | In progress on codex/qian-karpathy-integration | Codex / operator | Validate the global Skill, project constraints, portable export, Claude prompt, and repository documentation gates; then open and merge the PR. |
 
 ### Immediate Queue
 
 | Priority | Control action | Exit criteria |
 | --- | --- | --- |
-| P0 | Merge PR #109 after its final handoff and Index checks pass. | main contains the controlled documentation registry, mandatory reading order, handoff snapshot, and documentation impact CI. |
-| P0 | Complete project constraint and explanatory documentation Issues before feature expansion. | Every active architectural, module, business, permission, deployment, and iteration constraint is indexed, assigned an owner, and enforced by an executable check where possible. |
-| P0 | Finish reclassifying the open backlog into the revised P0/P1/P2 dependency graph, then start the first unblocked production-safety Issue. | Every active Issue has an objective, subsystem, dependency, acceptance evidence, size, milestone, and current status; implementation starts only from status:ready. |
+| P0 | Complete Issue #135 and merge the composite Qian + Matt-inspired docs + Karpathy baseline. | Global Codex and VisePanda project rules invoke both Skills; the portable export and Claude Code synchronization prompt pass validation. |
+| P0 | Execute ready documentation-first Issues #131, #132, #133, and #134 before dependent feature code. | Identity/ownership, runtime modes, knowledge/SEO evidence, and Human Help service boundaries are accepted, indexed, and referenced by their dependent implementation Issues. |
+| P0 | Update master backlog Issue #102 with the revised P0/P1/P2 dependency graph and document-first gate, then start only status:ready work. | Every active Issue has objective, subsystem, dependency, acceptance evidence, size, milestone, and state; no blocked feature is started early. |
 
 ### Current Blockers
 
@@ -42,7 +42,9 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 - PR #106 merged at c7f3faa after verify, evals, and both Vercel previews passed.
 - PR #107 merged at 2fca99c after verify, evals, database contracts, and both Vercel previews passed.
-- PR #109 previously passed documentation governance, verify, evals, and both Vercel previews; final post-merge synchronization is being reverified.
+- PR #109 merged at 87744ed after documentation governance, verify, evals, database contracts, and both Vercel previews passed.
+- Upstream karpathy-guidelines SKILL.md was compared with the installed global Skill at commit 2c606141936f1eeef17fa3043a72095b4765b9c2; SHA-256 matched.
+- Issue #135 local verification passed: both Skills validated, 66 controlled documents passed docs checks/impact, and pnpm typecheck, lint, test, build, and evals passed.
 
 ## Mandatory Markdown Reading Order
 
@@ -51,13 +53,15 @@ Issue, current branch/diff, and only the task-specific module/constraint/runbook
 
 1. [Canonical Context and Language](../CONTEXT.md) — Learn the product thesis, canonical language, relationships, and truth hierarchy.
 2. [Overall Design Baseline](architecture/top-level-design.md) — Understand mission, controlled subsystems, interface baselines, observations, and lifecycle gates.
-3. [钱学森 Skills](methodology/qian-systems-engineering.md) — Understand the required closed-loop workflow and D0-D3 correction model.
-4. [VisePanda V2 Frozen Product Baseline](planning/visepanda-v2-final-architecture.md) — Read the frozen product, commercial, architecture, roadmap, and anti-goal baseline.
-5. [VisePanda V2 Project Review — 2026-07-10](planning/visepanda-v2-project-review-2026-07-10.md) — Compare the frozen target with the latest evidence-based implementation audit.
-6. [Module Guide](modules/README.md) — Choose the module document that owns the assigned work and inspect its real maturity.
-7. [Constraint Guide](constraints/README.md) — Load the mandatory architecture, coding, business, permission, deployment, and iteration rules.
-8. [ADR Index](adr/README.md) — Check accepted decisions before proposing or implementing a direction change.
-9. [Runbook Index](runbooks/README.md) — Read the relevant operational procedure before deployment, migration, AI, knowledge, or Human Task work.
+3. [钱学森 Skills](methodology/qian-systems-engineering.md) — Understand the composite Qian, Matt-inspired documentation, and Karpathy workflow plus D0-D3 correction model.
+4. [Composite Engineering Baseline](governance/composite-engineering-baseline.md) — See authority, precedence, reading order, document classes, implementation gate, verification, and handoff as one portable baseline.
+5. [VisePanda V2 Frozen Product Baseline](planning/visepanda-v2-final-architecture.md) — Read the frozen product, commercial, architecture, roadmap, and anti-goal baseline.
+6. [VisePanda V2 Project Review — 2026-07-10](planning/visepanda-v2-project-review-2026-07-10.md) — Compare the frozen target with the latest evidence-based implementation audit.
+7. [Module Guide](modules/README.md) — Choose the module document that owns the assigned work and inspect its real maturity.
+8. [Constraint Guide](constraints/README.md) — Load the mandatory architecture, coding, business, permission, deployment, and iteration rules.
+9. [Karpathy Coding Discipline](constraints/karpathy-guidelines.md) — Apply explicit assumptions, minimum sufficient design, surgical diffs, and step-to-check verification during implementation.
+10. [ADR Index](adr/README.md) — Check accepted decisions before proposing or implementing a direction change.
+11. [Runbook Index](runbooks/README.md) — Read the relevant operational procedure before deployment, migration, AI, knowledge, or Human Task work.
 
 The handoff snapshot and reading order are generated from [`handoff.json`](handoff.json). Every
 repository change must update that file and regenerate this Index.
@@ -135,8 +139,9 @@ Normative, testable rules that block merge or release when violated.
 | [Constraint Guide](constraints/README.md) | reference | active | overall design | Index and normative interpretation for project constraints. |
 | [Deployment Constraints](constraints/deployment.md) | constraint | active | platform | Environment, migration, health, observability, feature flag, and rollback gates. |
 | [Iteration Constraints](constraints/iteration.md) | constraint | active | overall design | Lifecycle, Issue, PR, documentation, eval, migration, and phase-trigger gates. |
+| [Karpathy Coding Discipline](constraints/karpathy-guidelines.md) | constraint | active | engineering | Mandatory assumption, simplicity, surgical-change, and goal-driven verification rules. |
 | [Permission and Data Access Constraints](constraints/permissions.md) | constraint | active | security | Authentication, authorization, RLS, Ops, service-role, privacy, and retention rules. |
-| [钱学森 Skills Constraints](constraints/qian-systems-engineering.md) | constraint | active | overall design | Twenty-six mandatory closed-loop systems-engineering rules and evidence gates. |
+| [钱学森 Skills Constraints](constraints/qian-systems-engineering.md) | constraint | active | overall design | Thirty-one mandatory systems, documentation, and focused-implementation rules with evidence gates. |
 
 ## Governance
 
@@ -145,6 +150,8 @@ How documents, Issues, pull requests, decisions, and lifecycle evidence are mana
 | Document | Type | Status | Owner | Purpose |
 | --- | --- | --- | --- | --- |
 | [Change Classification and Sync Map](governance/change-classification.md) | reference | active | architecture | C0-C4 change classes, D0-D3 mapping, and code-to-document intent. |
+| [Claude Code Engineering Synchronization Prompt](governance/claude-code-sync-prompt.md) | reference | active | overall design | Portable prompt for synchronizing Claude Code with the full project engineering baseline. |
+| [Composite Engineering Baseline](governance/composite-engineering-baseline.md) | reference | active | overall design | Unified Qian, Matt-inspired documentation-as-code, and Karpathy engineering baseline for humans and Agents. |
 | [Documentation Templates](governance/document-templates.md) | reference | active | documentation governance | Templates for explanations, constraints, ADRs, runbooks, reviews, and retrospectives. |
 | [Documentation Workflow](governance/documentation-workflow.md) | constraint | active | documentation governance | Document classes, registry, code-sync loop, freshness, and emergency path. |
 | [Engineering Governance Guide](governance/README.md) | reference | active | documentation governance | Navigation for document and work governance. |

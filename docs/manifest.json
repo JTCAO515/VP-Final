@@ -426,6 +426,16 @@
       "sourcePrefixes": []
     },
     {
+      "path": "docs/constraints/karpathy-guidelines.md",
+      "title": "Karpathy Coding Discipline",
+      "category": "constraints",
+      "type": "constraint",
+      "status": "active",
+      "owner": "engineering",
+      "summary": "Mandatory assumption, simplicity, surgical-change, and goal-driven verification rules.",
+      "sourcePrefixes": []
+    },
+    {
       "path": "docs/constraints/business.md",
       "title": "Business Constraints",
       "category": "constraints",
@@ -477,7 +487,7 @@
       "type": "constraint",
       "status": "active",
       "owner": "overall design",
-      "summary": "Twenty-six mandatory closed-loop systems-engineering rules and evidence gates.",
+      "summary": "Thirty-one mandatory systems, documentation, and focused-implementation rules with evidence gates.",
       "sourcePrefixes": []
     },
 
@@ -505,6 +515,26 @@
         ".github/PULL_REQUEST_TEMPLATE.md",
         ".github/CODEOWNERS"
       ]
+    },
+    {
+      "path": "docs/governance/composite-engineering-baseline.md",
+      "title": "Composite Engineering Baseline",
+      "category": "governance",
+      "type": "reference",
+      "status": "active",
+      "owner": "overall design",
+      "summary": "Unified Qian, Matt-inspired documentation-as-code, and Karpathy engineering baseline for humans and Agents.",
+      "sourcePrefixes": []
+    },
+    {
+      "path": "docs/governance/claude-code-sync-prompt.md",
+      "title": "Claude Code Engineering Synchronization Prompt",
+      "category": "governance",
+      "type": "reference",
+      "status": "active",
+      "owner": "overall design",
+      "summary": "Portable prompt for synchronizing Claude Code with the full project engineering baseline.",
+      "sourcePrefixes": []
     },
     {
       "path": "docs/governance/handoff-workflow.md",
