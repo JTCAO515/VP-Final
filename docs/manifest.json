@@ -1,0 +1,810 @@
+{
+  "schemaVersion": 1,
+  "controlledMarkdown": [
+    "README.md",
+    "CONTEXT.md",
+    "AGENTS.md",
+    "docs/",
+    "evals/README.md",
+    ".github/ISSUE_TEMPLATE/",
+    ".github/PULL_REQUEST_TEMPLATE.md"
+  ],
+  "ignoredMarkdown": ["docs/INDEX.md"],
+  "impact": {
+    "handoffPath": "docs/handoff.json",
+    "requireHandoffForEveryChange": true,
+    "sourcePrefixes": [
+      "apps/",
+      "packages/",
+      "infra/",
+      "evals/",
+      "scripts/",
+      ".github/",
+      "package.json",
+      "pnpm-lock.yaml",
+      "pnpm-workspace.yaml",
+      "turbo.json",
+      "tsconfig.base.json",
+      ".prettierrc.json"
+    ]
+  },
+  "categories": [
+    {
+      "id": "start",
+      "title": "Start Here",
+      "description": "Product context, terminology, repository entry points, and agent rules.",
+      "order": 10
+    },
+    {
+      "id": "methodology",
+      "title": "Methodology",
+      "description": "The reasoning and feedback system governing all VisePanda work.",
+      "order": 20
+    },
+    {
+      "id": "architecture",
+      "title": "Architecture",
+      "description": "Current system shape, boundaries, data flows, and overall design controls.",
+      "order": 30
+    },
+    {
+      "id": "modules",
+      "title": "Modules",
+      "description": "Ownership, implementation maturity, interfaces, and gaps for each code module.",
+      "order": 40
+    },
+    {
+      "id": "standards",
+      "title": "Development Standards",
+      "description": "How implementation, TypeScript, contracts, and tests are written.",
+      "order": 50
+    },
+    {
+      "id": "constraints",
+      "title": "Mandatory Constraints",
+      "description": "Normative, testable rules that block merge or release when violated.",
+      "order": 60
+    },
+    {
+      "id": "governance",
+      "title": "Governance",
+      "description": "How documents, Issues, pull requests, decisions, and lifecycle evidence are managed.",
+      "order": 70
+    },
+    {
+      "id": "decisions",
+      "title": "Architecture Decisions",
+      "description": "Append-only records of accepted and superseded binding decisions.",
+      "order": 80
+    },
+    {
+      "id": "operations",
+      "title": "Runbooks",
+      "description": "Repeatable deployment, data, AI, knowledge, and Human Task procedures.",
+      "order": 90
+    },
+    {
+      "id": "design",
+      "title": "Product and Brand Design",
+      "description": "Canonical visual system and retained historical design explorations.",
+      "order": 100
+    },
+    {
+      "id": "business",
+      "title": "Commercial and Compliance",
+      "description": "Revenue, partner, payment, privacy, safety, and platform boundaries.",
+      "order": 110
+    },
+    {
+      "id": "planning",
+      "title": "Planning and Reviews",
+      "description": "Frozen product direction and dated evidence-based project reviews.",
+      "order": 120
+    },
+    {
+      "id": "quality",
+      "title": "Quality and Evals",
+      "description": "AI behavior regression suites and quality evidence.",
+      "order": 130
+    },
+    {
+      "id": "collaboration",
+      "title": "Collaboration Templates",
+      "description": "GitHub Issue and pull request evidence templates.",
+      "order": 140
+    }
+  ],
+  "documents": [
+    {
+      "path": "README.md",
+      "title": "VisePanda V2 Repository",
+      "category": "start",
+      "type": "explanation",
+      "status": "active",
+      "owner": "overall design",
+      "summary": "Product thesis, current maturity, repository map, and quickstart.",
+      "sourcePrefixes": []
+    },
+    {
+      "path": "CONTEXT.md",
+      "title": "Canonical Context and Language",
+      "category": "start",
+      "type": "reference",
+      "status": "active",
+      "owner": "overall design",
+      "summary": "Canonical terms, relationships, architecture label, and truth hierarchy.",
+      "sourcePrefixes": []
+    },
+    {
+      "path": "docs/README.md",
+      "title": "Documentation Guide",
+      "category": "start",
+      "type": "reference",
+      "status": "active",
+      "owner": "documentation governance",
+      "summary": "Reading routes, document classes, statuses, and index rules.",
+      "sourcePrefixes": ["scripts/docs/"]
+    },
+
+    {
+      "path": "docs/methodology/README.md",
+      "title": "Methodology Guide",
+      "category": "methodology",
+      "type": "reference",
+      "status": "active",
+      "owner": "overall design",
+      "summary": "Entry point for the project engineering methodology and controls.",
+      "sourcePrefixes": []
+    },
+    {
+      "path": "docs/methodology/qian-systems-engineering.md",
+      "title": "钱学森 Skills",
+      "category": "methodology",
+      "type": "methodology",
+      "status": "active",
+      "owner": "overall design",
+      "summary": "Software adaptation of systems engineering, feedback control, meta-synthesis, and lifecycle governance.",
+      "sourcePrefixes": []
+    },
+
+    {
+      "path": "docs/architecture/README.md",
+      "title": "Architecture Guide",
+      "category": "architecture",
+      "type": "reference",
+      "status": "active",
+      "owner": "architecture",
+      "summary": "Navigation for architecture explanations and boundaries.",
+      "sourcePrefixes": []
+    },
+    {
+      "path": "docs/architecture/top-level-design.md",
+      "title": "Overall Design Baseline",
+      "category": "architecture",
+      "type": "explanation",
+      "status": "active",
+      "owner": "overall design",
+      "summary": "Mission, controlled subsystems, interface baselines, observations, and lifecycle gates.",
+      "sourcePrefixes": []
+    },
+    {
+      "path": "docs/architecture/system-overview.md",
+      "title": "System Overview",
+      "category": "architecture",
+      "type": "explanation",
+      "status": "active",
+      "owner": "architecture",
+      "summary": "Product-to-system view of the modular monolith and user surfaces.",
+      "sourcePrefixes": []
+    },
+    {
+      "path": "docs/architecture/repository-structure.md",
+      "title": "Repository Structure",
+      "category": "architecture",
+      "type": "explanation",
+      "status": "active",
+      "owner": "architecture",
+      "summary": "Monorepo layout, package ownership, and current maturity.",
+      "sourcePrefixes": [
+        "package.json",
+        "pnpm-lock.yaml",
+        "pnpm-workspace.yaml",
+        "turbo.json",
+        "tsconfig.base.json",
+        ".prettierrc.json",
+        ".github/workflows/"
+      ]
+    },
+    {
+      "path": "docs/architecture/runtime-data-flows.md",
+      "title": "Runtime and Data Flows",
+      "category": "architecture",
+      "type": "explanation",
+      "status": "active",
+      "owner": "architecture",
+      "summary": "Copilot, Trip, knowledge, commerce, identity, task, and telemetry flows.",
+      "sourcePrefixes": []
+    },
+    {
+      "path": "docs/architecture/dependency-rules.md",
+      "title": "Dependency Rules",
+      "category": "architecture",
+      "type": "explanation",
+      "status": "active",
+      "owner": "architecture",
+      "summary": "Allowed package/application dependencies and integration boundaries.",
+      "sourcePrefixes": ["pnpm-workspace.yaml", "turbo.json", "tsconfig.base.json"]
+    },
+
+    {
+      "path": "docs/modules/README.md",
+      "title": "Module Guide",
+      "category": "modules",
+      "type": "reference",
+      "status": "active",
+      "owner": "architecture",
+      "summary": "Module ownership and maturity index.",
+      "sourcePrefixes": []
+    },
+    {
+      "path": "docs/modules/domain.md",
+      "title": "Domain Module",
+      "category": "modules",
+      "type": "explanation",
+      "status": "active",
+      "owner": "domain",
+      "summary": "Zod schemas, pure rules, TripPatch, and domain authority.",
+      "sourcePrefixes": ["packages/domain/"]
+    },
+    {
+      "path": "docs/modules/ai.md",
+      "title": "AI Module",
+      "category": "modules",
+      "type": "explanation",
+      "status": "active",
+      "owner": "AI",
+      "summary": "Provider-neutral routing, output validation, maturity, and eval obligations.",
+      "sourcePrefixes": ["packages/ai/"]
+    },
+    {
+      "path": "docs/modules/api-client.md",
+      "title": "API Client Module",
+      "category": "modules",
+      "type": "explanation",
+      "status": "active",
+      "owner": "API",
+      "summary": "Typed client contract and current transport boundaries.",
+      "sourcePrefixes": ["packages/api-client/"]
+    },
+    {
+      "path": "docs/modules/ui.md",
+      "title": "UI Module",
+      "category": "modules",
+      "type": "explanation",
+      "status": "active",
+      "owner": "design systems",
+      "summary": "Shared UI package role, maturity, and design-token boundaries.",
+      "sourcePrefixes": ["packages/ui/"]
+    },
+    {
+      "path": "docs/modules/server.md",
+      "title": "Server Module",
+      "category": "modules",
+      "type": "explanation",
+      "status": "active",
+      "owner": "server",
+      "summary": "tRPC modular monolith, service interfaces, adapters, and production gaps.",
+      "sourcePrefixes": ["apps/server/"]
+    },
+    {
+      "path": "docs/modules/web.md",
+      "title": "Web Module",
+      "category": "modules",
+      "type": "explanation",
+      "status": "active",
+      "owner": "Web",
+      "summary": "Next.js public product, Copilot workspace, SEO, and current runtime behavior.",
+      "sourcePrefixes": ["apps/web/"]
+    },
+    {
+      "path": "docs/modules/ops.md",
+      "title": "Ops Module",
+      "category": "modules",
+      "type": "explanation",
+      "status": "active",
+      "owner": "operations",
+      "summary": "Knowledge and Human Task operations surface and authorization gaps.",
+      "sourcePrefixes": ["apps/ops/"]
+    },
+    {
+      "path": "docs/modules/mobile.md",
+      "title": "Mobile Module",
+      "category": "modules",
+      "type": "explanation",
+      "status": "active",
+      "owner": "Mobile",
+      "summary": "Phase 1 Expo surface, current placeholder status, and activation trigger.",
+      "sourcePrefixes": ["apps/mobile/"]
+    },
+    {
+      "path": "docs/modules/data-platform.md",
+      "title": "Data Platform Module",
+      "category": "modules",
+      "type": "explanation",
+      "status": "active",
+      "owner": "data platform",
+      "summary": "Supabase schema, migrations, RLS, persistence, and data ownership.",
+      "sourcePrefixes": ["infra/"]
+    },
+
+    {
+      "path": "docs/standards/README.md",
+      "title": "Development Standards Guide",
+      "category": "standards",
+      "type": "reference",
+      "status": "active",
+      "owner": "engineering",
+      "summary": "Navigation for implementation standards.",
+      "sourcePrefixes": []
+    },
+    {
+      "path": "docs/standards/development.md",
+      "title": "Development Standard",
+      "category": "standards",
+      "type": "constraint",
+      "status": "active",
+      "owner": "engineering",
+      "summary": "Work sequence, scope discipline, maturity language, and completion rules.",
+      "sourcePrefixes": [
+        "package.json",
+        "pnpm-lock.yaml",
+        "pnpm-workspace.yaml",
+        "turbo.json",
+        "tsconfig.base.json",
+        ".prettierrc.json"
+      ]
+    },
+    {
+      "path": "docs/standards/typescript.md",
+      "title": "TypeScript Standard",
+      "category": "standards",
+      "type": "constraint",
+      "status": "active",
+      "owner": "engineering",
+      "summary": "Strict typing, runtime parsing, module imports, naming, and logging.",
+      "sourcePrefixes": []
+    },
+    {
+      "path": "docs/standards/testing.md",
+      "title": "Testing Standard",
+      "category": "standards",
+      "type": "constraint",
+      "status": "active",
+      "owner": "quality",
+      "summary": "Required test layers, evidence, fixtures, and command expectations.",
+      "sourcePrefixes": []
+    },
+    {
+      "path": "docs/standards/api-contracts.md",
+      "title": "API and Interface Contract Standard",
+      "category": "standards",
+      "type": "constraint",
+      "status": "active",
+      "owner": "architecture",
+      "summary": "Schema-first inputs, outputs, errors, compatibility, idempotency, and Trip invariants.",
+      "sourcePrefixes": ["packages/domain/", "packages/api-client/", "apps/server/"]
+    },
+
+    {
+      "path": "docs/constraints/README.md",
+      "title": "Constraint Guide",
+      "category": "constraints",
+      "type": "reference",
+      "status": "active",
+      "owner": "overall design",
+      "summary": "Index and normative interpretation for project constraints.",
+      "sourcePrefixes": []
+    },
+    {
+      "path": "docs/constraints/architecture.md",
+      "title": "Architecture Constraints",
+      "category": "constraints",
+      "type": "constraint",
+      "status": "active",
+      "owner": "architecture",
+      "summary": "System shape, dependency, Trip, knowledge, commerce, and task invariants.",
+      "sourcePrefixes": []
+    },
+    {
+      "path": "docs/constraints/coding.md",
+      "title": "Coding Constraints",
+      "category": "constraints",
+      "type": "constraint",
+      "status": "active",
+      "owner": "engineering",
+      "summary": "Mandatory quality, truthfulness, secret, migration, and scope rules.",
+      "sourcePrefixes": []
+    },
+    {
+      "path": "docs/constraints/business.md",
+      "title": "Business Constraints",
+      "category": "constraints",
+      "type": "constraint",
+      "status": "active",
+      "owner": "commerce",
+      "summary": "Trust, commercial intent, partner, Human Task, payment, and revenue evidence rules.",
+      "sourcePrefixes": [
+        "apps/server/src/modules/commerce/",
+        "apps/server/src/modules/task/",
+        "apps/web/src/app/outbound/",
+        "apps/web/src/app/human-help/"
+      ]
+    },
+    {
+      "path": "docs/constraints/deployment.md",
+      "title": "Deployment Constraints",
+      "category": "constraints",
+      "type": "constraint",
+      "status": "active",
+      "owner": "platform",
+      "summary": "Environment, migration, health, observability, feature flag, and rollback gates.",
+      "sourcePrefixes": [".github/workflows/", "package.json", "pnpm-lock.yaml", "turbo.json"]
+    },
+    {
+      "path": "docs/constraints/permissions.md",
+      "title": "Permission and Data Access Constraints",
+      "category": "constraints",
+      "type": "constraint",
+      "status": "active",
+      "owner": "security",
+      "summary": "Authentication, authorization, RLS, Ops, service-role, privacy, and retention rules.",
+      "sourcePrefixes": ["infra/", "apps/server/src/modules/identity/", "apps/ops/"]
+    },
+    {
+      "path": "docs/constraints/iteration.md",
+      "title": "Iteration Constraints",
+      "category": "constraints",
+      "type": "constraint",
+      "status": "active",
+      "owner": "overall design",
+      "summary": "Lifecycle, Issue, PR, documentation, eval, migration, and phase-trigger gates.",
+      "sourcePrefixes": [".github/", "scripts/docs/"]
+    },
+    {
+      "path": "docs/constraints/qian-systems-engineering.md",
+      "title": "钱学森 Skills Constraints",
+      "category": "constraints",
+      "type": "constraint",
+      "status": "active",
+      "owner": "overall design",
+      "summary": "Twenty-six mandatory closed-loop systems-engineering rules and evidence gates.",
+      "sourcePrefixes": []
+    },
+
+    {
+      "path": "docs/governance/README.md",
+      "title": "Engineering Governance Guide",
+      "category": "governance",
+      "type": "reference",
+      "status": "active",
+      "owner": "documentation governance",
+      "summary": "Navigation for document and work governance.",
+      "sourcePrefixes": []
+    },
+    {
+      "path": "docs/governance/documentation-workflow.md",
+      "title": "Documentation Workflow",
+      "category": "governance",
+      "type": "constraint",
+      "status": "active",
+      "owner": "documentation governance",
+      "summary": "Document classes, registry, code-sync loop, freshness, and emergency path.",
+      "sourcePrefixes": [
+        "scripts/docs/",
+        ".github/ISSUE_TEMPLATE/",
+        ".github/PULL_REQUEST_TEMPLATE.md",
+        ".github/CODEOWNERS"
+      ]
+    },
+    {
+      "path": "docs/governance/handoff-workflow.md",
+      "title": "Handoff Snapshot Workflow",
+      "category": "governance",
+      "type": "constraint",
+      "status": "active",
+      "owner": "overall design",
+      "summary": "Mandatory current-state, reading-order, verification, blocker, and next-action synchronization for every project change.",
+      "sourcePrefixes": ["scripts/docs/", ".github/", "package.json"]
+    },
+    {
+      "path": "docs/governance/change-classification.md",
+      "title": "Change Classification and Sync Map",
+      "category": "governance",
+      "type": "reference",
+      "status": "active",
+      "owner": "architecture",
+      "summary": "C0-C4 change classes, D0-D3 mapping, and code-to-document intent.",
+      "sourcePrefixes": ["scripts/docs/"]
+    },
+    {
+      "path": "docs/governance/issue-pr-workflow.md",
+      "title": "Issue and PR Workflow",
+      "category": "governance",
+      "type": "constraint",
+      "status": "active",
+      "owner": "overall design",
+      "summary": "Issue/PR lifecycle, merge gates, multi-Agent rules, and emergency fixes.",
+      "sourcePrefixes": [".github/"]
+    },
+    {
+      "path": "docs/governance/document-templates.md",
+      "title": "Documentation Templates",
+      "category": "governance",
+      "type": "reference",
+      "status": "active",
+      "owner": "documentation governance",
+      "summary": "Templates for explanations, constraints, ADRs, runbooks, reviews, and retrospectives.",
+      "sourcePrefixes": []
+    },
+
+    {
+      "path": "docs/adr/README.md",
+      "title": "ADR Index",
+      "category": "decisions",
+      "type": "reference",
+      "status": "active",
+      "owner": "architecture",
+      "summary": "Index and creation criteria for architecture decision records.",
+      "sourcePrefixes": []
+    },
+    {
+      "path": "docs/adr/ADR-0001-repo-and-v1-disposition.md",
+      "title": "ADR-0001: Repository and V1 Disposition",
+      "category": "decisions",
+      "type": "decision",
+      "status": "accepted",
+      "owner": "operator",
+      "summary": "Establishes VP-Final as the V2 repository and separates V1 wind-down.",
+      "sourcePrefixes": []
+    },
+    {
+      "path": "docs/adr/ADR-0002-documentation-as-code.md",
+      "title": "ADR-0002: Documentation as Code",
+      "category": "decisions",
+      "type": "decision",
+      "status": "accepted",
+      "owner": "overall design",
+      "summary": "Makes registry, index, link, freshness, and impact checks permanent.",
+      "sourcePrefixes": ["scripts/docs/"]
+    },
+    {
+      "path": "docs/adr/ADR-0003-qian-systems-engineering-workflow.md",
+      "title": "ADR-0003: 钱学森 Skills",
+      "category": "decisions",
+      "type": "decision",
+      "status": "accepted",
+      "owner": "operator / overall design",
+      "summary": "Adopts the closed-loop systems-engineering workflow across all project work.",
+      "sourcePrefixes": []
+    },
+
+    {
+      "path": "docs/runbooks/README.md",
+      "title": "Runbook Index",
+      "category": "operations",
+      "type": "reference",
+      "status": "active",
+      "owner": "operations",
+      "summary": "Index and template for active operational runbooks.",
+      "sourcePrefixes": []
+    },
+    {
+      "path": "docs/runbooks/web-deploy-rollback.md",
+      "title": "Web Deploy and Rollback Runbook",
+      "category": "operations",
+      "type": "runbook",
+      "status": "active",
+      "owner": "platform",
+      "summary": "Build, preview, smoke, promote, and recover the Vercel Web deployment.",
+      "sourcePrefixes": [
+        "apps/web/",
+        ".github/workflows/",
+        "package.json",
+        "pnpm-lock.yaml",
+        "turbo.json"
+      ]
+    },
+    {
+      "path": "docs/runbooks/supabase-migrations.md",
+      "title": "Supabase Migration Runbook",
+      "category": "operations",
+      "type": "runbook",
+      "status": "active",
+      "owner": "data platform",
+      "summary": "Create, reset, apply, verify, and forward-repair Supabase migrations and RLS.",
+      "sourcePrefixes": ["infra/"]
+    },
+    {
+      "path": "docs/runbooks/ai-eval-regression.md",
+      "title": "AI Evaluation Regression Runbook",
+      "category": "operations",
+      "type": "runbook",
+      "status": "active",
+      "owner": "AI",
+      "summary": "Evaluate prompt, model, routing, retrieval, safety, cost, and provider changes.",
+      "sourcePrefixes": ["packages/ai/", "evals/"]
+    },
+    {
+      "path": "docs/runbooks/human-task-concierge.md",
+      "title": "Human Task Concierge Runbook",
+      "category": "operations",
+      "type": "runbook",
+      "status": "active",
+      "owner": "operator",
+      "summary": "Triage, quote, fulfil, evidence, privacy, and escalation for real Human Tasks.",
+      "sourcePrefixes": [
+        "apps/server/src/modules/task/",
+        "apps/ops/src/app/tasks/",
+        "apps/web/src/app/human-help/"
+      ]
+    },
+    {
+      "path": "docs/runbooks/knowledge-fact-review.md",
+      "title": "Knowledge Fact Review Runbook",
+      "category": "operations",
+      "type": "runbook",
+      "status": "active",
+      "owner": "knowledge operations",
+      "summary": "Review fact source, freshness, version, deprecation, gaps, and public exposure.",
+      "sourcePrefixes": [
+        "apps/server/src/modules/knowledge/",
+        "apps/ops/src/app/facts/",
+        "apps/ops/src/app/gaps/"
+      ]
+    },
+
+    {
+      "path": "docs/design-system/README.md",
+      "title": "Design System Index",
+      "category": "design",
+      "type": "reference",
+      "status": "active",
+      "owner": "design systems",
+      "summary": "Identifies the canonical red-gold system and historical alternatives.",
+      "sourcePrefixes": []
+    },
+    {
+      "path": "docs/design-system/visepanda-v2-red-gold-design-system.md",
+      "title": "VisePanda Red-Gold Design System",
+      "category": "design",
+      "type": "design",
+      "status": "active",
+      "owner": "design systems",
+      "summary": "Canonical porcelain, ink, cinnabar, and restrained gold visual language.",
+      "sourcePrefixes": ["apps/web/", "apps/ops/", "apps/mobile/", "packages/ui/"]
+    },
+    {
+      "path": "docs/design-system/visepanda-v2-design-system-fusion.md",
+      "title": "Design System Fusion Study",
+      "category": "design",
+      "type": "design",
+      "status": "historical",
+      "owner": "design systems",
+      "summary": "Historical multi-skill design synthesis retained for traceability.",
+      "sourcePrefixes": []
+    },
+    {
+      "path": "docs/design-system/visepanda-v2-design-system.md",
+      "title": "Initial V2 Design System",
+      "category": "design",
+      "type": "design",
+      "status": "historical",
+      "owner": "design systems",
+      "summary": "Superseded initial visual direction retained for history.",
+      "sourcePrefixes": []
+    },
+
+    {
+      "path": "docs/commercial/README.md",
+      "title": "Commercial Documentation",
+      "category": "business",
+      "type": "explanation",
+      "status": "active",
+      "owner": "commerce",
+      "summary": "Revenue lines, payment maturity, partner rules, and required evidence.",
+      "sourcePrefixes": [
+        "apps/server/src/modules/commerce/",
+        "apps/server/src/modules/task/",
+        "apps/web/src/app/outbound/",
+        "apps/web/src/app/human-help/"
+      ]
+    },
+    {
+      "path": "docs/compliance/README.md",
+      "title": "Compliance Notes",
+      "category": "business",
+      "type": "explanation",
+      "status": "active",
+      "owner": "operator / compliance",
+      "summary": "Privacy, payment, AI safety, retention, and disclosure boundaries.",
+      "sourcePrefixes": [
+        "infra/",
+        "apps/server/src/modules/identity/",
+        "apps/server/src/modules/task/"
+      ]
+    },
+
+    {
+      "path": "docs/planning/README.md",
+      "title": "Planning Guide",
+      "category": "planning",
+      "type": "reference",
+      "status": "active",
+      "owner": "overall design",
+      "summary": "Authority and lifecycle rules for baselines, plans, and dated reviews.",
+      "sourcePrefixes": []
+    },
+    {
+      "path": "docs/planning/visepanda-v2-final-architecture.md",
+      "title": "VisePanda V2 Frozen Product Baseline",
+      "category": "planning",
+      "type": "planning",
+      "status": "frozen",
+      "owner": "operator / architecture",
+      "summary": "Accepted product thesis, Fable-5 architecture, commercial model, roadmap, and anti-goals.",
+      "sourcePrefixes": []
+    },
+    {
+      "path": "docs/planning/visepanda-v2-project-review-2026-07-10.md",
+      "title": "VisePanda V2 Project Review — 2026-07-10",
+      "category": "planning",
+      "type": "planning",
+      "status": "historical",
+      "owner": "overall design",
+      "summary": "Evidence-based implementation audit, gaps, architecture corrections, and revised execution path.",
+      "sourcePrefixes": []
+    },
+
+    {
+      "path": "evals/README.md",
+      "title": "AI Evals",
+      "category": "quality",
+      "type": "reference",
+      "status": "active",
+      "owner": "AI / quality",
+      "summary": "AI regression fixture format, commands, and quality expectations.",
+      "sourcePrefixes": ["evals/"]
+    },
+
+    {
+      "path": "AGENTS.md",
+      "title": "Agent Rules",
+      "category": "collaboration",
+      "type": "constraint",
+      "status": "active",
+      "owner": "overall design",
+      "summary": "Minimum context, branch, schema, safety, documentation, and verification rules for coding Agents.",
+      "sourcePrefixes": []
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/feature.md",
+      "title": "Feature Issue Template",
+      "category": "collaboration",
+      "type": "reference",
+      "status": "active",
+      "owner": "overall design",
+      "summary": "Required objective, subsystem, deviation, scope, contract, observation, docs, and risk fields.",
+      "sourcePrefixes": [".github/ISSUE_TEMPLATE/"]
+    },
+    {
+      "path": ".github/PULL_REQUEST_TEMPLATE.md",
+      "title": "Pull Request Template",
+      "category": "collaboration",
+      "type": "reference",
+      "status": "active",
+      "owner": "overall design",
+      "summary": "Required implementation, evidence, deviation, documentation, rollback, and lifecycle fields.",
+      "sourcePrefixes": [".github/PULL_REQUEST_TEMPLATE.md"]
+    }
+  ]
+}
