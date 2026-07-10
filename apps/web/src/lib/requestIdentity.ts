@@ -41,7 +41,12 @@ export async function resolveRequestIdentity(request: Request, response: NextRes
   }
 
   const secret = process.env.VISEPANDA_ANON_SESSION_SECRET;
-  if (!secret) return { kind: "none" };
+  if (!secret) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("Anonymous session configuration is unavailable.");
+    }
+    return { kind: "none" };
+  }
   const existing = parseAnonymousSessionValue(readCookie(request.headers.get("cookie"), ANONYMOUS_SESSION_COOKIE), secret);
   const anonId = existing ?? randomBytes(32).toString("base64url");
   if (!existing) {

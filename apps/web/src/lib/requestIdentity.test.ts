@@ -40,4 +40,22 @@ describe("anonymous request identity", () => {
     if (previous) process.env.VISEPANDA_ANON_SESSION_SECRET = previous;
     else delete process.env.VISEPANDA_ANON_SESSION_SECRET;
   });
+
+  it("fails honestly when production anonymous-session configuration is missing", async () => {
+    const previousSecret = process.env.VISEPANDA_ANON_SESSION_SECRET;
+    const previousNodeEnv = process.env.NODE_ENV;
+    delete process.env.VISEPANDA_ANON_SESSION_SECRET;
+    process.env.NODE_ENV = "production";
+    delete process.env.SUPABASE_URL;
+    delete process.env.SUPABASE_ANON_KEY;
+
+    await expect(resolveRequestIdentity(new Request("https://example.test/api/copilot"), NextResponse.next())).rejects.toThrow(
+      "Anonymous session configuration is unavailable.",
+    );
+
+    if (previousSecret) process.env.VISEPANDA_ANON_SESSION_SECRET = previousSecret;
+    else delete process.env.VISEPANDA_ANON_SESSION_SECRET;
+    if (previousNodeEnv) process.env.NODE_ENV = previousNodeEnv;
+    else delete process.env.NODE_ENV;
+  });
 });
