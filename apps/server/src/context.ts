@@ -5,7 +5,7 @@ import type { HumanTaskService } from "./modules/task/service.js";
 
 export type RequestIdentity =
   | { kind: "anonymous"; anonId: string }
-  | { kind: "authenticated"; userId: string; email?: string }
+  | { kind: "authenticated"; userId: string; email?: string; anonId?: string }
   | { kind: "none" };
 
 export type ServerContext = {

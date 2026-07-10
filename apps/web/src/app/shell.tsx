@@ -408,6 +408,7 @@ export function CopilotShell() {
           <a href="/explore">Explore</a>
           <a href="/guides/payment">Tools</a>
           <a href="/human-help">Help</a>
+          <a href="/account">Account</a>
         </nav>
         <div className="tripMeta">
           <span>
