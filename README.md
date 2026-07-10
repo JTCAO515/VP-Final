@@ -66,7 +66,7 @@ TypeScript 单语言 monorepo（pnpm + turborepo）。Next.js 15（Web/Ops）· 
 ## Quickstart
 
 ```bash
-# Node >= 20, pnpm 9 (npm i -g pnpm@9)
+# Node >= 22, pnpm 9 (npm i -g pnpm@9)
 pnpm install
 pnpm build && pnpm test && pnpm typecheck && pnpm lint   # 全绿才算环境就绪
 ```
