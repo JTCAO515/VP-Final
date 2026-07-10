@@ -15,6 +15,14 @@ about: Standard V2 issue (fields per frozen baseline §9)
 
 <!-- subsystem; current evidence; D0/D1/D2/D3; desired observation -->
 
+## Assumptions and interpretations
+
+<!-- material assumptions; competing interpretations; operator decision required for high-risk ambiguity -->
+
+## Smallest sufficient approach
+
+<!-- minimum behavior that satisfies the objective; why broader flexibility/abstraction is unnecessary -->
+
 ## Scope
 
 ## Do not touch
@@ -36,6 +44,8 @@ about: Standard V2 issue (fields per frozen baseline §9)
 ## Acceptance
 
 ## Test plan
+
+<!-- bind each implementation step to a reproducible check or manual observation -->
 
 ## Observation and lifecycle gate
 

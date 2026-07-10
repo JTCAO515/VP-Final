@@ -8,6 +8,11 @@ Applies to: product, architecture, code, data, AI, operations, commercial, brand
 观测、反馈、纠偏和知识归档连接成一个可审查的闭环。它与现有文档即代码机制结合，
 保留当前 Fable-5 架构和已经接受的项目规则，不另造一套平行管理体系。
 
+本项目把三套互补方法合成为一个基线：钱学森系统工程负责“为什么做、系统如何分解、如何
+反馈纠偏”；Matt Pocock 公开工程实践启发的文档即代码负责“知识如何持久、索引与接手”；
+Karpathy coding discipline 负责“本次代码如何保持简单、聚焦、可验证”。三者不是并列投票，
+而是分别控制系统层、知识层和实现层。
+
 ## 研究范围与边界
 
 本文依据可访问的图书目录、原始论文记录及高校、科研机构的专题资料进行软件工程适配，
@@ -255,14 +260,26 @@ flowchart LR
 
 ---
 
-## 第四部分：文档管理更新规范（Matt Pocock 模式 + 钱学森系统工程）
+## 第四部分：工程知识与实现规范（Matt Pocock + Karpathy + 钱学森系统工程）
 
-### 4.1 融合原则
+### 4.1 三层融合原则
 
 本项目借鉴 Matt Pocock 公开仓库中可验证的实践：短而明确的 `AGENTS.md`、共享语言
 `CONTEXT.md`、分层 `docs/`、GitHub Issue 作为工作单元，以及自动化检查。它不是名为
-“Matt Pocock 标准”的官方规范。钱学森 Skills 在此基础上增加总体设计、控制量、偏差分级、
-生命周期门禁和综合集成复盘。
+“Matt Pocock 标准”的官方规范。Karpathy 层来自
+[multica-ai/andrej-karpathy-skills](https://github.com/multica-ai/andrej-karpathy-skills)
+的 MIT Skill，验证基线提交为 `2c606141936f1eeef17fa3043a72095b4765b9c2`。钱学森 Skills
+在这两类实践上增加总体设计、控制量、偏差分级、生命周期门禁和综合集成复盘。
+
+| 层 | 控制对象 | 核心问题 | 主要产物 |
+| --- | --- | --- | --- |
+| 钱学森系统工程 | 整体系统与生命周期 | 目标是否正确、接口是否稳定、偏差如何纠正 | 总体设计、Issue、ADR、观测与复盘 |
+| Matt 式文档即代码 | 工程知识与接手 | 事实是否可查、代码与文档是否同步 | manifest、Index、handoff、说明/约束文档 |
+| Karpathy coding discipline | 单次实现与 review | 是否假设过多、过度设计、改动过宽、验收过弱 | 假设、最小方案、聚焦 diff、step-to-check 证据 |
+
+优先级为：安全/权限/数据/支付/本地硬约束 → 已接受总体设计与接口 → Issue 范围与验收 →
+钱学森生命周期与文档控制 → Karpathy 局部简化。简单不能成为绕过系统不变量的理由；系统工程
+也不能成为增加无效仪式、抽象或大重构的借口。
 
 可核对的公开实践包括 [mattpocock/sandcastle](https://github.com/mattpocock/sandcastle)、
 [mattpocock/skills](https://github.com/mattpocock/skills) 与
@@ -316,6 +333,29 @@ flowchart LR
 
 这减少重复全仓扫描和 API token 消耗，同时保持目标、边界和证据完整。
 
+### 4.6 Karpathy 聚焦实现回路
+
+编码前按以下顺序执行：
+
+```text
+权威上下文
+  → 显式假设与歧义
+  → 最小充分行为
+  → 可执行成功标准
+  → 失败测试/复现
+  → 外科式实现
+  → 验证
+  → 文档与 handoff 同步
+```
+
+- 低风险、可逆歧义可以写明假设后继续；涉及接口、权限、资金、数据所有权、公开承诺或不可逆
+  结果时必须由操作者裁决。
+- 不添加未请求功能、预设扩展性、单次抽象、无第二用例的配置项或不可能状态处理。
+- 每一行改动必须可追溯到 Issue、验收证据或本次改动产生的清理。
+- 不顺手重构邻近代码；只删除本次改动导致失效的 import、变量、函数、fixture 和文档。
+- 每个步骤绑定一个命令或人工观测；验收未通过就继续迭代，无法执行则诚实记录阻塞。
+- diff 明显大于行为本身时，在 merge 前做 simplicity review：缩小，或证明复杂度是硬约束所需。
+
 ---
 
 ## 第五部分：约束条款
@@ -331,6 +371,8 @@ flowchart LR
 6. 生产发布必须可观测、可回滚；无 owner 的运行能力不得上线。
 7. 商业化、权限、隐私、TripPatch 和知识真实性不变量不得因排期而放宽。
 8. 每轮迭代必须完成目标对比和知识归档；合并代码不等于关闭系统回路。
+9. 每次编码必须遵守 [Karpathy Coding Discipline](../constraints/karpathy-guidelines.md)；
+   简单、外科式改动和可执行验收是 merge gate，不是风格建议。
 
 违反自动校验条款时 CI 直接失败；违反语义条款时 reviewer 必须拒绝合并。紧急修复允许先恢复
 服务，但必须在 24 小时内补 Issue、证据、文档和复盘，不得把“紧急”变成永久豁免。

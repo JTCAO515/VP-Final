@@ -1,7 +1,8 @@
 # VisePanda V2 Agent Rules
 
-This repository is the only development home for VisePanda V2. All work follows **钱学森 Skills**,
-the closed-loop workflow defined in `docs/methodology/qian-systems-engineering.md`.
+This repository is the only development home for VisePanda V2. All work follows the composite
+**钱学森 Skills + Matt Pocock-inspired documentation-as-code + Karpathy coding discipline** baseline
+defined in `docs/methodology/qian-systems-engineering.md`.
 
 ## Read First
 
@@ -23,6 +24,22 @@ pack. The frozen product baseline is `docs/planning/visepanda-v2-final-architect
 - For D2/D3, stop expanding implementation and escalate through contract review or ADR.
 - Code, docs, tests, rollout/rollback, and learning are one deliverable.
 - Multiple model answers are hypotheses, not votes or factual confirmation.
+
+## Karpathy Coding Discipline
+
+- Before coding, inspect the authoritative context and state assumptions that can affect behavior.
+- Resolve low-risk ambiguity with an explicit, reversible assumption. Ask the operator when ambiguity
+  can change a contract, permission boundary, money flow, data ownership, public promise, or
+  irreversible outcome.
+- Choose the smallest implementation that satisfies the Issue and frozen interfaces. Do not add
+  speculative features, abstractions, configurability, dependencies, or impossible-state handling.
+- Make surgical changes. Every changed line must trace to the Issue, acceptance evidence, or cleanup
+  caused by the change; do not refactor adjacent code or delete pre-existing dead code.
+- Match established local style and remove only artifacts made unused by the current change.
+- Bind every implementation step to a reproducible check and continue until acceptance passes or an
+  honest blocker is recorded.
+- When simplicity conflicts with security, privacy, data/payment integrity, accepted contracts, or
+  repository constraints, the stricter system invariant wins.
 
 ## Branch and PR Discipline
 

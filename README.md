@@ -17,9 +17,10 @@
 | 2 | [`docs/INDEX.md`](docs/INDEX.md) | 自动生成的当前接手快照、强制阅读顺序和完整知识库索引 |
 | 3 | [`docs/architecture/top-level-design.md`](docs/architecture/top-level-design.md) | 总体设计基线：目标、子系统、接口、观测和生命周期门禁 |
 | 4 | [`docs/methodology/qian-systems-engineering.md`](docs/methodology/qian-systems-engineering.md) | **钱学森 Skills**：项目永久闭环工程工作流 |
-| 5 | [`docs/planning/visepanda-v2-final-architecture.md`](docs/planning/visepanda-v2-final-architecture.md) | **冻结产品基线**：定位、架构、商业与路线图 |
-| 6 | [`docs/adr/`](docs/adr/) | 已接受决策；普通 PR 不重复争论 |
-| 7 | [Issues](https://github.com/JTCAO515/VP-Final/issues) | 可执行控制动作；按依赖和优先级认领 |
+| 5 | [`docs/governance/composite-engineering-baseline.md`](docs/governance/composite-engineering-baseline.md) | 钱学森 + Matt 文档即代码 + Karpathy 编码纪律的统一基线 |
+| 6 | [`docs/planning/visepanda-v2-final-architecture.md`](docs/planning/visepanda-v2-final-architecture.md) | **冻结产品基线**：定位、架构、商业与路线图 |
+| 7 | [`docs/adr/`](docs/adr/) | 已接受决策；普通 PR 不重复争论 |
+| 8 | [Issues](https://github.com/JTCAO515/VP-Final/issues) | 可执行控制动作；按依赖和优先级认领 |
 
 ## 当前状态（2026-07-10）
 
@@ -64,6 +65,8 @@ TypeScript 单语言 monorepo（pnpm + turborepo）。Next.js 15（Web/Ops）· 
 7. **代码动，文档必动** — 运行 `pnpm docs:check` 和 `pnpm docs:impact -- --base <ref>`。
 8. **钱学森 Skills 闭环** — 每项工作明确目标、子系统、观测、偏差、控制动作和复盘证据。
 9. **接手状态永远同步** — 每次仓库变更更新 `docs/handoff.json` 并重新生成 Index。
+10. **Karpathy 聚焦实现** — 显式假设，选择最小充分方案；每行改动可追溯，每步绑定验证，
+   禁止预设功能、过早抽象和顺手重构。
 
 ## 路线图（触发条件驱动，非日历）
 
@@ -87,6 +90,6 @@ pnpm docs:impact -- --base origin/main                   # 代码与文档同步
 ## 协作方式
 
 本项目由 AI coding agent、架构维护者与操作者协作开发。所有工作遵守
-[钱学森 Skills](docs/methodology/qian-systems-engineering.md)：目标评审 → 系统分解/接口冻结 →
-Issue → 代码/文档/测试 → 观测和偏差校验 → 复盘归档。Issue/PR 模板是强制证据清单，
-不是形式化备注。
+[复合工程基线](docs/governance/composite-engineering-baseline.md)：目标评审 → 系统分解/接口冻结 →
+Issue → 最小充分设计 → 代码/文档/测试 → 观测和偏差校验 → 复盘归档。Issue/PR 模板是
+强制证据清单，不是形式化备注。

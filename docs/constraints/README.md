@@ -5,6 +5,7 @@ merge or release requirements, not suggestions.
 
 - [Architecture constraints](architecture.md)
 - [Coding constraints](coding.md)
+- [Karpathy coding discipline](karpathy-guidelines.md)
 - [Business constraints](business.md)
 - [Deployment constraints](deployment.md)
 - [Permission constraints](permissions.md)

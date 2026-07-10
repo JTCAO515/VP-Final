@@ -33,6 +33,11 @@ These rules are normative. Automated rules fail CI; semantic rules are mandatory
 | QSE-024 | Agent tasks MUST use the minimum authoritative context pack and MUST inspect current git state before editing. | PR review | source references and clean scope |
 | QSE-025 | Unrelated cleanup MUST NOT be bundled into a control action; one PR changes one reviewable behavior or baseline. | reviewer gate | focused diff |
 | QSE-026 | Every repository change MUST update `docs/handoff.json`; the generated Index MUST expose current work, blockers, verification, next actions, and Markdown reading order. | `pnpm docs:check` + `pnpm docs:impact` | synchronized handoff and Index |
+| QSE-027 | Material assumptions and competing interpretations MUST be surfaced before implementation; high-risk ambiguity MUST be resolved by the accountable operator. | Issue/PR review | assumptions and decision record |
+| QSE-028 | Implementation MUST use the simplest sufficient design that satisfies accepted interfaces and evidence; speculative scope, configurability, abstraction, and dependencies are prohibited. | focused diff + architecture review | minimal design or complexity justification |
+| QSE-029 | Every changed line MUST trace to the Issue, acceptance evidence, or cleanup caused by the change; adjacent refactors and pre-existing dead-code removal require separate scope. | reviewer gate | line-level focused diff |
+| QSE-030 | Every implementation step MUST bind to a reproducible verification and continue until criteria pass or an honest blocker is recorded. | CI + PR review | step/check evidence |
+| QSE-031 | When local simplicity conflicts with security, privacy, data/payment integrity, accepted contracts, or repository constraints, the stricter system invariant MUST win. | architecture/security review | invariant and decision evidence |
 
 ## Emergency Exception
 

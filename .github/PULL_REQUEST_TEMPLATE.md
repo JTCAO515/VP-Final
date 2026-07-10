@@ -8,6 +8,10 @@ Closes #
 
 <!-- accepted objective; subsystem; expected vs observed; D0/D1/D2/D3 -->
 
+## Assumptions and simplest sufficient design
+
+<!-- material assumptions; high-risk decisions; why this is the minimum implementation -->
+
 ## What changed
 
 ## Contracts changed
@@ -43,6 +47,9 @@ Closes #
 ## Self-check
 
 - [ ] Scope is one reviewable control action; no unrelated cleanup.
+- [ ] Every changed line traces to Issue scope, acceptance evidence, or cleanup caused by this change.
+- [ ] No speculative feature, configurability, abstraction, dependency, or adjacent refactor was added.
+- [ ] Each implementation step has reproducible verification; unexpected complexity is reduced or justified.
 - [ ] Interface baseline and consumers were reviewed when applicable.
 - [ ] Source changes update mapped documentation.
 - [ ] `docs/handoff.json` and the generated Index reflect the post-merge state.
