@@ -43,9 +43,14 @@ describe("anonymous request identity", () => {
 
   it("fails honestly when production anonymous-session configuration is missing", async () => {
     const previousSecret = process.env.VISEPANDA_ANON_SESSION_SECRET;
-    const previousNodeEnv = process.env.NODE_ENV;
+    const previousNodeEnv = Object.getOwnPropertyDescriptor(process.env, "NODE_ENV");
     delete process.env.VISEPANDA_ANON_SESSION_SECRET;
-    process.env.NODE_ENV = "production";
+    Object.defineProperty(process.env, "NODE_ENV", {
+      configurable: true,
+      enumerable: true,
+      value: "production",
+      writable: true,
+    });
     delete process.env.SUPABASE_URL;
     delete process.env.SUPABASE_ANON_KEY;
 
@@ -55,7 +60,7 @@ describe("anonymous request identity", () => {
 
     if (previousSecret) process.env.VISEPANDA_ANON_SESSION_SECRET = previousSecret;
     else delete process.env.VISEPANDA_ANON_SESSION_SECRET;
-    if (previousNodeEnv) process.env.NODE_ENV = previousNodeEnv;
-    else delete process.env.NODE_ENV;
+    if (previousNodeEnv) Object.defineProperty(process.env, "NODE_ENV", previousNodeEnv);
+    else delete (process.env as Record<string, string | undefined>).NODE_ENV;
   });
 });
