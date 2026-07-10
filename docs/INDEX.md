@@ -9,26 +9,26 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 ## Current Handoff Snapshot
 
-- **Updated:** 2026-07-11 by Codex / Issue #139 GOV-P0b
+- **Updated:** 2026-07-11 by Codex / Issue #139 GOV-P0c
 - **Base branch:** `main`
 - **Last fully verified commit:** `87744ed`
 - **Current phase:** Phase 0 — production hardening
 - **Maturity:** Trusted demo skeleton; not yet a production-safe or billing-ready MVP.
-- **Last completed control action:** Merged PRs #106, #107, #109, and #136 established the Node 22, Supabase security, composite 钱学森 + Matt-inspired documentation, and Karpathy baselines. GOV-P0a made #73 the canonical P0-09 trace owner; GOV-P0b created canonical P0-13 through P0-20 and migrated absorbed V2 scope without deleting history. This branch records the post-merge handoff state.
+- **Last completed control action:** Merged PRs #106, #107, #109, and #136 established the Node 22, Supabase security, composite 钱学森 + Matt-inspired documentation, and Karpathy baselines. GOV-P0a made #73 the canonical P0-09 trace owner; GOV-P0b created canonical P0-13 through P0-20; GOV-P0c registered the dependency graph and rewrote #102 as the canonical control map. This branch records the post-merge handoff state.
 
 ### Active Work
 
 | Ref | Work | State | Owner | Next action |
 | --- | --- | --- | --- | --- |
-| Issue #139 / GOV-P0c | Register the canonical Phase 0/1 dependency graph and update the master backlog | Next governance seam after GOV-P0b merge | Codex / operator | Make the dependency graph the registered source of truth, regenerate Index, rewrite #102 to canonical mappings, and verify every open dependency resolves. |
+| DOC-P0-01 through DOC-P0-05 | Accept documentation-first Phase 0 baselines before feature implementation | Next controlled work after GOV-P0a/b/c merge | Codex / operator | Complete the accepted ADR/policy/register work in dependency order, then start only graph-ready Phase 0 feature Issues. |
 
 ### Immediate Queue
 
 | Priority | Control action | Exit criteria |
 | --- | --- | --- |
-| P0 | Complete GOV-P0c: register the canonical Phase 0/1 dependency graph, update #102, and add dependency validation. | The registered graph is the source of truth, Index is regenerated, all open blocked-by references resolve, and hard payment/Rescue constraints are explicit. |
-| P0 | Complete DOC-P0-01 through DOC-P0-04 before dependent feature code. | Identity/ownership, runtime modes, knowledge/SEO evidence, and Human Help service boundaries are accepted, indexed, and referenced by their dependent implementation Issues. |
-| P0 | Start Phase 0 feature work only where the graph and document-first gates mark it ready. | No feature PR starts from a superseded V2 Issue or before its accepted ADR/policy and canonical dependency gates. |
+| P0 | Accept and merge DOC-P0-01 through DOC-P0-05 in graph order before feature implementation. | Identity/ownership, runtime modes, knowledge/SEO evidence, Human Help boundaries, and the operator-action register are indexed and accepted. |
+| P0 | Start only Phase 0 Issues whose document-first and canonical dependency gates are ready in the graph. | No feature PR starts from a superseded V2 Issue or before its accepted ADR/policy and canonical dependency gates. |
+| P0 | Before any external service claim, update the operator-action register with placeholder, owner, verification, and novice tutorial steps. | No third-party API, payment, deployment, DNS, or store capability is presented as live without recorded operator verification. |
 
 ### Current Blockers
 
@@ -48,6 +48,7 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 - Issue #135 local verification passed: both Skills validated, 66 controlled documents passed docs checks/impact, and pnpm typecheck, lint, test, build, and evals passed.
 - GOV-P0a metadata verification: #73 is the canonical P0-09 owner; open blocked-by references to completed baseline Issues were replaced with active canonical dependencies; closed duplicate #125 points to #124 and #130 points to #129.
 - GOV-P0b metadata verification: canonical P0-13 through P0-20 are #150 through #157; V2-42 through V2-50 and V2-52 through V2-58 retain historical bodies with status:superseded and a top link to their sole canonical owner.
+- GOV-P0c verification: docs/governance/phase-0-1-dependency-graph.md is registered as the dependency source of truth; #102 now links canonical owners, retained standalone V2 work, hard Stripe/Rescue gates, and the manual API validation procedure.
 
 ## Mandatory Markdown Reading Order
 
@@ -60,11 +61,12 @@ Issue, current branch/diff, and only the task-specific module/constraint/runbook
 4. [Composite Engineering Baseline](governance/composite-engineering-baseline.md) — See authority, precedence, reading order, document classes, implementation gate, verification, and handoff as one portable baseline.
 5. [VisePanda V2 Frozen Product Baseline](planning/visepanda-v2-final-architecture.md) — Read the frozen product, commercial, architecture, roadmap, and anti-goal baseline.
 6. [VisePanda V2 Project Review — 2026-07-10](planning/visepanda-v2-project-review-2026-07-10.md) — Compare the frozen target with the latest evidence-based implementation audit.
-7. [Module Guide](modules/README.md) — Choose the module document that owns the assigned work and inspect its real maturity.
-8. [Constraint Guide](constraints/README.md) — Load the mandatory architecture, coding, business, permission, deployment, and iteration rules.
-9. [Karpathy Coding Discipline](constraints/karpathy-guidelines.md) — Apply explicit assumptions, minimum sufficient design, surgical diffs, and step-to-check verification during implementation.
-10. [ADR Index](adr/README.md) — Check accepted decisions before proposing or implementing a direction change.
-11. [Runbook Index](runbooks/README.md) — Read the relevant operational procedure before deployment, migration, AI, knowledge, or Human Task work.
+7. [Phase 0/1 Dependency Graph](governance/phase-0-1-dependency-graph.md) — Resolve the one canonical owner, dependencies, trigger gates, and historical migrations before taking any Issue.
+8. [Module Guide](modules/README.md) — Choose the module document that owns the assigned work and inspect its real maturity.
+9. [Constraint Guide](constraints/README.md) — Load the mandatory architecture, coding, business, permission, deployment, and iteration rules.
+10. [Karpathy Coding Discipline](constraints/karpathy-guidelines.md) — Apply explicit assumptions, minimum sufficient design, surgical diffs, and step-to-check verification during implementation.
+11. [ADR Index](adr/README.md) — Check accepted decisions before proposing or implementing a direction change.
+12. [Runbook Index](runbooks/README.md) — Read the relevant operational procedure before deployment, migration, AI, knowledge, or Human Task work.
 
 The handoff snapshot and reading order are generated from [`handoff.json`](handoff.json). Every
 repository change must update that file and regenerate this Index.
@@ -160,6 +162,7 @@ How documents, Issues, pull requests, decisions, and lifecycle evidence are mana
 | [Engineering Governance Guide](governance/README.md) | reference | active | documentation governance | Navigation for document and work governance. |
 | [Handoff Snapshot Workflow](governance/handoff-workflow.md) | constraint | active | overall design | Mandatory current-state, reading-order, verification, blocker, and next-action synchronization for every project change. |
 | [Issue and PR Workflow](governance/issue-pr-workflow.md) | constraint | active | overall design | Issue/PR lifecycle, merge gates, multi-Agent rules, and emergency fixes. |
+| [Phase 0/1 Dependency Graph](governance/phase-0-1-dependency-graph.md) | reference | active | overall design | Canonical Phase 0/1 Issue ownership, blockers, migration map, lifecycle gates, and backlog-validation procedure. |
 
 ## Architecture Decisions
 
