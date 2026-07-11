@@ -23,23 +23,24 @@ type CopilotSuccessResponse = {
   envelope: unknown;
   progress: unknown;
   trip: unknown;
+  version: unknown;
 };
 
 type CompleteSuccessResponse = {
   ok: true;
   progress: unknown;
   trip: unknown;
+  version: unknown;
 };
 
 type ErrorResponse = {
   ok: false;
   error: string;
+  code?: string;
+  currentVersion?: number;
 };
 
-const ANON_ID_KEY = "visepanda.anonId";
 const LAST_TRIP_ID_KEY = "visepanda.lastTripId";
-const AUTH_USER_ID_KEY = "visepanda.auth.userId";
-const AUTH_EMAIL_KEY = "visepanda.auth.email";
 
 const fallbackSkeletonEnvelope = CopilotEnvelopeSchema.parse({
   intent: "trip_create",
@@ -136,7 +137,6 @@ const initialMessages: ChatMessage[] = [
 ];
 
 export function CopilotShell() {
-  const [anonId, setAnonId] = useState<string | null>(null);
   const [input, setInput] = useState(
     "Plan my first 2 days in Shanghai with payment and metro tips",
   );
@@ -149,6 +149,7 @@ export function CopilotShell() {
   });
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
   const [trip, setTrip] = useState<TripState | null>(null);
+  const [tripVersion, setTripVersion] = useState<number | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [shareError, setShareError] = useState<string | null>(null);
@@ -166,41 +167,8 @@ export function CopilotShell() {
   }, [displayTrip]);
 
   useEffect(() => {
-    const nextAnonId = ensureAnonId();
-    setAnonId(nextAnonId);
-
-    const storedUserId = window.localStorage.getItem(AUTH_USER_ID_KEY);
-    const storedEmail = window.localStorage.getItem(AUTH_EMAIL_KEY);
     const tripId = window.localStorage.getItem(LAST_TRIP_ID_KEY);
-    if (tripId) {
-      void loadTrip(tripId, {
-        anonId: nextAnonId,
-        ...(storedUserId ? { userId: storedUserId } : {}),
-      });
-    }
-
-    if (storedUserId) {
-      void claimAnonymousTrips({
-        anonId: nextAnonId,
-        userId: storedUserId,
-        ...(storedEmail ? { email: storedEmail } : {}),
-      });
-    }
-
-    function handleAuthSession(event: Event) {
-      const detail = (event as CustomEvent<{ userId?: string; email?: string }>).detail;
-      if (!detail?.userId) return;
-      window.localStorage.setItem(AUTH_USER_ID_KEY, detail.userId);
-      if (detail.email) window.localStorage.setItem(AUTH_EMAIL_KEY, detail.email);
-      void claimAnonymousTrips({
-        anonId: nextAnonId,
-        userId: detail.userId,
-        ...(detail.email ? { email: detail.email } : {}),
-      });
-    }
-
-    window.addEventListener("visepanda:supabase-auth", handleAuthSession);
-    return () => window.removeEventListener("visepanda:supabase-auth", handleAuthSession);
+    if (tripId) void loadTrip(tripId);
   }, []);
 
   useEffect(() => {
@@ -208,16 +176,13 @@ export function CopilotShell() {
     setSelectedDayIndex(Math.max(0, displayTrip.days.length - 1));
   }, [displayTrip, selectedDayIndex]);
 
-  async function loadTrip(tripId: string, owner: { anonId?: string; userId?: string }) {
-    if (!owner.anonId && !owner.userId) return;
+  async function loadTrip(tripId: string) {
     try {
-      const params = new URLSearchParams();
-      if (owner.anonId) params.set("anonId", owner.anonId);
-      if (owner.userId) params.set("userId", owner.userId);
-      const response = await fetch(`/api/trips/${tripId}?${params.toString()}`);
-      const data = (await response.json()) as { ok: boolean; trip?: unknown };
+      const response = await fetch(`/api/trips/${tripId}`);
+      const data = (await response.json()) as { ok: boolean; trip?: unknown; version?: unknown };
       if (!response.ok || !data.ok) return;
       setTrip(TripStateSchema.parse(data.trip));
+      setTripVersion(zeroOrPositiveInteger(data.version));
     } catch {
       // Loading a saved anonymous trip is a convenience; the composer still works if it fails.
     }
@@ -232,9 +197,6 @@ export function CopilotShell() {
       return;
     }
 
-    const ownerAnonId = anonId ?? ensureAnonId();
-    if (!anonId) setAnonId(ownerAnonId);
-    const tripId = trip?.id ?? crypto.randomUUID();
     setMessages((current) => [...current, { role: "user", body: prompt }]);
     setProgress({
       status: "skeleton",
@@ -250,9 +212,8 @@ export function CopilotShell() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           message: prompt,
-          tripId,
-          anonId: ownerAnonId,
-          currentTrip: trip,
+          ...(trip ? { tripId: trip.id } : {}),
+          ...(trip && tripVersion !== null ? { expectedVersion: tripVersion } : {}),
         }),
       });
       const data = (await response.json()) as CopilotSuccessResponse | ErrorResponse;
@@ -262,17 +223,20 @@ export function CopilotShell() {
 
       const envelope = CopilotEnvelopeSchema.parse(data.envelope);
       const nextTrip = TripStateSchema.nullable().parse(data.trip);
+      const nextVersion = zeroOrPositiveInteger(data.version);
       const nextProgress = GenerationProgressSchema.parse(data.progress);
       setMessages((current) => [
         ...current,
         { role: "assistant", body: envelope.message.body, envelope },
       ]);
       setTrip(nextTrip);
+      setTripVersion(nextVersion);
       setProgress(nextProgress);
       if (nextTrip) window.localStorage.setItem(LAST_TRIP_ID_KEY, nextTrip.id);
 
       if (nextTrip?.days.some((day) => day.blocks.length === 0)) {
-        await completeTrip(nextTrip.id, ownerAnonId).catch((error: unknown) => {
+        if (nextVersion === null) throw new Error("Copilot returned a Trip without a version.");
+        await completeTrip(nextTrip.id, nextVersion).catch((error: unknown) => {
           setProgress((current) => ({
             ...current,
             status: "failed",
@@ -288,17 +252,10 @@ export function CopilotShell() {
         attempts: 1,
         error: error instanceof Error ? error.message : "Copilot connection failed.",
       });
-      setMessages((current) => [
-        ...current,
-        {
-          role: "assistant",
-          body: "I could not connect to the Copilot service. Please retry in a moment.",
-        },
-      ]);
     }
   }
 
-  async function completeTrip(tripId: string, ownerAnonId: string) {
+  async function completeTrip(tripId: string, expectedVersion: number) {
     setProgress((current) => ({
       ...current,
       status: "completing",
@@ -308,7 +265,7 @@ export function CopilotShell() {
     const response = await fetch("/api/copilot/complete", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ tripId, anonId: ownerAnonId }),
+      body: JSON.stringify({ tripId, expectedVersion }),
     });
     const data = (await response.json()) as CompleteSuccessResponse | ErrorResponse;
     if (!response.ok || !data.ok) {
@@ -316,8 +273,10 @@ export function CopilotShell() {
     }
 
     const nextTrip = TripStateSchema.nullable().parse(data.trip);
+    const nextVersion = zeroOrPositiveInteger(data.version);
     setProgress(GenerationProgressSchema.parse(data.progress));
     setTrip(nextTrip);
+    setTripVersion(nextVersion);
     if (nextTrip) window.localStorage.setItem(LAST_TRIP_ID_KEY, nextTrip.id);
   }
 
@@ -333,6 +292,7 @@ export function CopilotShell() {
       },
     ]);
     setTrip(skeletonTrip);
+    setTripVersion(null);
     setProgress({
       status: "skeleton",
       completedDays: 0,
@@ -343,6 +303,7 @@ export function CopilotShell() {
 
     window.setTimeout(() => {
       setTrip((current) => applyEnvelope(current, fallbackDetailedEnvelope));
+      setTripVersion(null);
       setProgress((current) => ({
         ...current,
         status: "completed",
@@ -352,39 +313,11 @@ export function CopilotShell() {
     }, 700);
   }
 
-  async function claimAnonymousTrips({
-    anonId: ownerAnonId,
-    userId,
-    email,
-  }: {
-    anonId: string;
-    userId: string;
-    email?: string;
-  }) {
-    const response = await fetch("/api/trips/claim", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ anonId: ownerAnonId, userId, email }),
-    });
-    const data = (await response.json()) as { ok: boolean; trips?: unknown[] };
-    if (!response.ok || !data.ok || !data.trips?.[0]) return;
-    const claimedTrip = TripStateSchema.parse(data.trips[0]);
-    setTrip(claimedTrip);
-    window.localStorage.setItem(LAST_TRIP_ID_KEY, claimedTrip.id);
-  }
-
   async function shareTrip() {
     if (!trip) return;
     setShareError(null);
-    const ownerAnonId = anonId ?? ensureAnonId();
-    const storedUserId = window.localStorage.getItem(AUTH_USER_ID_KEY);
     const response = await fetch(`/api/trips/${trip.id}/share`, {
       method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        anonId: ownerAnonId,
-        ...(storedUserId ? { userId: storedUserId } : {}),
-      }),
     });
     const data = (await response.json()) as { ok: boolean; url?: string; error?: string };
     if (!response.ok || !data.ok || !data.url) {
@@ -656,14 +589,9 @@ function defaultActions(block: TripBlock): string[] {
   return ["Ask Copilot"];
 }
 
-function ensureAnonId(): string {
-  const existing = window.localStorage.getItem(ANON_ID_KEY);
-  if (existing) return existing;
-  const anonId = `anon_${crypto.randomUUID()}`;
-  window.localStorage.setItem(ANON_ID_KEY, anonId);
-  return anonId;
+function zeroOrPositiveInteger(value: unknown): number | null {
+  return typeof value === "number" && Number.isInteger(value) && value >= 0 ? value : null;
 }
-
 function progressLabel(progress: GenerationProgress): string {
   if (progress.status === "idle") return "Ready";
   if (progress.status === "skeleton") return "Building skeleton";

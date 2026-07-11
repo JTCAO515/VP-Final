@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createInMemoryKnowledgeService } from "../knowledge/service.js";
-import { createInMemoryTripService } from "../trip/service.js";
+import { createVersionedInMemoryTripService } from "../trip/versionedService.js";
 import { createCopilotPipeline, defaultRouteIntent } from "./service.js";
 
 describe("defaultRouteIntent", () => {
@@ -18,37 +18,52 @@ describe("defaultRouteIntent", () => {
 });
 
 describe("createCopilotPipeline", () => {
+  const identity = { kind: "anonymous" as const, anonId: "anon-1" };
+
   it("runs route, retrieval, generation, validation, and patch application", async () => {
-    const tripService = createInMemoryTripService();
+    const tripService = createVersionedInMemoryTripService();
     const pipeline = createCopilotPipeline({ tripService });
 
-    const result = await pipeline.run({
-      message: "Plan my China trip",
-      tripId: "trip-1",
-      anonId: "anon-1",
-    });
+    const result = await pipeline.run(
+      {
+        message: "Plan my China trip",
+      },
+      identity,
+    );
 
     expect(result.envelope.intent).toBe("trip_create");
-    expect(result.trip?.id).toBe("trip-1");
+    expect(result.trip?.id).toBeTruthy();
     expect(result.trace.appliedPatchCount).toBe(1);
-    await expect(tripService.get("trip-1")).resolves.toEqual(result.trip);
+    await expect(tripService.get(result.trip?.id ?? "", identity)).resolves.toMatchObject({
+      trip: result.trip,
+    });
   });
 
   it("keeps chat-only responses from mutating trip state", async () => {
-    const tripService = createInMemoryTripService();
+    const tripService = createVersionedInMemoryTripService();
     const pipeline = createCopilotPipeline({ tripService });
 
-    const result = await pipeline.run({ message: "Hello there" });
+    const result = await pipeline.run({ message: "Hello there" }, identity);
 
     expect(result.envelope.intent).toBe("chat_only");
     expect(result.trip).toBeNull();
     expect(result.trace.appliedPatchCount).toBe(0);
   });
 
-  it("returns disclosed commercial actions only for commerce intent", async () => {
-    const pipeline = createCopilotPipeline({ tripService: createInMemoryTripService() });
+  it("does not create a caller-selected Trip id when the referenced Trip is unavailable", async () => {
+    const tripService = createVersionedInMemoryTripService();
+    const pipeline = createCopilotPipeline({ tripService });
 
-    const result = await pipeline.run({ message: "Can I book a Shanghai hotel?" });
+    await expect(
+      pipeline.run({ message: "Plan a trip", tripId: "unavailable-trip" }, identity),
+    ).rejects.toThrow("Trip not found");
+    await expect(tripService.list(identity)).resolves.toEqual([]);
+  });
+
+  it("returns disclosed commercial actions only for commerce intent", async () => {
+    const pipeline = createCopilotPipeline({ tripService: createVersionedInMemoryTripService() });
+
+    const result = await pipeline.run({ message: "Can I book a Shanghai hotel?" }, identity);
 
     expect(result.envelope.intent).toBe("commerce_intent");
     expect(result.envelope.commercialActions[0]).toMatchObject({
@@ -59,9 +74,12 @@ describe("createCopilotPipeline", () => {
   });
 
   it("returns editable human help prefill when handoff is needed", async () => {
-    const pipeline = createCopilotPipeline({ tripService: createInMemoryTripService() });
+    const pipeline = createCopilotPipeline({ tripService: createVersionedInMemoryTripService() });
 
-    const result = await pipeline.run({ message: "I need human help to call a Beijing hotel" });
+    const result = await pipeline.run(
+      { message: "I need human help to call a Beijing hotel" },
+      identity,
+    );
 
     expect(result.envelope.intent).toBe("human_help");
     expect(result.envelope.humanHelp).toMatchObject({
@@ -74,7 +92,7 @@ describe("createCopilotPipeline", () => {
     const knowledgeService = createInMemoryKnowledgeService([], []);
     const pipeline = createCopilotPipeline({
       knowledgeService,
-      tripService: createInMemoryTripService(),
+      tripService: createVersionedInMemoryTripService(),
       generateEnvelope: () => ({
         intent: "question",
         message: { headline: "Unknown", body: "I do not know yet.", highlights: [] },
@@ -82,7 +100,7 @@ describe("createCopilotPipeline", () => {
       }),
     });
 
-    await pipeline.run({ message: "What is the newest payment rule in Shanghai?" });
+    await pipeline.run({ message: "What is the newest payment rule in Shanghai?" }, identity);
 
     await expect(knowledgeService.listGaps({ status: "open" })).resolves.toMatchObject([
       {
@@ -95,13 +113,13 @@ describe("createCopilotPipeline", () => {
 
   it("rejects generator output that does not match CopilotEnvelope", async () => {
     const pipeline = createCopilotPipeline({
-      tripService: createInMemoryTripService(),
+      tripService: createVersionedInMemoryTripService(),
       generateEnvelope: () => ({
         intent: "question",
         message: { headline: "Bad", body: "Bad", highlights: "not-an-array" },
       }),
     });
 
-    await expect(pipeline.run({ message: "How does this work?" })).rejects.toThrow();
+    await expect(pipeline.run({ message: "How does this work?" }, identity)).rejects.toThrow();
   });
 });

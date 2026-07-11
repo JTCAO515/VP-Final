@@ -37,17 +37,20 @@ development but is forbidden for production by the deployment constraints.
 selection: only `local-demo` may use labelled fixtures/memory; deployed modes must return honest
 degraded/unavailable states when a required durable dependency is absent.
 
-Current localStorage identity fields are a documented security debt, not an authorization mechanism.
-P0-03/P0-04 replace them with server-issued anonymous session cookies and Supabase SSR identity under
-[ADR-0004](../adr/ADR-0004-identity-trip-ownership-security.md). New Web work must not add another
-client-owned owner/currentTrip path.
+Trip and Copilot routes resolve a server-issued anonymous session cookie or verified Supabase SSR
+identity under [ADR-0004](../adr/ADR-0004-identity-trip-ownership-security.md). The browser stores only
+the last Trip id as a convenience; it does not store or submit owner identity or an authoritative
+`currentTrip` snapshot.
 
 P0-03 resolves identity at the Copilot API boundary and ignores body-provided owner fields there. It
 also implements the Supabase SSR login/logout/session routes and a signed, server-expiring anonymous
 cookie with one-key rotation. The adapter is implemented and unit-tested; real external Auth evidence
 remains blocked on OA-001 through OA-003 in the
 [operator action register](../governance/operator-action-register.md). Trip read/claim/share
-authorization remains P0-04 work and is not yet production-safe.
+authorization is implemented by P0-04. Existing writes carry `expectedVersion`; stale writes return
+409 and leave the current Canvas unchanged. Claim uses the verified account together with the current
+signed anonymous cookie, and owner-created public shares can be revoked. Real Supabase release evidence
+still depends on OA-001 through OA-003.
 
 The Human Help and outbound ledgers still contain app-local paths that must be consolidated into
 server services before public launch.

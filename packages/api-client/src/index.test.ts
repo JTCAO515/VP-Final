@@ -14,15 +14,19 @@ it("keeps client inputs and outputs tied to the app router", () => {
 
   expectTypeOf<Inputs["trip"]["get"]>().toEqualTypeOf<{
     id: string;
-    userId?: string | undefined;
-    anonId?: string | undefined;
-    email?: string | undefined;
   }>();
-  expectTypeOf<Outputs["trip"]["create"]>().toEqualTypeOf<TripState>();
-  expectTypeOf<Outputs["trip"]["get"]>().toEqualTypeOf<TripState | null>();
+  expectTypeOf<Outputs["trip"]["create"]>().toEqualTypeOf<{
+    trip: TripState;
+    version: number;
+  }>();
+  expectTypeOf<Outputs["trip"]["get"]>().toEqualTypeOf<{
+    trip: TripState;
+    version: number;
+  } | null>();
   const copilotInput: Inputs["copilot"]["run"] = {
     message: "Plan a trip",
-    currentTrip: null,
+    tripId: "trip-1",
+    expectedVersion: 3,
   };
 
   expect(copilotInput.message).toBe("Plan a trip");

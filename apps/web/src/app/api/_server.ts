@@ -2,17 +2,17 @@ import {
   appRouter,
   createDb,
   createDbKnowledgeService,
-  createDbTripService,
+  createDbVersionedTripService,
   createInMemoryKnowledgeService,
-  createInMemoryTripService,
+  createVersionedInMemoryTripService,
   type KnowledgeService,
   type RequestIdentity,
-  type TripService,
+  type VersionedTripService,
 } from "@visepanda/app-server";
 
 const store = globalThis as typeof globalThis & {
   __visepandaKnowledgeService?: KnowledgeService;
-  __visepandaTripService?: TripService;
+  __visepandaTripService?: VersionedTripService;
 };
 
 export function getServerCaller(identity?: RequestIdentity) {
@@ -32,11 +32,11 @@ function getKnowledgeService(): KnowledgeService {
   return store.__visepandaKnowledgeService;
 }
 
-function getTripService(): TripService {
+function getTripService(): VersionedTripService {
   if (process.env.DATABASE_URL) {
-    return createDbTripService(createDb(process.env.DATABASE_URL));
+    return createDbVersionedTripService(createDb(process.env.DATABASE_URL));
   }
 
-  store.__visepandaTripService ??= createInMemoryTripService();
+  store.__visepandaTripService ??= createVersionedInMemoryTripService();
   return store.__visepandaTripService;
 }

@@ -46,6 +46,13 @@ export function AccountPanel() {
       if (!response.ok || !data.ok) throw new Error(data.error ?? "Login failed.");
       setPassword("");
       await refreshSession();
+      const claimResponse = await fetch("/api/trips/claim", { method: "POST" });
+      const claim = (await claimResponse.json()) as { ok: boolean; error?: string };
+      if (!claimResponse.ok || !claim.ok) {
+        setError(
+          claim.error ?? "Signed in, but anonymous trips could not be moved to this account.",
+        );
+      }
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Login failed.");
       setLoading(false);

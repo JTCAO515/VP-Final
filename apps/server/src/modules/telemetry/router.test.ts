@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { appRouter } from "../../router.js";
-import { createInMemoryTripService } from "../trip/service.js";
+import { createVersionedInMemoryTripService } from "../trip/versionedService.js";
 import { createInMemoryTelemetryService } from "./service.js";
 
 describe("telemetryRouter", () => {
   it("tracks events through the app router", async () => {
     const telemetryService = createInMemoryTelemetryService();
     const caller = appRouter.createCaller({
-      tripService: createInMemoryTripService(),
+      tripService: createVersionedInMemoryTripService(),
       telemetryService,
     });
 

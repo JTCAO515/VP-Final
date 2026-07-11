@@ -10,15 +10,12 @@ import {
 } from "@visepanda/domain";
 import { z } from "zod";
 import type { KnowledgeService } from "../knowledge/service.js";
-import type { TripOwner, TripService } from "../trip/service.js";
+import type { TripIdentity, VersionedTripService } from "../trip/versionedService.js";
 
 export const CopilotRunInputSchema = z.object({
   message: z.string().min(1),
   tripId: z.string().min(1).optional(),
-  anonId: z.string().min(1).optional(),
-  userId: z.string().uuid().optional(),
-  email: z.string().email().optional(),
-  currentTrip: TripStateSchema.nullable().optional(),
+  expectedVersion: z.number().int().nonnegative().optional(),
 });
 
 export const RetrievalFactSchema = z.object({
@@ -30,6 +27,7 @@ export const RetrievalFactSchema = z.object({
 export const CopilotRunResultSchema = z.object({
   envelope: CopilotEnvelopeSchema,
   trip: TripStateSchema.nullable(),
+  version: z.number().int().nonnegative().nullable(),
   trace: z.object({
     intent: CopilotIntentSchema,
     retrievedFactIds: z.array(z.string().min(1)),
@@ -48,7 +46,6 @@ type GenerateEnvelope = (request: CopilotGenerationRequest) => Promise<unknown> 
 type CopilotRequest = {
   message: string;
   tripId?: string;
-  owner?: TripOwner;
   currentTrip: TripState | null;
 };
 
@@ -58,7 +55,7 @@ type CopilotGenerationRequest = CopilotRequest & {
 };
 
 export type CopilotPipelineDependencies = {
-  tripService: TripService;
+  tripService: VersionedTripService;
   knowledgeService?: KnowledgeService;
   routeIntent?: RouteIntent;
   retrieveContext?: RetrieveContext;
@@ -73,18 +70,18 @@ export function createCopilotPipeline({
   generateEnvelope = defaultGenerateEnvelope,
 }: CopilotPipelineDependencies) {
   return {
-    async run(input: CopilotRunInput): Promise<CopilotRunResult> {
+    async run(input: CopilotRunInput, identity: TripIdentity): Promise<CopilotRunResult> {
       const parsedInput = CopilotRunInputSchema.parse(input);
-      const owner = toTripOwner(parsedInput);
-      const currentTrip =
-        parsedInput.currentTrip ??
-        (parsedInput.tripId ? await tripService.get(parsedInput.tripId, owner) : null);
+      const currentSnapshot = parsedInput.tripId
+        ? await tripService.get(parsedInput.tripId, identity)
+        : null;
+      if (parsedInput.tripId && !currentSnapshot) throw new Error("Trip not found.");
+      const currentTrip = currentSnapshot?.trip ?? null;
       const request: CopilotRequest = {
         message: parsedInput.message,
         currentTrip,
       };
       if (parsedInput.tripId) request.tripId = parsedInput.tripId;
-      if (owner) request.owner = owner;
       const intent = await routeIntent(request);
       const retrievedFacts = await retrieveContext(request);
       const envelope = CopilotEnvelopeSchema.parse(
@@ -98,6 +95,7 @@ export function createCopilotPipeline({
         });
       }
       let trip = currentTrip;
+      let version = currentSnapshot?.version ?? null;
       const appliedOperations: TripPatch["operations"] = [];
 
       for (const patch of envelope.tripActions) {
@@ -105,17 +103,30 @@ export function createCopilotPipeline({
         appliedOperations.push(...patch.operations);
       }
 
-      if (trip) {
-        await tripService.save(trip, {
-          owner,
+      if (trip && !currentSnapshot) {
+        const created = await tripService.create(trip, identity, "ai_copilot");
+        trip = created.trip;
+        version = created.version;
+      } else if (currentSnapshot && appliedOperations.length > 0) {
+        if (parsedInput.expectedVersion === undefined) {
+          throw new Error("expectedVersion is required when updating an existing Trip.");
+        }
+        const updated = await tripService.apply({
+          id: currentSnapshot.trip.id,
+          identity,
+          expectedVersion: parsedInput.expectedVersion,
           patch: { operations: appliedOperations },
           source: "ai_copilot",
         });
+        if (!updated) throw new Error("Trip not found.");
+        trip = updated.trip;
+        version = updated.version;
       }
 
       return CopilotRunResultSchema.parse({
         envelope,
         trip,
+        version,
         trace: {
           intent,
           retrievedFactIds: retrievedFacts.map((fact) => fact.id),
@@ -264,15 +275,6 @@ export function defaultGenerateEnvelope({
     citations: [
       { fact_id: "stub:china-execution-basics", label: "Stub retrieval", source: "VisePanda" },
     ],
-  };
-}
-
-function toTripOwner(input: z.infer<typeof CopilotRunInputSchema>): TripOwner | undefined {
-  if (!input.userId && !input.anonId) return undefined;
-  return {
-    ...(input.userId ? { userId: input.userId } : {}),
-    ...(input.anonId ? { anonId: input.anonId } : {}),
-    ...(input.email ? { email: input.email } : {}),
   };
 }
 

@@ -18,16 +18,16 @@ sequenceDiagram
   C->>M: Generate typed Copilot envelope
   M-->>C: Structured output or typed failure
   C->>C: Validate envelope and TripPatch
-  C->>T: Apply and save validated patch
+  C->>T: Apply validated patch with expected version
   T->>D: Append Trip event and update snapshot
   C-->>W: Envelope + Trip + trace summary
   W-->>U: Message first, Trip Canvas update
 ```
 
-The current implementation already validates the envelope and applies TripPatch values. Intent
-routing, retrieval, generation, and day completion still have deterministic defaults. Public
-release requires verified session identity, real provider routing, durable tracing, and honest
-failure behavior.
+The current implementation validates the envelope, obtains the owner-scoped snapshot on the server,
+and creates or applies TripPatch values through optimistic concurrency. Intent routing, retrieval,
+generation, and day completion still have deterministic defaults. Public release requires real
+Supabase evidence, real provider routing, durable tracing, and honest failure behavior.
 
 ## Identity and Trip Authorization Flow
 

@@ -8,7 +8,15 @@ import {
   type TripState,
 } from "@visepanda/domain";
 import type { RequestIdentity } from "../../context.js";
-import type { TripEvent, TripEventSource } from "./service.js";
+
+export type TripEventSource = "user_chat" | "user_manual" | "ai_copilot" | "system";
+
+export type TripEvent = {
+  tripId: string;
+  version: number;
+  patch: TripPatch;
+  source: TripEventSource;
+};
 
 export type TripIdentity = Exclude<RequestIdentity, { kind: "none" }>;
 export type ClaimIdentity = Extract<RequestIdentity, { kind: "authenticated" }> & {
