@@ -17,12 +17,20 @@ Create, verify, apply, or recover from a migration under `infra/supabase/migrati
 ## Local Procedure
 
 ```bash
-supabase start --workdir infra/supabase
-supabase db reset --workdir infra/supabase
+supabase start --workdir infra
+supabase db reset --local --no-seed --workdir infra
+supabase test db supabase/tests/database --local --workdir infra
+DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres \
+  pnpm --filter @visepanda/app-server test -- versionedTripService.integration.test.ts
+supabase db advisors --local --type security --level warn --fail-on error --workdir infra
 ```
 
 Run database contract/RLS tests defined by the repository. Inspect policies using authenticated and
 anonymous roles, not only service-role access.
+
+Docker Desktop (or a compatible running Docker daemon) is required by local Supabase. If unavailable,
+record the exact failure and rely on the same commands in CI Database contracts; do not claim a local
+database pass.
 
 ## Remote Apply
 

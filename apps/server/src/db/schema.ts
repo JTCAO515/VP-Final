@@ -37,9 +37,9 @@ export const trips = pgTable(
     anonIdx: index("trips_anon_id_idx").on(table.anonId),
     shareTokenUnique: uniqueIndex("trips_share_token_unique").on(table.shareToken),
     headVersionCheck: check("trips_head_version_check", sql`${table.headVersion} >= 0`),
-    ownerOrAnonCheck: check(
-      "trips_owner_or_anon_check",
-      sql`${table.owner} is not null or ${table.anonId} is not null`,
+    exactlyOneOwnerCheck: check(
+      "trips_exactly_one_owner_check",
+      sql`num_nonnulls(${table.owner}, ${table.anonId}) = 1`,
     ),
   }),
 );

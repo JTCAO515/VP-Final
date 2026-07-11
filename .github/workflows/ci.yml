@@ -47,4 +47,8 @@ jobs:
       - run: supabase start --workdir infra
       - run: supabase db reset --local --no-seed --workdir infra
       - run: supabase test db supabase/tests/database --local --workdir infra
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @visepanda/app-server test -- versionedTripService.integration.test.ts
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
       - run: supabase db advisors --local --type security --level warn --fail-on error --workdir infra

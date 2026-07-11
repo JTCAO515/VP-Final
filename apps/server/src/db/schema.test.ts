@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { getTableConfig } from "drizzle-orm/pg-core";
 import {
   agentRuns,
   humanTasks,
@@ -22,6 +23,9 @@ describe("database schema", () => {
     expect(trips.anonId.name).toBe("anon_id");
     expect(trips.shareToken.name).toBe("share_token");
     expect(tripEvents.tripId.name).toBe("trip_id");
+    expect(getTableConfig(trips).checks.map((constraint) => constraint.name)).toContain(
+      "trips_exactly_one_owner_check",
+    );
   });
 
   it("maps the agent trace tables", () => {
