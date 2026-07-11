@@ -20,6 +20,10 @@
       "types": "./src/modules/opsAuthorization/service.ts",
       "default": "./dist/modules/opsAuthorization/service.js"
     },
+    "./runtime": {
+      "types": "./src/runtime/runtimeMode.ts",
+      "default": "./dist/runtime/runtimeMode.js"
+    },
     "./router": {
       "types": "./src/router.ts",
       "default": "./dist/router.js"

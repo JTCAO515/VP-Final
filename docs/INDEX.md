@@ -9,31 +9,31 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 ## Current Handoff Snapshot
 
-- **Updated:** 2026-07-11 by Codex / Issue #114
+- **Updated:** 2026-07-11 by Codex / Issue #174
 - **Base branch:** `main`
-- **Last fully verified commit:** `40d70b7`
+- **Last fully verified commit:** `410ffab`
 - **Current phase:** Phase 0 — production hardening
 - **Maturity:** Trusted demo skeleton; not yet a production-safe or billing-ready MVP.
-- **Last completed control action:** PR #171 merged P0-04c trusted Trip/Copilot Web consumers after Verify, Database contracts, docs, evals, and both Vercel previews passed.
+- **Last completed control action:** PR #172 merged P0-05 least-privilege Ops RBAC after Verify, Database contracts, docs, evals, and both Vercel previews passed.
 
 ### Active Work
 
 | Ref | Work | State | Owner | Next action |
 | --- | --- | --- | --- | --- |
-| Issue #114 / P0-05 | Add Ops authentication and least-privilege RBAC | Implementation and full local gates complete; PR #172 is open and its first database-contract run exposed one stale test expectation, now corrected; rerun, review, and merge remain | Codex / operator | Complete documentation and full gates, then open the P0-05 PR. Production release remains fail-closed until OA-001, OA-004, and OA-010 are verified. |
+| Issue #174 / P0-06a | Freeze runtime mode resolver and adapter inventory | Runtime resolver, database availability diagnostics, and canonical adapter inventory implemented locally; full gates, PR, and merge remain | Codex | Complete full verification and merge P0-06a before unblocking explicit router dependencies in P0-06b #173. |
 
 ### Immediate Queue
 
 | Priority | Control action | Exit criteria |
 | --- | --- | --- |
-| P0 | Complete P0-05 #114 without creating a client role, email allowlist, default admin, or production memory fallback. | Ops pages and direct APIs enforce the explicit role matrix, audit privileged mutations, fail closed without durable configuration, and record the first-admin bootstrap as OA-010. |
+| P0 | Complete P0-06a #174 as the only runtime mode and adapter inventory authority. | Explicit modes and safe adapter diagnostics are tested, memory remains test/local-demo only, and later persistent objects retain their canonical owners. |
 | P0 | Start only Phase 0 Issues whose document-first and canonical dependency gates are ready in the graph. | No feature PR starts from a superseded V2 Issue or before its accepted ADR/policy and canonical dependency gates. |
 | P0 | Before any external service claim, update the operator-action register with placeholder, owner, verification, and novice tutorial steps. | No third-party API, payment, deployment, DNS, or store capability is presented as live without recorded operator verification. |
 
 ### Current Blockers
 
 - P0-03 and P0-04 code are merged, but real Supabase evidence still awaits OA-001 through OA-004 before production readiness can be claimed.
-- Ops RBAC implementation is active; real first-admin and deployed role evidence awaits OA-010.
+- Ops RBAC code is merged; real first-admin and deployed role evidence awaits OA-010.
 - Copilot model calls and knowledge retrieval remain deterministic/stubbed in the audited main branch.
 - Human Task, outbound click, telemetry, and AI trace runtime persistence are incomplete.
 - Real payment evidence, rate limiting, observability, legal pages, and production smoke gates are incomplete.
@@ -65,6 +65,9 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 - P0-05 first full-gate deviation: parallel Web rebuilding of the Server root bundle exposed an unrelated partial-root import to Ops. Ops authorization now uses narrow package subpaths, reducing coupling without changing the Web build system.
 - P0-05 local evidence: lint, typecheck, all tests, build, five AI eval cases, docs check, and docs impact pass. Server has 45 passing tests plus three DB-only skips; Ops has six authorization/store tests; every Ops page builds as request-time dynamic. Real pgTAP and adapter integration await Database contracts CI.
 - P0-05 first Database contracts observation on PR #172: migrations, pgTAP, Trip integration, and implementation behavior reached the Ops adapter assertion; the test expected only two admin permissions while the accepted matrix correctly returned four. The assertion now verifies the complete exact admin permission set before rerun.
+- P0-05 merge evidence: PR #172 passed Verify in 1m42s, Database contracts in 2m35s, docs, evals, and both Vercel previews before merging at 410ffab. Production remains blocked by OA-001, OA-004, and OA-010.
+- P0-06 decomposition: parent #115 is split into runtime resolver/inventory #174, explicit router dependencies #173, Web durable composition #176, and Ops Knowledge convergence/quarantine #175. The split preserves P0-09/P0-13/P0-18/P0-19 as sole owners of their later workflows.
+- P0-06a local evidence: lint, typecheck, all tests, build, five AI eval cases, docs check, and docs impact pass. Twelve runtime tests cover all five explicit modes, missing/invalid mode, deployed database failure, labelled demo memory, explicit test injection, inventory completeness, root-cause diagnostics, and secret-safe output.
 
 ## Mandatory Markdown Reading Order
 
@@ -118,6 +121,7 @@ Current system shape, boundaries, data flows, and overall design controls.
 | [Overall Design Baseline](architecture/top-level-design.md) | explanation | active | overall design | Mission, controlled subsystems, interface baselines, observations, and lifecycle gates. |
 | [Repository Structure](architecture/repository-structure.md) | explanation | active | architecture | Monorepo layout, package ownership, and current maturity. |
 | [Runtime and Data Flows](architecture/runtime-data-flows.md) | explanation | active | architecture | Copilot, Trip, knowledge, commerce, identity, task, and telemetry flows. |
+| [Runtime Mode and Adapter Inventory](architecture/runtime-adapter-inventory.md) | reference | active | server / platform | Explicit runtime modes, safe adapter diagnostics, durable object owners, and canonical follow-ups. |
 | [System Overview](architecture/system-overview.md) | explanation | active | architecture | Product-to-system view of the modular monolith and user surfaces. |
 
 ## Modules

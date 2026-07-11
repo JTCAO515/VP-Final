@@ -12,6 +12,12 @@ export { createDb } from "./db/client.js";
 export { createDbKnowledgeService } from "./db/knowledgeService.js";
 export { createDbOpsAuthorizationService } from "./db/opsAuthorizationService.js";
 export { createDbVersionedTripService } from "./db/versionedTripService.js";
+export {
+  adapterInventory,
+  resolveDatabaseAdapter,
+  resolveRuntimeMode,
+  RuntimeModeSchema,
+} from "./runtime/runtimeMode.js";
 export { createInMemoryKnowledgeService } from "./modules/knowledge/service.js";
 export {
   createInMemoryOpsAuthorizationService,
@@ -27,6 +33,7 @@ export {
   TripVersionConflictError,
 } from "./modules/trip/versionedService.js";
 export type { RequestIdentity } from "./context.js";
+export type { AdapterAvailability, RuntimeMode, RuntimeResolution } from "./runtime/runtimeMode.js";
 export type { KnowledgeService } from "./modules/knowledge/service.js";
 export type {
   OpsAccess,
