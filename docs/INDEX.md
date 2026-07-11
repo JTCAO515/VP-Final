@@ -20,7 +20,7 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 | Ref | Work | State | Owner | Next action |
 | --- | --- | --- | --- | --- |
-| Issue #114 / P0-05 | Add Ops authentication and least-privilege RBAC | Implementation and full local gates complete; PR, database-contract CI, review, and merge remain | Codex / operator | Complete documentation and full gates, then open the P0-05 PR. Production release remains fail-closed until OA-001, OA-004, and OA-010 are verified. |
+| Issue #114 / P0-05 | Add Ops authentication and least-privilege RBAC | Implementation and full local gates complete; PR #172 is open and its first database-contract run exposed one stale test expectation, now corrected; rerun, review, and merge remain | Codex / operator | Complete documentation and full gates, then open the P0-05 PR. Production release remains fail-closed until OA-001, OA-004, and OA-010 are verified. |
 
 ### Immediate Queue
 
@@ -64,6 +64,7 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 - P0-04c merge evidence: PR #171 passed Verify, Database contracts in 2m30s, docs, evals, and both Vercel previews before merging at 40d70b7. Issue #168 is closed; parent #113 remains blocked only by external release evidence.
 - P0-05 first full-gate deviation: parallel Web rebuilding of the Server root bundle exposed an unrelated partial-root import to Ops. Ops authorization now uses narrow package subpaths, reducing coupling without changing the Web build system.
 - P0-05 local evidence: lint, typecheck, all tests, build, five AI eval cases, docs check, and docs impact pass. Server has 45 passing tests plus three DB-only skips; Ops has six authorization/store tests; every Ops page builds as request-time dynamic. Real pgTAP and adapter integration await Database contracts CI.
+- P0-05 first Database contracts observation on PR #172: migrations, pgTAP, Trip integration, and implementation behavior reached the Ops adapter assertion; the test expected only two admin permissions while the accepted matrix correctly returned four. The assertion now verifies the complete exact admin permission set before rerun.
 
 ## Mandatory Markdown Reading Order
 

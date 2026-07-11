@@ -42,7 +42,12 @@ describeDatabase("database OpsAuthorizationService", () => {
     const admin = await service.getAccess(adminId);
     expect(admin).toMatchObject({
       role: "admin",
-      permissions: ["membership.read", "membership.write"],
+      permissions: [
+        "membership.read",
+        "membership.write",
+        "partner.read",
+        "partner.write",
+      ],
     });
 
     await expect(service.setMembership(admin!, operatorId, "operator")).resolves.toMatchObject({
