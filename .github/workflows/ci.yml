@@ -54,7 +54,11 @@ jobs:
       - run: supabase test db supabase/tests/database --local --workdir infra
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @visepanda/domain build
+      - run: pnpm --filter @visepanda/app-server build
       - run: pnpm --filter @visepanda/app-server exec vitest run src/db/versionedTripService.integration.test.ts src/db/opsAuthorizationService.integration.test.ts
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+      - run: pnpm --filter @visepanda/app-web exec vitest run src/app/api/serverComposition.integration.test.ts
         env:
           DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
       - run: supabase db advisors --local --type security --level warn --fail-on error --workdir infra

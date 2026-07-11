@@ -29,13 +29,18 @@ the outbound gateway.
 
 ## Data Access
 
-The current Next.js API layer creates an in-process server caller. If `DATABASE_URL` exists, Trip and
-knowledge use Postgres adapters; otherwise they fall back to process memory. This is useful for
-development but is forbidden for production by the deployment constraints.
+The Next.js API layer creates an in-process server caller through one composition root. Explicit
+`preview`, `staging`, and `production` modes require `DATABASE_URL` and select only the existing
+Postgres Trip and Knowledge adapters. Missing/invalid mode or database configuration returns typed
+503 `RUNTIME_UNAVAILABLE`; it never selects memory. Tests inject services explicitly. Only explicit
+`local-demo` may use a process-cached, non-durable memory pair. The selected durable service pair is
+also process-cached so requests reuse the Postgres pool; persistence remains in Postgres across cold
+starts.
 
 [ADR-0005](../adr/ADR-0005-runtime-modes-and-production-adapter-ownership.md) requires explicit mode
-selection: only `local-demo` may use labelled fixtures/memory; deployed modes must return honest
-degraded/unavailable states when a required durable dependency is absent.
+selection: only `local-demo` may use labelled fixtures/memory; deployed modes return honest
+unavailable states when a required durable dependency is absent. OA-004/OA-005 remain unverified, so
+no live durable Vercel claim is made.
 
 Trip and Copilot routes resolve a server-issued anonymous session cookie or verified Supabase SSR
 identity under [ADR-0004](../adr/ADR-0004-identity-trip-ownership-security.md). The browser stores only

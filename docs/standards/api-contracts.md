@@ -33,6 +33,9 @@ Every interface baseline documents:
 - Retried write requests require an idempotency key or an equivalent deterministic conflict rule.
 - A server router with no configured owning service returns tRPC `SERVICE_UNAVAILABLE`. It MUST NOT
   construct a fixture/memory adapter, retry through another adapter, or fabricate a success response.
+- Web Trip/Copilot routes map missing deployed runtime/database composition to HTTP 503 with
+  `code: RUNTIME_UNAVAILABLE`; they do not expose the missing setting name, connection value, or
+  provider detail in the public response.
 
 ## Trip Contract
 
