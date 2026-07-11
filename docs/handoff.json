@@ -1,26 +1,26 @@
 {
   "schemaVersion": 1,
   "updatedAt": "2026-07-11",
-  "updatedBy": "Codex / Issue #112",
+  "updatedBy": "Codex / Issue #166",
   "baseBranch": "main",
-  "lastVerifiedCommit": "5946490",
+  "lastVerifiedCommit": "4839dfb",
   "currentPhase": "Phase 0 — production hardening",
   "maturity": "Trusted demo skeleton; not yet a production-safe or billing-ready MVP.",
-  "lastCompleted": "Merged PRs through #165 established Node 22, Supabase security, accepted ADR-0004 through ADR-0006, canonical Phase 0/1 governance, and the indexed operator-action/tutorial workflow.",
+  "lastCompleted": "PR #164 merged the fail-closed P0-03 request-identity/Auth implementation; Issue #112 remains externally blocked by OA-001 through OA-003. PR #165 merged the indexed operator-action/tutorial workflow.",
   "activeWork": [
     {
-      "ref": "Issue #112 / P0-03",
-      "title": "Establish Supabase Auth SSR and signed anonymous sessions",
-      "state": "Implementation complete on draft PR #164; live verification is blocked by OA-001 through OA-003",
+      "ref": "Issue #166 / P0-04a",
+      "title": "Freeze owner-scoped versioned Trip service contract",
+      "state": "In progress on codex/p0-04-trip-ownership",
       "owner": "Codex / operator",
-      "next": "Operator configures OA-001 through OA-003 for real Auth evidence; P0-04 may consume the frozen tested request-identity contract after P0-03 merge."
+      "next": "Merge the in-memory executable contract, then implement its exclusive-owner atomic Postgres adapter in P0-04b #167."
     }
   ],
   "nextActions": [
     {
       "priority": "P0",
-      "action": "Review draft PR #164 and complete OA-001 through OA-003 live Auth verification.",
-      "exitCriteria": "Real login, refresh continuity, logout, expired session, signed anonymous continuity, and controlled key rotation are verified without exposing credentials."
+      "action": "Complete P0-04a #166, then P0-04b #167 and P0-04c #168 in order.",
+      "exitCriteria": "Trip service, Postgres transaction, and Web consumers all enforce trusted ownership, expectedVersion, Patch-only mutation, claim, and revocable read-only sharing."
     },
     {
       "priority": "P0",
@@ -34,7 +34,7 @@
     }
   ],
   "blockers": [
-    "Draft PR #164 implements trusted Copilot request identity and Auth routes, but real Supabase evidence awaits OA-001 through OA-003 and Trip owner routes remain P0-04 work.",
+    "P0-03 code is merged, but real Supabase evidence awaits OA-001 through OA-003; P0-04a/b/c must finish before Trip routes are production-safe.",
     "Ops authentication/RBAC is not production-ready.",
     "Copilot model calls and knowledge retrieval remain deterministic/stubbed in the audited main branch.",
     "Human Task, outbound click, telemetry, and AI trace runtime persistence are incomplete.",
@@ -54,7 +54,8 @@
     "DOC-P0-01 merge evidence: PR #140 passed database contracts, verify, docs, evals, and Vercel previews before merging; ADR-0004 is accepted and Issue #131 is closed.",
     "DOC-P0-02 and DOC-P0-03 merge evidence: PRs #162 and #163 accepted ADR-0005 and ADR-0006 after repository checks passed.",
     "DOC-P0-05 merge evidence: PR #165 passed verify, docs, evals, database contracts, and Vercel previews; nine known external actions and the Chinese tutorial workflow are now indexed and mandatory.",
-    "P0-03 local and CI implementation evidence at 9eabe54: lint, typecheck, test, build, evals, docs, database contracts, and Vercel previews passed; mocked tests cover anonymous expiry/rotation, verified-user spoof resistance, login rejection/success, and logout. Live Supabase behavior is not claimed."
+    "P0-03 merge evidence: PR #164 passed lint, typecheck, tests, build, evals, docs, database contracts, and Vercel previews; mocked tests cover anonymous expiry/rotation, verified-user spoof resistance, login rejection/success, and logout. Live Supabase behavior is not claimed.",
+    "P0-04a working evidence: the new VersionedTripService in-memory reference passes owner isolation, stale-version, no-op Patch, idempotent claim, authenticated non-transfer, and share/revoke tests."
   ],
   "readingOrder": [
     {
