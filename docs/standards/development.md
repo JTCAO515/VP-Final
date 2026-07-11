@@ -32,6 +32,17 @@ Use these exact labels in docs and PRs:
 - `planned`: accepted direction without implementation.
 - `degraded`: real capability is unavailable and the product reports that honestly.
 
+Supabase SSR dependencies are server-side identity adapters. Their environment values remain deployment
+secrets; a missing configuration may yield anonymous or unavailable state as defined by the active
+runtime contract, never a client-supplied authenticated identity.
+
+The Web identity environment contract is `SUPABASE_URL`, `SUPABASE_ANON_KEY`,
+`VISEPANDA_ANON_SESSION_SECRET`, and `VISEPANDA_ANON_SESSION_KEY_ID`. A controlled signing-key rotation
+temporarily adds `VISEPANDA_ANON_SESSION_PREVIOUS_SECRET` and
+`VISEPANDA_ANON_SESSION_PREVIOUS_KEY_ID`. Setup and live verification are tracked as OA-001 through
+OA-003 in the [operator action register](../governance/operator-action-register.md); values never enter
+the repository.
+
 ## Dependency Policy
 
 - Prefer platform APIs and existing repository dependencies.

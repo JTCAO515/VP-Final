@@ -9,30 +9,30 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 ## Current Handoff Snapshot
 
-- **Updated:** 2026-07-11 by Codex / Issue #138
+- **Updated:** 2026-07-11 by Codex / Issue #112
 - **Base branch:** `main`
-- **Last fully verified commit:** `6d6beb2`
+- **Last fully verified commit:** `5946490`
 - **Current phase:** Phase 0 — production hardening
 - **Maturity:** Trusted demo skeleton; not yet a production-safe or billing-ready MVP.
-- **Last completed control action:** Merged PRs #106, #107, #109, #136, #140, #149, #160, #161, #162, and #163 established Node 22, Supabase security, accepted ADR-0004 through ADR-0006, composite governance, and the canonical Phase 0/1 dependency graph.
+- **Last completed control action:** Merged PRs through #165 established Node 22, Supabase security, accepted ADR-0004 through ADR-0006, canonical Phase 0/1 governance, and the indexed operator-action/tutorial workflow.
 
 ### Active Work
 
 | Ref | Work | State | Owner | Next action |
 | --- | --- | --- | --- | --- |
-| Issue #138 / DOC-P0-05 | Add an operator-action register and beginner handoff tutorials | In progress on codex/doc-p0-05-operator-actions | Codex / operator | Validate and merge the register, templates, Agent gates, and tutorial workflow; then resume P0-03 while DOC-P0-04 remains operator-blocked. |
+| Issue #112 / P0-03 | Establish Supabase Auth SSR and signed anonymous sessions | Implementation complete on draft PR #164; live verification is blocked by OA-001 through OA-003 | Codex / operator | Operator configures OA-001 through OA-003 for real Auth evidence; P0-04 may consume the frozen tested request-identity contract after P0-03 merge. |
 
 ### Immediate Queue
 
 | Priority | Control action | Exit criteria |
 | --- | --- | --- |
-| P0 | Merge DOC-P0-05 (#138), then use its register for every unresolved external action. | The registered Index, AGENTS, Issue/PR templates, handoff, and Chinese tutorial template enforce named placeholders, owner/status, verification, rollback, and secret exclusion. |
+| P0 | Review draft PR #164 and complete OA-001 through OA-003 live Auth verification. | Real login, refresh continuity, logout, expired session, signed anonymous continuity, and controlled key rotation are verified without exposing credentials. |
 | P0 | Start only Phase 0 Issues whose document-first and canonical dependency gates are ready in the graph. | No feature PR starts from a superseded V2 Issue or before its accepted ADR/policy and canonical dependency gates. |
 | P0 | Before any external service claim, update the operator-action register with placeholder, owner, verification, and novice tutorial steps. | No third-party API, payment, deployment, DNS, or store capability is presented as live without recorded operator verification. |
 
 ### Current Blockers
 
-- Web identity and object ownership still rely on client-supplied identity in the audited main branch.
+- Draft PR #164 implements trusted Copilot request identity and Auth routes, but real Supabase evidence awaits OA-001 through OA-003 and Trip owner routes remain P0-04 work.
 - Ops authentication/RBAC is not production-ready.
 - Copilot model calls and knowledge retrieval remain deterministic/stubbed in the audited main branch.
 - Human Task, outbound click, telemetry, and AI trace runtime persistence are incomplete.
@@ -52,7 +52,8 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 - GOV-P0 merge evidence: PRs #149, #160, and #161 passed repository checks and merged to main; DOC-P0-01 is now the active documentation-first control action.
 - DOC-P0-01 merge evidence: PR #140 passed database contracts, verify, docs, evals, and Vercel previews before merging; ADR-0004 is accepted and Issue #131 is closed.
 - DOC-P0-02 and DOC-P0-03 merge evidence: PRs #162 and #163 accepted ADR-0005 and ADR-0006 after repository checks passed.
-- DOC-P0-05 working evidence: nine known operator actions are seeded with placeholders only; AGENTS and Issue/PR templates require register synchronization; the Chinese tutorial template includes console steps, verification, rollback, and common mistakes.
+- DOC-P0-05 merge evidence: PR #165 passed verify, docs, evals, database contracts, and Vercel previews; nine known external actions and the Chinese tutorial workflow are now indexed and mandatory.
+- P0-03 local and CI implementation evidence at 9eabe54: lint, typecheck, test, build, evals, docs, database contracts, and Vercel previews passed; mocked tests cover anonymous expiry/rotation, verified-user spoof resistance, login rejection/success, and logout. Live Supabase behavior is not claimed.
 
 ## Mandatory Markdown Reading Order
 

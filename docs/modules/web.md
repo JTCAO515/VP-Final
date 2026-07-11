@@ -10,18 +10,22 @@ the outbound gateway.
 
 ## Routes
 
-| Route | Purpose |
-| --- | --- |
-| `/` | Copilot workspace and Trip Canvas |
-| `/explore` | Execution-fact discovery |
-| `/guides/[slug]` | Editorial execution guides |
-| `/[city]/[poi]` | Programmatic POI page |
-| `/human-help` | Human Task request surface |
-| `/share/trips/[token]` | Public read-only Trip share |
-| `/outbound` | Validated partner redirect gateway |
-| `/api/copilot` | First-pass Copilot request |
-| `/api/copilot/complete` | Silent second-pass completion |
-| `/api/trips/*` | Trip read, claim, and share handlers |
+| Route                   | Purpose                                                     |
+| ----------------------- | ----------------------------------------------------------- |
+| `/`                     | Copilot workspace and Trip Canvas                           |
+| `/explore`              | Execution-fact discovery                                    |
+| `/guides/[slug]`        | Editorial execution guides                                  |
+| `/[city]/[poi]`         | Programmatic POI page                                       |
+| `/human-help`           | Human Task request surface                                  |
+| `/account`              | Server-verified traveler session and email/password sign-in |
+| `/share/trips/[token]`  | Public read-only Trip share                                 |
+| `/outbound`             | Validated partner redirect gateway                          |
+| `/api/copilot`          | First-pass Copilot request                                  |
+| `/api/copilot/complete` | Silent second-pass completion                               |
+| `/api/auth/login`       | Supabase email/password sign-in and SSR cookie issuance     |
+| `/api/auth/logout`      | Supabase sign-out and SSR cookie clearing                   |
+| `/api/auth/session`     | Verified display-safe session status and cookie refresh     |
+| `/api/trips/*`          | Trip read, claim, and share handlers                        |
 
 ## Data Access
 
@@ -37,6 +41,13 @@ Current localStorage identity fields are a documented security debt, not an auth
 P0-03/P0-04 replace them with server-issued anonymous session cookies and Supabase SSR identity under
 [ADR-0004](../adr/ADR-0004-identity-trip-ownership-security.md). New Web work must not add another
 client-owned owner/currentTrip path.
+
+P0-03 resolves identity at the Copilot API boundary and ignores body-provided owner fields there. It
+also implements the Supabase SSR login/logout/session routes and a signed, server-expiring anonymous
+cookie with one-key rotation. The adapter is implemented and unit-tested; real external Auth evidence
+remains blocked on OA-001 through OA-003 in the
+[operator action register](../governance/operator-action-register.md). Trip read/claim/share
+authorization remains P0-04 work and is not yet production-safe.
 
 The Human Help and outbound ledgers still contain app-local paths that must be consolidated into
 server services before public launch.

@@ -13,5 +13,6 @@ export { createDbKnowledgeService } from "./db/knowledgeService.js";
 export { createDbTripService } from "./db/tripService.js";
 export { createInMemoryKnowledgeService } from "./modules/knowledge/service.js";
 export { createInMemoryTripService } from "./modules/trip/service.js";
+export type { RequestIdentity } from "./context.js";
 export type { KnowledgeService } from "./modules/knowledge/service.js";
 export type { TripOwner, TripService } from "./modules/trip/service.js";
