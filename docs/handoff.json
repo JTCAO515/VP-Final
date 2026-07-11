@@ -1,26 +1,26 @@
 {
   "schemaVersion": 1,
   "updatedAt": "2026-07-11",
-  "updatedBy": "Codex / Issue #168",
+  "updatedBy": "Codex / Issue #114",
   "baseBranch": "main",
-  "lastVerifiedCommit": "38748a3",
+  "lastVerifiedCommit": "40d70b7",
   "currentPhase": "Phase 0 — production hardening",
   "maturity": "Trusted demo skeleton; not yet a production-safe or billing-ready MVP.",
-  "lastCompleted": "PR #170 merged P0-04b exclusive ownership, transactional Patch/event persistence, and real database contract coverage after all checks passed.",
+  "lastCompleted": "PR #171 merged P0-04c trusted Trip/Copilot Web consumers after Verify, Database contracts, docs, evals, and both Vercel previews passed.",
   "activeWork": [
     {
-      "ref": "Issue #168 / P0-04c",
-      "title": "Convert Web Trip and Copilot routes to trusted identity",
-      "state": "Implementation and full local repository gates complete; PR publication, CI, and review remain",
+      "ref": "Issue #114 / P0-05",
+      "title": "Add Ops authentication and least-privilege RBAC",
+      "state": "Implementation and full local gates complete; PR, database-contract CI, review, and merge remain",
       "owner": "Codex / operator",
-      "next": "Run full repository gates, open the P0-04c PR, resolve CI/review feedback, and merge before selecting the next ready Phase 0 control action."
+      "next": "Complete documentation and full gates, then open the P0-05 PR. Production release remains fail-closed until OA-001, OA-004, and OA-010 are verified."
     }
   ],
   "nextActions": [
     {
       "priority": "P0",
-      "action": "Complete P0-04c #168 and preserve the P0-04 parent release block until OA-001 through OA-003 provide real Supabase evidence.",
-      "exitCriteria": "Trip service, Postgres transaction, and Web consumers all enforce trusted ownership, expectedVersion, Patch-only mutation, claim, and revocable read-only sharing."
+      "action": "Complete P0-05 #114 without creating a client role, email allowlist, default admin, or production memory fallback.",
+      "exitCriteria": "Ops pages and direct APIs enforce the explicit role matrix, audit privileged mutations, fail closed without durable configuration, and record the first-admin bootstrap as OA-010."
     },
     {
       "priority": "P0",
@@ -34,8 +34,8 @@
     }
   ],
   "blockers": [
-    "P0-03 and P0-04a/b code are merged and P0-04c is active, but real Supabase evidence still awaits OA-001 through OA-003 before production readiness can be claimed.",
-    "Ops authentication/RBAC is not production-ready.",
+    "P0-03 and P0-04 code are merged, but real Supabase evidence still awaits OA-001 through OA-004 before production readiness can be claimed.",
+    "Ops RBAC implementation is active; real first-admin and deployed role evidence awaits OA-010.",
     "Copilot model calls and knowledge retrieval remain deterministic/stubbed in the audited main branch.",
     "Human Task, outbound click, telemetry, and AI trace runtime persistence are incomplete.",
     "Real payment evidence, rate limiting, observability, legal pages, and production smoke gates are incomplete."
@@ -61,7 +61,10 @@
     "P0-04b second CI observation: Supabase reset and pgTAP passed, then adapter integration could not resolve the unbuilt workspace domain package; the job now builds @visepanda/domain first.",
     "P0-04b final CI evidence on PR #170: Database contracts passed in 2m53s, covering empty reset, six pgTAP ownership/security assertions, real concurrent version/claim adapter tests, and security advisors. Verify, docs, evals, and both Vercel previews also passed.",
     "P0-04c initial full-gate observation: API client compile-time assertions still described owner/currentTrip inputs and naked Trip outputs. They were corrected to trusted-context inputs and versioned snapshots, after which the full gate passed.",
-    "P0-04c local evidence: lint, typecheck, all tests, build, five AI eval cases, docs check, and docs impact passed. Server tests cover 41 cases plus two database-only skips; Web route tests cover forged owner/currentTrip stripping, server-generated Trip ids, signed-cookie owner isolation, claim 401, stale 409 safe version, and share/revoke."
+    "P0-04c local evidence: lint, typecheck, all tests, build, five AI eval cases, docs check, and docs impact passed. Server tests cover 41 cases plus two database-only skips; Web route tests cover forged owner/currentTrip stripping, server-generated Trip ids, signed-cookie owner isolation, claim 401, stale 409 safe version, and share/revoke.",
+    "P0-04c merge evidence: PR #171 passed Verify, Database contracts in 2m30s, docs, evals, and both Vercel previews before merging at 40d70b7. Issue #168 is closed; parent #113 remains blocked only by external release evidence.",
+    "P0-05 first full-gate deviation: parallel Web rebuilding of the Server root bundle exposed an unrelated partial-root import to Ops. Ops authorization now uses narrow package subpaths, reducing coupling without changing the Web build system.",
+    "P0-05 local evidence: lint, typecheck, all tests, build, five AI eval cases, docs check, and docs impact pass. Server has 45 passing tests plus three DB-only skips; Ops has six authorization/store tests; every Ops page builds as request-time dynamic. Real pgTAP and adapter integration await Database contracts CI."
   ],
   "readingOrder": [
     {

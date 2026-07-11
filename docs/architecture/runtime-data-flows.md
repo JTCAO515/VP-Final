@@ -53,6 +53,31 @@ Client-supplied `userId`, `anonId`, email, owner, and `currentTrip` cannot autho
 Anonymous claim requires both the verified user and current signed anonymous session. Share tokens are
 public read-only capabilities. The binding contract is [ADR-0004](../adr/ADR-0004-identity-trip-ownership-security.md).
 
+## Ops Authorization Flow
+
+```mermaid
+sequenceDiagram
+  participant O as Ops browser
+  participant A as Ops route
+  participant S as Supabase Auth
+  participant R as RBAC service
+  participant D as Postgres
+
+  O->>A: Request plus SSR cookies
+  A->>S: Verify current user
+  S-->>A: Verified user or no session
+  A->>R: Resolve required permission
+  R->>D: Read server-only membership
+  D-->>R: Explicit role
+  R-->>A: Allowed or forbidden
+  A->>D: Privileged mutation plus audit event
+  A-->>O: Success, 401, 403, or honest unavailable
+```
+
+Roles are non-hierarchical and never come from email, user-editable metadata, request bodies, or
+navigation state. Missing Auth/database configuration fails closed. The first Admin exists only after
+the registered OA-010 trusted-console bootstrap.
+
 ## Two-Pass Trip Generation
 
 1. The first pass returns a Trip skeleton quickly.

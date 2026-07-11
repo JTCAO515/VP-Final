@@ -20,6 +20,30 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+export const opsMemberships = pgTable("ops_memberships", {
+  userId: uuid("user_id").primaryKey(),
+  role: text("role").notNull(),
+  createdBy: uuid("created_by"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const opsAuditEvents = pgTable(
+  "ops_audit_events",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    actorId: uuid("actor_id").notNull(),
+    action: text("action").notNull(),
+    targetType: text("target_type").notNull(),
+    targetId: text("target_id"),
+    metadataJsonb: jsonb("metadata_jsonb").notNull().default({}),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    actorCreatedIdx: index("ops_audit_events_actor_created_idx").on(table.actorId, table.createdAt),
+  }),
+);
+
 export const trips = pgTable(
   "trips",
   {

@@ -10,14 +10,33 @@ export { appRouter } from "./router.js";
 export type { AppRouter } from "./router.js";
 export { createDb } from "./db/client.js";
 export { createDbKnowledgeService } from "./db/knowledgeService.js";
+export { createDbOpsAuthorizationService } from "./db/opsAuthorizationService.js";
 export { createDbVersionedTripService } from "./db/versionedTripService.js";
 export { createInMemoryKnowledgeService } from "./modules/knowledge/service.js";
+export {
+  createInMemoryOpsAuthorizationService,
+  OpsForbiddenError,
+  OpsPermissionSchema,
+  OpsRoleSchema,
+  OpsUnauthorizedError,
+  permissionsForRole,
+  requireOpsAccess,
+} from "./modules/opsAuthorization/service.js";
 export {
   createVersionedInMemoryTripService,
   TripVersionConflictError,
 } from "./modules/trip/versionedService.js";
 export type { RequestIdentity } from "./context.js";
 export type { KnowledgeService } from "./modules/knowledge/service.js";
+export type {
+  OpsAccess,
+  OpsAuditEvent,
+  OpsAuthorizationService,
+  OpsMembership,
+  OpsPermission,
+  OpsRole,
+  RecordOpsAuditInput,
+} from "./modules/opsAuthorization/service.js";
 export type {
   ApplyTripPatchInput,
   ClaimIdentity,
