@@ -9,24 +9,24 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 ## Current Handoff Snapshot
 
-- **Updated:** 2026-07-11 by Codex / Issue #173
+- **Updated:** 2026-07-11 by Codex / Issue #176
 - **Base branch:** `main`
-- **Last fully verified commit:** `0a07035`
+- **Last fully verified commit:** `dc8edee`
 - **Current phase:** Phase 0 — production hardening
 - **Maturity:** Trusted demo skeleton; not yet a production-safe or billing-ready MVP.
-- **Last completed control action:** PR #177 merged P0-06a explicit runtime modes and adapter inventory after all repository checks passed.
+- **Last completed control action:** PR #178 merged P0-06b explicit router service injection after all repository checks passed.
 
 ### Active Work
 
 | Ref | Work | State | Owner | Next action |
 | --- | --- | --- | --- | --- |
-| Issue #173 / P0-06b | Require explicit services in server routers | Knowledge, Human Task, and Telemetry router fallbacks removed locally; full gates, PR, and merge remain | Codex | Complete full verification and merge P0-06b before unblocking Web durable composition in P0-06c #176. |
+| Issue #176 / P0-06c | Converge Web Trip and Knowledge consumers on durable adapters | Web composition and typed unavailable mapping implemented locally; full gates and real Database contracts CI remain | Codex | Run full gates and Database contracts cold-start integration, then merge before unblocking Ops convergence in P0-06d #175. |
 
 ### Immediate Queue
 
 | Priority | Control action | Exit criteria |
 | --- | --- | --- |
-| P0 | Complete P0-06b #173 without adding a router-local adapter selection path. | Every server router uses an explicitly injected owning service or returns typed SERVICE_UNAVAILABLE; tests inject memory directly. |
+| P0 | Complete P0-06c #176 without inferring a deployed mode or restoring a Web memory fallback. | Web deployed Trip/Knowledge use Postgres, missing configuration returns typed 503, tests inject memory, and Database contracts proves re-instantiation durability. |
 | P0 | Start only Phase 0 Issues whose document-first and canonical dependency gates are ready in the graph. | No feature PR starts from a superseded V2 Issue or before its accepted ADR/policy and canonical dependency gates. |
 | P0 | Before any external service claim, update the operator-action register with placeholder, owner, verification, and novice tutorial steps. | No third-party API, payment, deployment, DNS, or store capability is presented as live without recorded operator verification. |
 
@@ -70,6 +70,8 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 - P0-06a local evidence: lint, typecheck, all tests, build, five AI eval cases, docs check, and docs impact pass. Twelve runtime tests cover all five explicit modes, missing/invalid mode, deployed database failure, labelled demo memory, explicit test injection, inventory completeness, root-cause diagnostics, and secret-safe output.
 - P0-06a merge evidence: PR #177 passed Verify in 1m35s, Database contracts in 3m17s, docs, evals, and both Vercel previews before merging at 0a07035. OA-004/OA-005 remain external release gates.
 - P0-06b focused evidence: 12 tests pass across the common service guard and Knowledge, Human Task, and Telemetry routers. Omitted services return SERVICE_UNAVAILABLE; explicit memory injection remains test-only.
+- P0-06b merge evidence: PR #178 passed Verify in 1m34s, Database contracts in 2m30s, docs, evals, and both Vercel previews before merging at dc8edee.
+- P0-06c focused evidence: seven local Web tests pass for missing-mode/database fail-closed behavior, explicit test injection, local-demo selection, typed route 503, and owner/version/share behavior. Real two-instance Postgres durability is added to Database contracts CI and is not claimed locally because Docker is absent.
 
 ## Mandatory Markdown Reading Order
 

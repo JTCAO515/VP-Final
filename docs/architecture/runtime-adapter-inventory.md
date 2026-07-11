@@ -25,8 +25,8 @@ returns connection strings or credentials.
 
 | Object | Production owner | Current durable state | Forbidden production path | Canonical follow-up |
 | --- | --- | --- | --- | --- |
-| Trip and Trip events | Server Trip service + Postgres adapter | Implemented; consumer convergence follows | Web/process-local state | #113, P0-06c #176 |
-| Knowledge facts/gaps | Server Knowledge service + Postgres adapter | Implemented; Ops/Web convergence follows | Browser/Ops process store | P0-06c #176, P0-06d #175 |
+| Trip and Trip events | Server Trip service + Postgres adapter | Implemented; Web durable composition implemented | Web/process-local state | #113, P0-06c #176 |
+| Knowledge facts/gaps | Server Knowledge service + Postgres adapter | Web composition implemented; Ops convergence follows | Browser/Ops process store | P0-06c #176, P0-06d #175 |
 | Ops authorization/audit | Server Ops Authorization service + Postgres adapter | Implemented | Client role, email allowlist, default admin | #114 |
 | Human Tasks | Server Human Task service + Postgres adapter | Not implemented for production | App-local task ledger | P0-13 #150 |
 | Outbound clicks/partners | Server Commerce service + Postgres adapter | Not implemented for production | Memory click ledger/raw redirect | P0-18 #155 |
@@ -46,8 +46,8 @@ write.
 5. On adapter failure, keep the same selection and return an honest typed error.
 
 The resolver and `requireService` guard live at `@visepanda/app-server/runtime`. P0-06b removed
-router-local fallback construction. P0-06c and P0-06d migrate Web/Ops composition roots; they must not
-duplicate mode parsing.
+router-local fallback construction. P0-06c migrated the Web composition root and P0-06d owns the
+remaining Ops migration; neither duplicates mode parsing.
 
 ## Verification
 

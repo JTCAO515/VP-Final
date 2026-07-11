@@ -3,6 +3,7 @@ import { TripVersionConflictError } from "@visepanda/app-server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getServerCaller } from "../../_server";
+import { runtimeUnavailableResponse } from "../../_runtimeError";
 import { applyIdentityCookies, resolveRequestIdentity } from "../../../../lib/requestIdentity";
 
 const CompleteRequestSchema = z.object({
@@ -36,6 +37,8 @@ export async function POST(request: Request) {
       cookieResponse,
     );
   } catch (error) {
+    const unavailable = runtimeUnavailableResponse(error);
+    if (unavailable) return applyIdentityCookies(unavailable, cookieResponse);
     const conflict = findTripConflict(error);
     return applyIdentityCookies(
       NextResponse.json(

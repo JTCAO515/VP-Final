@@ -29,6 +29,11 @@ and creates or applies TripPatch values through optimistic concurrency. Intent r
 generation, and day completion still have deterministic defaults. Public release requires real
 Supabase evidence, real provider routing, durable tracing, and honest failure behavior.
 
+Before a Web caller is created, the composition root resolves the explicit runtime mode and durable
+database availability once. Deployed Trip/Knowledge requests use Postgres or return 503
+`RUNTIME_UNAVAILABLE`; transient failure never switches the selected adapter. Explicit tests inject
+their services, while `local-demo` alone may cache a labelled memory pair.
+
 ## Identity and Trip Authorization Flow
 
 ```mermaid

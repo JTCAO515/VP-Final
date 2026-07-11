@@ -1,5 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import {
+  createInMemoryKnowledgeService,
+  createVersionedInMemoryTripService,
+} from "@visepanda/app-server";
 import { POST as runCopilot } from "../app/api/copilot/route";
+import { setTestWebServerServices } from "../app/api/_server";
 import { GET as getTrip, PATCH as patchTrip } from "../app/api/trips/[tripId]/route";
 import { POST as claimTrips } from "../app/api/trips/claim/route";
 import { DELETE as revokeShare, POST as createShare } from "../app/api/trips/[tripId]/share/route";
@@ -8,13 +13,25 @@ import { createAnonymousSessionValue } from "./requestIdentity";
 const secret = "test-secret-that-is-long-enough-for-route-contracts";
 const originalSecret = process.env.VISEPANDA_ANON_SESSION_SECRET;
 const originalKeyId = process.env.VISEPANDA_ANON_SESSION_KEY_ID;
+const originalRuntimeMode = process.env.VISEPANDA_RUNTIME_MODE;
+const originalDatabaseUrl = process.env.DATABASE_URL;
 
 beforeEach(() => {
+  process.env.VISEPANDA_RUNTIME_MODE = "test";
   process.env.VISEPANDA_ANON_SESSION_SECRET = secret;
   process.env.VISEPANDA_ANON_SESSION_KEY_ID = "current";
+  setTestWebServerServices({
+    knowledgeService: createInMemoryKnowledgeService(),
+    tripService: createVersionedInMemoryTripService(),
+  });
 });
 
 afterEach(() => {
+  if (originalRuntimeMode === undefined) delete process.env.VISEPANDA_RUNTIME_MODE;
+  else process.env.VISEPANDA_RUNTIME_MODE = originalRuntimeMode;
+  if (originalDatabaseUrl === undefined) delete process.env.DATABASE_URL;
+  else process.env.DATABASE_URL = originalDatabaseUrl;
+  setTestWebServerServices(null);
   if (originalSecret === undefined) delete process.env.VISEPANDA_ANON_SESSION_SECRET;
   else process.env.VISEPANDA_ANON_SESSION_SECRET = originalSecret;
   if (originalKeyId === undefined) delete process.env.VISEPANDA_ANON_SESSION_KEY_ID;
@@ -22,6 +39,24 @@ afterEach(() => {
 });
 
 describe("private Trip route authority", () => {
+  it("returns a typed 503 when deployed durable services are missing", async () => {
+    process.env.VISEPANDA_RUNTIME_MODE = "production";
+    delete process.env.DATABASE_URL;
+    setTestWebServerServices(null);
+
+    const response = await runCopilot(
+      jsonRequest("https://example.test/api/copilot", cookieFor("unavailable-runtime"), {
+        message: "Plan a Shanghai trip",
+      }),
+    );
+
+    expect(response.status).toBe(503);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: false,
+      code: "RUNTIME_UNAVAILABLE",
+    });
+  });
+
   it("rejects a claim without a verified authenticated session", async () => {
     const response = await claimTrips(
       new Request("https://example.test/api/trips/claim", { method: "POST" }),

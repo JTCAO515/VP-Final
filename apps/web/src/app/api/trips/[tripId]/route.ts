@@ -2,6 +2,7 @@ import { TripPatchSchema } from "@visepanda/domain";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getServerCaller } from "../../_server";
+import { runtimeUnavailableResponse } from "../../_runtimeError";
 import { applyIdentityCookies, resolveRequestIdentity } from "../../../../lib/requestIdentity";
 
 const UpdateTripSchema = z.object({
@@ -13,11 +14,17 @@ export async function GET(request: Request, context: { params: Promise<{ tripId:
   const cookieResponse = NextResponse.next();
   const identity = await resolveRequestIdentity(request, cookieResponse);
   const { tripId } = await context.params;
-  const snapshot = await getServerCaller(identity).trip.get({ id: tripId });
-  const response = snapshot
-    ? NextResponse.json({ ok: true, trip: snapshot.trip, version: snapshot.version })
-    : NextResponse.json({ ok: false, error: "Trip not found." }, { status: 404 });
-  return applyIdentityCookies(response, cookieResponse);
+  try {
+    const snapshot = await getServerCaller(identity).trip.get({ id: tripId });
+    const response = snapshot
+      ? NextResponse.json({ ok: true, trip: snapshot.trip, version: snapshot.version })
+      : NextResponse.json({ ok: false, error: "Trip not found." }, { status: 404 });
+    return applyIdentityCookies(response, cookieResponse);
+  } catch (error) {
+    const unavailable = runtimeUnavailableResponse(error);
+    if (unavailable) return applyIdentityCookies(unavailable, cookieResponse);
+    throw error;
+  }
 }
 
 export async function PATCH(request: Request, context: { params: Promise<{ tripId: string }> }) {
@@ -42,6 +49,8 @@ export async function PATCH(request: Request, context: { params: Promise<{ tripI
       : NextResponse.json({ ok: false, error: "Trip not found." }, { status: 404 });
     return applyIdentityCookies(response, cookieResponse);
   } catch (error) {
+    const unavailable = runtimeUnavailableResponse(error);
+    if (unavailable) return applyIdentityCookies(unavailable, cookieResponse);
     const currentVersion = readCurrentVersion(error);
     return applyIdentityCookies(
       NextResponse.json(
