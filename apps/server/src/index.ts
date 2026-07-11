@@ -18,6 +18,7 @@ export {
   resolveRuntimeMode,
   RuntimeModeSchema,
 } from "./runtime/runtimeMode.js";
+export { requireService } from "./runtime/requireService.js";
 export { createInMemoryKnowledgeService } from "./modules/knowledge/service.js";
 export {
   createInMemoryOpsAuthorizationService,

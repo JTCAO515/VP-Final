@@ -1,26 +1,26 @@
 {
   "schemaVersion": 1,
   "updatedAt": "2026-07-11",
-  "updatedBy": "Codex / Issue #174",
+  "updatedBy": "Codex / Issue #173",
   "baseBranch": "main",
-  "lastVerifiedCommit": "410ffab",
+  "lastVerifiedCommit": "0a07035",
   "currentPhase": "Phase 0 — production hardening",
   "maturity": "Trusted demo skeleton; not yet a production-safe or billing-ready MVP.",
-  "lastCompleted": "PR #172 merged P0-05 least-privilege Ops RBAC after Verify, Database contracts, docs, evals, and both Vercel previews passed.",
+  "lastCompleted": "PR #177 merged P0-06a explicit runtime modes and adapter inventory after all repository checks passed.",
   "activeWork": [
     {
-      "ref": "Issue #174 / P0-06a",
-      "title": "Freeze runtime mode resolver and adapter inventory",
-      "state": "Runtime resolver, database availability diagnostics, and canonical adapter inventory implemented locally; full gates, PR, and merge remain",
+      "ref": "Issue #173 / P0-06b",
+      "title": "Require explicit services in server routers",
+      "state": "Knowledge, Human Task, and Telemetry router fallbacks removed locally; full gates, PR, and merge remain",
       "owner": "Codex",
-      "next": "Complete full verification and merge P0-06a before unblocking explicit router dependencies in P0-06b #173."
+      "next": "Complete full verification and merge P0-06b before unblocking Web durable composition in P0-06c #176."
     }
   ],
   "nextActions": [
     {
       "priority": "P0",
-      "action": "Complete P0-06a #174 as the only runtime mode and adapter inventory authority.",
-      "exitCriteria": "Explicit modes and safe adapter diagnostics are tested, memory remains test/local-demo only, and later persistent objects retain their canonical owners."
+      "action": "Complete P0-06b #173 without adding a router-local adapter selection path.",
+      "exitCriteria": "Every server router uses an explicitly injected owning service or returns typed SERVICE_UNAVAILABLE; tests inject memory directly."
     },
     {
       "priority": "P0",
@@ -68,7 +68,9 @@
     "P0-05 first Database contracts observation on PR #172: migrations, pgTAP, Trip integration, and implementation behavior reached the Ops adapter assertion; the test expected only two admin permissions while the accepted matrix correctly returned four. The assertion now verifies the complete exact admin permission set before rerun.",
     "P0-05 merge evidence: PR #172 passed Verify in 1m42s, Database contracts in 2m35s, docs, evals, and both Vercel previews before merging at 410ffab. Production remains blocked by OA-001, OA-004, and OA-010.",
     "P0-06 decomposition: parent #115 is split into runtime resolver/inventory #174, explicit router dependencies #173, Web durable composition #176, and Ops Knowledge convergence/quarantine #175. The split preserves P0-09/P0-13/P0-18/P0-19 as sole owners of their later workflows.",
-    "P0-06a local evidence: lint, typecheck, all tests, build, five AI eval cases, docs check, and docs impact pass. Twelve runtime tests cover all five explicit modes, missing/invalid mode, deployed database failure, labelled demo memory, explicit test injection, inventory completeness, root-cause diagnostics, and secret-safe output."
+    "P0-06a local evidence: lint, typecheck, all tests, build, five AI eval cases, docs check, and docs impact pass. Twelve runtime tests cover all five explicit modes, missing/invalid mode, deployed database failure, labelled demo memory, explicit test injection, inventory completeness, root-cause diagnostics, and secret-safe output.",
+    "P0-06a merge evidence: PR #177 passed Verify in 1m35s, Database contracts in 3m17s, docs, evals, and both Vercel previews before merging at 0a07035. OA-004/OA-005 remain external release gates.",
+    "P0-06b focused evidence: 12 tests pass across the common service guard and Knowledge, Human Task, and Telemetry routers. Omitted services return SERVICE_UNAVAILABLE; explicit memory injection remains test-only."
   ],
   "readingOrder": [
     {

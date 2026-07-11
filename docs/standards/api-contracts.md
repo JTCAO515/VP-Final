@@ -31,6 +31,8 @@ Every interface baseline documents:
 - Model/provider output is untrusted. Normalize and parse it before constructing a Copilot envelope.
 - Webhooks verify signatures and are idempotent before state mutation.
 - Retried write requests require an idempotency key or an equivalent deterministic conflict rule.
+- A server router with no configured owning service returns tRPC `SERVICE_UNAVAILABLE`. It MUST NOT
+  construct a fixture/memory adapter, retry through another adapter, or fabricate a success response.
 
 ## Trip Contract
 
