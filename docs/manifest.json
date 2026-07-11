@@ -606,6 +606,7 @@
       "summary": "Templates for explanations, constraints, ADRs, runbooks, reviews, and retrospectives.",
       "sourcePrefixes": []
     },
+
     {
       "path": "docs/adr/README.md",
       "title": "ADR Index",
