@@ -9,24 +9,24 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 ## Current Handoff Snapshot
 
-- **Updated:** 2026-07-11 by Codex / Issue #176
+- **Updated:** 2026-07-11 by Codex / Issue #175
 - **Base branch:** `main`
-- **Last fully verified commit:** `dc8edee`
+- **Last fully verified commit:** `98ba3f0`
 - **Current phase:** Phase 0 — production hardening
 - **Maturity:** Trusted demo skeleton; not yet a production-safe or billing-ready MVP.
-- **Last completed control action:** PR #178 merged P0-06b explicit router service injection after all repository checks passed.
+- **Last completed control action:** PR #179 merged P0-06c Web durable composition after all checks including two-instance Database contracts passed.
 
 ### Active Work
 
 | Ref | Work | State | Owner | Next action |
 | --- | --- | --- | --- | --- |
-| Issue #176 / P0-06c | Converge Web Trip and Knowledge consumers on durable adapters | Web composition and typed unavailable mapping implemented locally; full gates and real Database contracts CI remain | Codex | Run full gates and Database contracts cold-start integration, then merge before unblocking Ops convergence in P0-06d #175. |
+| Issue #175 / P0-06d | Converge Ops Knowledge and quarantine unowned memory routes | Ops Knowledge convergence and pending-ledger quarantine implemented locally; full gates and Database contracts remain | Codex | Run full gates and Ops two-instance Database contracts, merge, then close parent P0-06 and recompute the canonical Phase 0 queue. |
 
 ### Immediate Queue
 
 | Priority | Control action | Exit criteria |
 | --- | --- | --- |
-| P0 | Complete P0-06c #176 without inferring a deployed mode or restoring a Web memory fallback. | Web deployed Trip/Knowledge use Postgres, missing configuration returns typed 503, tests inject memory, and Database contracts proves re-instantiation durability. |
+| P0 | Complete P0-06d #175 without implementing later Human Task, Outbound, Telemetry, or Trace business workflows. | Ops Knowledge is durable, pending production ledgers are quarantined with 503, and route inventory shows no acknowledged process-memory production write. |
 | P0 | Start only Phase 0 Issues whose document-first and canonical dependency gates are ready in the graph. | No feature PR starts from a superseded V2 Issue or before its accepted ADR/policy and canonical dependency gates. |
 | P0 | Before any external service claim, update the operator-action register with placeholder, owner, verification, and novice tutorial steps. | No third-party API, payment, deployment, DNS, or store capability is presented as live without recorded operator verification. |
 
@@ -72,6 +72,8 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 - P0-06b focused evidence: 12 tests pass across the common service guard and Knowledge, Human Task, and Telemetry routers. Omitted services return SERVICE_UNAVAILABLE; explicit memory injection remains test-only.
 - P0-06b merge evidence: PR #178 passed Verify in 1m34s, Database contracts in 2m30s, docs, evals, and both Vercel previews before merging at dc8edee.
 - P0-06c focused evidence: seven local Web tests pass for missing-mode/database fail-closed behavior, explicit test injection, local-demo selection, typed route 503, and owner/version/share behavior. Real two-instance Postgres durability is added to Database contracts CI and is not claimed locally because Docker is absent.
+- P0-06c merge evidence: PR #179 passed Verify in 1m44s, Database contracts in 2m39s including two independent Web composition instances, docs, evals, and both Vercel previews before merging at 98ba3f0.
+- P0-06d focused evidence: Ops Knowledge explicit test injection and pending capability quarantine tests pass. Human Help, Outbound, and Ops Task fixture ledgers return 503 outside explicit test/local-demo; real Ops Knowledge two-instance persistence awaits Database contracts CI.
 
 ## Mandatory Markdown Reading Order
 

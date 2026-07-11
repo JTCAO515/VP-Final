@@ -57,8 +57,8 @@ authorization is implemented by P0-04. Existing writes carry `expectedVersion`; 
 signed anonymous cookie, and owner-created public shares can be revoked. Real Supabase release evidence
 still depends on OA-001 through OA-003.
 
-The Human Help and outbound ledgers still contain app-local paths that must be consolidated into
-server services before public launch.
+Human Help and outbound fixture ledgers remain for explicit test/local-demo only. Deployed requests
+return 503 `CAPABILITY_UNAVAILABLE` until P0-13 and P0-18 implement their durable owners.
 
 ## UI Rules
 

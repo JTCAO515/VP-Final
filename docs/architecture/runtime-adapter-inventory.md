@@ -26,10 +26,10 @@ returns connection strings or credentials.
 | Object | Production owner | Current durable state | Forbidden production path | Canonical follow-up |
 | --- | --- | --- | --- | --- |
 | Trip and Trip events | Server Trip service + Postgres adapter | Implemented; Web durable composition implemented | Web/process-local state | #113, P0-06c #176 |
-| Knowledge facts/gaps | Server Knowledge service + Postgres adapter | Web composition implemented; Ops convergence follows | Browser/Ops process store | P0-06c #176, P0-06d #175 |
+| Knowledge facts/gaps | Server Knowledge service + Postgres adapter | Web and Ops durable composition implemented | Browser/Ops process store | P0-06c #176, P0-06d #175 |
 | Ops authorization/audit | Server Ops Authorization service + Postgres adapter | Implemented | Client role, email allowlist, default admin | #114 |
-| Human Tasks | Server Human Task service + Postgres adapter | Not implemented for production | App-local task ledger | P0-13 #150 |
-| Outbound clicks/partners | Server Commerce service + Postgres adapter | Not implemented for production | Memory click ledger/raw redirect | P0-18 #155 |
+| Human Tasks | Server Human Task service + Postgres adapter | Production fixture routes quarantined | App-local task ledger | P0-13 #150 |
+| Outbound clicks/partners | Server Commerce service + Postgres adapter | Production fixture route quarantined | Memory click ledger/raw redirect | P0-18 #155 |
 | Telemetry | Server Telemetry service + Postgres adapter | Not implemented for production | Per-route event array | P0-19 #156 |
 | Agent traces/tool calls | Server Trace service + Postgres adapter | Not implemented for production | Provider-log-only record | P0-09 #73 |
 

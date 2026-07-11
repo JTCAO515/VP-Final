@@ -6,16 +6,21 @@ import {
   authorizeOpsRequest,
   isAuthorizedOpsRequest,
 } from "../../../lib/opsAccess";
+import { pendingOpsCapabilityResponse } from "../../../lib/runtimeAvailability";
 
 export async function GET(request: Request) {
   const authorization = await authorizeOpsRequest(request, "task.contact.read");
   if (!isAuthorizedOpsRequest(authorization)) return authorization;
+  const unavailable = pendingOpsCapabilityResponse("Human Tasks");
+  if (unavailable) return applyOpsCookies(unavailable, authorization.cookieResponse);
   return applyOpsCookies(NextResponse.json(listTasks()), authorization.cookieResponse);
 }
 
 export async function PATCH(request: Request) {
   const authorization = await authorizeOpsRequest(request, "task.write");
   if (!isAuthorizedOpsRequest(authorization)) return authorization;
+  const unavailable = pendingOpsCapabilityResponse("Human Tasks");
+  if (unavailable) return applyOpsCookies(unavailable, authorization.cookieResponse);
   const body = (await request.json()) as {
     id?: unknown;
     status?: unknown;

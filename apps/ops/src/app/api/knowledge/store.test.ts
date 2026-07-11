@@ -1,6 +1,17 @@
-import { describe, expect, it } from "vitest";
 import type { Poi, PoiFact } from "@visepanda/domain";
-import { getKnowledgeService } from "./store";
+import { createInMemoryKnowledgeService } from "@visepanda/app-server";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { getKnowledgeService, setTestOpsKnowledgeService } from "./store";
+
+beforeEach(() => {
+  process.env.VISEPANDA_RUNTIME_MODE = "test";
+  setTestOpsKnowledgeService(createInMemoryKnowledgeService());
+});
+
+afterEach(() => {
+  delete process.env.VISEPANDA_RUNTIME_MODE;
+  setTestOpsKnowledgeService(null);
+});
 
 describe("ops knowledge store", () => {
   it("reflects edited facts through the read store", async () => {
