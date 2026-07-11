@@ -12,6 +12,14 @@
       "types": "./src/db/client.ts",
       "default": "./dist/db/client.js"
     },
+    "./db-ops-authorization": {
+      "types": "./src/db/opsAuthorizationService.ts",
+      "default": "./dist/db/opsAuthorizationService.js"
+    },
+    "./ops-authorization": {
+      "types": "./src/modules/opsAuthorization/service.ts",
+      "default": "./dist/modules/opsAuthorization/service.js"
+    },
     "./router": {
       "types": "./src/router.ts",
       "default": "./dist/router.js"

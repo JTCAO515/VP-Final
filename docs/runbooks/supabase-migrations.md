@@ -21,7 +21,9 @@ supabase start --workdir infra
 supabase db reset --local --no-seed --workdir infra
 supabase test db supabase/tests/database --local --workdir infra
 DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres \
-  pnpm --filter @visepanda/app-server test -- versionedTripService.integration.test.ts
+  pnpm --filter @visepanda/app-server exec vitest run \
+    src/db/versionedTripService.integration.test.ts \
+    src/db/opsAuthorizationService.integration.test.ts
 supabase db advisors --local --type security --level warn --fail-on error --workdir infra
 ```
 

@@ -13,6 +13,10 @@ Status: active
   Mobile clients.
 - Ops surfaces MUST require server-verified role authorization and MUST produce audit evidence for
   sensitive mutations.
+- Ops role authority MUST come only from `ops_memberships`. Roles are non-hierarchical and explicit;
+  client claims, Auth user metadata, email allowlists, and hidden navigation MUST NOT grant access.
+- The first Ops Admin MUST be created through the registered trusted-console bootstrap action. Runtime
+  code MUST NOT contain a bootstrap email, default admin, or self-elevation path.
 - Users MUST only read/write their own Trips, memory, entitlements, and Human Tasks unless a documented
   share or operator workflow applies.
 - A Trip MUST have exactly one effective owner. Anonymous-to-authenticated claim MUST require both the

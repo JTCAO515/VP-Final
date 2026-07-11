@@ -9,31 +9,31 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 ## Current Handoff Snapshot
 
-- **Updated:** 2026-07-11 by Codex / Issue #168
+- **Updated:** 2026-07-11 by Codex / Issue #114
 - **Base branch:** `main`
-- **Last fully verified commit:** `38748a3`
+- **Last fully verified commit:** `40d70b7`
 - **Current phase:** Phase 0 — production hardening
 - **Maturity:** Trusted demo skeleton; not yet a production-safe or billing-ready MVP.
-- **Last completed control action:** PR #170 merged P0-04b exclusive ownership, transactional Patch/event persistence, and real database contract coverage after all checks passed.
+- **Last completed control action:** PR #171 merged P0-04c trusted Trip/Copilot Web consumers after Verify, Database contracts, docs, evals, and both Vercel previews passed.
 
 ### Active Work
 
 | Ref | Work | State | Owner | Next action |
 | --- | --- | --- | --- | --- |
-| Issue #168 / P0-04c | Convert Web Trip and Copilot routes to trusted identity | Implementation and full local repository gates complete; PR publication, CI, and review remain | Codex / operator | Run full repository gates, open the P0-04c PR, resolve CI/review feedback, and merge before selecting the next ready Phase 0 control action. |
+| Issue #114 / P0-05 | Add Ops authentication and least-privilege RBAC | Implementation and full local gates complete; PR #172 is open and its first database-contract run exposed one stale test expectation, now corrected; rerun, review, and merge remain | Codex / operator | Complete documentation and full gates, then open the P0-05 PR. Production release remains fail-closed until OA-001, OA-004, and OA-010 are verified. |
 
 ### Immediate Queue
 
 | Priority | Control action | Exit criteria |
 | --- | --- | --- |
-| P0 | Complete P0-04c #168 and preserve the P0-04 parent release block until OA-001 through OA-003 provide real Supabase evidence. | Trip service, Postgres transaction, and Web consumers all enforce trusted ownership, expectedVersion, Patch-only mutation, claim, and revocable read-only sharing. |
+| P0 | Complete P0-05 #114 without creating a client role, email allowlist, default admin, or production memory fallback. | Ops pages and direct APIs enforce the explicit role matrix, audit privileged mutations, fail closed without durable configuration, and record the first-admin bootstrap as OA-010. |
 | P0 | Start only Phase 0 Issues whose document-first and canonical dependency gates are ready in the graph. | No feature PR starts from a superseded V2 Issue or before its accepted ADR/policy and canonical dependency gates. |
 | P0 | Before any external service claim, update the operator-action register with placeholder, owner, verification, and novice tutorial steps. | No third-party API, payment, deployment, DNS, or store capability is presented as live without recorded operator verification. |
 
 ### Current Blockers
 
-- P0-03 and P0-04a/b code are merged and P0-04c is active, but real Supabase evidence still awaits OA-001 through OA-003 before production readiness can be claimed.
-- Ops authentication/RBAC is not production-ready.
+- P0-03 and P0-04 code are merged, but real Supabase evidence still awaits OA-001 through OA-004 before production readiness can be claimed.
+- Ops RBAC implementation is active; real first-admin and deployed role evidence awaits OA-010.
 - Copilot model calls and knowledge retrieval remain deterministic/stubbed in the audited main branch.
 - Human Task, outbound click, telemetry, and AI trace runtime persistence are incomplete.
 - Real payment evidence, rate limiting, observability, legal pages, and production smoke gates are incomplete.
@@ -61,6 +61,10 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 - P0-04b final CI evidence on PR #170: Database contracts passed in 2m53s, covering empty reset, six pgTAP ownership/security assertions, real concurrent version/claim adapter tests, and security advisors. Verify, docs, evals, and both Vercel previews also passed.
 - P0-04c initial full-gate observation: API client compile-time assertions still described owner/currentTrip inputs and naked Trip outputs. They were corrected to trusted-context inputs and versioned snapshots, after which the full gate passed.
 - P0-04c local evidence: lint, typecheck, all tests, build, five AI eval cases, docs check, and docs impact passed. Server tests cover 41 cases plus two database-only skips; Web route tests cover forged owner/currentTrip stripping, server-generated Trip ids, signed-cookie owner isolation, claim 401, stale 409 safe version, and share/revoke.
+- P0-04c merge evidence: PR #171 passed Verify, Database contracts in 2m30s, docs, evals, and both Vercel previews before merging at 40d70b7. Issue #168 is closed; parent #113 remains blocked only by external release evidence.
+- P0-05 first full-gate deviation: parallel Web rebuilding of the Server root bundle exposed an unrelated partial-root import to Ops. Ops authorization now uses narrow package subpaths, reducing coupling without changing the Web build system.
+- P0-05 local evidence: lint, typecheck, all tests, build, five AI eval cases, docs check, and docs impact pass. Server has 45 passing tests plus three DB-only skips; Ops has six authorization/store tests; every Ops page builds as request-time dynamic. Real pgTAP and adapter integration await Database contracts CI.
+- P0-05 first Database contracts observation on PR #172: migrations, pgTAP, Trip integration, and implementation behavior reached the Ops adapter assertion; the test expected only two admin permissions while the accepted matrix correctly returned four. The assertion now verifies the complete exact admin permission set before rerun.
 
 ## Mandatory Markdown Reading Order
 

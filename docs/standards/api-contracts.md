@@ -55,3 +55,10 @@ existing owner-scoped Trip, preventing caller-selected ids from becoming an exis
 Anonymous-to-authenticated claim consumes only a verified authenticated identity that also carries
 the current signed anonymous id. Share capabilities are opaque, owner-created, read-only, and
 owner-revocable. P0-04b and P0-04c implement the database and HTTP mappings respectively.
+
+## Ops Authorization Contract
+
+Ops pages and APIs verify the Supabase user server-side, then resolve an explicit database membership.
+Unauthenticated requests return 401; verified users without the required permission return 403;
+missing production Auth/database configuration returns an honest unavailable response. Every
+privileged mutation records actor, action, target, and timestamp in the server-only audit ledger.

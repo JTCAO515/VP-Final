@@ -10,6 +10,9 @@ Status: active
 - Deployments MUST have health/smoke evidence, observability, and a rollback procedure.
 - Missing required configuration MUST produce a failed or degraded health state and an honest user
   error, not a mock result.
+- The separately deployed Ops application MUST have verified Supabase SSR and database configuration,
+  an OA-010 Admin, and server-side RBAC smoke evidence before exposure. Missing configuration MUST NOT
+  statically cache an allow or deny decision; authorization runs per request.
 - Runtime mode and adapter selection MUST follow [ADR-0005](../adr/ADR-0005-runtime-modes-and-production-adapter-ownership.md): memory is explicit test/local-demo only; deployed modes fail closed for missing required durable dependencies.
 - Feature flags MUST have owner, default, exposure rule, expiry/review date, and rollback behavior.
 - Rollback MUST NOT reverse an already-applied destructive data change; migrations require a forward

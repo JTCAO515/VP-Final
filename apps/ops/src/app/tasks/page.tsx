@@ -1,6 +1,8 @@
 import { HumanTaskQueue } from "./ui";
+import { requireOpsPage } from "../../lib/opsAccess";
 
-export default function TasksPage() {
+export default async function TasksPage() {
+  await requireOpsPage("task.read");
   return (
     <>
       <section className="heading">

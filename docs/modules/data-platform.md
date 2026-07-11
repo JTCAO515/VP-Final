@@ -17,6 +17,7 @@ commercial evidence, Human Tasks, and telemetry. Repository migrations are the s
 | Commerce          | `partners`, `outbound_clicks`                                 |
 | Telemetry         | `events`, `trust_funnel_daily` materialized aggregate         |
 | Human operations  | `human_tasks`                                                 |
+| Ops authorization | `ops_memberships`, `ops_audit_events`                         |
 
 ## Migration Rules
 
@@ -37,6 +38,8 @@ commercial evidence, Human Tasks, and telemetry. Repository migrations are the s
   capabilities. See [ADR-0004](../adr/ADR-0004-identity-trip-ownership-security.md).
 - Partner config, outbound clicks, telemetry, Human Tasks, and internal aggregates are server-only.
 - Ops users access data through protected server routes, not broad direct table grants.
+- Ops membership and audit tables are server-only with RLS enabled and no `anon` or `authenticated`
+  Data API grants. Supabase Auth proves identity; `ops_memberships` independently grants authority.
 - Service-role and database credentials never enter a public client.
 
 P0-04b migration `20260711001932_exclusive_trip_owner.sql` converts any legacy dual-owner row to its
@@ -50,6 +53,10 @@ The adapter and migration are implemented, but OA-004 remains open until an appr
 environment is configured and replayed. Local replay requires Docker Desktop; CI's pinned Supabase
 CLI database-contract job runs reset, pgTAP ownership checks, the adapter integration suite, and
 security advisors.
+
+P0-05 adds a non-hierarchical `operator` / `editor` / `admin` membership table and append-only Ops
+audit evidence. The migration references verified `auth.users` ids, denies direct client access, and
+requires OA-010 for the first Admin bootstrap. Runtime code contains no default administrator.
 
 ## Verification
 

@@ -5,6 +5,8 @@ import {
   humanTasks,
   knowledgeGaps,
   outboundClicks,
+  opsAuditEvents,
+  opsMemberships,
   partners,
   poiCommercialLinks,
   poiFacts,
@@ -33,6 +35,13 @@ describe("database schema", () => {
     expect(agentRuns.costUsd.name).toBe("cost_usd");
     expect(toolCalls.agentRunId.name).toBe("agent_run_id");
     expect(toolCalls.toolName.name).toBe("tool_name");
+  });
+
+  it("maps the Ops authorization and audit tables", () => {
+    expect(opsMemberships.userId.name).toBe("user_id");
+    expect(opsMemberships.role.name).toBe("role");
+    expect(opsAuditEvents.actorId.name).toBe("actor_id");
+    expect(opsAuditEvents.metadataJsonb.name).toBe("metadata_jsonb");
   });
 
   it("maps the knowledge tables", () => {
