@@ -20,7 +20,7 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 | Ref | Work | State | Owner | Next action |
 | --- | --- | --- | --- | --- |
-| Issue #167 / P0-04b | Enforce exclusive Trip owner and atomic DB concurrency | In progress on codex/p0-04b-trip-db; local Supabase replay unavailable because Docker Desktop is not installed | Codex / operator | Use CI Database contracts to verify reset, pgTAP, adapter integration, and advisors; then merge and start Web consumer switch #168. |
+| Issue #167 / P0-04b | Enforce exclusive Trip owner and atomic DB concurrency | Implementation complete on PR #170; CI Database contracts passed, while local replay remains unavailable because Docker Desktop is not installed | Codex / operator | Merge PR #170, mark P0-04c #168 ready, then switch all Trip/Copilot Web consumers to the versioned service. |
 
 ### Immediate Queue
 
@@ -57,7 +57,8 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 - P0-04a merge evidence: PR #169 passed verify, docs, evals, database contracts, and both Vercel previews; its eight tests lock owner isolation, stale-version, no-op Patch, idempotent claim, authenticated non-transfer, and share/revoke semantics.
 - P0-04b local limitation: Supabase CLI 2.109.1 is installed, but local reset/pgTAP/integration was not run because Docker Desktop is absent. CI Database contracts is the required external observation; no local database pass is claimed.
 - P0-04b first CI observation: Database contracts exited 127 before database work because the job lacked pnpm/Node setup; the workflow now provisions both.
-- P0-04b second CI observation: Supabase reset and pgTAP passed, then adapter integration could not resolve the unbuilt workspace domain package. The job now builds @visepanda/domain before the unchanged integration suite; real adapter evidence remains pending.
+- P0-04b second CI observation: Supabase reset and pgTAP passed, then adapter integration could not resolve the unbuilt workspace domain package; the job now builds @visepanda/domain first.
+- P0-04b final CI evidence on PR #170: Database contracts passed in 2m53s, covering empty reset, six pgTAP ownership/security assertions, real concurrent version/claim adapter tests, and security advisors. Verify, docs, evals, and both Vercel previews also passed.
 
 ## Mandatory Markdown Reading Order
 
