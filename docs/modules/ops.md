@@ -20,15 +20,16 @@ the public Web application and protected by server-side role checks.
 
 ## Current State
 
-- Knowledge uses a Postgres adapter when `DATABASE_URL` is present and an in-memory adapter otherwise.
-- Human Tasks are seeded and stored in process memory.
+- Knowledge follows the explicit runtime resolver: deployed modes require the Postgres adapter,
+  tests inject memory, and only `local-demo` may use labelled process memory.
+- Human Tasks remain seeded/process-memory fixtures, but deployed Ops Task APIs now return typed 503
+  until P0-13/P0-15 provide their durable owner.
 - Supabase SSR authentication and database-backed RBAC are implemented. Operational routes derive
   identity from the verified session and enforce the same server-side permission matrix as pages.
 - `ops_memberships` is the sole role authority; client metadata, user metadata, email addresses, and
   navigation visibility are never authorization inputs.
-- Role changes write membership and audit evidence atomically. Until P0-06 moves Knowledge and Human
-  Tasks into the same durable server boundary, those routes append an actor/timestamp `attempt` audit
-  before invoking their existing stores; this is trace evidence, not a false atomic-success claim.
+- Role changes write membership and audit evidence atomically. Knowledge uses the durable server
+  adapter; Human Task fixture mutations are unreachable in deployed modes.
 - Partner and payment operations are not yet available.
 
 Production use still requires OA-001, OA-004, and OA-010 verification. Missing Auth or database

@@ -8,6 +8,7 @@ import {
   setTestWebServerServices,
   WebRuntimeUnavailableError,
 } from "./_server";
+import { pendingDurableCapabilityResponse } from "./_runtimeError";
 
 afterEach(() => setTestWebServerServices(null));
 
@@ -39,5 +40,18 @@ describe("Web server composition", () => {
       knowledgeService: expect.any(Object),
       tripService: expect.any(Object),
     });
+  });
+
+  it("quarantines pending ledgers in deployed modes", async () => {
+    const unavailable = pendingDurableCapabilityResponse("Human Help", {
+      VISEPANDA_RUNTIME_MODE: "production",
+    });
+    expect(unavailable?.status).toBe(503);
+    await expect(unavailable?.json()).resolves.toMatchObject({
+      code: "CAPABILITY_UNAVAILABLE",
+    });
+    expect(
+      pendingDurableCapabilityResponse("Human Help", { VISEPANDA_RUNTIME_MODE: "local-demo" }),
+    ).toBeNull();
   });
 });

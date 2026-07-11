@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
 import { OutboundClickSchema, buildOutboundUrl } from "@visepanda/domain";
 import { recordOutboundClick } from "./ledger";
+import { pendingDurableCapabilityResponse } from "../api/_runtimeError";
 
 export function GET(request: Request) {
+  const unavailable = pendingDurableCapabilityResponse("Partner redirects");
+  if (unavailable) return unavailable;
   const params = new URL(request.url).searchParams;
   const partner = params.get("partner");
   const targetUrl = params.get("url");

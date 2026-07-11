@@ -1,11 +1,14 @@
 import { HumanTaskCreateSchema, createHumanTask } from "@visepanda/domain";
 import { NextResponse } from "next/server";
+import { pendingDurableCapabilityResponse } from "../_runtimeError";
 
 const store = globalThis as typeof globalThis & {
   __visepandaWebHumanTasks?: ReturnType<typeof createHumanTask>[];
 };
 
 export async function POST(request: Request) {
+  const unavailable = pendingDurableCapabilityResponse("Human Help");
+  if (unavailable) return unavailable;
   const body = await request.json();
   const parsed = HumanTaskCreateSchema.safeParse(body);
 

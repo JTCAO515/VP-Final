@@ -61,4 +61,7 @@ jobs:
       - run: pnpm --filter @visepanda/app-web exec vitest run src/app/api/serverComposition.integration.test.ts
         env:
           DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+      - run: pnpm --filter @visepanda/app-ops exec vitest run src/app/api/knowledge/store.integration.test.ts
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
       - run: supabase db advisors --local --type security --level warn --fail-on error --workdir infra
