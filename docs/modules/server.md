@@ -36,9 +36,11 @@ modules yet.
 - Trip and knowledge have in-memory and Postgres adapters.
 - Copilot has a deterministic default router, stub retrieval, deterministic envelope generation, and
   deterministic day completion.
-- Task and telemetry routers currently instantiate in-memory services.
-- The runtime resolver is implemented and tested, but Web/Ops composition migration remains in
-  P0-06b through P0-06d. Therefore no deployed durable-path claim is made yet.
+- Knowledge, Human Task, and Telemetry routers require a service selected by the composition root;
+  omitted capabilities return typed `SERVICE_UNAVAILABLE` and never construct memory internally.
+- The runtime resolver and router injection boundary are implemented and tested, but Web/Ops
+  composition migration remains in P0-06c and P0-06d. Therefore no deployed durable-path claim is
+  made yet.
 - Trip and Copilot routers accept identity only from `ServerContext`; owner fields and replacement
   snapshots are not transport inputs.
 - The package exports router types and selected service factories, but does not itself expose an HTTP
@@ -67,6 +69,8 @@ state.
   and event source; creation receives the initial validated Trip.
 - A module may not import another module's tables.
 - Production configuration may not silently select an in-memory adapter.
+- Routers MUST NOT import a memory service factory or select an adapter. Tests and composition roots
+  inject services explicitly; an omitted optional capability fails closed.
 - Public request identity comes only from verified session context or the signed anonymous cookie.
 - P0-03 introduces the shared `RequestIdentity` context for verified Supabase sessions or signed
   anonymous sessions. P0-04 consumes it on every Trip owner route.

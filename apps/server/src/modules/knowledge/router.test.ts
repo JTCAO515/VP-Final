@@ -6,6 +6,17 @@ import { createInMemoryKnowledgeService } from "./service.js";
 const nowExpired = "2026-07-08T00:00:00.000Z";
 
 describe("knowledgeRouter", () => {
+  it("fails closed when the composition root omits Knowledge", async () => {
+    const caller = appRouter.createCaller({
+      tripService: createVersionedInMemoryTripService(),
+    });
+
+    await expect(caller.knowledge.listPois()).rejects.toMatchObject({
+      code: "SERVICE_UNAVAILABLE",
+      message: "Knowledge is unavailable.",
+    });
+  });
+
   it("lists POIs and hides expired facts", async () => {
     const caller = appRouter.createCaller({
       tripService: createVersionedInMemoryTripService(),

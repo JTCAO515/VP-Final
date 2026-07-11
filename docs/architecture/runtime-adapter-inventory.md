@@ -45,13 +45,15 @@ write.
 4. Inject the selected service into routers.
 5. On adapter failure, keep the same selection and return an honest typed error.
 
-The resolver lives at `@visepanda/app-server/runtime`. P0-06b through P0-06d migrate consumers; they
-must not duplicate mode parsing.
+The resolver and `requireService` guard live at `@visepanda/app-server/runtime`. P0-06b removed
+router-local fallback construction. P0-06c and P0-06d migrate Web/Ops composition roots; they must not
+duplicate mode parsing.
 
 ## Verification
 
 ```bash
 pnpm --filter @visepanda/app-server test -- src/runtime/runtimeMode.test.ts
+pnpm --filter @visepanda/app-server test -- src/runtime/requireService.test.ts
 pnpm --filter @visepanda/app-server typecheck
 pnpm --filter @visepanda/app-server lint
 ```

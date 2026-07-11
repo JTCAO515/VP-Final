@@ -1,7 +1,7 @@
 import { KnowledgeGapSchema, PoiCategorySchema } from "@visepanda/domain";
 import { z } from "zod";
 import { publicProcedure, router } from "../../trpc.js";
-import { createInMemoryKnowledgeService } from "./service.js";
+import { requireService } from "../../runtime/requireService.js";
 
 const ListPoisInputSchema = z
   .object({
@@ -61,10 +61,10 @@ const UpdateGapInputSchema = z.object({
 
 export const knowledgeRouter = router({
   listPois: publicProcedure.input(ListPoisInputSchema).query(({ ctx, input }) => {
-    return (ctx.knowledgeService ?? createInMemoryKnowledgeService()).listPois(toPoiFilter(input));
+    return requireService(ctx.knowledgeService, "Knowledge").listPois(toPoiFilter(input));
   }),
   createFact: publicProcedure.input(CreateFactInputSchema).mutation(({ ctx, input }) => {
-    return (ctx.knowledgeService ?? createInMemoryKnowledgeService()).createFact({
+    return requireService(ctx.knowledgeService, "Knowledge").createFact({
       poiId: input.poiId,
       factType: input.factType,
       value: input.value,
@@ -74,7 +74,7 @@ export const knowledgeRouter = router({
     });
   }),
   updateFact: publicProcedure.input(UpdateFactInputSchema).mutation(({ ctx, input }) => {
-    return (ctx.knowledgeService ?? createInMemoryKnowledgeService()).updateFact({
+    return requireService(ctx.knowledgeService, "Knowledge").updateFact({
       factId: input.factId,
       value: input.value,
       ...(input.confidence !== undefined ? { confidence: input.confidence } : {}),
@@ -83,30 +83,30 @@ export const knowledgeRouter = router({
     });
   }),
   listExpiredFacts: publicProcedure.query(({ ctx }) => {
-    return (ctx.knowledgeService ?? createInMemoryKnowledgeService()).listExpiredFacts();
+    return requireService(ctx.knowledgeService, "Knowledge").listExpiredFacts();
   }),
   renewFact: publicProcedure.input(RenewFactInputSchema).mutation(({ ctx, input }) => {
-    return (ctx.knowledgeService ?? createInMemoryKnowledgeService()).renewFact({
+    return requireService(ctx.knowledgeService, "Knowledge").renewFact({
       factId: input.factId,
       expiresAt: input.expiresAt ?? null,
     });
   }),
   deprecateFact: publicProcedure.input(FactIdInputSchema).mutation(({ ctx, input }) => {
-    return (ctx.knowledgeService ?? createInMemoryKnowledgeService()).deprecateFact(input);
+    return requireService(ctx.knowledgeService, "Knowledge").deprecateFact(input);
   }),
   recordGap: publicProcedure.input(RecordGapInputSchema).mutation(({ ctx, input }) => {
-    return (ctx.knowledgeService ?? createInMemoryKnowledgeService()).recordGap({
+    return requireService(ctx.knowledgeService, "Knowledge").recordGap({
       question: input.question,
       ...(input.city ? { city: input.city } : {}),
     });
   }),
   listGaps: publicProcedure.input(ListGapsInputSchema).query(({ ctx, input }) => {
-    return (ctx.knowledgeService ?? createInMemoryKnowledgeService()).listGaps(
+    return requireService(ctx.knowledgeService, "Knowledge").listGaps(
       input?.status ? { status: input.status } : {},
     );
   }),
   updateGap: publicProcedure.input(UpdateGapInputSchema).mutation(({ ctx, input }) => {
-    return (ctx.knowledgeService ?? createInMemoryKnowledgeService()).updateGap({
+    return requireService(ctx.knowledgeService, "Knowledge").updateGap({
       gapId: input.gapId,
       status: input.status,
       ...(input.resolutionTarget ? { resolutionTarget: input.resolutionTarget } : {}),
