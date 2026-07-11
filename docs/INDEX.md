@@ -56,6 +56,7 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 - P0-03 merge evidence: PR #164 passed lint, typecheck, tests, build, evals, docs, database contracts, and Vercel previews; mocked tests cover anonymous expiry/rotation, verified-user spoof resistance, login rejection/success, and logout. Live Supabase behavior is not claimed.
 - P0-04a merge evidence: PR #169 passed verify, docs, evals, database contracts, and both Vercel previews; its eight tests lock owner isolation, stale-version, no-op Patch, idempotent claim, authenticated non-transfer, and share/revoke semantics.
 - P0-04b local limitation: Supabase CLI 2.109.1 is installed, but local reset/pgTAP/integration was not run because Docker Desktop is absent. CI Database contracts is the required external observation; no local database pass is claimed.
+- P0-04b first CI observation: Database contracts exited 127 before database work because the job lacked pnpm/Node setup. The workflow now installs pnpm and Node 22 before the unchanged reset, pgTAP, integration, and advisor gates; rerun evidence is pending.
 
 ## Mandatory Markdown Reading Order
 
