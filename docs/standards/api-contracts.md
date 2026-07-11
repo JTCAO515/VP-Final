@@ -43,3 +43,13 @@ Trip mutations require `expectedVersion`, use a conditional owner/version update
 `409 TRIP_VERSION_CONFLICT` on stale state. Claim uses the verified user plus the current signed
 anonymous session; share is an opaque read-only capability. See
 [ADR-0004](../adr/ADR-0004-identity-trip-ownership-security.md).
+
+The frozen private service returns a monotonic version with each snapshot. An existing mutation sends
+`id`, trusted server identity, `TripPatch`, `expectedVersion`, and event source; it never sends a
+replacement snapshot as authority. A confirmed owner with a stale version receives
+`TRIP_VERSION_CONFLICT` and safe `currentVersion`; a non-owner receives the same non-enumerating
+not-found result as an absent Trip. Empty Patches are successful no-ops and do not advance version.
+
+Anonymous-to-authenticated claim consumes only a verified authenticated identity that also carries
+the current signed anonymous id. Share capabilities are opaque, owner-created, read-only, and
+owner-revocable. P0-04b and P0-04c implement the database and HTTP mappings respectively.

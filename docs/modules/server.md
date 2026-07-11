@@ -40,6 +40,20 @@ modules yet.
 - The package exports router types and selected service factories, but does not itself expose an HTTP
   listener.
 
+## Versioned Trip Contract
+
+P0-04a freezes `VersionedTripService` as the replacement for the legacy snapshot-saving service. Its
+private methods require a trusted `TripIdentity`; reads return `{ trip, version }`; existing writes
+accept only a deterministic `TripPatch` plus `expectedVersion`. Non-owners receive a non-enumerating
+missing result. A stale write from the confirmed owner raises `TRIP_VERSION_CONFLICT` with only the
+safe current version, and an empty Patch changes neither snapshot, event count, nor version.
+
+The in-memory implementation is the executable reference for owner, claim, share/revoke, and conflict
+semantics. It is not a production adapter. P0-04b (#167) owns the atomic Postgres implementation and
+exclusive-owner migration; P0-04c (#168) switches routers/Web consumers and removes the legacy
+snapshot authority. Until that sequence completes, both contracts coexist deliberately and deployed
+Trip mutation is not production-safe.
+
 ## Hard Boundaries
 
 - AI output must parse as a Copilot envelope before any action is applied.
