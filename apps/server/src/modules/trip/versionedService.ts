@@ -129,7 +129,7 @@ export function createVersionedInMemoryTripService(): VersionedTripService {
     async createShareToken(id, identity) {
       const stored = trips.get(id);
       if (!stored || !identityOwns(stored.owner, identity)) return null;
-      const token = stored.shareToken ?? createShareToken();
+      const token = stored.shareToken ?? createTripShareTokenValue();
       stored.shareToken = token;
       shareTokens.set(token, id);
       return { token, trip: cloneTrip(stored.trip) };
@@ -187,6 +187,6 @@ function cloneSnapshot(snapshot: TripSnapshot): TripSnapshot {
   return { trip: cloneTrip(snapshot.trip), version: snapshot.version };
 }
 
-function createShareToken(): string {
+export function createTripShareTokenValue(): string {
   return `share_${randomBytes(32).toString("base64url")}`;
 }

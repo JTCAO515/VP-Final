@@ -40,6 +40,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
       - uses: supabase/setup-cli@v2
         with:
           version: 2.109.1
@@ -47,4 +52,9 @@ jobs:
       - run: supabase start --workdir infra
       - run: supabase db reset --local --no-seed --workdir infra
       - run: supabase test db supabase/tests/database --local --workdir infra
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @visepanda/domain build
+      - run: pnpm --filter @visepanda/app-server test -- versionedTripService.integration.test.ts
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
       - run: supabase db advisors --local --type security --level warn --fail-on error --workdir infra

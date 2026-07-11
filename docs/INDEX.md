@@ -9,18 +9,18 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 ## Current Handoff Snapshot
 
-- **Updated:** 2026-07-11 by Codex / Issue #166
+- **Updated:** 2026-07-11 by Codex / Issue #167
 - **Base branch:** `main`
-- **Last fully verified commit:** `4839dfb`
+- **Last fully verified commit:** `c8d66a0`
 - **Current phase:** Phase 0 — production hardening
 - **Maturity:** Trusted demo skeleton; not yet a production-safe or billing-ready MVP.
-- **Last completed control action:** PR #164 merged the fail-closed P0-03 request-identity/Auth implementation; Issue #112 remains externally blocked by OA-001 through OA-003. PR #165 merged the indexed operator-action/tutorial workflow.
+- **Last completed control action:** PR #169 merged the P0-04a owner-scoped, Patch-only, optimistic-concurrency Trip service contract after all checks passed.
 
 ### Active Work
 
 | Ref | Work | State | Owner | Next action |
 | --- | --- | --- | --- | --- |
-| Issue #166 / P0-04a | Freeze owner-scoped versioned Trip service contract | In progress on codex/p0-04-trip-ownership | Codex / operator | Merge the in-memory executable contract, then implement its exclusive-owner atomic Postgres adapter in P0-04b #167. |
+| Issue #167 / P0-04b | Enforce exclusive Trip owner and atomic DB concurrency | Implementation complete on PR #170; CI Database contracts passed, while local replay remains unavailable because Docker Desktop is not installed | Codex / operator | Merge PR #170, mark P0-04c #168 ready, then switch all Trip/Copilot Web consumers to the versioned service. |
 
 ### Immediate Queue
 
@@ -54,7 +54,11 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 - DOC-P0-02 and DOC-P0-03 merge evidence: PRs #162 and #163 accepted ADR-0005 and ADR-0006 after repository checks passed.
 - DOC-P0-05 merge evidence: PR #165 passed verify, docs, evals, database contracts, and Vercel previews; nine known external actions and the Chinese tutorial workflow are now indexed and mandatory.
 - P0-03 merge evidence: PR #164 passed lint, typecheck, tests, build, evals, docs, database contracts, and Vercel previews; mocked tests cover anonymous expiry/rotation, verified-user spoof resistance, login rejection/success, and logout. Live Supabase behavior is not claimed.
-- P0-04a working evidence: the new VersionedTripService in-memory reference passes owner isolation, stale-version, no-op Patch, idempotent claim, authenticated non-transfer, and share/revoke tests.
+- P0-04a merge evidence: PR #169 passed verify, docs, evals, database contracts, and both Vercel previews; its eight tests lock owner isolation, stale-version, no-op Patch, idempotent claim, authenticated non-transfer, and share/revoke semantics.
+- P0-04b local limitation: Supabase CLI 2.109.1 is installed, but local reset/pgTAP/integration was not run because Docker Desktop is absent. CI Database contracts is the required external observation; no local database pass is claimed.
+- P0-04b first CI observation: Database contracts exited 127 before database work because the job lacked pnpm/Node setup; the workflow now provisions both.
+- P0-04b second CI observation: Supabase reset and pgTAP passed, then adapter integration could not resolve the unbuilt workspace domain package; the job now builds @visepanda/domain first.
+- P0-04b final CI evidence on PR #170: Database contracts passed in 2m53s, covering empty reset, six pgTAP ownership/security assertions, real concurrent version/claim adapter tests, and security advisors. Verify, docs, evals, and both Vercel previews also passed.
 
 ## Mandatory Markdown Reading Order
 

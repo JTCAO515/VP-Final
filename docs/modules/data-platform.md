@@ -9,14 +9,14 @@ commercial evidence, Human Tasks, and telemetry. Repository migrations are the s
 
 ## Current Schema Areas
 
-| Area | Relations |
-| --- | --- |
-| Identity and Trip | `users`, `trips`, `trip_events` |
-| AI trace | `agent_runs`, `tool_calls` |
-| Knowledge | `pois`, `poi_facts`, `knowledge_gaps`, `poi_commercial_links` |
-| Commerce | `partners`, `outbound_clicks` |
-| Telemetry | `events`, `trust_funnel_daily` materialized aggregate |
-| Human operations | `human_tasks` |
+| Area              | Relations                                                     |
+| ----------------- | ------------------------------------------------------------- |
+| Identity and Trip | `users`, `trips`, `trip_events`                               |
+| AI trace          | `agent_runs`, `tool_calls`                                    |
+| Knowledge         | `pois`, `poi_facts`, `knowledge_gaps`, `poi_commercial_links` |
+| Commerce          | `partners`, `outbound_clicks`                                 |
+| Telemetry         | `events`, `trust_funnel_daily` materialized aggregate         |
+| Human operations  | `human_tasks`                                                 |
 
 ## Migration Rules
 
@@ -38,6 +38,18 @@ commercial evidence, Human Tasks, and telemetry. Repository migrations are the s
 - Partner config, outbound clicks, telemetry, Human Tasks, and internal aggregates are server-only.
 - Ops users access data through protected server routes, not broad direct table grants.
 - Service-role and database credentials never enter a public client.
+
+P0-04b migration `20260711001932_exclusive_trip_owner.sql` converts any legacy dual-owner row to its
+authenticated owner, then replaces the previous at-least-one check with
+`num_nonnulls(owner, anon_id) = 1`. The versioned Postgres adapter scopes every private query by the
+exclusive owner. Existing Trip Patch updates condition on `head_version`; the snapshot update and one
+matching event append execute in the same transaction. Claim updates only anonymous rows, while
+share creation locks the owned row to avoid returning competing capability tokens.
+
+The adapter and migration are implemented, but OA-004 remains open until an approved Supabase
+environment is configured and replayed. Local replay requires Docker Desktop; CI's pinned Supabase
+CLI database-contract job runs reset, pgTAP ownership checks, the adapter integration suite, and
+security advisors.
 
 ## Verification
 
