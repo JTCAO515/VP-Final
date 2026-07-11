@@ -28,6 +28,8 @@ modules yet.
 - `src/db` contains Drizzle adapters for implemented durable paths.
 - In-memory services support tests and explicit demos only.
 - Runtime dependencies are injected through `ServerContext` or a caller factory.
+- `@visepanda/app-server/runtime` owns explicit mode parsing, database capability metadata, and the
+  persistent-object ownership inventory. It does not select a service inside a router.
 
 ## Current State
 
@@ -35,6 +37,8 @@ modules yet.
 - Copilot has a deterministic default router, stub retrieval, deterministic envelope generation, and
   deterministic day completion.
 - Task and telemetry routers currently instantiate in-memory services.
+- The runtime resolver is implemented and tested, but Web/Ops composition migration remains in
+  P0-06b through P0-06d. Therefore no deployed durable-path claim is made yet.
 - Trip and Copilot routers accept identity only from `ServerContext`; owner fields and replacement
   snapshots are not transport inputs.
 - The package exports router types and selected service factories, but does not itself expose an HTTP

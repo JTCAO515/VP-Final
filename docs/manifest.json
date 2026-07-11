@@ -235,6 +235,16 @@
       "summary": "Allowed package/application dependencies and integration boundaries.",
       "sourcePrefixes": ["pnpm-workspace.yaml", "turbo.json", "tsconfig.base.json"]
     },
+    {
+      "path": "docs/architecture/runtime-adapter-inventory.md",
+      "title": "Runtime Mode and Adapter Inventory",
+      "category": "architecture",
+      "type": "reference",
+      "status": "active",
+      "owner": "server / platform",
+      "summary": "Explicit runtime modes, safe adapter diagnostics, durable object owners, and canonical follow-ups.",
+      "sourcePrefixes": ["apps/server/src/runtime/", "apps/server/package.json"]
+    },
 
     {
       "path": "docs/modules/README.md",
