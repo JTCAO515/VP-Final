@@ -49,6 +49,8 @@ The frozen private service returns a monotonic version with each snapshot. An ex
 replacement snapshot as authority. A confirmed owner with a stale version receives
 `TRIP_VERSION_CONFLICT` and safe `currentVersion`; a non-owner receives the same non-enumerating
 not-found result as an absent Trip. Empty Patches are successful no-ops and do not advance version.
+New Copilot Trips receive a server-generated id. A client sends `tripId` only when referencing an
+existing owner-scoped Trip, preventing caller-selected ids from becoming an existence side channel.
 
 Anonymous-to-authenticated claim consumes only a verified authenticated identity that also carries
 the current signed anonymous id. Share capabilities are opaque, owner-created, read-only, and

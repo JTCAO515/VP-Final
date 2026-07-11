@@ -9,30 +9,30 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 ## Current Handoff Snapshot
 
-- **Updated:** 2026-07-11 by Codex / Issue #167
+- **Updated:** 2026-07-11 by Codex / Issue #168
 - **Base branch:** `main`
-- **Last fully verified commit:** `c8d66a0`
+- **Last fully verified commit:** `38748a3`
 - **Current phase:** Phase 0 — production hardening
 - **Maturity:** Trusted demo skeleton; not yet a production-safe or billing-ready MVP.
-- **Last completed control action:** PR #169 merged the P0-04a owner-scoped, Patch-only, optimistic-concurrency Trip service contract after all checks passed.
+- **Last completed control action:** PR #170 merged P0-04b exclusive ownership, transactional Patch/event persistence, and real database contract coverage after all checks passed.
 
 ### Active Work
 
 | Ref | Work | State | Owner | Next action |
 | --- | --- | --- | --- | --- |
-| Issue #167 / P0-04b | Enforce exclusive Trip owner and atomic DB concurrency | Implementation complete on PR #170; CI Database contracts passed, while local replay remains unavailable because Docker Desktop is not installed | Codex / operator | Merge PR #170, mark P0-04c #168 ready, then switch all Trip/Copilot Web consumers to the versioned service. |
+| Issue #168 / P0-04c | Convert Web Trip and Copilot routes to trusted identity | Implementation and full local repository gates complete; PR publication, CI, and review remain | Codex / operator | Run full repository gates, open the P0-04c PR, resolve CI/review feedback, and merge before selecting the next ready Phase 0 control action. |
 
 ### Immediate Queue
 
 | Priority | Control action | Exit criteria |
 | --- | --- | --- |
-| P0 | Complete P0-04a #166, then P0-04b #167 and P0-04c #168 in order. | Trip service, Postgres transaction, and Web consumers all enforce trusted ownership, expectedVersion, Patch-only mutation, claim, and revocable read-only sharing. |
+| P0 | Complete P0-04c #168 and preserve the P0-04 parent release block until OA-001 through OA-003 provide real Supabase evidence. | Trip service, Postgres transaction, and Web consumers all enforce trusted ownership, expectedVersion, Patch-only mutation, claim, and revocable read-only sharing. |
 | P0 | Start only Phase 0 Issues whose document-first and canonical dependency gates are ready in the graph. | No feature PR starts from a superseded V2 Issue or before its accepted ADR/policy and canonical dependency gates. |
 | P0 | Before any external service claim, update the operator-action register with placeholder, owner, verification, and novice tutorial steps. | No third-party API, payment, deployment, DNS, or store capability is presented as live without recorded operator verification. |
 
 ### Current Blockers
 
-- P0-03 code is merged, but real Supabase evidence awaits OA-001 through OA-003; P0-04a/b/c must finish before Trip routes are production-safe.
+- P0-03 and P0-04a/b code are merged and P0-04c is active, but real Supabase evidence still awaits OA-001 through OA-003 before production readiness can be claimed.
 - Ops authentication/RBAC is not production-ready.
 - Copilot model calls and knowledge retrieval remain deterministic/stubbed in the audited main branch.
 - Human Task, outbound click, telemetry, and AI trace runtime persistence are incomplete.
@@ -59,6 +59,8 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 - P0-04b first CI observation: Database contracts exited 127 before database work because the job lacked pnpm/Node setup; the workflow now provisions both.
 - P0-04b second CI observation: Supabase reset and pgTAP passed, then adapter integration could not resolve the unbuilt workspace domain package; the job now builds @visepanda/domain first.
 - P0-04b final CI evidence on PR #170: Database contracts passed in 2m53s, covering empty reset, six pgTAP ownership/security assertions, real concurrent version/claim adapter tests, and security advisors. Verify, docs, evals, and both Vercel previews also passed.
+- P0-04c initial full-gate observation: API client compile-time assertions still described owner/currentTrip inputs and naked Trip outputs. They were corrected to trusted-context inputs and versioned snapshots, after which the full gate passed.
+- P0-04c local evidence: lint, typecheck, all tests, build, five AI eval cases, docs check, and docs impact passed. Server tests cover 41 cases plus two database-only skips; Web route tests cover forged owner/currentTrip stripping, server-generated Trip ids, signed-cookie owner isolation, claim 401, stale 409 safe version, and share/revoke.
 
 ## Mandatory Markdown Reading Order
 

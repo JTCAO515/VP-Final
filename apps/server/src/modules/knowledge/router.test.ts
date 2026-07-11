@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { appRouter } from "../../router.js";
-import { createInMemoryTripService } from "../trip/service.js";
+import { createVersionedInMemoryTripService } from "../trip/versionedService.js";
 import { createInMemoryKnowledgeService } from "./service.js";
 
 const nowExpired = "2026-07-08T00:00:00.000Z";
@@ -8,7 +8,7 @@ const nowExpired = "2026-07-08T00:00:00.000Z";
 describe("knowledgeRouter", () => {
   it("lists POIs and hides expired facts", async () => {
     const caller = appRouter.createCaller({
-      tripService: createInMemoryTripService(),
+      tripService: createVersionedInMemoryTripService(),
       knowledgeService: createInMemoryKnowledgeService([
         {
           id: "poi-yu-garden",
@@ -56,7 +56,7 @@ describe("knowledgeRouter", () => {
   it("reflects edited facts through the read API", async () => {
     const knowledgeService = createInMemoryKnowledgeService();
     const caller = appRouter.createCaller({
-      tripService: createInMemoryTripService(),
+      tripService: createVersionedInMemoryTripService(),
       knowledgeService,
     });
 
@@ -73,7 +73,7 @@ describe("knowledgeRouter", () => {
 
   it("creates facts and rejects missing source or confidence", async () => {
     const caller = appRouter.createCaller({
-      tripService: createInMemoryTripService(),
+      tripService: createVersionedInMemoryTripService(),
       knowledgeService: createInMemoryKnowledgeService(),
     });
 
@@ -100,7 +100,7 @@ describe("knowledgeRouter", () => {
 
   it("supports expired fact review, renewal, and deprecation", async () => {
     const caller = appRouter.createCaller({
-      tripService: createInMemoryTripService(),
+      tripService: createVersionedInMemoryTripService(),
       knowledgeService: createInMemoryKnowledgeService([
         {
           id: "poi-yu-garden",
@@ -142,7 +142,7 @@ describe("knowledgeRouter", () => {
 
   it("clusters and resolves knowledge gaps", async () => {
     const caller = appRouter.createCaller({
-      tripService: createInMemoryTripService(),
+      tripService: createVersionedInMemoryTripService(),
       knowledgeService: createInMemoryKnowledgeService([], []),
     });
 

@@ -13,6 +13,10 @@ network boundary for future Mobile and any runtime that cannot import server cod
 `ApiClient` and `AppRouter` types make server operations available without duplicating request and
 response types.
 
+Trip inputs intentionally contain no owner identity or replacement snapshot fields. Private reads
+return `{ trip, version }`, and existing mutations carry `expectedVersion` plus a Patch so clients
+cannot bypass server identity or optimistic concurrency.
+
 ## Current Limitation
 
 The repository does not yet expose a stable deployed `/trpc` endpoint. Web and Ops currently create
