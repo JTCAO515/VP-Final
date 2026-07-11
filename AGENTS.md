@@ -78,6 +78,18 @@ pack. The frozen product baseline is `docs/planning/visepanda-v2-final-architect
 - Do not add dashboards before the baseline trigger says they are needed; materialize data first.
 - Missing data is shown as missing. Do not fabricate POI facts, prices, ratings, commissions, or booking states.
 
+## Operator-Only Actions
+
+- External console, account, credential, legal, DNS, deployment, store, or production-setting work
+  MUST be recorded in `docs/governance/operator-action-register.md`; chat history is not a register.
+- Code and docs use named placeholders only. Never request, print, commit, log, or paste a secret into
+  an Issue, PR, tutorial, screenshot, or repository file.
+- A placeholder remains `open` until real external evidence is recorded. Mock, local adapter, or UI
+  evidence MUST NOT be presented as proof that the third-party capability is live.
+- When an objective completes or the operator asks, use
+  `docs/governance/operator-action-tutorial-template.md` to produce beginner-friendly Chinese steps
+  for every unresolved action, including verification, rollback, and common mistakes.
+
 ## Required Checks
 
 Run the broadest relevant subset before pushing. For stacked baseline work, prefer:

@@ -10,6 +10,26 @@ When the operator asks for setup help or the associated objective reaches its re
 beginner-friendly Chinese tutorial for every unresolved row. Never ask the operator to commit or paste
 a secret into GitHub, documentation, an Issue, a PR, or application logs.
 
+## Register Schema
+
+Every action MUST have a stable ID, explicit status (`open`, `in-progress`, `verified`, `blocked`, or
+`retired`), associated Issue, purpose/capability, accountable owner, environment, prerequisites,
+placeholder names, exact external action, unblock/verification evidence, rollback, and last-reviewed
+date. Update the register in the same PR that creates, changes, verifies, retires, or makes an action's
+assumptions false.
+
+| ID     | Status  | Associated owner        | Last reviewed |
+| ------ | ------- | ----------------------- | ------------- |
+| OA-001 | open    | P0-03 #112              | 2026-07-11    |
+| OA-002 | open    | P0-03 #112              | 2026-07-11    |
+| OA-003 | open    | P0-03 #112              | 2026-07-11    |
+| OA-004 | open    | P0-04 #113 onward       | 2026-07-11    |
+| OA-005 | open    | P0-06 #115 / P0-10 #118 | 2026-07-11    |
+| OA-006 | blocked | #169 / P0-17 #154       | 2026-07-11    |
+| OA-007 | blocked | DOC-P0-04 #134          | 2026-07-11    |
+| OA-008 | open    | P0-19 #156              | 2026-07-11    |
+| OA-009 | open    | V2-63 #92 / V2-64 #93   | 2026-07-11    |
+
 ## Open Actions
 
 | ID     | Capability / Issue                                              | Owner | Environment                         | Placeholder names                                                                  | Operator action and prerequisite                                                                                                                                                                                                        | Unblock condition / verification                                                                                                                                                         | Rollback                                                                                                                                                     |
@@ -29,3 +49,6 @@ a secret into GitHub, documentation, an Issue, a PR, or application logs.
 An action closes only when its external evidence, date, environment, verifier, and linked Issue/PR are
 recorded here. A configured placeholder without verification remains open. Secret values are never
 recorded; evidence names the setting and observed behavior only.
+
+Use the [operator tutorial template](operator-action-tutorial-template.md) when a tutorial trigger is
+reached. This register remains authoritative for status; a generated tutorial is an execution aid.

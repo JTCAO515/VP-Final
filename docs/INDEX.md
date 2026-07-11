@@ -11,28 +11,28 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 - **Updated:** 2026-07-11 by Codex / Issue #112
 - **Base branch:** `main`
-- **Last fully verified commit:** `f4e58ce`
+- **Last fully verified commit:** `5946490`
 - **Current phase:** Phase 0 — production hardening
 - **Maturity:** Trusted demo skeleton; not yet a production-safe or billing-ready MVP.
-- **Last completed control action:** Merged PRs #106, #107, #109, #136, #140, #149, #160, and #161 established the Node 22, Supabase security, ADR-0004 identity baseline, composite governance, canonical Phase 0/1 backlog, and dependency graph baselines.
+- **Last completed control action:** Merged PRs through #165 established Node 22, Supabase security, accepted ADR-0004 through ADR-0006, canonical Phase 0/1 governance, and the indexed operator-action/tutorial workflow.
 
 ### Active Work
 
 | Ref | Work | State | Owner | Next action |
 | --- | --- | --- | --- | --- |
-| Issue #112 / P0-03 | Establish Supabase Auth SSR and signed anonymous sessions | Implementation complete on draft PR #164; live Supabase verification remains blocked by OA-001 through OA-003 | Codex / operator | Operator configures and verifies OA-001 through OA-003; meanwhile P0-04 may consume the frozen, tested request identity contract without claiming live Auth evidence. |
+| Issue #112 / P0-03 | Establish Supabase Auth SSR and signed anonymous sessions | Implementation complete on draft PR #164; live verification is blocked by OA-001 through OA-003 | Codex / operator | Operator configures OA-001 through OA-003 for real Auth evidence; P0-04 may consume the frozen tested request-identity contract after P0-03 merge. |
 
 ### Immediate Queue
 
 | Priority | Control action | Exit criteria |
 | --- | --- | --- |
-| P0 | Review draft PR #164 for P0-03 and complete OA-001 through OA-003 live Auth verification. | Real login, refresh continuity, logout, expired session, signed anonymous continuity, and key rotation are verified without exposing credentials. |
+| P0 | Review draft PR #164 and complete OA-001 through OA-003 live Auth verification. | Real login, refresh continuity, logout, expired session, signed anonymous continuity, and controlled key rotation are verified without exposing credentials. |
 | P0 | Start only Phase 0 Issues whose document-first and canonical dependency gates are ready in the graph. | No feature PR starts from a superseded V2 Issue or before its accepted ADR/policy and canonical dependency gates. |
 | P0 | Before any external service claim, update the operator-action register with placeholder, owner, verification, and novice tutorial steps. | No third-party API, payment, deployment, DNS, or store capability is presented as live without recorded operator verification. |
 
 ### Current Blockers
 
-- Draft PR #164 implements trusted Copilot request identity and Auth routes, but live Supabase verification awaits OA-001 through OA-003 and Trip routes remain P0-04 work.
+- Draft PR #164 implements trusted Copilot request identity and Auth routes, but real Supabase evidence awaits OA-001 through OA-003 and Trip owner routes remain P0-04 work.
 - Ops authentication/RBAC is not production-ready.
 - Copilot model calls and knowledge retrieval remain deterministic/stubbed in the audited main branch.
 - Human Task, outbound click, telemetry, and AI trace runtime persistence are incomplete.
@@ -51,7 +51,9 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 - GOV-P0c verification: docs/governance/phase-0-1-dependency-graph.md is registered as the dependency source of truth; #102 now links canonical owners, retained standalone V2 work, hard Stripe/Rescue gates, and the manual API validation procedure.
 - GOV-P0 merge evidence: PRs #149, #160, and #161 passed repository checks and merged to main; DOC-P0-01 is now the active documentation-first control action.
 - DOC-P0-01 merge evidence: PR #140 passed database contracts, verify, docs, evals, and Vercel previews before merging; ADR-0004 is accepted and Issue #131 is closed.
-- P0-03 local implementation evidence at f4e58ce: Web typecheck passed; 12 Vitest assertions passed across anonymous expiry/rotation, verified-user spoof resistance, login rejection/success, and logout; Next.js production build passed. Live Supabase behavior is not yet claimed.
+- DOC-P0-02 and DOC-P0-03 merge evidence: PRs #162 and #163 accepted ADR-0005 and ADR-0006 after repository checks passed.
+- DOC-P0-05 merge evidence: PR #165 passed verify, docs, evals, database contracts, and Vercel previews; nine known external actions and the Chinese tutorial workflow are now indexed and mandatory.
+- P0-03 local and CI implementation evidence at 9eabe54: lint, typecheck, test, build, evals, docs, database contracts, and Vercel previews passed; mocked tests cover anonymous expiry/rotation, verified-user spoof resistance, login rejection/success, and logout. Live Supabase behavior is not claimed.
 
 ## Mandatory Markdown Reading Order
 
@@ -166,7 +168,8 @@ How documents, Issues, pull requests, decisions, and lifecycle evidence are mana
 | [Engineering Governance Guide](governance/README.md) | reference | active | documentation governance | Navigation for document and work governance. |
 | [Handoff Snapshot Workflow](governance/handoff-workflow.md) | constraint | active | overall design | Mandatory current-state, reading-order, verification, blocker, and next-action synchronization for every project change. |
 | [Issue and PR Workflow](governance/issue-pr-workflow.md) | constraint | active | overall design | Issue/PR lifecycle, merge gates, multi-Agent rules, and emergency fixes. |
-| [Operator Action Register](governance/operator-action-register.md) | constraint | active | operator / overall design | Durable placeholders, owners, external setup gates, verification, rollback, and tutorial triggers for operator-only actions. |
+| [Operator Action Register](governance/operator-action-register.md) | constraint | active | operator / overall design | Authoritative status, placeholders, owners, external setup gates, verification, and rollback for operator-only actions. |
+| [Operator Action Tutorial Template](governance/operator-action-tutorial-template.md) | reference | active | operator / delivery agent | Beginner-friendly Chinese template for safely executing and verifying registered external actions without exposing secrets. |
 | [Phase 0/1 Dependency Graph](governance/phase-0-1-dependency-graph.md) | reference | active | overall design | Canonical Phase 0/1 Issue ownership, blockers, migration map, lifecycle gates, and backlog-validation procedure. |
 
 ## Architecture Decisions

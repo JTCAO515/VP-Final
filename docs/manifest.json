@@ -577,6 +577,26 @@
       "sourcePrefixes": [".github/", "scripts/docs/"]
     },
     {
+      "path": "docs/governance/operator-action-register.md",
+      "title": "Operator Action Register",
+      "category": "governance",
+      "type": "constraint",
+      "status": "active",
+      "owner": "operator / overall design",
+      "summary": "Authoritative status, placeholders, owners, external setup gates, verification, and rollback for operator-only actions.",
+      "sourcePrefixes": []
+    },
+    {
+      "path": "docs/governance/operator-action-tutorial-template.md",
+      "title": "Operator Action Tutorial Template",
+      "category": "governance",
+      "type": "reference",
+      "status": "active",
+      "owner": "operator / delivery agent",
+      "summary": "Beginner-friendly Chinese template for safely executing and verifying registered external actions without exposing secrets.",
+      "sourcePrefixes": []
+    },
+    {
       "path": "docs/governance/document-templates.md",
       "title": "Documentation Templates",
       "category": "governance",
@@ -586,17 +606,6 @@
       "summary": "Templates for explanations, constraints, ADRs, runbooks, reviews, and retrospectives.",
       "sourcePrefixes": []
     },
-    {
-      "path": "docs/governance/operator-action-register.md",
-      "title": "Operator Action Register",
-      "category": "governance",
-      "type": "constraint",
-      "status": "active",
-      "owner": "operator / overall design",
-      "summary": "Durable placeholders, owners, external setup gates, verification, rollback, and tutorial triggers for operator-only actions.",
-      "sourcePrefixes": []
-    },
-
     {
       "path": "docs/adr/README.md",
       "title": "ADR Index",
