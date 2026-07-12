@@ -53,6 +53,7 @@ jobs:
       - run: supabase db reset --local --no-seed --workdir infra
       - run: supabase test db supabase/tests/database --local --workdir infra
       - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @visepanda/ai build
       - run: pnpm --filter @visepanda/domain build
       - run: pnpm --filter @visepanda/app-server build
       - run: pnpm --filter @visepanda/app-server exec vitest run src/db/versionedTripService.integration.test.ts src/db/opsAuthorizationService.integration.test.ts src/db/agentTraceService.integration.test.ts
