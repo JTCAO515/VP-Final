@@ -11,5 +11,11 @@ export {
   defaultRouteIntent,
 } from "./service.js";
 export { CompleteTripInputSchema, createTwoPassWorker } from "./twoPassWorker.js";
+export {
+  createDemoCopilotModelDependencies,
+  createDemoModelRuntime,
+  DemoModelExecutionError,
+  DemoModelUnavailableError,
+} from "./modelRuntime.js";
 export type { CopilotRunInput, CopilotRunResult, RetrievalFact } from "./service.js";
 export type { CompleteTripInput } from "./twoPassWorker.js";

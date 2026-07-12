@@ -26,8 +26,9 @@ Copilot-specific provider composition belong in their owning runtime module.
 
 ## Not Yet Production-Implemented
 
-- Runtime composition of configured providers into Copilot and structured envelope generation
-  (P0-07b #188).
+- Real provider configuration and live-model acceptance evidence. DEMO-01 composes v3 routes through
+  the server pipeline only outside explicit `test` and `local-demo` modes; absent route configuration
+  returns a typed unavailable error instead of a deterministic answer.
 - Real provider account/setup and staging evidence (OA-005); this repository does not claim a live
   provider merely because the adapter can be configured.
 - Prompt profile versioning.
@@ -41,6 +42,9 @@ Copilot-specific provider composition belong in their owning runtime module.
 - Provider-specific behavior is isolated behind `ModelProvider`.
 - A provider failure may trigger the next configured provider; all failures produce an honest error.
 - Missing keys or total provider failure must not return a fabricated answer.
+- DEMO-01 accepts a bounded locally repaired JSON candidate only after `CopilotEnvelopeSchema` passes.
+  It permits dialogue only: no Trip actions, tools, commerce, Human Help, or citations. A main-model
+  envelope whose intent differs from the low-cost router decision fails closed.
 - Provider setup follows the [AI provider configuration runbook](../runbooks/ai-provider-configuration.md)
   and the operator-action register. Keys remain trusted runtime configuration only.
 - Prompt, model, routing, parser, or tool changes require relevant evals.
