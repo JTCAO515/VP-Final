@@ -9,25 +9,25 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 ## Current Handoff Snapshot
 
-- **Updated:** 2026-07-12 by Codex / Issue #73
+- **Updated:** 2026-07-12 by Codex / GOV handoff after P0-09
 - **Base branch:** `main`
-- **Last fully verified commit:** `184b64d`
+- **Last fully verified commit:** `216602e`
 - **Current phase:** Phase 0 — production hardening
 - **Maturity:** Trusted demo skeleton; not yet a production-safe or billing-ready MVP.
-- **Last completed control action:** PR #180 merged P0-06d Ops Knowledge convergence and pending-ledger quarantine after all repository and Database contracts checks passed.
+- **Last completed control action:** PR #182 merged P0-09 anonymous-safe Agent trace persistence after Verify, Docs, Evals, Database contracts, and Vercel previews passed.
 
 ### Active Work
 
 | Ref | Work | State | Owner | Next action |
 | --- | --- | --- | --- | --- |
-| Issue #73 / P0-09 | Persist anonymous-safe Agent traces and provider-cost evidence | Additive trace migration, server adapter, Copilot injection, safe-metadata tests, and 30-day retention ADR have passed the full PR #182 CI suite; awaiting review/merge | Codex | Merge PR #182 after review, record the landed commit, then start P0-07 only after confirming the canonical dependency graph remains current. |
+| Issue #116 / P0-07 | Connect real LLM providers with structured Copilot output | Canonical dependencies DOC-P0-02, P0-06, and P0-09 are merged; Issue is status:ready, but no provider code or real-call claim has started | Codex | Read provider/runbook/operator-action constraints, freeze the minimal provider interface and split the L-sized Issue if implementation exceeds one reviewable boundary. |
 
 ### Immediate Queue
 
 | Priority | Control action | Exit criteria |
 | --- | --- | --- |
-| P0 | Complete P0-09 #73 without implementing real provider, retrieval, telemetry, or commercial workflows owned by later canonical Issues. | Agent and tool trace metadata persists through the server-owned Postgres adapter for anonymous/authenticated/none identities, raw payloads are redacted, retention is enforceable, and trace failure does not change Copilot results. |
-| P0 | Start only Phase 0 Issues whose document-first and canonical dependency gates are ready in the graph. | No feature PR starts from a superseded V2 Issue or before its accepted ADR/policy and canonical dependency gates. |
+| P0 | Start P0-07 #116 only with provider failure truthfulness, bounded attempts, trace metadata, evals, and no secret/fixture success regressions. | A provider implementation plan identifies its interface, test doubles, external OA-005 requirements, and the smallest reviewable code boundary before any real provider claim. |
+| P0 | P0-08 #117 is independently status:ready after its dependency correction; schedule retrieval/citation work only in a separate branch/PR from P0-07. | Knowledge retrieval work consumes only eligible facts, validates citation allowlists, and retains no raw prompt in gaps. |
 | P0 | Before any external service claim, update the operator-action register with placeholder, owner, verification, and novice tutorial steps. | No third-party API, payment, deployment, DNS, or store capability is presented as live without recorded operator verification. |
 
 ### Current Blockers
@@ -35,7 +35,7 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 - P0-03 and P0-04 code are merged, but real Supabase evidence still awaits OA-001 through OA-004 before production readiness can be claimed.
 - Ops RBAC code is merged; real first-admin and deployed role evidence awaits OA-010.
 - Copilot model calls and knowledge retrieval remain deterministic/stubbed in the audited main branch.
-- Human Task, outbound click, and telemetry runtime persistence are incomplete; P0-09 trace persistence awaits Database contracts CI before merge evidence exists.
+- Human Task, outbound click, and telemetry runtime persistence are incomplete.
 - Real payment evidence, rate limiting, observability, legal pages, and production smoke gates are incomplete.
 
 ### Last Verification Evidence
@@ -79,6 +79,7 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 - P0-09 local database limitation: Supabase CLI 2.109.1 is installed, but `supabase db reset --local --no-seed --workdir infra` cannot run because Docker daemon is unavailable. No local migration, pgTAP, adapter, advisor, or production-retention pass is claimed; CI Database contracts is required.
 - P0-09 first Database contracts CI observation on PR #182: migration reset and prior checks reached the new adapter suite, which failed because its authenticated fixture inserted public.users before the required auth.users row. The fixture now mirrors the existing trusted auth seed order; the production adapter/migration is unchanged and CI rerun remains required.
 - P0-09 corrected CI evidence on PR #182: Verify, Docs, Evals, Database contracts, and Vercel Preview Comments all passed. Database contracts replayed the migration, ran pgTAP security checks, ran the authenticated/anonymous/no-identity adapter plus Copilot integration tests, and ran security advisors. Production OA-004 purge scheduling remains unverified and is not claimed.
+- P0-09 merge evidence: PR #182 merged at 216602e and Issue #73 was explicitly closed after GitHub did not apply the PR closing keyword automatically. P0-07 #116 and P0-08 #117 were reconciled to status:ready; P0-08 dependencies now match the canonical Phase 0/1 graph.
 
 ## Mandatory Markdown Reading Order
 
