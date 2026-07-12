@@ -9,7 +9,7 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 ## Current Handoff Snapshot
 
-- **Updated:** 2026-07-12 by Codex / DEMO-01b dialogue UI
+- **Updated:** 2026-07-12 by Codex / DEMO-01b dialogue UI responsive verification
 - **Base branch:** `main`
 - **Last fully verified commit:** `9e4d5a1`
 - **Current phase:** Phase 0 — production hardening
@@ -20,14 +20,14 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 | Ref | Work | State | Owner | Next action |
 | --- | --- | --- | --- | --- |
-| Issue #184 / DEMO-01b | Productize the Copilot dialogue page | Implementation active on a stacked branch: the Web surface removes mock itinerary, booking, share, Human Help, tool, commerce, and citation controls; it renders only the validated dialogue envelope with explicit waiting, failure, retry, and scope states. | Codex | Run full gates and capture browser evidence at 375/768/1280, then open a separate #184 PR on the DEMO-01 pipeline branch. PR #199 is green and awaiting architect review; do not self-merge. |
+| Issue #184 / DEMO-01b | Productize the Copilot dialogue page | Draft PR #201 is open on the DEMO-01 pipeline branch: the Web surface removes mock itinerary, booking, share, Human Help, tool, commerce, and citation controls; it renders only the validated dialogue envelope with explicit waiting, failure, retry, and scope states. | Codex | Run the complete gate after the responsive correction, then update the draft PR with local 375/768/1280 browser evidence. PR #199 is green and awaiting architect review; do not self-merge. |
 
 ### Immediate Queue
 
 | Priority | Control action | Exit criteria |
 | --- | --- | --- |
 | P0 | Complete DEMO-01b #184 and DEMO-01c #185 ahead of lower-priority retrieval work. | Dialogue UI and cost guard each land as separate reviewed PRs; neither presents a static/mock response as a live provider result. |
-| P0 | P0-08 #117 is independently status:ready after its dependency correction; schedule retrieval/citation work only in a separate branch/PR from P0-07. | Knowledge retrieval work consumes only eligible facts, validates citation allowlists, and retains no raw prompt in gaps. |
+| P0 | P0-08 #117 retrieval/citation PR #200 is ready for architecture review after all CI checks passed; do not self-merge. | Architecture review accepts the separate PR; its knowledge retrieval consumes only eligible facts, validates citation allowlists, and retains no raw prompt in gaps. |
 | P0 | Keep OA-005 open until the operator configures the four trusted provider credentials and catalog-confirmed model ids in a preview or staging environment. | OA-005 has sanitized configuration and measured staging evidence; until then no live-provider success is claimed. |
 | P0 | Before any external service claim, update the operator-action register with placeholder, owner, verification, and novice tutorial steps. | No third-party API, payment, deployment, DNS, or store capability is presented as live without recorded operator verification. |
 
@@ -81,6 +81,7 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 - P0-09 first Database contracts CI observation on PR #182: migration reset and prior checks reached the new adapter suite, which failed because its authenticated fixture inserted public.users before the required auth.users row. The fixture now mirrors the existing trusted auth seed order; the production adapter/migration is unchanged and CI rerun remains required.
 - P0-09 corrected CI evidence on PR #182: Verify, Docs, Evals, Database contracts, and Vercel Preview Comments all passed. Database contracts replayed the migration, ran pgTAP security checks, ran the authenticated/anonymous/no-identity adapter plus Copilot integration tests, and ran security advisors. Production OA-004 purge scheduling remains unverified and is not claimed.
 - P0-09 merge evidence: PR #182 merged at 216602e and Issue #73 was explicitly closed after GitHub did not apply the PR closing keyword automatically. P0-07 #116 and P0-08 #117 were reconciled to status:ready; P0-08 dependencies now match the canonical Phase 0/1 graph.
+- DEMO-01b responsive observation: the first 375px browser screenshot exposed horizontal overflow from the navigation and prompt controls. CSS now constrains mobile grid children, wraps prompt labels, and uses a four-column compact navigation. Local browser screenshots at 375, 768, and 1280px show no horizontal overflow or text clipping; complete repository gates remain pending after this correction.
 
 ## Mandatory Markdown Reading Order
 
