@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   PoiSchema,
   derivePoiSceneTags,
+  isEligiblePoiFact,
   isCurrentPoiFact,
   updatePoiFact,
   type Poi,
@@ -19,7 +20,7 @@ const fact: PoiFact = {
   verifiedAt: "2026-07-01T00:00:00.000Z",
   expiresAt: null,
   version: 1,
-  status: "active",
+  status: "reviewed",
 };
 
 describe("PoiSchema", () => {
@@ -47,8 +48,18 @@ describe("isCurrentPoiFact", () => {
     ).toBe(false);
   });
 
-  it("hides deprecated facts", () => {
+  it("hides every ineligible lifecycle state and incomplete evidence", () => {
     expect(isCurrentPoiFact({ ...fact, status: "deprecated" })).toBe(false);
+    expect(isEligiblePoiFact({ ...fact, status: "draft" })).toBe(false);
+    expect(isEligiblePoiFact({ ...fact, status: "rejected" })).toBe(false);
+    expect(isEligiblePoiFact({ ...fact, status: "active" })).toBe(false);
+    expect(isEligiblePoiFact({ ...fact, source: " " })).toBe(false);
+    expect(
+      isEligiblePoiFact(
+        { ...fact, verifiedAt: "2026-07-10T00:00:00.000Z" },
+        new Date("2026-07-09"),
+      ),
+    ).toBe(false);
   });
 });
 
