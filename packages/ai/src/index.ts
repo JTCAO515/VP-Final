@@ -239,8 +239,19 @@ export {
   ModelProviderError,
   resolveOpenAiCompatibleProvider,
 } from "./openaiCompatible.js";
+export {
+  DEMO_MODEL_ROUTES,
+  inspectDemoProviderReadiness,
+  planningRewriteEnabled,
+  resolveDemoModelRoute,
+} from "./providerInventory.js";
 export type {
   OpenAiCompatibleProviderConfig,
   ProviderConfigurationResolution,
   ProviderFailureClass,
 } from "./openaiCompatible.js";
+export type {
+  DemoModelRoute,
+  DemoModelRouteConfig,
+  ProviderReadiness,
+} from "./providerInventory.js";
