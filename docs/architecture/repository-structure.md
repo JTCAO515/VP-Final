@@ -36,6 +36,8 @@
 - Generated output (`dist`, `.next`, `.turbo`) is never a source of truth and must not be committed.
 - A module exports its supported interface from its index or declared package export. Consumers must
   not depend on internal file layout without an explicit export.
+- Workspace type checking follows the upstream build graph so a clean CI checkout resolves declared
+  workspace package exports before a dependent package is typechecked.
 - Tests live beside the behavior they protect unless a database or end-to-end runner requires a
   dedicated directory.
 - Database changes are new migration files. Existing landed migrations are immutable.
