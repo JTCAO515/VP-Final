@@ -171,4 +171,112 @@ describe("createCopilotPipeline", () => {
       envelope: { intent: "chat_only" },
     });
   });
+
+  it("repairs a bounded JSON envelope response and records provider attempts", async () => {
+    const traceService = createInMemoryAgentTraceService();
+    const pipeline = createCopilotPipeline({
+      tripService: createVersionedInMemoryTripService(),
+      traceService,
+      routeIntent: () => ({
+        intent: "question",
+        attempts: [
+          {
+            provider: "router_primary",
+            model: "router-model",
+            status: "succeeded",
+            inputTokens: 3,
+            outputTokens: 2,
+            costUsd: 0,
+            latencyMs: 12,
+          },
+        ],
+      }),
+      generateEnvelope: () => ({
+        candidate:
+          'Here is the envelope: {"intent":"question","message":{"headline":"Payment","body":"Use an international card to fund a supported wallet.","highlights":["Carry a backup card",]},"tripActions":[],"toolCards":[],"commercialActions":[],"humanHelp":null,}',
+        attempts: [
+          {
+            provider: "concierge_primary",
+            model: "concierge-model",
+            status: "succeeded",
+            inputTokens: 10,
+            outputTokens: 20,
+            costUsd: 0.01,
+            latencyMs: 123,
+          },
+        ],
+      }),
+      demoDialogueOnly: true,
+    });
+
+    await expect(
+      pipeline.run({ message: "How should I prepare payments?" }, identity),
+    ).resolves.toMatchObject({
+      envelope: { intent: "question", tripActions: [], commercialActions: [] },
+    });
+    expect(traceService.listRuns()).toMatchObject([
+      {
+        status: "succeeded",
+        repairCount: 1,
+        attempts: [
+          { provider: "router_primary", status: "succeeded" },
+          { provider: "concierge_primary", status: "succeeded", costUsd: 0.01 },
+        ],
+      },
+    ]);
+  });
+
+  it("rejects non-dialogue output in DEMO-01 before it can create a Trip", async () => {
+    const tripService = createVersionedInMemoryTripService();
+    const pipeline = createCopilotPipeline({
+      tripService,
+      routeIntent: () => "trip_create",
+      generateEnvelope: () => ({
+        intent: "trip_create",
+        message: { headline: "Created", body: "This must not be applied.", highlights: [] },
+        tripActions: [
+          {
+            operations: [
+              {
+                op: "create_trip",
+                trip: {
+                  id: crypto.randomUUID(),
+                  title: "Blocked",
+                  destinationCountry: "CN",
+                  days: [],
+                },
+              },
+            ],
+          },
+        ],
+      }),
+      demoDialogueOnly: true,
+    });
+
+    await expect(pipeline.run({ message: "Plan a trip" }, identity)).rejects.toThrow(
+      "DEMO-01 only permits a dialogue envelope",
+    );
+    await expect(tripService.list(identity)).resolves.toEqual([]);
+  });
+
+  it("rejects a citation-only envelope in DEMO-01", async () => {
+    const pipeline = createCopilotPipeline({
+      tripService: createVersionedInMemoryTripService(),
+      routeIntent: () => "question",
+      generateEnvelope: () => ({
+        intent: "question",
+        message: {
+          headline: "Source",
+          body: "This must stay hidden for the demo.",
+          highlights: [],
+        },
+        citations: [{ fact_id: "fact-1", label: "Not yet delivered" }],
+      }),
+      demoDialogueOnly: true,
+    });
+
+    await expect(pipeline.run({ message: "Can I pay by card?" }, identity)).rejects.toThrow(
+      "DEMO-01 only permits a dialogue envelope",
+    );
+  });
 });

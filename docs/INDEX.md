@@ -9,7 +9,7 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 ## Current Handoff Snapshot
 
-- **Updated:** 2026-07-12 by Codex / DEMO-01 model route executor
+- **Updated:** 2026-07-12 by Codex / DEMO-01 pipeline repair
 - **Base branch:** `main`
 - **Last fully verified commit:** `9e4d5a1`
 - **Current phase:** Phase 0 — production hardening
@@ -20,22 +20,22 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 | Ref | Work | State | Owner | Next action |
 | --- | --- | --- | --- | --- |
-| Issue #196 / DEMO-01a2 | Wire v3 model routes through ModelRouter | Implementation active: route executor composes environment-selected primary/fallback providers and fails honestly on missing route configuration. Copilot pipeline wiring/repair/trace remains #197. | Codex | Run full repository gates, submit the route-executor PR against #195, then implement #197 after review/merge dependencies permit. |
+| Issue #197 / DEMO-01a3 | Connect v3 model runtime to the Copilot pipeline | Implementation active on a stacked branch: deployed runtimes inject v3 model dependencies, repair bounded JSON candidates before Zod validation, persist safe attempts, and reject all non-dialogue DEMO-01 output. No real provider call is claimed before OA-005. | Codex | Add focused runtime tests, run full repository gates, then open the stacked #197 PR for architect review after #195/#198 are green. |
 
 ### Immediate Queue
 
 | Priority | Control action | Exit criteria |
 | --- | --- | --- |
-| P0 | Complete P0-08a #191 before retrieval code: freeze draft/reviewed/deprecated/rejected lifecycle plus explicit legacy active ineligibility in packages/domain. | Schema and pure-function tests prove only current reviewed evidence can be eligible, then P0-08b may consume the contract. |
+| P0 | Complete DEMO-01a3 #197 and then prioritize #184 dialogue UI and #185 cost guard ahead of lower-priority retrieval work. | All DEMO-01 code paths either use a configured real provider or return a typed truthful error; #184/#185 remain separate PRs. |
 | P0 | P0-08 #117 is independently status:ready after its dependency correction; schedule retrieval/citation work only in a separate branch/PR from P0-07. | Knowledge retrieval work consumes only eligible facts, validates citation allowlists, and retains no raw prompt in gaps. |
-| P0 | Keep P0-07b #188 blocked until OA-005 has recorded operator provider setup; do not imply that P0-07a's adapter is a live Copilot integration. | OA-005 includes sanitized provider setup/staging evidence, then #188 can compose the adapter into the typed Copilot pipeline. |
+| P0 | Keep OA-005 open until the operator configures the four trusted provider credentials and catalog-confirmed model ids in a preview or staging environment. | OA-005 has sanitized configuration and measured staging evidence; until then no live-provider success is claimed. |
 | P0 | Before any external service claim, update the operator-action register with placeholder, owner, verification, and novice tutorial steps. | No third-party API, payment, deployment, DNS, or store capability is presented as live without recorded operator verification. |
 
 ### Current Blockers
 
 - P0-03 and P0-04 code are merged, but real Supabase evidence still awaits OA-001 through OA-004 before production readiness can be claimed.
 - Ops RBAC code is merged; real first-admin and deployed role evidence awaits OA-010.
-- Copilot model calls and knowledge retrieval remain deterministic/stubbed in the audited main branch.
+- Main still has deterministic Copilot behavior; stacked DEMO-01 model-route/pipeline PRs require review and OA-005 blocks any live-provider claim.
 - Human Task, outbound click, and telemetry runtime persistence are incomplete.
 - Real payment evidence, rate limiting, observability, legal pages, and production smoke gates are incomplete.
 
