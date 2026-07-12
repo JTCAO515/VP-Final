@@ -23,7 +23,8 @@ when implemented.
 - Real provider HTTP clients and secret-backed configuration.
 - Prompt profile versioning.
 - Structured Copilot envelope generation and repair in this package.
-- Persistent model attempt, tool-call, latency, and cost traces.
+- Persistent model attempt, tool-call, latency, and cost traces are implemented through the server
+  Trace service and Postgres adapter; real provider attempts remain P0-07 work.
 - Rate limits and entitlement-aware budgets.
 
 ## Constraints
@@ -34,6 +35,8 @@ when implemented.
 - Prompt, model, routing, parser, or tool changes require relevant evals.
 - Logs and traces must redact secrets and sensitive user content.
 - Cost records are measurements, not billing ledgers.
+- Trace storage follows [ADR-0007](../adr/ADR-0007-agent-trace-privacy-retention.md): it stores only
+  allowlisted metadata and digests, never raw model/tool payloads, and has a 30-day retention deadline.
 
 ## Verification
 

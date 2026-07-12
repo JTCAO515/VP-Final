@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
+  createInMemoryAgentTraceService,
   createInMemoryKnowledgeService,
   createVersionedInMemoryTripService,
 } from "@visepanda/app-server";
@@ -22,6 +23,7 @@ beforeEach(() => {
   process.env.VISEPANDA_ANON_SESSION_KEY_ID = "current";
   setTestWebServerServices({
     knowledgeService: createInMemoryKnowledgeService(),
+    traceService: createInMemoryAgentTraceService(),
     tripService: createVersionedInMemoryTripService(),
   });
 });

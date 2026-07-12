@@ -9,7 +9,10 @@ import {
   type TripState,
 } from "@visepanda/domain";
 import { z } from "zod";
+import { createHash } from "node:crypto";
 import type { KnowledgeService } from "../knowledge/service.js";
+import type { AgentTraceService } from "../trace/service.js";
+import { normalizeAgentFailure } from "../trace/service.js";
 import type { TripIdentity, VersionedTripService } from "../trip/versionedService.js";
 
 export const CopilotRunInputSchema = z.object({
@@ -60,6 +63,7 @@ export type CopilotPipelineDependencies = {
   routeIntent?: RouteIntent;
   retrieveContext?: RetrieveContext;
   generateEnvelope?: GenerateEnvelope;
+  traceService?: AgentTraceService;
 };
 
 export function createCopilotPipeline({
@@ -68,73 +72,124 @@ export function createCopilotPipeline({
   routeIntent = defaultRouteIntent,
   retrieveContext = defaultRetrieveContext,
   generateEnvelope = defaultGenerateEnvelope,
+  traceService,
 }: CopilotPipelineDependencies) {
   return {
     async run(input: CopilotRunInput, identity: TripIdentity): Promise<CopilotRunResult> {
+      const startedAt = Date.now();
+      const runId = crypto.randomUUID();
       const parsedInput = CopilotRunInputSchema.parse(input);
-      const currentSnapshot = parsedInput.tripId
-        ? await tripService.get(parsedInput.tripId, identity)
-        : null;
-      if (parsedInput.tripId && !currentSnapshot) throw new Error("Trip not found.");
-      const currentTrip = currentSnapshot?.trip ?? null;
-      const request: CopilotRequest = {
-        message: parsedInput.message,
-        currentTrip,
-      };
-      if (parsedInput.tripId) request.tripId = parsedInput.tripId;
-      const intent = await routeIntent(request);
-      const retrievedFacts = await retrieveContext(request);
-      const envelope = CopilotEnvelopeSchema.parse(
-        await generateEnvelope({ ...request, intent, retrievedFacts }),
-      );
-      if (knowledgeService && shouldRecordKnowledgeGap(envelope)) {
-        const city = detectCity(parsedInput.message);
-        await knowledgeService.recordGap({
-          question: parsedInput.message,
-          ...(city ? { city } : {}),
-        });
-      }
-      let trip = currentTrip;
-      let version = currentSnapshot?.version ?? null;
-      const appliedOperations: TripPatch["operations"] = [];
-
-      for (const patch of envelope.tripActions) {
-        trip = applyPatch(trip, patch);
-        appliedOperations.push(...patch.operations);
-      }
-
-      if (trip && !currentSnapshot) {
-        const created = await tripService.create(trip, identity, "ai_copilot");
-        trip = created.trip;
-        version = created.version;
-      } else if (currentSnapshot && appliedOperations.length > 0) {
-        if (parsedInput.expectedVersion === undefined) {
-          throw new Error("expectedVersion is required when updating an existing Trip.");
+      let intent: CopilotIntent | undefined;
+      try {
+        const currentSnapshot = parsedInput.tripId
+          ? await tripService.get(parsedInput.tripId, identity)
+          : null;
+        if (parsedInput.tripId && !currentSnapshot) throw new Error("Trip not found.");
+        const currentTrip = currentSnapshot?.trip ?? null;
+        const request: CopilotRequest = {
+          message: parsedInput.message,
+          currentTrip,
+        };
+        if (parsedInput.tripId) request.tripId = parsedInput.tripId;
+        intent = await routeIntent(request);
+        const retrievedFacts = await retrieveContext(request);
+        const envelope = CopilotEnvelopeSchema.parse(
+          await generateEnvelope({ ...request, intent, retrievedFacts }),
+        );
+        if (knowledgeService && shouldRecordKnowledgeGap(envelope)) {
+          const city = detectCity(parsedInput.message);
+          await knowledgeService.recordGap({
+            question: parsedInput.message,
+            ...(city ? { city } : {}),
+          });
         }
-        const updated = await tripService.apply({
-          id: currentSnapshot.trip.id,
-          identity,
-          expectedVersion: parsedInput.expectedVersion,
-          patch: { operations: appliedOperations },
-          source: "ai_copilot",
-        });
-        if (!updated) throw new Error("Trip not found.");
-        trip = updated.trip;
-        version = updated.version;
-      }
+        let trip = currentTrip;
+        let version = currentSnapshot?.version ?? null;
+        const appliedOperations: TripPatch["operations"] = [];
 
-      return CopilotRunResultSchema.parse({
-        envelope,
-        trip,
-        version,
-        trace: {
+        for (const patch of envelope.tripActions) {
+          trip = applyPatch(trip, patch);
+          appliedOperations.push(...patch.operations);
+        }
+
+        if (trip && !currentSnapshot) {
+          const created = await tripService.create(trip, identity, "ai_copilot");
+          trip = created.trip;
+          version = created.version;
+        } else if (currentSnapshot && appliedOperations.length > 0) {
+          if (parsedInput.expectedVersion === undefined) {
+            throw new Error("expectedVersion is required when updating an existing Trip.");
+          }
+          const updated = await tripService.apply({
+            id: currentSnapshot.trip.id,
+            identity,
+            expectedVersion: parsedInput.expectedVersion,
+            patch: { operations: appliedOperations },
+            source: "ai_copilot",
+          });
+          if (!updated) throw new Error("Trip not found.");
+          trip = updated.trip;
+          version = updated.version;
+        }
+
+        const result = CopilotRunResultSchema.parse({
+          envelope,
+          trip,
+          version,
+          trace: {
+            intent,
+            retrievedFactIds: retrievedFacts.map((fact) => fact.id),
+            appliedPatchCount: envelope.tripActions.length,
+          },
+        });
+        await recordTraceSafely(traceService, {
+          id: runId,
+          identity,
+          ...(result.trip?.id ? { tripId: result.trip.id } : {}),
           intent,
-          retrievedFactIds: retrievedFacts.map((fact) => fact.id),
-          appliedPatchCount: envelope.tripActions.length,
-        },
-      });
+          status: "succeeded",
+          inputDigest: digest(parsedInput.message),
+          outputDigest: digest(JSON.stringify(result.envelope)),
+          latencyMs: Date.now() - startedAt,
+          attempts: [],
+          validationStatus: "passed",
+          repairCount: 0,
+        });
+        return result;
+      } catch (error) {
+        await recordTraceSafely(traceService, {
+          id: runId,
+          identity,
+          ...(parsedInput.tripId ? { tripId: parsedInput.tripId } : {}),
+          ...(intent ? { intent } : {}),
+          status: "failed",
+          inputDigest: digest(parsedInput.message),
+          latencyMs: Date.now() - startedAt,
+          attempts: [],
+          validationStatus: "failed",
+          repairCount: 0,
+          failureClass: normalizeAgentFailure(error),
+        });
+        throw error;
+      }
     },
   };
+}
+
+async function recordTraceSafely(
+  traceService: AgentTraceService | undefined,
+  input: Parameters<AgentTraceService["recordRun"]>[0],
+): Promise<void> {
+  if (!traceService) return;
+  try {
+    await traceService.recordRun(input);
+  } catch {
+    // Observability must never change the user-visible Copilot result.
+  }
+}
+
+function digest(value: string): string {
+  return createHash("sha256").update(value).digest("hex");
 }
 
 export function defaultRouteIntent({ message }: CopilotRequest): CopilotIntent {

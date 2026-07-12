@@ -32,9 +32,17 @@ describe("database schema", () => {
 
   it("maps the agent trace tables", () => {
     expect(agentRuns.userId.name).toBe("user_id");
+    expect(agentRuns.anonId.name).toBe("anon_id");
+    expect(agentRuns.inputDigest.name).toBe("input_digest");
+    expect(agentRuns.latencyMs.name).toBe("latency_ms");
+    expect(agentRuns.expiresAt.name).toBe("expires_at");
     expect(agentRuns.costUsd.name).toBe("cost_usd");
+    expect(getTableConfig(agentRuns).checks.map((constraint) => constraint.name)).toContain(
+      "agent_runs_at_most_one_identity_check",
+    );
     expect(toolCalls.agentRunId.name).toBe("agent_run_id");
     expect(toolCalls.toolName.name).toBe("tool_name");
+    expect(toolCalls.inputDigest.name).toBe("input_digest");
   });
 
   it("maps the Ops authorization and audit tables", () => {

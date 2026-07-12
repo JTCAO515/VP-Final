@@ -10,6 +10,7 @@ export { appRouter } from "./router.js";
 export type { AppRouter } from "./router.js";
 export { createDb } from "./db/client.js";
 export { createDbKnowledgeService } from "./db/knowledgeService.js";
+export { createDbAgentTraceService } from "./db/agentTraceService.js";
 export { createDbOpsAuthorizationService } from "./db/opsAuthorizationService.js";
 export { createDbVersionedTripService } from "./db/versionedTripService.js";
 export {
@@ -20,6 +21,7 @@ export {
 } from "./runtime/runtimeMode.js";
 export { requireService } from "./runtime/requireService.js";
 export { createInMemoryKnowledgeService } from "./modules/knowledge/service.js";
+export { createInMemoryAgentTraceService, normalizeAgentFailure } from "./modules/trace/service.js";
 export {
   createInMemoryOpsAuthorizationService,
   OpsForbiddenError,
@@ -36,6 +38,12 @@ export {
 export type { RequestIdentity } from "./context.js";
 export type { AdapterAvailability, RuntimeMode, RuntimeResolution } from "./runtime/runtimeMode.js";
 export type { KnowledgeService } from "./modules/knowledge/service.js";
+export type {
+  AgentAttemptTrace,
+  AgentTraceService,
+  RecordAgentRunInput,
+  ToolCallTrace,
+} from "./modules/trace/service.js";
 export type {
   OpsAccess,
   OpsAuditEvent,

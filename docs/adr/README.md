@@ -11,6 +11,7 @@ New ADRs are append-only and use the next numeric prefix.
 | [ADR-0004](ADR-0004-identity-trip-ownership-security.md) | Accepted | Server-verified identity, exclusive Trip ownership, read-only sharing, and optimistic concurrency are mandatory before public persistence. |
 | [ADR-0005](ADR-0005-runtime-modes-and-production-adapter-ownership.md) | Accepted | Explicit runtime modes, single durable production ownership, and fail-closed truthfulness are mandatory before public persistence. |
 | [ADR-0006](ADR-0006-knowledge-evidence-and-index-quality.md) | Accepted | Only reviewed/current evidence may power public facts, Copilot citations, or indexable guidance. |
+| [ADR-0007](ADR-0007-agent-trace-privacy-retention.md) | Accepted | Server-only AI trace metadata is minimized, redacted, retained for 30 days, and purged through a restricted routine. |
 
 ## When to Add an ADR
 

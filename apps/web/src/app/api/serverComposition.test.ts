@@ -1,4 +1,5 @@
 import {
+  createInMemoryAgentTraceService,
   createInMemoryKnowledgeService,
   createVersionedInMemoryTripService,
 } from "@visepanda/app-server";
@@ -29,6 +30,7 @@ describe("Web server composition", () => {
 
     const injected = {
       knowledgeService: createInMemoryKnowledgeService(),
+      traceService: createInMemoryAgentTraceService(),
       tripService: createVersionedInMemoryTripService(),
     };
     setTestWebServerServices(injected);

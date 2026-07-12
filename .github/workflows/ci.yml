@@ -55,7 +55,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @visepanda/domain build
       - run: pnpm --filter @visepanda/app-server build
-      - run: pnpm --filter @visepanda/app-server exec vitest run src/db/versionedTripService.integration.test.ts src/db/opsAuthorizationService.integration.test.ts
+      - run: pnpm --filter @visepanda/app-server exec vitest run src/db/versionedTripService.integration.test.ts src/db/opsAuthorizationService.integration.test.ts src/db/agentTraceService.integration.test.ts
         env:
           DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
       - run: pnpm --filter @visepanda/app-web exec vitest run src/app/api/serverComposition.integration.test.ts
