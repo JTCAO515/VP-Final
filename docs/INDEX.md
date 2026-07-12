@@ -9,7 +9,7 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 ## Current Handoff Snapshot
 
-- **Updated:** 2026-07-12 by Codex / DEMO-01 pipeline repair
+- **Updated:** 2026-07-12 by Codex / DEMO-01b dialogue UI
 - **Base branch:** `main`
 - **Last fully verified commit:** `9e4d5a1`
 - **Current phase:** Phase 0 — production hardening
@@ -20,13 +20,13 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 | Ref | Work | State | Owner | Next action |
 | --- | --- | --- | --- | --- |
-| Issue #197 / DEMO-01a3 | Connect v3 model runtime to the Copilot pipeline | Implementation active on a stacked branch: deployed runtimes inject v3 model dependencies, repair bounded JSON candidates before Zod validation, persist safe attempts, and reject all non-dialogue DEMO-01 output. No real provider call is claimed before OA-005. | Codex | Add focused runtime tests, run full repository gates, then open the stacked #197 PR for architect review after #195/#198 are green. |
+| Issue #184 / DEMO-01b | Productize the Copilot dialogue page | Implementation active on a stacked branch: the Web surface removes mock itinerary, booking, share, Human Help, tool, commerce, and citation controls; it renders only the validated dialogue envelope with explicit waiting, failure, retry, and scope states. | Codex | Run full gates and capture browser evidence at 375/768/1280, then open a separate #184 PR on the DEMO-01 pipeline branch. PR #199 is green and awaiting architect review; do not self-merge. |
 
 ### Immediate Queue
 
 | Priority | Control action | Exit criteria |
 | --- | --- | --- |
-| P0 | Complete DEMO-01a3 #197 and then prioritize #184 dialogue UI and #185 cost guard ahead of lower-priority retrieval work. | All DEMO-01 code paths either use a configured real provider or return a typed truthful error; #184/#185 remain separate PRs. |
+| P0 | Complete DEMO-01b #184 and DEMO-01c #185 ahead of lower-priority retrieval work. | Dialogue UI and cost guard each land as separate reviewed PRs; neither presents a static/mock response as a live provider result. |
 | P0 | P0-08 #117 is independently status:ready after its dependency correction; schedule retrieval/citation work only in a separate branch/PR from P0-07. | Knowledge retrieval work consumes only eligible facts, validates citation allowlists, and retains no raw prompt in gaps. |
 | P0 | Keep OA-005 open until the operator configures the four trusted provider credentials and catalog-confirmed model ids in a preview or staging environment. | OA-005 has sanitized configuration and measured staging evidence; until then no live-provider success is claimed. |
 | P0 | Before any external service claim, update the operator-action register with placeholder, owner, verification, and novice tutorial steps. | No third-party API, payment, deployment, DNS, or store capability is presented as live without recorded operator verification. |
