@@ -9,25 +9,26 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 ## Current Handoff Snapshot
 
-- **Updated:** 2026-07-12 by Codex / P0-07a provider adapter boundary
+- **Updated:** 2026-07-12 by Codex / GOV handoff after P0-07a merge
 - **Base branch:** `main`
-- **Last fully verified commit:** `216602e`
+- **Last fully verified commit:** `170825d`
 - **Current phase:** Phase 0 — production hardening
 - **Maturity:** Trusted demo skeleton; not yet a production-safe or billing-ready MVP.
-- **Last completed control action:** PR #182 merged P0-09 anonymous-safe Agent trace persistence after Verify, Docs, Evals, Database contracts, and Vercel previews passed; PR #186 reconciled its completion and the ready queue.
+- **Last completed control action:** PR #189 merged P0-07a bounded provider adapters after Verify, Database contracts, Docs, Evals, and Vercel previews passed. The PR added no Copilot runtime composition and made no real provider claim.
 
 ### Active Work
 
 | Ref | Work | State | Owner | Next action |
 | --- | --- | --- | --- | --- |
-| Issue #187 / P0-07a | Add bounded OpenAI-compatible provider adapters | Implementation active: provider-neutral adapter/configuration contract only. It does not compose a provider into Copilot, invoke a real provider, or claim external evidence. P0-07b #188 remains blocked by 07a and OA-005. | Codex | Complete package tests, safe documentation/register/index updates, and full repository verification; then submit a separate PR for #187. |
+| Issue #117 / P0-08 | Retrieval and citations | Ready and independent after DOC-P0-03, P0-06, and P0-09. It must consume only eligible facts, validate citation allowlists, and retain no raw prompt in gaps. | Codex | Read the knowledge evidence policy and module/runbook constraints; freeze the smallest retrieval/citation boundary before code changes. |
 
 ### Immediate Queue
 
 | Priority | Control action | Exit criteria |
 | --- | --- | --- |
-| P0 | Complete P0-07a #187 with provider failure truthfulness, bounded attempts, safe attempt metadata, adapter tests, and no secret/fixture success regressions. | A reviewable adapter/configuration boundary passes the full gate. P0-07b alone may compose it into Copilot and collect OA-005 staging evidence. |
+| P0 | Start P0-08 #117 in a separate branch with eligible-fact retrieval, allowlisted citations, safe traces, and no raw prompt retention. | A reviewable retrieval/citation boundary passes the full gate without expanding into Explore rendering or SEO publishing. |
 | P0 | P0-08 #117 is independently status:ready after its dependency correction; schedule retrieval/citation work only in a separate branch/PR from P0-07. | Knowledge retrieval work consumes only eligible facts, validates citation allowlists, and retains no raw prompt in gaps. |
+| P0 | Keep P0-07b #188 blocked until OA-005 has recorded operator provider setup; do not imply that P0-07a's adapter is a live Copilot integration. | OA-005 includes sanitized provider setup/staging evidence, then #188 can compose the adapter into the typed Copilot pipeline. |
 | P0 | Before any external service claim, update the operator-action register with placeholder, owner, verification, and novice tutorial steps. | No third-party API, payment, deployment, DNS, or store capability is presented as live without recorded operator verification. |
 
 ### Current Blockers

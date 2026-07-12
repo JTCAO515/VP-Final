@@ -1,31 +1,36 @@
 {
   "schemaVersion": 1,
   "updatedAt": "2026-07-12",
-  "updatedBy": "Codex / P0-07a provider adapter boundary",
+  "updatedBy": "Codex / GOV handoff after P0-07a merge",
   "baseBranch": "main",
-  "lastVerifiedCommit": "216602e",
+  "lastVerifiedCommit": "170825d",
   "currentPhase": "Phase 0 — production hardening",
   "maturity": "Trusted demo skeleton; not yet a production-safe or billing-ready MVP.",
-  "lastCompleted": "PR #182 merged P0-09 anonymous-safe Agent trace persistence after Verify, Docs, Evals, Database contracts, and Vercel previews passed; PR #186 reconciled its completion and the ready queue.",
+  "lastCompleted": "PR #189 merged P0-07a bounded provider adapters after Verify, Database contracts, Docs, Evals, and Vercel previews passed. The PR added no Copilot runtime composition and made no real provider claim.",
   "activeWork": [
     {
-      "ref": "Issue #187 / P0-07a",
-      "title": "Add bounded OpenAI-compatible provider adapters",
-      "state": "Implementation active: provider-neutral adapter/configuration contract only. It does not compose a provider into Copilot, invoke a real provider, or claim external evidence. P0-07b #188 remains blocked by 07a and OA-005.",
+      "ref": "Issue #117 / P0-08",
+      "title": "Retrieval and citations",
+      "state": "Ready and independent after DOC-P0-03, P0-06, and P0-09. It must consume only eligible facts, validate citation allowlists, and retain no raw prompt in gaps.",
       "owner": "Codex",
-      "next": "Complete package tests, safe documentation/register/index updates, and full repository verification; then submit a separate PR for #187."
+      "next": "Read the knowledge evidence policy and module/runbook constraints; freeze the smallest retrieval/citation boundary before code changes."
     }
   ],
   "nextActions": [
     {
       "priority": "P0",
-      "action": "Complete P0-07a #187 with provider failure truthfulness, bounded attempts, safe attempt metadata, adapter tests, and no secret/fixture success regressions.",
-      "exitCriteria": "A reviewable adapter/configuration boundary passes the full gate. P0-07b alone may compose it into Copilot and collect OA-005 staging evidence."
+      "action": "Start P0-08 #117 in a separate branch with eligible-fact retrieval, allowlisted citations, safe traces, and no raw prompt retention.",
+      "exitCriteria": "A reviewable retrieval/citation boundary passes the full gate without expanding into Explore rendering or SEO publishing."
     },
     {
       "priority": "P0",
       "action": "P0-08 #117 is independently status:ready after its dependency correction; schedule retrieval/citation work only in a separate branch/PR from P0-07.",
       "exitCriteria": "Knowledge retrieval work consumes only eligible facts, validates citation allowlists, and retains no raw prompt in gaps."
+    },
+    {
+      "priority": "P0",
+      "action": "Keep P0-07b #188 blocked until OA-005 has recorded operator provider setup; do not imply that P0-07a's adapter is a live Copilot integration.",
+      "exitCriteria": "OA-005 includes sanitized provider setup/staging evidence, then #188 can compose the adapter into the typed Copilot pipeline."
     },
     {
       "priority": "P0",
