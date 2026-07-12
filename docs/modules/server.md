@@ -39,6 +39,9 @@ modules yet.
   allowlisted operational metadata. Provider/tool payloads and raw errors are excluded.
 - Copilot has a deterministic default router, stub retrieval, deterministic envelope generation, and
   deterministic day completion.
+- DEMO-01 adds a v3 route executor that can compose environment-selected provider routes through
+  `@visepanda/ai`; it fails with a typed configuration-unavailable error when a required route lacks
+  a model name or trusted credential. Pipeline wiring remains a separate P0-07 control action.
 - Knowledge, Human Task, and Telemetry routers require a service selected by the composition root;
   omitted capabilities return typed `SERVICE_UNAVAILABLE` and never construct memory internally.
 - The runtime resolver and router injection boundary are implemented and tested, but Web/Ops

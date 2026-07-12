@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "updatedAt": "2026-07-12",
-  "updatedBy": "Codex / DEMO-01 provider inventory",
+  "updatedBy": "Codex / DEMO-01 model route executor",
   "baseBranch": "main",
   "lastVerifiedCommit": "9e4d5a1",
   "currentPhase": "Phase 0 — production hardening",
@@ -9,11 +9,11 @@
   "lastCompleted": "PR #193 merged P0-08a fact eligibility lifecycle after Verify, Database contracts, Docs, Evals, and Vercel previews passed.",
   "activeWork": [
     {
-      "ref": "Issue #116 / DEMO-01a",
-      "title": "Real LLM provider inventory and self-check",
-      "state": "Implementation active: v3 provider/key/model-slot inventory and safe readiness diagnostics. No Copilot wiring, real call, key, or mock-success claim is included in this boundary.",
+      "ref": "Issue #196 / DEMO-01a2",
+      "title": "Wire v3 model routes through ModelRouter",
+      "state": "Implementation active: route executor composes environment-selected primary/fallback providers and fails honestly on missing route configuration. Copilot pipeline wiring/repair/trace remains #197.",
       "owner": "Codex",
-      "next": "Run full repository gates, submit the provider-inventory PR, then separately wire model routing, envelope repair, and trace attempts."
+      "next": "Run full repository gates, submit the route-executor PR against #195, then implement #197 after review/merge dependencies permit."
     }
   ],
   "nextActions": [
