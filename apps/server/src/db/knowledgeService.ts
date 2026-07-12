@@ -1,5 +1,6 @@
 import {
   KnowledgeGapSchema,
+  isEligiblePoiFact,
   PoiFactSchema,
   PoiSchema,
   type KnowledgeGap,
@@ -28,7 +29,7 @@ export function createDbKnowledgeService(db: Db): KnowledgeService {
           source: input.source,
           verifiedAt: new Date(),
           expiresAt: input.expiresAt ? new Date(input.expiresAt) : null,
-          status: "active",
+          status: "draft",
         })
         .returning();
       if (!row) throw new Error("Fact insert failed");
@@ -63,7 +64,7 @@ export function createDbKnowledgeService(db: Db): KnowledgeService {
       return all.flatMap((poi) =>
         poi.facts.filter(
           (fact) =>
-            fact.status === "active" &&
+            fact.status === "reviewed" &&
             fact.expiresAt !== null &&
             Date.parse(fact.expiresAt) < now.getTime(),
         ),
@@ -76,7 +77,7 @@ export function createDbKnowledgeService(db: Db): KnowledgeService {
         .update(poiFacts)
         .set({
           expiresAt: input.expiresAt ? new Date(input.expiresAt) : null,
-          status: "active",
+          status: "reviewed",
           verifiedAt: new Date(),
           version: existing.version + 1,
         })
@@ -178,11 +179,11 @@ async function listPois(
       facts: factRows
         .filter((fact) => fact.poiId === poi.id)
         .map(rowToFact)
-        .filter(
-          (fact) =>
-            (input.includeExpired || !fact.expiresAt || Date.parse(fact.expiresAt) >= Date.now()) &&
-            (input.includeDeprecated || fact.status !== "deprecated"),
-        ),
+        .filter((fact) => {
+          if (isEligiblePoiFact(fact)) return true;
+          if (input.includeDeprecated && fact.status === "deprecated") return true;
+          return input.includeExpired && isExpired(fact);
+        }),
       commercialLinks: linkRows
         .filter((link) => link.poiId === poi.id && link.status === "active")
         .map((link) => ({
@@ -231,7 +232,13 @@ function rowToGap(row: typeof knowledgeGaps.$inferSelect): KnowledgeGap {
 function normalizeGapPattern(question: string): string {
   return question
     .toLowerCase()
+    .replace(/[\w.+-]+@[\w.-]+\.[a-z]{2,}/g, " private email ")
+    .replace(/\b(?:\+?\d[\d\s()-]{6,}\d)\b/g, " private number ")
     .replace(/[^a-z0-9\s]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function isExpired(fact: { expiresAt: string | null }): boolean {
+  return fact.expiresAt !== null && Date.parse(fact.expiresAt) < Date.now();
 }

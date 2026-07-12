@@ -73,6 +73,9 @@ state.
 ## Hard Boundaries
 
 - AI output must parse as a Copilot envelope before any action is applied.
+- Knowledge-backed Copilot retrieval selects only eligible reviewed facts, carries bounded evidence
+  metadata, and rejects citations outside the fetched allowlist. Gap persistence normalizes email and
+  phone-like substrings before storing a question pattern.
 - Existing Trip persistence receives only a validated Patch plus trusted identity, expected version,
   and event source; creation receives the initial validated Trip.
 - A module may not import another module's tables.

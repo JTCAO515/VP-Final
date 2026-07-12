@@ -25,6 +25,9 @@ export const RetrievalFactSchema = z.object({
   id: z.string().min(1),
   label: z.string().min(1),
   summary: z.string().min(1),
+  source: z.string().min(1),
+  verifiedAt: z.string().datetime(),
+  confidence: z.number().min(0).max(1),
 });
 
 export const CopilotRunResultSchema = z.object({
@@ -112,7 +115,9 @@ export function createCopilotPipeline({
         const decision = normalizeIntentDecision(await routeIntent(request));
         intent = decision.intent;
         attempts = decision.attempts ?? [];
-        const retrievedFacts = await retrieveContext(request);
+        const retrievedFacts = await (knowledgeService
+          ? retrieveEligibleFacts(knowledgeService, request, intent)
+          : retrieveContext(request));
         const parsedGeneration = parseGeneratedEnvelope(
           await generateEnvelope({ ...request, intent, retrievedFacts }),
         );
@@ -121,9 +126,10 @@ export function createCopilotPipeline({
         if (demoDialogueOnly && parsedGeneration.envelope.intent !== intent) {
           throw new Error("Copilot envelope intent does not match the router decision.");
         }
+        const citedEnvelope = validateCitations(parsedGeneration.envelope, retrievedFacts);
         const envelope = demoDialogueOnly
-          ? assertDemoDialogueEnvelope(parsedGeneration.envelope)
-          : parsedGeneration.envelope;
+          ? assertDemoDialogueEnvelope(citedEnvelope)
+          : citedEnvelope;
         if (knowledgeService && shouldRecordKnowledgeGap(envelope)) {
           const city = detectCity(parsedInput.message);
           await knowledgeService.recordGap({
@@ -364,13 +370,7 @@ export function defaultRouteIntent({ message }: CopilotRequest): CopilotIntent {
 }
 
 export function defaultRetrieveContext(): RetrievalFact[] {
-  return [
-    {
-      id: "stub:china-execution-basics",
-      label: "China execution basics",
-      summary: "Knowledge retrieval is stubbed until the knowledge module lands.",
-    },
-  ];
+  return [];
 }
 
 export function defaultGenerateEnvelope({
@@ -378,6 +378,7 @@ export function defaultGenerateEnvelope({
   intent,
   message,
   tripId,
+  retrievedFacts,
 }: CopilotGenerationRequest): unknown {
   if (intent === "trip_create" && !currentTrip) {
     const city = inferCity(message);
@@ -424,7 +425,7 @@ export function defaultGenerateEnvelope({
           body: "I will favor days that are easy to execute by metro before suggesting taxis.",
         },
       ],
-      citations: [{ fact_id: "stub:china-execution-basics", label: "Stub retrieval" }],
+      citations: citationsFor(retrievedFacts),
     };
   }
 
@@ -447,7 +448,7 @@ export function defaultGenerateEnvelope({
           url: "https://www.trip.com/hotels/",
         },
       ],
-      citations: [{ fact_id: "guide:payment", label: "Payment guide", source: "VisePanda" }],
+      citations: citationsFor(retrievedFacts),
     };
   }
 
@@ -467,6 +468,18 @@ export function defaultGenerateEnvelope({
     };
   }
 
+  if (retrievedFacts.length === 0) {
+    return {
+      intent,
+      message: {
+        headline: "Not enough verified information yet",
+        body: "I do not have verified evidence for that request yet, so I should not guess. Try a broader travel question or check back after the information is reviewed.",
+        highlights: [],
+      },
+      citations: [],
+    };
+  }
+
   return {
     intent,
     message: {
@@ -476,10 +489,57 @@ export function defaultGenerateEnvelope({
         : "I can answer now, or create a trip shell when you ask me to plan one.",
       highlights: [],
     },
-    citations: [
-      { fact_id: "stub:china-execution-basics", label: "Stub retrieval", source: "VisePanda" },
-    ],
+    citations: citationsFor(retrievedFacts),
   };
+}
+
+async function retrieveEligibleFacts(
+  knowledgeService: KnowledgeService,
+  request: CopilotRequest,
+  intent: CopilotIntent,
+): Promise<RetrievalFact[]> {
+  const city = detectCity(request.message);
+  const category = detectCategory(request.message, intent);
+  const pois = await knowledgeService.listPois({
+    ...(city ? { city } : {}),
+    ...(category ? { category } : {}),
+  });
+  return pois
+    .flatMap((poi) =>
+      poi.facts.map((fact) => ({
+        id: fact.id,
+        label: `${poi.nameEn}: ${fact.factType}`,
+        summary: boundedFactSummary(fact.value),
+        source: fact.source,
+        verifiedAt: fact.verifiedAt,
+        confidence: fact.confidence,
+      })),
+    )
+    .slice(0, 3)
+    .map((fact) => RetrievalFactSchema.parse(fact));
+}
+
+function validateCitations(envelope: CopilotEnvelope, facts: RetrievalFact[]): CopilotEnvelope {
+  const allowed = new Map(facts.map((fact) => [fact.id, fact]));
+  return CopilotEnvelopeSchema.parse({
+    ...envelope,
+    citations: envelope.citations.map((citation) => {
+      const fact = allowed.get(citation.fact_id);
+      if (!fact) throw new Error("Citation does not reference retrieved evidence.");
+      return { fact_id: fact.id, label: fact.label, source: fact.source };
+    }),
+  });
+}
+
+function citationsFor(facts: RetrievalFact[]) {
+  return facts
+    .slice(0, 1)
+    .map((fact) => ({ fact_id: fact.id, label: fact.label, source: fact.source }));
+}
+
+function boundedFactSummary(value: Record<string, unknown>): string {
+  const label = typeof value.label === "string" ? value.label : "Verified execution fact";
+  return label.slice(0, 240);
 }
 
 function inferCity(message: string): string {
@@ -493,6 +553,17 @@ function detectCity(message: string): string | undefined {
   if (/\bbeijing\b/i.test(message)) return "Beijing";
   if (/\bchengdu\b/i.test(message)) return "Chengdu";
   if (/\bshanghai\b/i.test(message)) return "Shanghai";
+  return undefined;
+}
+
+function detectCategory(message: string, intent: CopilotIntent) {
+  if (/restaurant|food|eat|meal/i.test(message)) return "food" as const;
+  if (/hotel|stay/i.test(message)) return "hotel" as const;
+  if (/shop|shopping/i.test(message)) return "shopping" as const;
+  if (/experience|spa|massage/i.test(message)) return "experience" as const;
+  if (intent === "commerce_intent" || /ticket|attraction|museum|garden/i.test(message)) {
+    return "attraction" as const;
+  }
   return undefined;
 }
 

@@ -27,7 +27,7 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
 - Trip mutation is only performed through `applyPatch`.
 - Domain enums are never copied into app-local constants.
 - Optional fields stay optional; consumers do not fabricate values to make a card look complete.
-- Knowledge consumers follow [ADR-0006](../adr/ADR-0006-knowledge-evidence-and-index-quality.md): model output cannot invent facts or citations.
+- Knowledge consumers follow [ADR-0006](../adr/ADR-0006-knowledge-evidence-and-index-quality.md): model output cannot invent facts or citations. Retrieval accepts only `isEligiblePoiFact` results, citation ids are request-allowlisted, and no-match answers are explicit.
 
 ## Change Workflow
 
