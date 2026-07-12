@@ -9,15 +9,15 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
 
 ## Public Areas
 
-| Area | Owns |
-| --- | --- |
-| `trip` | TripState, TripPatch operations, `applyPatch`, `diffTrips`, generation progress |
-| `copilot` | Intent, message, citations, tool cards, commercial actions, Human Help handoff, envelope |
-| `knowledge` | POI, execution facts, knowledge gaps, scene-tag derivation, reviewed seed data |
-| `task` | Human Task input, state, legal transitions, updates |
-| `commerce` | Partner configuration, outbound click, URL validation and tracking construction |
-| `events` | Telemetry event contract |
-| `errors` | Shared typed error shapes |
+| Area        | Owns                                                                                                          |
+| ----------- | ------------------------------------------------------------------------------------------------------------- |
+| `trip`      | TripState, TripPatch operations, `applyPatch`, `diffTrips`, generation progress                               |
+| `copilot`   | Intent, message, citations, tool cards, commercial actions, Human Help handoff, envelope                      |
+| `knowledge` | POI, execution facts, knowledge gaps, scene-tag derivation, reviewed seed data, and ADR-0006 fact eligibility |
+| `task`      | Human Task input, state, legal transitions, updates                                                           |
+| `commerce`  | Partner configuration, outbound click, URL validation and tracking construction                               |
+| `events`    | Telemetry event contract                                                                                      |
+| `errors`    | Shared typed error shapes                                                                                     |
 
 ## Invariants
 

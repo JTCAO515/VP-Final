@@ -2,6 +2,15 @@ import { z } from "zod";
 
 export const PoiCategorySchema = z.enum(["food", "attraction", "hotel", "shopping", "experience"]);
 
+export const PoiFactStatusSchema = z.enum([
+  "draft",
+  "reviewed",
+  "deprecated",
+  "rejected",
+  // Read-only compatibility for facts written before ADR-0006. It is never eligible for consumers.
+  "active",
+]);
+
 export const PoiFactSchema = z.object({
   id: z.string().min(1),
   poiId: z.string().min(1),
@@ -12,7 +21,7 @@ export const PoiFactSchema = z.object({
   verifiedAt: z.string().datetime(),
   expiresAt: z.string().datetime().nullable().default(null),
   version: z.number().int().positive(),
-  status: z.enum(["active", "deprecated"]).default("active"),
+  status: PoiFactStatusSchema.default("draft"),
 });
 
 export const PoiCommercialLinkSchema = z.object({
@@ -53,6 +62,7 @@ export const KnowledgeGapSchema = z.object({
 });
 
 export type PoiCategory = z.infer<typeof PoiCategorySchema>;
+export type PoiFactStatus = z.infer<typeof PoiFactStatusSchema>;
 export type PoiFact = z.infer<typeof PoiFactSchema>;
 export type Poi = z.infer<typeof PoiSchema>;
 export type KnowledgeGap = z.infer<typeof KnowledgeGapSchema>;
@@ -67,11 +77,18 @@ export const TRAVELER_SCENE_TAGS = [
 
 export type TravelerSceneTag = (typeof TRAVELER_SCENE_TAGS)[number];
 
-export function isCurrentPoiFact(fact: PoiFact, now = new Date()): boolean {
+export function isEligiblePoiFact(fact: PoiFact, now = new Date()): boolean {
   return (
-    fact.status === "active" && (!fact.expiresAt || Date.parse(fact.expiresAt) >= now.getTime())
+    fact.status === "reviewed" &&
+    fact.source.trim().length > 0 &&
+    Number.isFinite(Date.parse(fact.verifiedAt)) &&
+    Date.parse(fact.verifiedAt) <= now.getTime() &&
+    (!fact.expiresAt || Date.parse(fact.expiresAt) >= now.getTime())
   );
 }
+
+// Kept for existing callers. "Current" now means eligible under ADR-0006, not merely non-expired.
+export const isCurrentPoiFact = isEligiblePoiFact;
 
 export function updatePoiFact(
   pois: Poi[],

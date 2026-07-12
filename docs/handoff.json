@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "updatedAt": "2026-07-12",
-  "updatedBy": "Codex / GOV handoff after P0-07a merge",
+  "updatedBy": "Codex / P0-08a fact eligibility lifecycle",
   "baseBranch": "main",
   "lastVerifiedCommit": "170825d",
   "currentPhase": "Phase 0 — production hardening",
@@ -9,18 +9,18 @@
   "lastCompleted": "PR #189 merged P0-07a bounded provider adapters after Verify, Database contracts, Docs, Evals, and Vercel previews passed. The PR added no Copilot runtime composition and made no real provider claim.",
   "activeWork": [
     {
-      "ref": "Issue #117 / P0-08",
-      "title": "Retrieval and citations",
-      "state": "Ready and independent after DOC-P0-03, P0-06, and P0-09. It must consume only eligible facts, validate citation allowlists, and retain no raw prompt in gaps.",
+      "ref": "Issue #191 / P0-08a",
+      "title": "Freeze fact eligibility lifecycle in domain",
+      "state": "Implementation active: ADR-0006 lifecycle schema and pure eligibility predicate. Legacy active facts remain readable but are deliberately ineligible; P0-08b #192 remains blocked by this contract.",
       "owner": "Codex",
-      "next": "Read the knowledge evidence policy and module/runbook constraints; freeze the smallest retrieval/citation boundary before code changes."
+      "next": "Complete Domain tests and full verification, synchronize docs/index, then submit the schema-only PR."
     }
   ],
   "nextActions": [
     {
       "priority": "P0",
-      "action": "Start P0-08 #117 in a separate branch with eligible-fact retrieval, allowlisted citations, safe traces, and no raw prompt retention.",
-      "exitCriteria": "A reviewable retrieval/citation boundary passes the full gate without expanding into Explore rendering or SEO publishing."
+      "action": "Complete P0-08a #191 before retrieval code: freeze draft/reviewed/deprecated/rejected lifecycle plus explicit legacy active ineligibility in packages/domain.",
+      "exitCriteria": "Schema and pure-function tests prove only current reviewed evidence can be eligible, then P0-08b may consume the contract."
     },
     {
       "priority": "P0",

@@ -9,7 +9,7 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 ## Current Handoff Snapshot
 
-- **Updated:** 2026-07-12 by Codex / GOV handoff after P0-07a merge
+- **Updated:** 2026-07-12 by Codex / P0-08a fact eligibility lifecycle
 - **Base branch:** `main`
 - **Last fully verified commit:** `170825d`
 - **Current phase:** Phase 0 — production hardening
@@ -20,13 +20,13 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 | Ref | Work | State | Owner | Next action |
 | --- | --- | --- | --- | --- |
-| Issue #117 / P0-08 | Retrieval and citations | Ready and independent after DOC-P0-03, P0-06, and P0-09. It must consume only eligible facts, validate citation allowlists, and retain no raw prompt in gaps. | Codex | Read the knowledge evidence policy and module/runbook constraints; freeze the smallest retrieval/citation boundary before code changes. |
+| Issue #191 / P0-08a | Freeze fact eligibility lifecycle in domain | Implementation active: ADR-0006 lifecycle schema and pure eligibility predicate. Legacy active facts remain readable but are deliberately ineligible; P0-08b #192 remains blocked by this contract. | Codex | Complete Domain tests and full verification, synchronize docs/index, then submit the schema-only PR. |
 
 ### Immediate Queue
 
 | Priority | Control action | Exit criteria |
 | --- | --- | --- |
-| P0 | Start P0-08 #117 in a separate branch with eligible-fact retrieval, allowlisted citations, safe traces, and no raw prompt retention. | A reviewable retrieval/citation boundary passes the full gate without expanding into Explore rendering or SEO publishing. |
+| P0 | Complete P0-08a #191 before retrieval code: freeze draft/reviewed/deprecated/rejected lifecycle plus explicit legacy active ineligibility in packages/domain. | Schema and pure-function tests prove only current reviewed evidence can be eligible, then P0-08b may consume the contract. |
 | P0 | P0-08 #117 is independently status:ready after its dependency correction; schedule retrieval/citation work only in a separate branch/PR from P0-07. | Knowledge retrieval work consumes only eligible facts, validates citation allowlists, and retains no raw prompt in gaps. |
 | P0 | Keep P0-07b #188 blocked until OA-005 has recorded operator provider setup; do not imply that P0-07a's adapter is a live Copilot integration. | OA-005 includes sanitized provider setup/staging evidence, then #188 can compose the adapter into the typed Copilot pipeline. |
 | P0 | Before any external service claim, update the operator-action register with placeholder, owner, verification, and novice tutorial steps. | No third-party API, payment, deployment, DNS, or store capability is presented as live without recorded operator verification. |
