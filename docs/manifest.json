@@ -577,13 +577,13 @@
       "sourcePrefixes": [".github/"]
     },
     {
-      "path": "docs/governance/phase-0-1-dependency-graph.md",
-      "title": "Phase 0/1 Dependency Graph",
+      "path": "docs/governance/phase-dependency-graph.md",
+      "title": "Phase Dependency Graph",
       "category": "governance",
       "type": "reference",
       "status": "active",
       "owner": "overall design",
-      "summary": "Canonical Phase 0/1 Issue ownership, blockers, migration map, lifecycle gates, and backlog-validation procedure.",
+      "summary": "Canonical Phase 0 through Phase 3 Issue ownership, lanes, blockers, triggers, and backlog-validation procedure.",
       "sourcePrefixes": [".github/", "scripts/docs/"]
     },
     {

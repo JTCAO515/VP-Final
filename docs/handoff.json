@@ -1,31 +1,31 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-07-12",
-  "updatedBy": "Codex / P0-08a fact eligibility lifecycle",
+  "updatedAt": "2026-07-13",
+  "updatedBy": "Codex / GOV #139 Phase dependency and lane delta",
   "baseBranch": "main",
   "lastVerifiedCommit": "170825d",
   "currentPhase": "Phase 0 — production hardening",
   "maturity": "Trusted demo skeleton; not yet a production-safe or billing-ready MVP.",
-  "lastCompleted": "PR #189 merged P0-07a bounded provider adapters after Verify, Database contracts, Docs, Evals, and Vercel previews passed. The PR added no Copilot runtime composition and made no real provider claim.",
+  "lastCompleted": "PR #202 is ready for architecture review after canonicalizing red-gold design tokens in @visepanda/ui. It is not merged; P0-12 may consume its interface only after review/merge.",
   "activeWork": [
     {
-      "ref": "Issue #191 / P0-08a",
-      "title": "Freeze fact eligibility lifecycle in domain",
-      "state": "Implementation active: ADR-0006 lifecycle schema and pure eligibility predicate. Legacy active facts remain readable but are deliberately ineligible; P0-08b #192 remains blocked by this contract.",
+      "ref": "Issue #139 / GOV-P0d",
+      "title": "Extend the canonical phase dependency graph and assign lanes",
+      "state": "Documentation implementation active: rename the former Phase 0/1 graph, add Phase 2/3 trigger-gated controls, and record Codex/Architecture/Operator lanes without changing product scope.",
       "owner": "Codex",
-      "next": "Complete Domain tests and full verification, synchronize docs/index, then submit the schema-only PR."
+      "next": "Run graph scan and documentation checks, synchronize INDEX, update #102 navigation metadata, then submit the docs-only PR for architecture review."
     }
   ],
   "nextActions": [
     {
       "priority": "P0",
-      "action": "Complete P0-08a #191 before retrieval code: freeze draft/reviewed/deprecated/rejected lifecycle plus explicit legacy active ineligibility in packages/domain.",
-      "exitCriteria": "Schema and pure-function tests prove only current reviewed evidence can be eligible, then P0-08b may consume the contract."
+      "action": "Submit GOV #139 graph delta after the open-Issue scan and documentation checks pass; keep Phase 2/3 work trigger-gated.",
+      "exitCriteria": "#102, the dependency graph, handoff, manifest, and generated Index agree on owners, lanes, blockers, and the Phase 0 through Phase 3 control map."
     },
     {
       "priority": "P0",
-      "action": "P0-08 #117 is independently status:ready after its dependency correction; schedule retrieval/citation work only in a separate branch/PR from P0-07.",
-      "exitCriteria": "Knowledge retrieval work consumes only eligible facts, validates citation allowlists, and retains no raw prompt in gaps."
+      "action": "Obtain architecture review for review-pending PRs #195, #198, #199, #200, #201, and #202 only after their green CI evidence is visible.",
+      "exitCriteria": "Each PR follows #181: mark ready and request review, then let an authorized maintainer merge or return corrections."
     },
     {
       "priority": "P0",
@@ -54,7 +54,7 @@
     "Issue #135 local verification passed: both Skills validated, 66 controlled documents passed docs checks/impact, and pnpm typecheck, lint, test, build, and evals passed.",
     "GOV-P0a metadata verification: #73 is the canonical P0-09 owner; open blocked-by references to completed baseline Issues were replaced with active canonical dependencies; closed duplicate #125 points to #124 and #130 points to #129.",
     "GOV-P0b metadata verification: canonical P0-13 through P0-20 are #150 through #157; V2-42 through V2-50 and V2-52 through V2-58 retain historical bodies with status:superseded and a top link to their sole canonical owner.",
-    "GOV-P0c verification: docs/governance/phase-0-1-dependency-graph.md is registered as the dependency source of truth; #102 now links canonical owners, retained standalone V2 work, hard Stripe/Rescue gates, and the manual API validation procedure.",
+    "GOV-P0c historical verification: the former Phase 0/1 dependency graph was registered as the dependency source of truth; #102 links canonical owners, retained standalone V2 work, hard Stripe/Rescue gates, and the manual API validation procedure.",
     "GOV-P0 merge evidence: PRs #149, #160, and #161 passed repository checks and merged to main; DOC-P0-01 is now the active documentation-first control action.",
     "DOC-P0-01 merge evidence: PR #140 passed database contracts, verify, docs, evals, and Vercel previews before merging; ADR-0004 is accepted and Issue #131 is closed.",
     "DOC-P0-02 and DOC-P0-03 merge evidence: PRs #162 and #163 accepted ADR-0005 and ADR-0006 after repository checks passed.",
@@ -85,7 +85,9 @@
     "P0-09 local database limitation: Supabase CLI 2.109.1 is installed, but `supabase db reset --local --no-seed --workdir infra` cannot run because Docker daemon is unavailable. No local migration, pgTAP, adapter, advisor, or production-retention pass is claimed; CI Database contracts is required.",
     "P0-09 first Database contracts CI observation on PR #182: migration reset and prior checks reached the new adapter suite, which failed because its authenticated fixture inserted public.users before the required auth.users row. The fixture now mirrors the existing trusted auth seed order; the production adapter/migration is unchanged and CI rerun remains required.",
     "P0-09 corrected CI evidence on PR #182: Verify, Docs, Evals, Database contracts, and Vercel Preview Comments all passed. Database contracts replayed the migration, ran pgTAP security checks, ran the authenticated/anonymous/no-identity adapter plus Copilot integration tests, and ran security advisors. Production OA-004 purge scheduling remains unverified and is not claimed.",
-    "P0-09 merge evidence: PR #182 merged at 216602e and Issue #73 was explicitly closed after GitHub did not apply the PR closing keyword automatically. P0-07 #116 and P0-08 #117 were reconciled to status:ready; P0-08 dependencies now match the canonical Phase 0/1 graph."
+    "P0-09 merge evidence: PR #182 merged at 216602e and Issue #73 was explicitly closed after GitHub did not apply the PR closing keyword automatically. P0-07 #116 and P0-08 #117 were reconciled to status:ready; P0-08 dependencies now match the canonical Phase 0/1 graph.",
+    "GOV-P0d pending verification: docs/governance/phase-dependency-graph.md supersedes the former Phase 0/1 graph, adds Phase 2/3 trigger-gated controls and lane ownership, and awaits docs checks plus architecture review.",
+    "GOV-P0d metadata observation: #102 now names the Phase 0 through Phase 3 control map and links the renamed registered graph; the graph scan found #196/#197 as the active P0-07 execution Issues and records their PR #198/#199 handoff."
   ],
   "readingOrder": [
     {
@@ -113,8 +115,8 @@
       "reason": "Compare the frozen target with the latest evidence-based implementation audit."
     },
     {
-      "path": "docs/governance/phase-0-1-dependency-graph.md",
-      "reason": "Resolve the one canonical owner, dependencies, trigger gates, and historical migrations before taking any Issue."
+      "path": "docs/governance/phase-dependency-graph.md",
+      "reason": "Resolve the one canonical owner, physical lane, dependencies, trigger gates, and historical migrations before taking any Issue."
     },
     {
       "path": "docs/modules/README.md",
