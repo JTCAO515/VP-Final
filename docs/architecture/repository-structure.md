@@ -8,7 +8,7 @@
 | `packages/ai` | AI runtime | Provider-neutral model router, effort, usage, and cost types | Router skeleton; only static test provider |
 | `packages/api-client` | API | Typed tRPC client derived from the server router | Implemented; external server endpoint is not yet deployed |
 | `packages/ui` | Design system | Shared tokens and web/native primitive contracts | Placeholder |
-| `apps/server` | Backend | Modular tRPC router, services, DB adapters, two-pass Trip completion | Partially implemented |
+| `apps/server` | Backend | Modular tRPC router, services, DB adapters, two-pass Trip completion, and injected AI route executor | Partially implemented |
 | `apps/web` | Traveler Web | Next.js product and public acquisition surfaces | Implemented MVP shell; not production-ready |
 | `apps/ops` | Operations | Fact, gap, and Human Task workflows | Implemented shell; auth and persistence incomplete |
 | `apps/mobile` | Mobile | Future Expo execute-stage application | Placeholder by roadmap decision |
@@ -48,6 +48,8 @@ The structure is ahead of production readiness. The following distinctions must 
 
 - A schema or service interface may exist while its durable adapter is incomplete.
 - A static provider or in-memory store is a test/demo adapter, not production evidence.
+- The Server may depend on `packages/ai` for provider-neutral route execution, but only an explicit
+  composition root may wire it into a deployed Copilot request path.
 - A merged UI is not proof that authentication, payment, partner approval, or operational SLA exists.
 - The Mobile package is intentionally a compilation placeholder until Phase 1 triggers are met.
 
