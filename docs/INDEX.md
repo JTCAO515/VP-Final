@@ -9,25 +9,25 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 ## Current Handoff Snapshot
 
-- **Updated:** 2026-07-12 by Codex / DEMO-01 provider inventory
+- **Updated:** 2026-07-13 by Codex / GOV #139 Phase dependency and lane delta
 - **Base branch:** `main`
-- **Last fully verified commit:** `9e4d5a1`
+- **Last fully verified commit:** `8470461`
 - **Current phase:** Phase 0 — production hardening
 - **Maturity:** Trusted demo skeleton; not yet a production-safe or billing-ready MVP.
-- **Last completed control action:** PR #193 merged P0-08a fact eligibility lifecycle after Verify, Database contracts, Docs, Evals, and Vercel previews passed.
+- **Last completed control action:** PR #195 merged the v3 provider inventory/readiness boundary at 8470461. It makes no live-provider success claim; corrected mainline PRs #205/#206/#207 remain in architecture review.
 
 ### Active Work
 
 | Ref | Work | State | Owner | Next action |
 | --- | --- | --- | --- | --- |
-| Issue #116 / DEMO-01a | Real LLM provider inventory and self-check | Implementation active: v3 provider/key/model-slot inventory and safe readiness diagnostics. No Copilot wiring, real call, key, or mock-success claim is included in this boundary. | Codex | Run full repository gates, submit the provider-inventory PR, then separately wire model routing, envelope repair, and trace attempts. |
+| Issue #139 / GOV-P0d | Extend the canonical phase dependency graph and assign lanes | Documentation implementation active: rename the former Phase 0/1 graph, add Phase 2/3 trigger-gated controls, and record Codex/Architecture/Operator lanes without changing product scope. | Codex | Run graph scan and documentation checks, synchronize INDEX, update #102 navigation metadata, then submit the docs-only PR for architecture review. |
 
 ### Immediate Queue
 
 | Priority | Control action | Exit criteria |
 | --- | --- | --- |
-| P0 | Complete P0-08a #191 before retrieval code: freeze draft/reviewed/deprecated/rejected lifecycle plus explicit legacy active ineligibility in packages/domain. | Schema and pure-function tests prove only current reviewed evidence can be eligible, then P0-08b may consume the contract. |
-| P0 | P0-08 #117 is independently status:ready after its dependency correction; schedule retrieval/citation work only in a separate branch/PR from P0-07. | Knowledge retrieval work consumes only eligible facts, validates citation allowlists, and retains no raw prompt in gaps. |
+| P0 | Submit GOV #139 graph delta after the open-Issue scan and documentation checks pass; keep Phase 2/3 work trigger-gated. | #102, the dependency graph, handoff, manifest, and generated Index agree on owners, lanes, blockers, and the Phase 0 through Phase 3 control map. |
+| P0 | Obtain architecture review for review-pending PRs #195, #198, #199, #200, #201, and #202 only after their green CI evidence is visible. | Each PR follows #181: mark ready and request review, then let an authorized maintainer merge or return corrections. |
 | P0 | Keep P0-07b #188 blocked until OA-005 has recorded operator provider setup; do not imply that P0-07a's adapter is a live Copilot integration. | OA-005 includes sanitized provider setup/staging evidence, then #188 can compose the adapter into the typed Copilot pipeline. |
 | P0 | Before any external service claim, update the operator-action register with placeholder, owner, verification, and novice tutorial steps. | No third-party API, payment, deployment, DNS, or store capability is presented as live without recorded operator verification. |
 
@@ -49,7 +49,7 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 - Issue #135 local verification passed: both Skills validated, 66 controlled documents passed docs checks/impact, and pnpm typecheck, lint, test, build, and evals passed.
 - GOV-P0a metadata verification: #73 is the canonical P0-09 owner; open blocked-by references to completed baseline Issues were replaced with active canonical dependencies; closed duplicate #125 points to #124 and #130 points to #129.
 - GOV-P0b metadata verification: canonical P0-13 through P0-20 are #150 through #157; V2-42 through V2-50 and V2-52 through V2-58 retain historical bodies with status:superseded and a top link to their sole canonical owner.
-- GOV-P0c verification: docs/governance/phase-0-1-dependency-graph.md is registered as the dependency source of truth; #102 now links canonical owners, retained standalone V2 work, hard Stripe/Rescue gates, and the manual API validation procedure.
+- GOV-P0c historical verification: the former Phase 0/1 dependency graph was registered as the dependency source of truth; #102 links canonical owners, retained standalone V2 work, hard Stripe/Rescue gates, and the manual API validation procedure.
 - GOV-P0 merge evidence: PRs #149, #160, and #161 passed repository checks and merged to main; DOC-P0-01 is now the active documentation-first control action.
 - DOC-P0-01 merge evidence: PR #140 passed database contracts, verify, docs, evals, and Vercel previews before merging; ADR-0004 is accepted and Issue #131 is closed.
 - DOC-P0-02 and DOC-P0-03 merge evidence: PRs #162 and #163 accepted ADR-0005 and ADR-0006 after repository checks passed.
@@ -81,6 +81,8 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 - P0-09 first Database contracts CI observation on PR #182: migration reset and prior checks reached the new adapter suite, which failed because its authenticated fixture inserted public.users before the required auth.users row. The fixture now mirrors the existing trusted auth seed order; the production adapter/migration is unchanged and CI rerun remains required.
 - P0-09 corrected CI evidence on PR #182: Verify, Docs, Evals, Database contracts, and Vercel Preview Comments all passed. Database contracts replayed the migration, ran pgTAP security checks, ran the authenticated/anonymous/no-identity adapter plus Copilot integration tests, and ran security advisors. Production OA-004 purge scheduling remains unverified and is not claimed.
 - P0-09 merge evidence: PR #182 merged at 216602e and Issue #73 was explicitly closed after GitHub did not apply the PR closing keyword automatically. P0-07 #116 and P0-08 #117 were reconciled to status:ready; P0-08 dependencies now match the canonical Phase 0/1 graph.
+- GOV-P0d pending verification: docs/governance/phase-dependency-graph.md supersedes the former Phase 0/1 graph, adds Phase 2/3 trigger-gated controls and lane ownership, and awaits docs checks plus architecture review.
+- GOV-P0d metadata observation: #102 now names the Phase 0 through Phase 3 control map and links the renamed registered graph; the graph scan found #196/#197 as the active P0-07 execution Issues and records their PR #198/#199 handoff.
 
 ## Mandatory Markdown Reading Order
 
@@ -93,7 +95,7 @@ Issue, current branch/diff, and only the task-specific module/constraint/runbook
 4. [Composite Engineering Baseline](governance/composite-engineering-baseline.md) — See authority, precedence, reading order, document classes, implementation gate, verification, and handoff as one portable baseline.
 5. [VisePanda V2 Frozen Product Baseline](planning/visepanda-v2-final-architecture.md) — Read the frozen product, commercial, architecture, roadmap, and anti-goal baseline.
 6. [VisePanda V2 Project Review — 2026-07-10](planning/visepanda-v2-project-review-2026-07-10.md) — Compare the frozen target with the latest evidence-based implementation audit.
-7. [Phase 0/1 Dependency Graph](governance/phase-0-1-dependency-graph.md) — Resolve the one canonical owner, dependencies, trigger gates, and historical migrations before taking any Issue.
+7. [Phase Dependency Graph](governance/phase-dependency-graph.md) — Resolve the one canonical owner, physical lane, dependencies, trigger gates, and historical migrations before taking any Issue.
 8. [Module Guide](modules/README.md) — Choose the module document that owns the assigned work and inspect its real maturity.
 9. [Constraint Guide](constraints/README.md) — Load the mandatory architecture, coding, business, permission, deployment, and iteration rules.
 10. [Karpathy Coding Discipline](constraints/karpathy-guidelines.md) — Apply explicit assumptions, minimum sufficient design, surgical diffs, and step-to-check verification during implementation.
@@ -198,7 +200,7 @@ How documents, Issues, pull requests, decisions, and lifecycle evidence are mana
 | [Issue and PR Workflow](governance/issue-pr-workflow.md) | constraint | active | overall design | Issue/PR lifecycle, merge gates, multi-Agent rules, and emergency fixes. |
 | [Operator Action Register](governance/operator-action-register.md) | constraint | active | operator / overall design | Authoritative status, placeholders, owners, external setup gates, verification, and rollback for operator-only actions. |
 | [Operator Action Tutorial Template](governance/operator-action-tutorial-template.md) | reference | active | operator / delivery agent | Beginner-friendly Chinese template for safely executing and verifying registered external actions without exposing secrets. |
-| [Phase 0/1 Dependency Graph](governance/phase-0-1-dependency-graph.md) | reference | active | overall design | Canonical Phase 0/1 Issue ownership, blockers, migration map, lifecycle gates, and backlog-validation procedure. |
+| [Phase Dependency Graph](governance/phase-dependency-graph.md) | reference | active | overall design | Canonical Phase 0 through Phase 3 Issue ownership, lanes, blockers, triggers, and backlog-validation procedure. |
 
 ## Architecture Decisions
 
