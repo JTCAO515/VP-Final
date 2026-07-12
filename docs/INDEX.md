@@ -9,24 +9,24 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 ## Current Handoff Snapshot
 
-- **Updated:** 2026-07-11 by Codex / Issue #175
+- **Updated:** 2026-07-12 by Codex / Issue #73
 - **Base branch:** `main`
-- **Last fully verified commit:** `98ba3f0`
+- **Last fully verified commit:** `184b64d`
 - **Current phase:** Phase 0 — production hardening
 - **Maturity:** Trusted demo skeleton; not yet a production-safe or billing-ready MVP.
-- **Last completed control action:** PR #179 merged P0-06c Web durable composition after all checks including two-instance Database contracts passed.
+- **Last completed control action:** PR #180 merged P0-06d Ops Knowledge convergence and pending-ledger quarantine after all repository and Database contracts checks passed.
 
 ### Active Work
 
 | Ref | Work | State | Owner | Next action |
 | --- | --- | --- | --- | --- |
-| Issue #175 / P0-06d | Converge Ops Knowledge and quarantine unowned memory routes | Ops Knowledge convergence and pending-ledger quarantine implemented locally; full gates and Database contracts remain | Codex | Run full gates and Ops two-instance Database contracts, merge, then close parent P0-06 and recompute the canonical Phase 0 queue. |
+| Issue #73 / P0-09 | Persist anonymous-safe Agent traces and provider-cost evidence | Additive trace migration, server adapter, Copilot injection, safe-metadata tests, and 30-day retention ADR have passed the full PR #182 CI suite; awaiting review/merge | Codex | Merge PR #182 after review, record the landed commit, then start P0-07 only after confirming the canonical dependency graph remains current. |
 
 ### Immediate Queue
 
 | Priority | Control action | Exit criteria |
 | --- | --- | --- |
-| P0 | Complete P0-06d #175 without implementing later Human Task, Outbound, Telemetry, or Trace business workflows. | Ops Knowledge is durable, pending production ledgers are quarantined with 503, and route inventory shows no acknowledged process-memory production write. |
+| P0 | Complete P0-09 #73 without implementing real provider, retrieval, telemetry, or commercial workflows owned by later canonical Issues. | Agent and tool trace metadata persists through the server-owned Postgres adapter for anonymous/authenticated/none identities, raw payloads are redacted, retention is enforceable, and trace failure does not change Copilot results. |
 | P0 | Start only Phase 0 Issues whose document-first and canonical dependency gates are ready in the graph. | No feature PR starts from a superseded V2 Issue or before its accepted ADR/policy and canonical dependency gates. |
 | P0 | Before any external service claim, update the operator-action register with placeholder, owner, verification, and novice tutorial steps. | No third-party API, payment, deployment, DNS, or store capability is presented as live without recorded operator verification. |
 
@@ -35,7 +35,7 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 - P0-03 and P0-04 code are merged, but real Supabase evidence still awaits OA-001 through OA-004 before production readiness can be claimed.
 - Ops RBAC code is merged; real first-admin and deployed role evidence awaits OA-010.
 - Copilot model calls and knowledge retrieval remain deterministic/stubbed in the audited main branch.
-- Human Task, outbound click, telemetry, and AI trace runtime persistence are incomplete.
+- Human Task, outbound click, and telemetry runtime persistence are incomplete; P0-09 trace persistence awaits Database contracts CI before merge evidence exists.
 - Real payment evidence, rate limiting, observability, legal pages, and production smoke gates are incomplete.
 
 ### Last Verification Evidence
@@ -74,6 +74,11 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 - P0-06c focused evidence: seven local Web tests pass for missing-mode/database fail-closed behavior, explicit test injection, local-demo selection, typed route 503, and owner/version/share behavior. Real two-instance Postgres durability is added to Database contracts CI and is not claimed locally because Docker is absent.
 - P0-06c merge evidence: PR #179 passed Verify in 1m44s, Database contracts in 2m39s including two independent Web composition instances, docs, evals, and both Vercel previews before merging at 98ba3f0.
 - P0-06d focused evidence: Ops Knowledge explicit test injection and pending capability quarantine tests pass. Human Help, Outbound, and Ops Task fixture ledgers return 503 outside explicit test/local-demo; real Ops Knowledge two-instance persistence awaits Database contracts CI.
+- P0-06d merge evidence: PR #180 passed Verify, Database contracts in 2m47s, docs, evals, and both Vercel previews before merging at 184b64d.
+- P0-09 local evidence: Server typecheck/build and 64 unit tests pass; Web typecheck and 20 tests pass. New unit tests cover anonymous safe metadata, validation failure normalization, and non-blocking trace failure. Database integration/pgTAP tests are present but skipped without DATABASE_URL.
+- P0-09 local database limitation: Supabase CLI 2.109.1 is installed, but `supabase db reset --local --no-seed --workdir infra` cannot run because Docker daemon is unavailable. No local migration, pgTAP, adapter, advisor, or production-retention pass is claimed; CI Database contracts is required.
+- P0-09 first Database contracts CI observation on PR #182: migration reset and prior checks reached the new adapter suite, which failed because its authenticated fixture inserted public.users before the required auth.users row. The fixture now mirrors the existing trusted auth seed order; the production adapter/migration is unchanged and CI rerun remains required.
+- P0-09 corrected CI evidence on PR #182: Verify, Docs, Evals, Database contracts, and Vercel Preview Comments all passed. Database contracts replayed the migration, ran pgTAP security checks, ran the authenticated/anonymous/no-identity adapter plus Copilot integration tests, and ran security advisors. Production OA-004 purge scheduling remains unverified and is not claimed.
 
 ## Mandatory Markdown Reading Order
 
@@ -206,6 +211,7 @@ Append-only records of accepted and superseded binding decisions.
 | [ADR-0004: Identity and Trip Ownership Security](adr/ADR-0004-identity-trip-ownership-security.md) | decision | accepted | security / architecture | Freezes server-verified identity, exclusive Trip ownership, read-only sharing, and optimistic concurrency before public persistence. |
 | [ADR-0005: Runtime Modes and Production Adapter Ownership](adr/ADR-0005-runtime-modes-and-production-adapter-ownership.md) | decision | accepted | architecture / platform | Freezes explicit modes, durable production ownership, truthful health, and the prohibition on silent memory fallback. |
 | [ADR-0006: Knowledge Evidence and Index Quality](adr/ADR-0006-knowledge-evidence-and-index-quality.md) | decision | accepted | knowledge / architecture | Freezes evidence eligibility, citations, gap minimization, and quality-gated SEO indexing. |
+| [ADR-0007: Agent Trace Privacy and Retention](adr/ADR-0007-agent-trace-privacy-retention.md) | decision | accepted | security / platform | Freezes minimized server-only AI trace metadata, 30-day retention, purge responsibility, and no-raw-payload rules. |
 
 ## Runbooks
 

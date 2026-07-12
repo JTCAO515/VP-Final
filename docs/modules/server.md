@@ -17,6 +17,7 @@ Next.js runtimes rather than deployed as an independent service.
 - `knowledge`: POI/fact/gap reads and operations workflow.
 - `task`: Human Task creation and updates.
 - `telemetry`: event validation and ingestion interface.
+- `trace`: private agent-run and tool-call metadata recording.
 
 `identity` and `commerce` directories reserve domain boundaries but are not complete production
 modules yet.
@@ -33,7 +34,9 @@ modules yet.
 
 ## Current State
 
-- Trip and knowledge have in-memory and Postgres adapters.
+- Trip, knowledge, and agent trace have in-memory and Postgres adapters. Trace records use one trusted
+  authenticated identity, one signed anonymous identity, or neither; they persist only digests and
+  allowlisted operational metadata. Provider/tool payloads and raw errors are excluded.
 - Copilot has a deterministic default router, stub retrieval, deterministic envelope generation, and
   deterministic day completion.
 - Knowledge, Human Task, and Telemetry routers require a service selected by the composition root;
@@ -77,6 +80,8 @@ state.
 - [ADR-0005](../adr/ADR-0005-runtime-modes-and-production-adapter-ownership.md) freezes explicit modes, single durable production owners, and the prohibition on implicit production memory fallback.
 - [ADR-0004](../adr/ADR-0004-identity-trip-ownership-security.md) freezes the target identity,
   owner, share, claim, and optimistic-concurrency contract for P0-03/P0-04.
+- [ADR-0007](../adr/ADR-0007-agent-trace-privacy-retention.md) freezes trace minimization, restricted
+  retention, and non-blocking trace persistence. Real provider attempt production data remains P0-07.
 
 ## Verification
 

@@ -697,6 +697,20 @@
         "apps/ops/"
       ]
     },
+    {
+      "path": "docs/adr/ADR-0007-agent-trace-privacy-retention.md",
+      "title": "ADR-0007: Agent Trace Privacy and Retention",
+      "category": "decisions",
+      "type": "decision",
+      "status": "accepted",
+      "owner": "security / platform",
+      "summary": "Freezes minimized server-only AI trace metadata, 30-day retention, purge responsibility, and no-raw-payload rules.",
+      "sourcePrefixes": [
+        "apps/server/src/modules/trace/",
+        "apps/server/src/db/agentTraceService.ts",
+        "infra/supabase/migrations/20260712090000_anonymous_safe_agent_trace.sql"
+      ]
+    },
 
     {
       "path": "docs/runbooks/README.md",

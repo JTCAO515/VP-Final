@@ -31,7 +31,7 @@ returns connection strings or credentials.
 | Human Tasks | Server Human Task service + Postgres adapter | Production fixture routes quarantined | App-local task ledger | P0-13 #150 |
 | Outbound clicks/partners | Server Commerce service + Postgres adapter | Production fixture route quarantined | Memory click ledger/raw redirect | P0-18 #155 |
 | Telemetry | Server Telemetry service + Postgres adapter | Not implemented for production | Per-route event array | P0-19 #156 |
-| Agent traces/tool calls | Server Trace service + Postgres adapter | Not implemented for production | Provider-log-only record | P0-09 #73 |
+| Agent traces/tool calls | Server Trace service + Postgres adapter | P0-09 implementation pending verification | Provider-log-only record | P0-09 #73 |
 
 P0-06 does not steal the later business workflows. Until their canonical Issue lands, a deployed
 route that would accept those writes must be unavailable rather than acknowledge a process-memory

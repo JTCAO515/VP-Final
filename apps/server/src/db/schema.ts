@@ -1,5 +1,6 @@
 import { relations } from "drizzle-orm";
 import {
+  boolean,
   check,
   index,
   integer,
@@ -97,24 +98,37 @@ export const agentRuns = pgTable(
   "agent_runs",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    userId: uuid("user_id")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
+    userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }),
+    anonId: text("anon_id"),
     tripId: uuid("trip_id").references(() => trips.id, { onDelete: "set null" }),
     intent: text("intent"),
     status: text("status").notNull(),
     inputJsonb: jsonb("input_jsonb").notNull().default({}),
     outputJsonb: jsonb("output_jsonb").notNull().default({}),
     error: text("error"),
+    inputDigest: text("input_digest"),
+    outputDigest: text("output_digest"),
     modelProvider: text("model_provider"),
     model: text("model"),
     effort: text("effort"),
+    inputTokens: integer("input_tokens").notNull().default(0),
+    outputTokens: integer("output_tokens").notNull().default(0),
     costUsd: numeric("cost_usd", { precision: 12, scale: 6 }).notNull().default("0"),
+    latencyMs: integer("latency_ms").notNull().default(0),
+    attemptsJsonb: jsonb("attempts_jsonb").notNull().default([]),
+    fallbackUsed: boolean("fallback_used").notNull().default(false),
+    validationStatus: text("validation_status").notNull().default("passed"),
+    repairCount: integer("repair_count").notNull().default(0),
+    failureClass: text("failure_class"),
+    expiresAt: timestamp("expires_at", { withTimezone: true })
+      .notNull()
+      .default(sql`now() + interval '30 days'`),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     completedAt: timestamp("completed_at", { withTimezone: true }),
   },
   (table) => ({
     userCreatedIdx: index("agent_runs_user_created_idx").on(table.userId, table.createdAt),
+    anonCreatedIdx: index("agent_runs_anon_created_idx").on(table.anonId, table.createdAt),
     tripCreatedIdx: index("agent_runs_trip_created_idx").on(table.tripId, table.createdAt),
     statusCheck: check(
       "agent_runs_status_check",
@@ -125,6 +139,20 @@ export const agentRuns = pgTable(
       sql`${table.effort} is null or ${table.effort} in ('low', 'medium', 'high')`,
     ),
     costCheck: check("agent_runs_cost_usd_check", sql`${table.costUsd} >= 0`),
+    identityCheck: check(
+      "agent_runs_at_most_one_identity_check",
+      sql`num_nonnulls(${table.userId}, ${table.anonId}) <= 1`,
+    ),
+    tokenCheck: check(
+      "agent_runs_token_counts_check",
+      sql`${table.inputTokens} >= 0 and ${table.outputTokens} >= 0`,
+    ),
+    latencyCheck: check("agent_runs_latency_ms_check", sql`${table.latencyMs} >= 0`),
+    repairCheck: check("agent_runs_repair_count_check", sql`${table.repairCount} >= 0`),
+    validationCheck: check(
+      "agent_runs_validation_status_check",
+      sql`${table.validationStatus} in ('passed', 'failed')`,
+    ),
   }),
 );
 
@@ -140,6 +168,10 @@ export const toolCalls = pgTable(
     inputJsonb: jsonb("input_jsonb").notNull().default({}),
     outputJsonb: jsonb("output_jsonb").notNull().default({}),
     error: text("error"),
+    inputDigest: text("input_digest"),
+    outputDigest: text("output_digest"),
+    latencyMs: integer("latency_ms").notNull().default(0),
+    failureClass: text("failure_class"),
     startedAt: timestamp("started_at", { withTimezone: true }).notNull().defaultNow(),
     completedAt: timestamp("completed_at", { withTimezone: true }),
   },
@@ -152,6 +184,7 @@ export const toolCalls = pgTable(
       "tool_calls_status_check",
       sql`${table.status} in ('started', 'succeeded', 'failed')`,
     ),
+    latencyCheck: check("tool_calls_latency_ms_check", sql`${table.latencyMs} >= 0`),
   }),
 );
 

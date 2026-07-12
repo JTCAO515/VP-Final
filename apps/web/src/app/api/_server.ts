@@ -1,12 +1,15 @@
 import {
   appRouter,
   createDb,
+  createDbAgentTraceService,
   createDbKnowledgeService,
   createDbVersionedTripService,
   createInMemoryKnowledgeService,
+  createInMemoryAgentTraceService,
   createVersionedInMemoryTripService,
   resolveDatabaseAdapter,
   resolveRuntimeMode,
+  type AgentTraceService,
   type KnowledgeService,
   type RequestIdentity,
   type VersionedTripService,
@@ -15,6 +18,7 @@ import {
 type Environment = Readonly<Record<string, string | undefined>>;
 type WebServerServices = {
   knowledgeService: KnowledgeService;
+  traceService: AgentTraceService;
   tripService: VersionedTripService;
 };
 
@@ -59,6 +63,7 @@ export function createWebServerServices(environment: Environment): WebServerServ
   if (availability.adapter === "memory-demo") {
     return {
       knowledgeService: createInMemoryKnowledgeService(),
+      traceService: createInMemoryAgentTraceService(),
       tripService: createVersionedInMemoryTripService(),
     };
   }
@@ -68,6 +73,7 @@ export function createWebServerServices(environment: Environment): WebServerServ
   const db = createDb(databaseUrl);
   return {
     knowledgeService: createDbKnowledgeService(db),
+    traceService: createDbAgentTraceService(db),
     tripService: createDbVersionedTripService(db),
   };
 }

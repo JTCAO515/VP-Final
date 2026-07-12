@@ -10,7 +10,7 @@ advice; binding decisions require operator approval and, when needed, qualified 
 | Privacy | Store only needed user/account/trip/task data | Privacy policy draft |
 | Payments | Human Task external payment pending routing decision; Trip Pass must consider IAP | Payment compliance ADR |
 | AI safety | High-risk advice routes to official/professional channels | Safety eval set expansion |
-| Data retention | No final retention schedule yet | Retention runbook / ADR |
+| AI trace retention | 30-day server-only metadata retention; daily purge pending OA-004 production verification | [ADR-0007](../adr/ADR-0007-agent-trace-privacy-retention.md) |
 | Commercial disclosure | Required for partner links and paid tasks | Disclosure copy inventory |
 
 ## Hard Rules

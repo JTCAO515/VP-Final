@@ -42,6 +42,13 @@ commercial evidence, Human Tasks, and telemetry. Repository migrations are the s
   Data API grants. Supabase Auth proves identity; `ops_memberships` independently grants authority.
 - Service-role and database credentials never enter a public client.
 
+P0-09 extends `agent_runs` with exclusive verified-user/signed-anonymous identity, provider/model,
+token/cost/latency, validation/repair, normalized failure, and `expires_at` metadata. `tool_calls`
+stores only tool metadata and digests. Both relations are server-only, redact legacy raw payload
+columns during migration, and are retained for 30 days under [ADR-0007](../adr/ADR-0007-agent-trace-privacy-retention.md).
+The `internal.purge_expired_agent_traces()` routine is restricted from Data API roles; daily production
+scheduling remains part of OA-004 verification and is not yet claimed as deployed evidence.
+
 P0-04b migration `20260711001932_exclusive_trip_owner.sql` converts any legacy dual-owner row to its
 authenticated owner, then replaces the previous at-least-one check with
 `num_nonnulls(owner, anon_id) = 1`. The versioned Postgres adapter scopes every private query by the

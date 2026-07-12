@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createInMemoryKnowledgeService } from "../knowledge/service.js";
+import { createInMemoryAgentTraceService } from "../trace/service.js";
 import { createVersionedInMemoryTripService } from "../trip/versionedService.js";
 import { createCopilotPipeline, defaultRouteIntent } from "./service.js";
 
@@ -112,8 +113,10 @@ describe("createCopilotPipeline", () => {
   });
 
   it("rejects generator output that does not match CopilotEnvelope", async () => {
+    const traceService = createInMemoryAgentTraceService();
     const pipeline = createCopilotPipeline({
       tripService: createVersionedInMemoryTripService(),
+      traceService,
       generateEnvelope: () => ({
         intent: "question",
         message: { headline: "Bad", body: "Bad", highlights: "not-an-array" },
@@ -121,5 +124,51 @@ describe("createCopilotPipeline", () => {
     });
 
     await expect(pipeline.run({ message: "How does this work?" }, identity)).rejects.toThrow();
+    expect(traceService.listRuns()).toMatchObject([
+      {
+        identity,
+        status: "failed",
+        validationStatus: "failed",
+        failureClass: "validation_error",
+      },
+    ]);
+    expect(JSON.stringify(traceService.listRuns())).not.toContain("How does this work?");
+  });
+
+  it("records anonymous success without retaining prompt or response text", async () => {
+    const traceService = createInMemoryAgentTraceService();
+    const pipeline = createCopilotPipeline({
+      tripService: createVersionedInMemoryTripService(),
+      traceService,
+    });
+
+    await pipeline.run({ message: "Private travel request" }, identity);
+
+    expect(traceService.listRuns()).toMatchObject([
+      {
+        identity,
+        status: "succeeded",
+        validationStatus: "passed",
+        attempts: [],
+      },
+    ]);
+    const serialized = JSON.stringify(traceService.listRuns());
+    expect(serialized).not.toContain("Private travel request");
+    expect(serialized).not.toContain("I can help");
+  });
+
+  it("does not fail a successful Copilot response when trace persistence fails", async () => {
+    const pipeline = createCopilotPipeline({
+      tripService: createVersionedInMemoryTripService(),
+      traceService: {
+        async recordRun() {
+          throw new Error("trace database unavailable");
+        },
+      },
+    });
+
+    await expect(pipeline.run({ message: "Hello there" }, identity)).resolves.toMatchObject({
+      envelope: { intent: "chat_only" },
+    });
   });
 });

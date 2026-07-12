@@ -31,7 +31,7 @@ the outbound gateway.
 
 The Next.js API layer creates an in-process server caller through one composition root. Explicit
 `preview`, `staging`, and `production` modes require `DATABASE_URL` and select only the existing
-Postgres Trip and Knowledge adapters. Missing/invalid mode or database configuration returns typed
+Postgres Trip, Knowledge, and Agent Trace adapters. Missing/invalid mode or database configuration returns typed
 503 `RUNTIME_UNAVAILABLE`; it never selects memory. Tests inject services explicitly. Only explicit
 `local-demo` may use a process-cached, non-durable memory pair. The selected durable service pair is
 also process-cached so requests reuse the Postgres pool; persistence remains in Postgres across cold
@@ -59,6 +59,11 @@ still depends on OA-001 through OA-003.
 
 Human Help and outbound fixture ledgers remain for explicit test/local-demo only. Deployed requests
 return 503 `CAPABILITY_UNAVAILABLE` until P0-13 and P0-18 implement their durable owners.
+
+Copilot writes a best-effort private Agent Trace after a validated result or failure. A trace write
+failure cannot alter the public response or Trip state. Trace records follow
+[ADR-0007](../adr/ADR-0007-agent-trace-privacy-retention.md) and never contain raw prompts, envelope
+payloads, cookies, credentials, or narrative errors.
 
 ## UI Rules
 

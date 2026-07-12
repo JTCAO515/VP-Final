@@ -13,6 +13,7 @@ export const copilotRouter = router({
   run: publicProcedure.input(CopilotRunInputSchema).mutation(({ ctx, input }) => {
     return createCopilotPipeline({
       ...(ctx.knowledgeService ? { knowledgeService: ctx.knowledgeService } : {}),
+      ...(ctx.traceService ? { traceService: ctx.traceService } : {}),
       tripService: ctx.tripService,
     }).run(input, requireTripIdentity(ctx.identity));
   }),

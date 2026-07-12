@@ -30,6 +30,8 @@ Status: active
 - Personal data, prompts, transcripts, and payment evidence MUST be minimized and excluded from routine
   logs and telemetry.
 - Deletion/export/retention behavior MUST be documented before collecting a new personal-data class.
+- AI trace data MUST follow ADR-0007: server-only allowlisted metadata/digests, one verified or signed
+  identity at most, no raw payload/error storage, and an enforceable retention deadline.
 
 Verification: RLS contract tests, route authorization tests, client bundle review, audit events, and
 privacy documentation.
