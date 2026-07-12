@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "updatedAt": "2026-07-13",
-  "updatedBy": "Codex / GOV #139 Phase dependency and lane delta",
+  "updatedBy": "Codex / GOV #181 independent merge gate",
   "baseBranch": "main",
   "lastVerifiedCommit": "170825d",
   "currentPhase": "Phase 0 — production hardening",
@@ -9,18 +9,18 @@
   "lastCompleted": "PR #202 is ready for architecture review after canonicalizing red-gold design tokens in @visepanda/ui. It is not merged; P0-12 may consume its interface only after review/merge.",
   "activeWork": [
     {
-      "ref": "Issue #139 / GOV-P0d",
-      "title": "Extend the canonical phase dependency graph and assign lanes",
-      "state": "Documentation implementation active: rename the former Phase 0/1 graph, add Phase 2/3 trigger-gated controls, and record Codex/Architecture/Operator lanes without changing product scope.",
+      "ref": "Issue #181 / GOV",
+      "title": "Enforce independent architecture review before merge",
+      "state": "Documentation implementation active: codify that implementation Agents stop after green checks and leave PR merge authority to architecture or the operator.",
       "owner": "Codex",
-      "next": "Run graph scan and documentation checks, synchronize INDEX, update #102 navigation metadata, then submit the docs-only PR for architecture review."
+      "next": "Run documentation checks, submit the governance-only PR, and request architecture review after its CI is green."
     }
   ],
   "nextActions": [
     {
       "priority": "P0",
-      "action": "Submit GOV #139 graph delta after the open-Issue scan and documentation checks pass; keep Phase 2/3 work trigger-gated.",
-      "exitCriteria": "#102, the dependency graph, handoff, manifest, and generated Index agree on owners, lanes, blockers, and the Phase 0 through Phase 3 control map."
+      "action": "Land GOV #181 before any further implementation PR is merged: the implementation author verifies checks, requests architecture review, and does not self-merge.",
+      "exitCriteria": "AGENTS.md, the Issue/PR workflow, handoff, and generated Index state the independent merge gate; every future PR follows it."
     },
     {
       "priority": "P0",
@@ -87,7 +87,8 @@
     "P0-09 corrected CI evidence on PR #182: Verify, Docs, Evals, Database contracts, and Vercel Preview Comments all passed. Database contracts replayed the migration, ran pgTAP security checks, ran the authenticated/anonymous/no-identity adapter plus Copilot integration tests, and ran security advisors. Production OA-004 purge scheduling remains unverified and is not claimed.",
     "P0-09 merge evidence: PR #182 merged at 216602e and Issue #73 was explicitly closed after GitHub did not apply the PR closing keyword automatically. P0-07 #116 and P0-08 #117 were reconciled to status:ready; P0-08 dependencies now match the canonical Phase 0/1 graph.",
     "GOV-P0d pending verification: docs/governance/phase-dependency-graph.md supersedes the former Phase 0/1 graph, adds Phase 2/3 trigger-gated controls and lane ownership, and awaits docs checks plus architecture review.",
-    "GOV-P0d metadata observation: #102 now names the Phase 0 through Phase 3 control map and links the renamed registered graph; the graph scan found #196/#197 as the active P0-07 execution Issues and records their PR #198/#199 handoff."
+    "GOV-P0d metadata observation: #102 now names the Phase 0 through Phase 3 control map and links the renamed registered graph; the graph scan found #196/#197 as the active P0-07 execution Issues and records their PR #198/#199 handoff.",
+    "GOV #181 pending verification: AGENTS.md and the controlled Issue/PR workflow now require independent architecture or operator merge authority after checks are green; repository branch protection remains an operator-controlled reinforcement."
   ],
   "readingOrder": [
     {

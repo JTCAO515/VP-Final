@@ -50,6 +50,10 @@ pack. The frozen product baseline is `docs/planning/visepanda-v2-final-architect
 - Fill every PR template section: contracts, tests, evals, commercial tracking, rollback.
 - Update at least one mapped non-generated document for every source/config change.
 - Update `docs/handoff.json` for every repository change and regenerate `docs/INDEX.md`.
+- An implementation Agent MUST NOT approve or merge its own PR. After all required checks are green,
+  mark the PR ready, request architecture review, record the evidence, and stop. Only the
+  architecture owner or operator may merge; D2/D3 changes require the invariant review defined in
+  `docs/governance/issue-pr-workflow.md`.
 
 ## Schema First
 
