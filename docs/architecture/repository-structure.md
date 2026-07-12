@@ -40,6 +40,8 @@
   workspace package exports before a dependent package is typechecked.
 - `apps/web` and `apps/ops` declare `@visepanda/ui` as a workspace dependency and consume its public
   token export; they must not import package internals or duplicate core design values.
+- Workspace `typecheck` tasks build direct workspace dependencies first, so public declarations are
+  available in a clean CI checkout rather than only in a developer's cached `dist` directory.
 - Tests live beside the behavior they protect unless a database or end-to-end runner requires a
   dedicated directory.
 - Database changes are new migration files. Existing landed migrations are immutable.
