@@ -9,7 +9,7 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 ## Current Handoff Snapshot
 
-- **Updated:** 2026-07-13 by Codex / GOV #139 Phase dependency and lane delta
+- **Updated:** 2026-07-13 by Codex / GOV #181 independent merge gate
 - **Base branch:** `main`
 - **Last fully verified commit:** `8470461`
 - **Current phase:** Phase 0 — production hardening
@@ -20,14 +20,14 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 | Ref | Work | State | Owner | Next action |
 | --- | --- | --- | --- | --- |
-| Issue #139 / GOV-P0d | Extend the canonical phase dependency graph and assign lanes | Documentation implementation active: rename the former Phase 0/1 graph, add Phase 2/3 trigger-gated controls, and record Codex/Architecture/Operator lanes without changing product scope. | Codex | Run graph scan and documentation checks, synchronize INDEX, update #102 navigation metadata, then submit the docs-only PR for architecture review. |
+| Issue #181 / GOV | Enforce independent architecture review before merge | Documentation implementation active: codify that implementation Agents stop after green checks and leave PR merge authority to architecture or the operator. | Codex | Run documentation checks, submit the governance-only PR, and request architecture review after its CI is green. |
 
 ### Immediate Queue
 
 | Priority | Control action | Exit criteria |
 | --- | --- | --- |
-| P0 | Submit GOV #139 graph delta after the open-Issue scan and documentation checks pass; keep Phase 2/3 work trigger-gated. | #102, the dependency graph, handoff, manifest, and generated Index agree on owners, lanes, blockers, and the Phase 0 through Phase 3 control map. |
-| P0 | Obtain architecture review for review-pending PRs #195, #198, #199, #200, #201, and #202 only after their green CI evidence is visible. | Each PR follows #181: mark ready and request review, then let an authorized maintainer merge or return corrections. |
+| P0 | Land GOV #181 before any further implementation PR is merged: the implementation author verifies checks, requests architecture review, and does not self-merge. | AGENTS.md, the Issue/PR workflow, handoff, and generated Index state the independent merge gate; every future PR follows it. |
+| P0 | Obtain architecture review for corrected mainline PRs #205, #206, and #207, plus review-pending #200 and #202, only after their green CI evidence is visible. | Each PR follows #181: mark ready and request review, then let an authorized maintainer merge or return corrections. |
 | P0 | Keep P0-07b #188 blocked until OA-005 has recorded operator provider setup; do not imply that P0-07a's adapter is a live Copilot integration. | OA-005 includes sanitized provider setup/staging evidence, then #188 can compose the adapter into the typed Copilot pipeline. |
 | P0 | Before any external service claim, update the operator-action register with placeholder, owner, verification, and novice tutorial steps. | No third-party API, payment, deployment, DNS, or store capability is presented as live without recorded operator verification. |
 
@@ -83,6 +83,7 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 - P0-09 merge evidence: PR #182 merged at 216602e and Issue #73 was explicitly closed after GitHub did not apply the PR closing keyword automatically. P0-07 #116 and P0-08 #117 were reconciled to status:ready; P0-08 dependencies now match the canonical Phase 0/1 graph.
 - GOV-P0d pending verification: docs/governance/phase-dependency-graph.md supersedes the former Phase 0/1 graph, adds Phase 2/3 trigger-gated controls and lane ownership, and awaits docs checks plus architecture review.
 - GOV-P0d metadata observation: #102 now names the Phase 0 through Phase 3 control map and links the renamed registered graph; the graph scan found #196/#197 as the active P0-07 execution Issues and records their PR #198/#199 handoff.
+- GOV #181 pending verification: AGENTS.md and the controlled Issue/PR workflow now require independent architecture or operator merge authority after checks are green; repository branch protection remains an operator-controlled reinforcement.
 
 ## Mandatory Markdown Reading Order
 
