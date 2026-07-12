@@ -5,6 +5,7 @@ import {
   createInMemoryCostLedger,
   createModelRouter,
   createStaticProvider,
+  ModelProviderError,
   type ModelEffort,
 } from "./index.js";
 
@@ -44,8 +45,13 @@ describe("createModelRouter", () => {
     expect(result.provider).toBe("secondary");
     expect(result.content).toBe("fallback");
     expect(result.attempts).toEqual([
-      { provider: "primary", ok: false, error: "timeout" },
-      { provider: "secondary", ok: true },
+      expect.objectContaining({
+        provider: "primary",
+        model: "primary-model",
+        ok: false,
+        failureClass: "network_error",
+      }),
+      expect.objectContaining({ provider: "secondary", model: "secondary-model", ok: true }),
     ]);
   });
 
@@ -90,8 +96,71 @@ describe("createModelRouter", () => {
     await expect(router.generate({ task: "router", prompt: "Hello" })).rejects.toMatchObject({
       name: "ModelRoutingError",
       attempts: [
-        { provider: "primary", ok: false, error: "timeout" },
-        { provider: "secondary", ok: false, error: "quota" },
+        expect.objectContaining({
+          provider: "primary",
+          model: "primary-model",
+          ok: false,
+          failureClass: "network_error",
+        }),
+        expect.objectContaining({
+          provider: "secondary",
+          model: "secondary-model",
+          ok: false,
+          failureClass: "network_error",
+        }),
+      ],
+    });
+  });
+
+  it("preserves safe timeout metadata while falling back", async () => {
+    const router = createModelRouter({
+      providers: [
+        {
+          id: "primary",
+          model: "primary-model",
+          async generate() {
+            throw new ModelProviderError("timeout");
+          },
+        },
+        createStaticProvider({
+          id: "fallback",
+          model: "fallback-model",
+          usage: { inputTokens: 5, outputTokens: 7 },
+        }),
+      ],
+    });
+
+    const result = await router.generate({ task: "trip_writer", prompt: "Plan a trip" });
+
+    expect(result.attempts).toEqual([
+      expect.objectContaining({
+        provider: "primary",
+        model: "primary-model",
+        ok: false,
+        failureClass: "timeout",
+      }),
+      expect.objectContaining({
+        provider: "fallback",
+        model: "fallback-model",
+        ok: true,
+        inputTokens: 5,
+        outputTokens: 7,
+      }),
+    ]);
+  });
+
+  it("stops before provider invocation when the total budget is exhausted", async () => {
+    const router = createModelRouter({
+      totalTimeoutMs: 0,
+      providers: [createStaticProvider({ id: "primary", model: "primary-model" })],
+    });
+
+    await expect(router.generate({ task: "router", prompt: "Classify" })).rejects.toMatchObject({
+      attempts: [
+        expect.objectContaining({
+          provider: "primary",
+          failureClass: "total_timeout",
+        }),
       ],
     });
   });

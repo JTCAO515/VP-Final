@@ -9,24 +9,24 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 ## Current Handoff Snapshot
 
-- **Updated:** 2026-07-12 by Codex / GOV handoff after P0-09
+- **Updated:** 2026-07-12 by Codex / P0-07a provider adapter boundary
 - **Base branch:** `main`
 - **Last fully verified commit:** `216602e`
 - **Current phase:** Phase 0 — production hardening
 - **Maturity:** Trusted demo skeleton; not yet a production-safe or billing-ready MVP.
-- **Last completed control action:** PR #182 merged P0-09 anonymous-safe Agent trace persistence after Verify, Docs, Evals, Database contracts, and Vercel previews passed.
+- **Last completed control action:** PR #182 merged P0-09 anonymous-safe Agent trace persistence after Verify, Docs, Evals, Database contracts, and Vercel previews passed; PR #186 reconciled its completion and the ready queue.
 
 ### Active Work
 
 | Ref | Work | State | Owner | Next action |
 | --- | --- | --- | --- | --- |
-| Issue #116 / P0-07 | Connect real LLM providers with structured Copilot output | Canonical dependencies DOC-P0-02, P0-06, and P0-09 are merged; Issue is status:ready, but no provider code or real-call claim has started | Codex | Read provider/runbook/operator-action constraints, freeze the minimal provider interface and split the L-sized Issue if implementation exceeds one reviewable boundary. |
+| Issue #187 / P0-07a | Add bounded OpenAI-compatible provider adapters | Implementation active: provider-neutral adapter/configuration contract only. It does not compose a provider into Copilot, invoke a real provider, or claim external evidence. P0-07b #188 remains blocked by 07a and OA-005. | Codex | Complete package tests, safe documentation/register/index updates, and full repository verification; then submit a separate PR for #187. |
 
 ### Immediate Queue
 
 | Priority | Control action | Exit criteria |
 | --- | --- | --- |
-| P0 | Start P0-07 #116 only with provider failure truthfulness, bounded attempts, trace metadata, evals, and no secret/fixture success regressions. | A provider implementation plan identifies its interface, test doubles, external OA-005 requirements, and the smallest reviewable code boundary before any real provider claim. |
+| P0 | Complete P0-07a #187 with provider failure truthfulness, bounded attempts, safe attempt metadata, adapter tests, and no secret/fixture success regressions. | A reviewable adapter/configuration boundary passes the full gate. P0-07b alone may compose it into Copilot and collect OA-005 staging evidence. |
 | P0 | P0-08 #117 is independently status:ready after its dependency correction; schedule retrieval/citation work only in a separate branch/PR from P0-07. | Knowledge retrieval work consumes only eligible facts, validates citation allowlists, and retains no raw prompt in gaps. |
 | P0 | Before any external service claim, update the operator-action register with placeholder, owner, verification, and novice tutorial steps. | No third-party API, payment, deployment, DNS, or store capability is presented as live without recorded operator verification. |
 
@@ -221,6 +221,7 @@ Repeatable deployment, data, AI, knowledge, and Human Task procedures.
 | Document | Type | Status | Owner | Purpose |
 | --- | --- | --- | --- | --- |
 | [AI Evaluation Regression Runbook](runbooks/ai-eval-regression.md) | runbook | active | AI | Evaluate prompt, model, routing, retrieval, safety, cost, and provider changes. |
+| [AI Provider Configuration Runbook](runbooks/ai-provider-configuration.md) | runbook | active | AI / operator | Configure bounded OpenAI-compatible providers without exposing secrets or overstating live evidence. |
 | [Human Task Concierge Runbook](runbooks/human-task-concierge.md) | runbook | active | operator | Triage, quote, fulfil, evidence, privacy, and escalation for real Human Tasks. |
 | [Knowledge Fact Review Runbook](runbooks/knowledge-fact-review.md) | runbook | active | knowledge operations | Review fact source, freshness, version, deprecation, gaps, and public exposure. |
 | [Runbook Index](runbooks/README.md) | reference | active | operations | Index and template for active operational runbooks. |

@@ -1,26 +1,26 @@
 {
   "schemaVersion": 1,
   "updatedAt": "2026-07-12",
-  "updatedBy": "Codex / GOV handoff after P0-09",
+  "updatedBy": "Codex / P0-07a provider adapter boundary",
   "baseBranch": "main",
   "lastVerifiedCommit": "216602e",
   "currentPhase": "Phase 0 — production hardening",
   "maturity": "Trusted demo skeleton; not yet a production-safe or billing-ready MVP.",
-  "lastCompleted": "PR #182 merged P0-09 anonymous-safe Agent trace persistence after Verify, Docs, Evals, Database contracts, and Vercel previews passed.",
+  "lastCompleted": "PR #182 merged P0-09 anonymous-safe Agent trace persistence after Verify, Docs, Evals, Database contracts, and Vercel previews passed; PR #186 reconciled its completion and the ready queue.",
   "activeWork": [
     {
-      "ref": "Issue #116 / P0-07",
-      "title": "Connect real LLM providers with structured Copilot output",
-      "state": "Canonical dependencies DOC-P0-02, P0-06, and P0-09 are merged; Issue is status:ready, but no provider code or real-call claim has started",
+      "ref": "Issue #187 / P0-07a",
+      "title": "Add bounded OpenAI-compatible provider adapters",
+      "state": "Implementation active: provider-neutral adapter/configuration contract only. It does not compose a provider into Copilot, invoke a real provider, or claim external evidence. P0-07b #188 remains blocked by 07a and OA-005.",
       "owner": "Codex",
-      "next": "Read provider/runbook/operator-action constraints, freeze the minimal provider interface and split the L-sized Issue if implementation exceeds one reviewable boundary."
+      "next": "Complete package tests, safe documentation/register/index updates, and full repository verification; then submit a separate PR for #187."
     }
   ],
   "nextActions": [
     {
       "priority": "P0",
-      "action": "Start P0-07 #116 only with provider failure truthfulness, bounded attempts, trace metadata, evals, and no secret/fixture success regressions.",
-      "exitCriteria": "A provider implementation plan identifies its interface, test doubles, external OA-005 requirements, and the smallest reviewable code boundary before any real provider claim."
+      "action": "Complete P0-07a #187 with provider failure truthfulness, bounded attempts, safe attempt metadata, adapter tests, and no secret/fixture success regressions.",
+      "exitCriteria": "A reviewable adapter/configuration boundary passes the full gate. P0-07b alone may compose it into Copilot and collect OA-005 staging evidence."
     },
     {
       "priority": "P0",
