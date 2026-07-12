@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { designTokenCss } from "@visepanda/ui";
 import "./styles.css";
 import { getOpsPageAccess } from "../lib/opsAccess";
 import { LogoutButton } from "./logout-button";
@@ -14,6 +15,9 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   const access = await getOpsPageAccess();
   return (
     <html lang="en">
+      <head>
+        <style id="visepanda-design-tokens">{designTokenCss}</style>
+      </head>
       <body>
         <header className="topbar">
           <div>

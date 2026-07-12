@@ -10,9 +10,10 @@ rendering implementations.
 
 ## Current State
 
-The package is a tested placeholder. Current Web and Ops styling is application-local. The canonical
-visual specification is the [Red Gold Design
-System](../design-system/visepanda-v2-red-gold-design-system.md).
+The package exports the active platform-neutral semantic tokens, a root CSS custom-property payload,
+and contrast/drift tests. Web and Ops inject the same token payload at their root layouts and use
+local aliases only as references to `--vp-*` variables. The canonical visual specification remains
+the [Red Gold Design System](../design-system/visepanda-v2-red-gold-design-system.md).
 
 ## Intended Scope
 
