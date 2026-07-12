@@ -85,6 +85,8 @@ payloads, cookies, credentials, or narrative errors.
 - A disabled or unavailable action is hidden or clearly disabled; inert controls are not allowed.
 - Commercial actions show disclosure and use `/outbound`.
 - Responsive behavior is verified at 375, 768, 1280, and 1440 pixel widths.
+- At narrow widths, primary navigation uses four equal tracks and prompt cards wrap their text; no
+  Copilot element may force horizontal page scrolling.
 
 ## Verification
 
