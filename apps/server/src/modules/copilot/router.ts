@@ -14,6 +14,8 @@ export const copilotRouter = router({
     return createCopilotPipeline({
       ...(ctx.knowledgeService ? { knowledgeService: ctx.knowledgeService } : {}),
       ...(ctx.traceService ? { traceService: ctx.traceService } : {}),
+      ...(ctx.copilotModelDependencies ?? {}),
+      ...(ctx.demoDialogueOnly ? { demoDialogueOnly: true } : {}),
       tripService: ctx.tripService,
     }).run(input, requireTripIdentity(ctx.identity));
   }),
