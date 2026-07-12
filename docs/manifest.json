@@ -759,6 +759,16 @@
       "sourcePrefixes": ["packages/ai/", "evals/"]
     },
     {
+      "path": "docs/runbooks/ai-provider-configuration.md",
+      "title": "AI Provider Configuration Runbook",
+      "category": "operations",
+      "type": "runbook",
+      "status": "active",
+      "owner": "AI / operator",
+      "summary": "Configure bounded OpenAI-compatible providers without exposing secrets or overstating live evidence.",
+      "sourcePrefixes": ["packages/ai/"]
+    },
+    {
       "path": "docs/runbooks/human-task-concierge.md",
       "title": "Human Task Concierge Runbook",
       "category": "operations",

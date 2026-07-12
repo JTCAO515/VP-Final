@@ -21,6 +21,7 @@ export type ModelRequest = {
 
 export type RoutedModelRequest = ModelRequest & {
   effort: ModelEffort;
+  timeoutMs?: number;
 };
 
 export type ModelProviderResult = {
@@ -38,8 +39,13 @@ export type ModelProvider = {
 
 export type ModelAttempt = {
   provider: string;
+  model: string;
   ok: boolean;
-  error?: string;
+  latencyMs: number;
+  inputTokens?: number;
+  outputTokens?: number;
+  costUsd?: number;
+  failureClass?: import("./openaiCompatible.js").ProviderFailureClass;
 };
 
 export type ModelRunLedgerEntry = {
@@ -70,6 +76,7 @@ export type CostLedger = {
 export type ModelRouterOptions = {
   providers: ModelProvider[];
   ledger?: CostLedger;
+  totalTimeoutMs?: number;
 };
 
 export class ModelRoutingError extends Error {
@@ -82,6 +89,7 @@ export class ModelRoutingError extends Error {
 export function createModelRouter({
   providers,
   ledger = createInMemoryCostLedger(),
+  totalTimeoutMs = 25_000,
 }: ModelRouterOptions) {
   if (providers.length === 0) {
     throw new Error("At least one model provider is required");
@@ -90,13 +98,26 @@ export function createModelRouter({
   return {
     ledger,
     async generate(request: ModelRequest): Promise<ModelRouterResponse> {
+      const startedAt = Date.now();
       const effort = request.effort ?? "medium";
       const routedRequest: RoutedModelRequest = { ...request, effort };
       const attempts: ModelAttempt[] = [];
 
       for (const provider of providers) {
+        const remainingMs = totalTimeoutMs - (Date.now() - startedAt);
+        if (remainingMs <= 0) {
+          attempts.push({
+            provider: provider.id,
+            model: provider.model,
+            ok: false,
+            latencyMs: 0,
+            failureClass: "total_timeout",
+          });
+          break;
+        }
+        const attemptStartedAt = Date.now();
         try {
-          const result = await provider.generate(routedRequest);
+          const result = await provider.generate({ ...routedRequest, timeoutMs: remainingMs });
           const usage = result.usage ?? { inputTokens: 0, outputTokens: 0 };
           const model = result.model ?? provider.model;
           const costUsd = calculateCostUsd(usage, provider.pricing);
@@ -110,7 +131,15 @@ export function createModelRouter({
             costUsd,
           };
 
-          attempts.push({ provider: provider.id, ok: true });
+          attempts.push({
+            provider: provider.id,
+            model,
+            ok: true,
+            latencyMs: Date.now() - attemptStartedAt,
+            inputTokens: usage.inputTokens,
+            outputTokens: usage.outputTokens,
+            costUsd,
+          });
           ledger.record(entry);
 
           return {
@@ -125,8 +154,10 @@ export function createModelRouter({
         } catch (error) {
           attempts.push({
             provider: provider.id,
+            model: provider.model,
             ok: false,
-            error: error instanceof Error ? error.message : String(error),
+            latencyMs: Date.now() - attemptStartedAt,
+            failureClass: normalizeFailureClass(error),
           });
         }
       }
@@ -134,6 +165,19 @@ export function createModelRouter({
       throw new ModelRoutingError(attempts);
     },
   };
+}
+
+function normalizeFailureClass(
+  error: unknown,
+): import("./openaiCompatible.js").ProviderFailureClass {
+  if (isProviderFailure(error)) return error.failureClass;
+  return "network_error";
+}
+
+function isProviderFailure(
+  error: unknown,
+): error is { failureClass: import("./openaiCompatible.js").ProviderFailureClass } {
+  return typeof error === "object" && error !== null && "failureClass" in error;
 }
 
 export function createInMemoryCostLedger(seed: ModelRunLedgerEntry[] = []): CostLedger {
@@ -189,3 +233,14 @@ export function createStaticProvider(options: {
 
   return provider;
 }
+
+export {
+  createOpenAiCompatibleProvider,
+  ModelProviderError,
+  resolveOpenAiCompatibleProvider,
+} from "./openaiCompatible.js";
+export type {
+  OpenAiCompatibleProviderConfig,
+  ProviderConfigurationResolution,
+  ProviderFailureClass,
+} from "./openaiCompatible.js";

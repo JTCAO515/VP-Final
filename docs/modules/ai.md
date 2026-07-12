@@ -5,22 +5,29 @@ Path: `packages/ai`
 ## Responsibility
 
 The AI package defines provider-neutral model routing, effort levels, token usage, cost calculation,
-fallback attempts, and the cost-ledger interface. Prompt profiles and concrete providers belong here
-when implemented.
+fallback attempts, the cost-ledger interface, and bounded provider adapters. Prompt profiles and
+Copilot-specific provider composition belong in their owning runtime module.
 
 ## Implemented
 
 - Task classes: router, Trip writer, knowledge QA, and commerce/human handoff.
 - Effort levels: low, medium, and high.
 - Ordered provider fallback.
-- Per-attempt success/failure capture.
+- Per-attempt safe success/failure metadata, including bounded latency and normalized failure class.
 - Token and cost calculation from provider pricing.
 - In-memory cost ledger for tests.
 - Static provider for deterministic tests.
+- OpenAI-compatible adapter contract: bounded JSON-object request, abortable timeout, safe response
+  parsing, and no upstream-body leakage.
+- Environment resolver for intentionally configured primary/fallback provider slots. It reports an
+  incomplete slot as unavailable and does not choose a vendor or make a network call by itself.
 
 ## Not Yet Production-Implemented
 
-- Real provider HTTP clients and secret-backed configuration.
+- Runtime composition of configured providers into Copilot and structured envelope generation
+  (P0-07b #188).
+- Real provider account/setup and staging evidence (OA-005); this repository does not claim a live
+  provider merely because the adapter can be configured.
 - Prompt profile versioning.
 - Structured Copilot envelope generation and repair in this package.
 - Persistent model attempt, tool-call, latency, and cost traces are implemented through the server
@@ -32,6 +39,8 @@ when implemented.
 - Provider-specific behavior is isolated behind `ModelProvider`.
 - A provider failure may trigger the next configured provider; all failures produce an honest error.
 - Missing keys or total provider failure must not return a fabricated answer.
+- Provider setup follows the [AI provider configuration runbook](../runbooks/ai-provider-configuration.md)
+  and the operator-action register. Keys remain trusted runtime configuration only.
 - Prompt, model, routing, parser, or tool changes require relevant evals.
 - Logs and traces must redact secrets and sensitive user content.
 - Cost records are measurements, not billing ledgers.
