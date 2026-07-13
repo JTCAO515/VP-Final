@@ -38,8 +38,7 @@ select ok(
 select throws_ok(
   $$insert into public.trips (id, owner, anon_id, snapshot_jsonb)
     values ('10000000-0000-0000-0000-000000000001', null, null, '{}'::jsonb)$$,
-  '23514',
-  'a trip cannot have no owner'
+  '23514'
 );
 
 select lives_ok(
@@ -56,8 +55,7 @@ select throws_ok(
       'anon-test',
       '{}'::jsonb
     )$$,
-  '23514',
-  'a trip cannot have both authenticated and anonymous owners'
+  '23514'
 );
 
 select ok(

@@ -11,6 +11,8 @@ Status: active
 - Domain/interface changes MUST precede and unblock consumer changes; they MUST NOT be hidden in a UI PR.
 - Prompt/model/router changes MUST run relevant evals and report cost/quality implications.
 - Schema/migration/permission changes MUST run relevant database and RLS contract checks.
+- The Database contracts gate MUST execute a nonzero pgTAP file and test count. `Result: NOTESTS` is
+  a failed verification state even if the CLI process exits successfully.
 - A failed check MUST NOT be described as passed; residual risk and blockers must be explicit.
 - A merged change requiring production observation MUST retain a named follow-up owner and review date.
 - Phase 1/2/3 scope MUST NOT start before its accepted trigger unless an ADR changes the trigger.

@@ -19,7 +19,7 @@ Create, verify, apply, or recover from a migration under `infra/supabase/migrati
 ```bash
 supabase start --workdir infra
 supabase db reset --local --no-seed --workdir infra
-supabase test db supabase/tests/database --local --workdir infra
+bash infra/scripts/run-pgtap-contracts.sh
 DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres \
   pnpm --filter @visepanda/app-server exec vitest run \
     src/db/versionedTripService.integration.test.ts \
