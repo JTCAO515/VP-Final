@@ -3,6 +3,7 @@ import type { KnowledgeService } from "./modules/knowledge/service.js";
 import type { TelemetryService } from "./modules/telemetry/service.js";
 import type { HumanTaskService } from "./modules/task/service.js";
 import type { AgentTraceService } from "./modules/trace/service.js";
+import type { CopilotPipelineDependencies } from "./modules/copilot/service.js";
 
 export type RequestIdentity =
   | { kind: "anonymous"; anonId: string }
@@ -15,5 +16,7 @@ export type ServerContext = {
   knowledgeService?: KnowledgeService;
   telemetryService?: TelemetryService;
   traceService?: AgentTraceService;
+  copilotModelDependencies?: Pick<CopilotPipelineDependencies, "routeIntent" | "generateEnvelope">;
+  demoDialogueOnly?: boolean;
   tripService: VersionedTripService;
 };
