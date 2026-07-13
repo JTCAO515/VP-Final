@@ -5,6 +5,8 @@ import {
   createVersionedInMemoryTripService,
 } from "@visepanda/app-server";
 import { POST as runCopilot } from "../app/api/copilot/route";
+import { findModelFailure } from "../app/api/copilot/modelFailure";
+import { DemoModelExecutionError, DemoModelUnavailableError } from "@visepanda/app-server";
 import { setTestWebServerServices } from "../app/api/_server";
 import { GET as getTrip, PATCH as patchTrip } from "../app/api/trips/[tripId]/route";
 import { POST as claimTrips } from "../app/api/trips/claim/route";
@@ -41,6 +43,14 @@ afterEach(() => {
 });
 
 describe("private Trip route authority", () => {
+  it("detects model failures through a tRPC-style cause chain", () => {
+    const unavailable = new DemoModelUnavailableError(["router_primary"]);
+    expect(findModelFailure({ cause: { cause: unavailable } })).toBe(unavailable);
+
+    const exhausted = new DemoModelExecutionError([]);
+    expect(findModelFailure({ cause: exhausted })).toBe(exhausted);
+  });
+
   it("returns a typed 503 when deployed durable services are missing", async () => {
     process.env.VISEPANDA_RUNTIME_MODE = "production";
     delete process.env.DATABASE_URL;

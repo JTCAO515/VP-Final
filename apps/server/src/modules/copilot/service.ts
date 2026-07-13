@@ -11,7 +11,7 @@ import {
 import { z } from "zod";
 import { createHash } from "node:crypto";
 import type { KnowledgeService } from "../knowledge/service.js";
-import type { AgentTraceService } from "../trace/service.js";
+import type { AgentAttemptTrace, AgentTraceService } from "../trace/service.js";
 import { normalizeAgentFailure } from "../trace/service.js";
 import type { TripIdentity, VersionedTripService } from "../trip/versionedService.js";
 
@@ -42,17 +42,31 @@ export type CopilotRunInput = z.infer<typeof CopilotRunInputSchema>;
 export type RetrievalFact = z.infer<typeof RetrievalFactSchema>;
 export type CopilotRunResult = z.infer<typeof CopilotRunResultSchema>;
 
-type RouteIntent = (request: CopilotRequest) => Promise<CopilotIntent> | CopilotIntent;
-type RetrieveContext = (request: CopilotRequest) => Promise<RetrievalFact[]> | RetrievalFact[];
-type GenerateEnvelope = (request: CopilotGenerationRequest) => Promise<unknown> | unknown;
+export type CopilotIntentDecision = {
+  intent: CopilotIntent;
+  attempts?: AgentAttemptTrace[];
+};
 
-type CopilotRequest = {
+type RouteIntent =
+  | ((request: CopilotRequest) => Promise<CopilotIntent | CopilotIntentDecision>)
+  | ((request: CopilotRequest) => CopilotIntent | CopilotIntentDecision);
+type RetrieveContext = (request: CopilotRequest) => Promise<RetrievalFact[]> | RetrievalFact[];
+export type GeneratedEnvelope = {
+  candidate: unknown;
+  attempts?: AgentAttemptTrace[];
+};
+
+type GenerateEnvelope =
+  | ((request: CopilotGenerationRequest) => Promise<unknown | GeneratedEnvelope>)
+  | ((request: CopilotGenerationRequest) => unknown | GeneratedEnvelope);
+
+export type CopilotRequest = {
   message: string;
   tripId?: string;
   currentTrip: TripState | null;
 };
 
-type CopilotGenerationRequest = CopilotRequest & {
+export type CopilotGenerationRequest = CopilotRequest & {
   intent: CopilotIntent;
   retrievedFacts: RetrievalFact[];
 };
@@ -64,6 +78,7 @@ export type CopilotPipelineDependencies = {
   retrieveContext?: RetrieveContext;
   generateEnvelope?: GenerateEnvelope;
   traceService?: AgentTraceService;
+  demoDialogueOnly?: boolean;
 };
 
 export function createCopilotPipeline({
@@ -73,6 +88,7 @@ export function createCopilotPipeline({
   retrieveContext = defaultRetrieveContext,
   generateEnvelope = defaultGenerateEnvelope,
   traceService,
+  demoDialogueOnly = false,
 }: CopilotPipelineDependencies) {
   return {
     async run(input: CopilotRunInput, identity: TripIdentity): Promise<CopilotRunResult> {
@@ -80,6 +96,8 @@ export function createCopilotPipeline({
       const runId = crypto.randomUUID();
       const parsedInput = CopilotRunInputSchema.parse(input);
       let intent: CopilotIntent | undefined;
+      let attempts: AgentAttemptTrace[] = [];
+      let repairCount = 0;
       try {
         const currentSnapshot = parsedInput.tripId
           ? await tripService.get(parsedInput.tripId, identity)
@@ -91,11 +109,21 @@ export function createCopilotPipeline({
           currentTrip,
         };
         if (parsedInput.tripId) request.tripId = parsedInput.tripId;
-        intent = await routeIntent(request);
+        const decision = normalizeIntentDecision(await routeIntent(request));
+        intent = decision.intent;
+        attempts = decision.attempts ?? [];
         const retrievedFacts = await retrieveContext(request);
-        const envelope = CopilotEnvelopeSchema.parse(
+        const parsedGeneration = parseGeneratedEnvelope(
           await generateEnvelope({ ...request, intent, retrievedFacts }),
         );
+        attempts = [...attempts, ...parsedGeneration.attempts];
+        repairCount = parsedGeneration.repairCount;
+        if (demoDialogueOnly && parsedGeneration.envelope.intent !== intent) {
+          throw new Error("Copilot envelope intent does not match the router decision.");
+        }
+        const envelope = demoDialogueOnly
+          ? assertDemoDialogueEnvelope(parsedGeneration.envelope)
+          : parsedGeneration.envelope;
         if (knowledgeService && shouldRecordKnowledgeGap(envelope)) {
           const city = detectCity(parsedInput.message);
           await knowledgeService.recordGap({
@@ -151,12 +179,13 @@ export function createCopilotPipeline({
           inputDigest: digest(parsedInput.message),
           outputDigest: digest(JSON.stringify(result.envelope)),
           latencyMs: Date.now() - startedAt,
-          attempts: [],
+          attempts,
           validationStatus: "passed",
-          repairCount: 0,
+          repairCount,
         });
         return result;
       } catch (error) {
+        attempts = [...attempts, ...attemptsFromFailure(error)];
         await recordTraceSafely(traceService, {
           id: runId,
           identity,
@@ -165,9 +194,9 @@ export function createCopilotPipeline({
           status: "failed",
           inputDigest: digest(parsedInput.message),
           latencyMs: Date.now() - startedAt,
-          attempts: [],
+          attempts,
           validationStatus: "failed",
-          repairCount: 0,
+          repairCount,
           failureClass: normalizeAgentFailure(error),
         });
         throw error;
@@ -186,6 +215,126 @@ async function recordTraceSafely(
   } catch {
     // Observability must never change the user-visible Copilot result.
   }
+}
+
+function normalizeIntentDecision(
+  value: CopilotIntent | CopilotIntentDecision,
+): CopilotIntentDecision {
+  return typeof value === "string" ? { intent: value } : value;
+}
+
+function parseGeneratedEnvelope(value: unknown): {
+  envelope: CopilotEnvelope;
+  attempts: AgentAttemptTrace[];
+  repairCount: number;
+} {
+  const generated = isGeneratedEnvelope(value) ? value : { candidate: value };
+  const candidates = repairCandidates(generated.candidate);
+  let lastError: unknown;
+  for (const [index, candidate] of candidates.entries()) {
+    try {
+      return {
+        envelope: CopilotEnvelopeSchema.parse(candidate),
+        attempts: generated.attempts ?? [],
+        repairCount: index,
+      };
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError ?? new Error("Copilot envelope validation failed.");
+}
+
+function repairCandidates(value: unknown): unknown[] {
+  if (typeof value !== "string") return [value];
+  const trimmed = value.trim();
+  const extracted = trimmed.match(/\{[\s\S]*\}/)?.[0];
+  return [trimmed, extracted]
+    .filter((candidate): candidate is string => Boolean(candidate))
+    .map((candidate) => candidate.replace(/,\s*([}\]])/g, "$1"))
+    .map((candidate) => {
+      try {
+        return JSON.parse(candidate) as unknown;
+      } catch {
+        return candidate;
+      }
+    });
+}
+
+function assertDemoDialogueEnvelope(envelope: CopilotEnvelope): CopilotEnvelope {
+  if (
+    envelope.tripActions.length > 0 ||
+    envelope.commercialActions.length > 0 ||
+    envelope.humanHelp !== null ||
+    envelope.toolCards.length > 0 ||
+    envelope.citations.length > 0
+  ) {
+    throw new Error("DEMO-01 only permits a dialogue envelope.");
+  }
+  return envelope;
+}
+
+function attemptsFromFailure(error: unknown): AgentAttemptTrace[] {
+  if (
+    typeof error !== "object" ||
+    error === null ||
+    !("attempts" in error) ||
+    !Array.isArray(error.attempts)
+  ) {
+    return [];
+  }
+  return error.attempts.flatMap(toAgentAttemptTrace);
+}
+
+function toAgentAttemptTrace(value: unknown): AgentAttemptTrace[] {
+  return typeof value === "object" &&
+    value !== null &&
+    "provider" in value &&
+    "model" in value &&
+    "status" in value &&
+    "inputTokens" in value &&
+    "outputTokens" in value &&
+    "costUsd" in value &&
+    "latencyMs" in value
+    ? [value as AgentAttemptTrace]
+    : isModelAttempt(value)
+      ? [
+          {
+            provider: value.provider,
+            model: value.model,
+            status: value.ok ? "succeeded" : "failed",
+            inputTokens: value.inputTokens ?? 0,
+            outputTokens: value.outputTokens ?? 0,
+            costUsd: value.costUsd ?? 0,
+            latencyMs: value.latencyMs,
+            ...(value.failureClass ? { failureClass: value.failureClass } : {}),
+          },
+        ]
+      : [];
+}
+
+function isModelAttempt(value: unknown): value is {
+  provider: string;
+  model: string;
+  ok: boolean;
+  inputTokens?: number;
+  outputTokens?: number;
+  costUsd?: number;
+  latencyMs: number;
+  failureClass?: string;
+} {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "provider" in value &&
+    "model" in value &&
+    "ok" in value &&
+    "latencyMs" in value
+  );
+}
+
+function isGeneratedEnvelope(value: unknown): value is GeneratedEnvelope {
+  return typeof value === "object" && value !== null && "candidate" in value;
 }
 
 function digest(value: string): string {
