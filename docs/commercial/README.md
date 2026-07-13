@@ -13,6 +13,14 @@ telemetry plan.
 | Trip Pass | Not active | Entitlement + purchase/restore ledger when implemented |
 | Custom quote / lead fee | Not active | Quote object + partner/agency ledger when implemented |
 
+## Human Help Controlled Preview
+
+The binding service boundary is the [Human Help controlled-preview policy](human-help-launch-policy.md).
+It permits only manual Shanghai/English triage within a limited operating window and capacity. It does
+not authorize payment collection, an SLA guarantee, emergency support, or third-party outcome claims.
+Future task, payment, and public-copy work must implement that policy rather than infer a service
+promise from the existing placeholder UI.
+
 ## Payment Routing Notes
 
 - Human Task is a real-world service. Stripe external payment is expected once merchant-of-record

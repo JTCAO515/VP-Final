@@ -3,6 +3,9 @@
 Status: active
 Owner: operator
 
+The binding service boundary is the [Human Help controlled-preview policy](../commercial/human-help-launch-policy.md).
+Use its city, language, hours, capacity, exclusions, and target wording before handling a request.
+
 ## Current Maturity
 
 The repository currently contains an in-memory/manual Human Task path. It is not production-durable
@@ -15,13 +18,14 @@ Use after a real Human Task enters the durable Ops queue in an approved deployme
 
 ## Procedure
 
-1. Confirm task id, requester identity/contact consent, city, requested outcome, urgency, and scope.
-2. Reject emergencies and regulated/legal/medical actions; direct the user to official services.
-3. Triage feasibility, operator capacity, price, SLA estimate, and cancellation boundary.
-4. Send a quote. Do not mark paid until verified payment evidence exists.
-5. After payment, move through the legal state transitions and record operator notes/evidence.
-6. Complete or cancel honestly; never claim an external action was taken without evidence.
-7. Redact the transcript and propose reusable knowledge gaps/facts without exposing personal data.
+1. Confirm the request is within the policy's Shanghai/English/window/capacity envelope before collecting more information.
+2. Confirm task id, requester identity/contact consent, city, requested outcome, urgency, and scope.
+3. Reject emergencies and regulated/legal/medical actions; direct the user to official services.
+4. Triage feasibility, operator capacity, price, response target, and cancellation boundary. State that targets are not guarantees.
+5. During controlled preview, do not send a payment link or accept paid fulfilment. A future approved payment flow is required before using `quoted` or later payment states.
+6. After verified payment exists in a future approved flow, move through the legal state transitions and record operator notes/evidence.
+7. Complete or cancel honestly; never claim an external action was taken without evidence.
+8. Redact the transcript and propose reusable knowledge gaps/facts without exposing personal data.
 
 ## Verification
 

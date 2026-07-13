@@ -14,6 +14,9 @@ Status: active
 ## Human Help and Payments
 
 - Human Help MUST require user confirmation before task creation or payment.
+- Human Help MUST follow the accepted [controlled-preview launch policy](../commercial/human-help-launch-policy.md).
+- A Human Help request MUST NOT be represented as accepted work, a guaranteed response, a booking,
+  an emergency service, or a paid service before its policy and durable implementation gates are met.
 - Human Task UI MUST distinguish request, quote, payment pending, paid, fulfilling, done, and cancelled.
 - A payment provider response or verified webhook is required before marking a task paid.
 - Placeholder purchase UI MUST say it is a placeholder and MUST NOT simulate a completed purchase.
