@@ -4,6 +4,7 @@ import {
   createDbAgentTraceService,
   createDbKnowledgeService,
   createDbVersionedTripService,
+  createDemoCopilotModelDependencies,
   createInMemoryKnowledgeService,
   createInMemoryAgentTraceService,
   createVersionedInMemoryTripService,
@@ -38,9 +39,18 @@ export class WebRuntimeUnavailableError extends Error {
 }
 
 export function getServerCaller(identity?: RequestIdentity) {
+  const runtime = resolveRuntimeMode(process.env);
+  const modelContext =
+    runtime.ok && runtime.mode !== "test" && runtime.mode !== "local-demo"
+      ? {
+          copilotModelDependencies: createDemoCopilotModelDependencies(process.env),
+          demoDialogueOnly: true,
+        }
+      : {};
   return appRouter.createCaller({
     ...(identity ? { identity } : {}),
     ...getWebServerServices(process.env),
+    ...modelContext,
   });
 }
 

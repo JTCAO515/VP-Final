@@ -5,6 +5,7 @@ import { z } from "zod";
 import { getServerCaller } from "../_server";
 import { runtimeUnavailableResponse } from "../_runtimeError";
 import { applyIdentityCookies, resolveRequestIdentity } from "../../../lib/requestIdentity";
+import { findModelFailure } from "./modelFailure";
 
 const CopilotRequestSchema = z.object({
   message: z.string().min(1),
@@ -48,6 +49,23 @@ export async function POST(request: Request) {
   } catch (error) {
     const unavailable = runtimeUnavailableResponse(error);
     if (unavailable) return applyIdentityCookies(unavailable, cookieResponse);
+    const modelFailure = findModelFailure(error);
+    if (modelFailure) {
+      return applyIdentityCookies(
+        NextResponse.json(
+          {
+            ok: false,
+            code: modelFailure.code,
+            error:
+              modelFailure.code === "MODEL_CONFIGURATION_UNAVAILABLE"
+                ? "Copilot is unavailable because its model provider configuration is incomplete."
+                : "Copilot is temporarily unavailable because its model providers could not respond.",
+          },
+          { status: 503 },
+        ),
+        cookieResponse,
+      );
+    }
     const conflict = findTripConflict(error);
     return applyIdentityCookies(
       NextResponse.json(

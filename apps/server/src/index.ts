@@ -23,6 +23,12 @@ export { requireService } from "./runtime/requireService.js";
 export { createInMemoryKnowledgeService } from "./modules/knowledge/service.js";
 export { createInMemoryAgentTraceService, normalizeAgentFailure } from "./modules/trace/service.js";
 export {
+  createDemoCopilotModelDependencies,
+  createDemoModelRuntime,
+  DemoModelExecutionError,
+  DemoModelUnavailableError,
+} from "./modules/copilot/modelRuntime.js";
+export {
   createInMemoryOpsAuthorizationService,
   OpsForbiddenError,
   OpsPermissionSchema,

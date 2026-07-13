@@ -16,35 +16,32 @@ real Copilot model calls. It supports the bounded OpenAI-compatible adapter intr
 - Begin in preview or staging. A real call is evidence only after the operator records the target
   environment, date, verifier, and sanitized result in OA-005.
 
-## Configuration Names
-
-Set one complete slot for a primary provider and, only when intentionally configured, one for a
-fallback provider:
-
-| Slot     | Required names                                                                                   | Optional bounded names                                                 |
-| -------- | ------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------- |
-| Primary  | `VISEPANDA_AI_PRIMARY_BASE_URL`, `VISEPANDA_AI_PRIMARY_API_KEY`, `VISEPANDA_AI_PRIMARY_MODEL`    | `VISEPANDA_AI_PRIMARY_TIMEOUT_MS`, `VISEPANDA_AI_PRIMARY_MAX_TOKENS`   |
-| Fallback | `VISEPANDA_AI_FALLBACK_BASE_URL`, `VISEPANDA_AI_FALLBACK_API_KEY`, `VISEPANDA_AI_FALLBACK_MODEL` | `VISEPANDA_AI_FALLBACK_TIMEOUT_MS`, `VISEPANDA_AI_FALLBACK_MAX_TOKENS` |
-
-The adapter posts only to `<BASE_URL>/chat/completions`, uses bearer authentication, and requests a
-JSON object. It normalizes upstream status/body/network failures to safe failure classes; it does not
-log an upstream response body. A missing required name must leave that provider unavailable rather
-than fabricate a response.
-
 ## DEMO-01 v3 Inventory
 
-Use only catalog-verified model names in `VISEPANDA_MODEL_*` route variables. The four trusted
-server-side key names are `DASHSCOPE_API_KEY`, `DEEPSEEK_API_KEY`, `MOONSHOT_API_KEY`, and
-`ZHIPU_API_KEY`. `PLANNING_REWRITE_ENABLED` stays false unless explicitly set to `true`; it remains
-off for the financing demo to enforce one main model call per turn.
+Use only catalog-verified model names in `VISEPANDA_MODEL_*` route variables. Every configured route
+also needs its provider's server-side key and may override its documented base URL with the matching
+`*_BASE_URL` variable. The adapter posts only to `<BASE_URL>/chat/completions`, uses bearer
+authentication, requests a JSON object, normalizes upstream failures, and never logs upstream bodies.
+
+| Chain               | Route variable                                                                                                  | Provider credential                                     | Required demo order                                 |
+| ------------------- | --------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- | --------------------------------------------------- |
+| Low intent router   | `VISEPANDA_MODEL_ROUTER_PRIMARY`, `VISEPANDA_MODEL_ROUTER_FALLBACK`                                             | `DASHSCOPE_API_KEY`, `DEEPSEEK_API_KEY`                 | Qwen Flash, then DeepSeek V4 Flash                  |
+| Medium concierge    | `VISEPANDA_MODEL_CONCIERGE_PRIMARY`, `VISEPANDA_MODEL_CONCIERGE_FALLBACK`, `VISEPANDA_MODEL_CONCIERGE_TERTIARY` | `MOONSHOT_API_KEY`, `ZHIPU_API_KEY`, `DEEPSEEK_API_KEY` | Kimi K2.6, GLM 5.2, then DeepSeek V4 Pro            |
+| High planning       | `VISEPANDA_MODEL_PLANNING_PRIMARY`, `VISEPANDA_MODEL_PLANNING_FALLBACK`                                         | `DEEPSEEK_API_KEY`, `MOONSHOT_API_KEY`                  | DeepSeek V4 Pro, then Kimi K2.6                     |
+| Deferred extraction | `VISEPANDA_MODEL_EXTRACTION_PRIMARY`                                                                            | `DASHSCOPE_API_KEY`                                     | Qwen Plus; configuration only, not wired in DEMO-01 |
+
+The four trusted server-side key names are `DASHSCOPE_API_KEY`, `DEEPSEEK_API_KEY`,
+`MOONSHOT_API_KEY`, and `ZHIPU_API_KEY`. `PLANNING_REWRITE_ENABLED` stays false unless explicitly
+set to `true`; it remains off for the financing demo to enforce one main model call per turn.
 
 ## Steps
 
-1. In the deployment platform's server-side environment settings, add the required names for the
-   selected slot. Do not add them to any client-exposed environment namespace.
-2. Optionally set positive integer timeout and token ceilings. Omitted, zero, negative, or invalid
-   values use the repository defaults (`12000` ms and `1200` tokens). The router also enforces its
-   total attempt budget.
+1. In the deployment platform's server-side environment settings, add all selected route model names,
+   their provider credentials, and an explicit non-demo runtime mode. Do not add them to any
+   client-exposed environment namespace.
+2. Keep `PLANNING_REWRITE_ENABLED` absent or `false` for the demo. The runtime uses a 20 second
+   per-provider ceiling inside a 25 second router budget; do not claim a latency target until OA-005
+   records a measured call.
 3. Deploy to preview/staging with the explicit runtime mode required by ADR-0005. Do not use
    `local-demo` as a production fallback.
 4. Once P0-07b is accepted, make one sanitized staging request through the Copilot route. Check
@@ -77,7 +74,7 @@ evidence.
 
 ## Notes
 
-- P0-07a #187 delivers the adapter and configuration contract only.
-- P0-07b #188 owns runtime composition, structured Copilot wiring, and any later real-call evidence.
-- Provider names are intentionally generic. Selecting or changing a vendor is an operator decision,
-  not an implicit repository default.
+- The repository uses fixed v3 provider roles, but each concrete model id remains an operator-selected,
+  catalog-confirmed environment value. Deprecated aliases must not be introduced in source code.
+- A missing route or key remains a typed 503 and is never replaced with mock text outside `local-demo`
+  or tests.

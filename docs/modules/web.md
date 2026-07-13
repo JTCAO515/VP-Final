@@ -42,6 +42,13 @@ selection: only `local-demo` may use labelled fixtures/memory; deployed modes re
 unavailable states when a required durable dependency is absent. OA-004/OA-005 remain unverified, so
 no live durable Vercel claim is made.
 
+For DEMO-01, that composition root injects the v3 real-model Copilot dependencies only in a deployed
+runtime. Explicit `test` and `local-demo` retain their deterministic fixtures. A deployed route with
+missing model configuration returns 503 `MODEL_CONFIGURATION_UNAVAILABLE`; it never falls back to
+fixture text. The API route returns only a dialogue envelope for DEMO-01: Trip mutation, commerce,
+Human Help, tool cards, and citations are intentionally absent until their separately governed work
+is complete.
+
 Trip and Copilot routes resolve a server-issued anonymous session cookie or verified Supabase SSR
 identity under [ADR-0004](../adr/ADR-0004-identity-trip-ownership-security.md). The browser stores only
 the last Trip id as a convenience; it does not store or submit owner identity or an authoritative

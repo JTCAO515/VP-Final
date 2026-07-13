@@ -37,11 +37,13 @@ modules yet.
 - Trip, knowledge, and agent trace have in-memory and Postgres adapters. Trace records use one trusted
   authenticated identity, one signed anonymous identity, or neither; they persist only digests and
   allowlisted operational metadata. Provider/tool payloads and raw errors are excluded.
-- Copilot has a deterministic default router, stub retrieval, deterministic envelope generation, and
-  deterministic day completion.
-- DEMO-01 adds a v3 route executor that can compose environment-selected provider routes through
-  `@visepanda/ai`; it fails with a typed configuration-unavailable error when a required route lacks
-  a model name or trusted credential. Pipeline wiring remains a separate P0-07 control action.
+- Copilot retains deterministic defaults only in explicit tests and `local-demo`. In any other runtime,
+  DEMO-01 injects the v3 provider route executor, records safe attempts through Trace, performs bounded
+  JSON candidate repair before Zod validation, and fails with a typed configuration-unavailable error
+  when a required route lacks a trusted model name or credential.
+- The deployed DEMO-01 path is dialogue-only. It rejects Trip actions, tools, commerce, Human Help,
+  and citations before any state-changing branch can run. Real provider evidence remains blocked on
+  OA-005 and is not claimed by this repository change.
 - Knowledge, Human Task, and Telemetry routers require a service selected by the composition root;
   omitted capabilities return typed `SERVICE_UNAVAILABLE` and never construct memory internally.
 - The runtime resolver and router injection boundary are implemented and tested, but Web/Ops
