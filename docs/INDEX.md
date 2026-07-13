@@ -9,25 +9,25 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 ## Current Handoff Snapshot
 
-- **Updated:** 2026-07-12 by Codex / DEMO-01 pipeline repair
+- **Updated:** 2026-07-14 by Codex / P0-21 database-contract rebase
 - **Base branch:** `main`
-- **Last fully verified commit:** `9e4d5a1`
+- **Last fully verified commit:** `a0af840 plus P0-21 local database-contract verification`
 - **Current phase:** Phase 0 — production hardening
 - **Maturity:** Trusted demo skeleton; not yet a production-safe or billing-ready MVP.
-- **Last completed control action:** PR #193 merged P0-08a fact eligibility lifecycle after Verify, Database contracts, Docs, Evals, and Vercel previews passed.
+- **Last completed control action:** PR #210 merged the DEMO-01 v3 Copilot pipeline correction at a0af840. PR #213 is rebased to main and awaiting independent review; PR #212 is being rebased to restore enforced pgTAP evidence.
 
 ### Active Work
 
 | Ref | Work | State | Owner | Next action |
 | --- | --- | --- | --- | --- |
-| Issue #197 / DEMO-01a3 | Connect v3 model runtime to the Copilot pipeline | Implementation active on a stacked branch: deployed runtimes inject v3 model dependencies, repair bounded JSON candidates before Zod validation, persist safe attempts, and reject all non-dialogue DEMO-01 output. No real provider call is claimed before OA-005. | Codex | Add focused runtime tests, run full repository gates, then open the stacked #197 PR for architect review after #195/#198 are green. |
+| Issue #211 / P0-21 | Make database contracts execute pgTAP and clear mutable search_path warning | D2 quality/security correction rebased to current main: the previous relative pgTAP command could report NOTESTS while exiting successfully. CI/runbook now share a fail-closed absolute-path runner; a forward migration fixes public.set_updated_at search_path. Local reset, 44 pgTAP cases, adapter integrations, and Security Advisor passed before rebase; independent CI remains required. | Codex | Resolve documentation handoff rebase, rerun the full gate, force-push PR #212, and request architecture review under #181. |
 
 ### Immediate Queue
 
 | Priority | Control action | Exit criteria |
 | --- | --- | --- |
-| P0 | Complete DEMO-01a3 #197 and then prioritize #184 dialogue UI and #185 cost guard ahead of lower-priority retrieval work. | All DEMO-01 code paths either use a configured real provider or return a typed truthful error; #184/#185 remain separate PRs. |
-| P0 | P0-08 #117 is independently status:ready after its dependency correction; schedule retrieval/citation work only in a separate branch/PR from P0-07. | Knowledge retrieval work consumes only eligible facts, validates citation allowlists, and retains no raw prompt in gaps. |
+| P0 | Obtain independent review for DEMO-01b PR #213, then keep DEMO-01c #185 blocked until its D2 IP/rate-limit/telemetry interfaces are explicitly owned. | #213 is reviewed and merged; #185 has either frozen durable interfaces or an honest blocked state. No fixture response is represented as a real provider result. |
+| P0 | Rebase and review P0-21 PR #212 before relying on a Database contracts green run as pgTAP evidence. | CI invokes a non-empty pgTAP runner, all contract cases pass, and the Security Advisor reports no mutable function search_path warning. |
 | P0 | Keep OA-005 open until the operator configures the four trusted provider credentials and catalog-confirmed model ids in a preview or staging environment. | OA-005 has sanitized configuration and measured staging evidence; until then no live-provider success is claimed. |
 | P0 | Before any external service claim, update the operator-action register with placeholder, owner, verification, and novice tutorial steps. | No third-party API, payment, deployment, DNS, or store capability is presented as live without recorded operator verification. |
 
@@ -35,12 +35,15 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 - P0-03 and P0-04 code are merged, but real Supabase evidence still awaits OA-001 through OA-004 before production readiness can be claimed.
 - Ops RBAC code is merged; real first-admin and deployed role evidence awaits OA-010.
-- Main still has deterministic Copilot behavior; stacked DEMO-01 model-route/pipeline PRs require review and OA-005 blocks any live-provider claim.
+- OA-005 blocks real-provider evidence even after the P0-07 pipeline correction merged; missing provider configuration must remain an honest unavailable result.
+- P0-21 / PR #212 remains review pending; historical database-contract pgTAP-pass claims are not sufficient because the former command could pass with NOTESTS.
 - Human Task, outbound click, and telemetry runtime persistence are incomplete.
 - Real payment evidence, rate limiting, observability, legal pages, and production smoke gates are incomplete.
 
 ### Last Verification Evidence
 
+- P0-21 local evidence before main rebase: Supabase reset succeeded; the fail-closed contract runner executed 44 pgTAP assertions; adapter integrations and Security Advisor passed after the forward set_updated_at search_path migration. CI evidence is required before merge.
+- DEMO-01b evidence: PR #213 is rebased onto main after #210. The prior head passed Verify, Database contracts, Docs, Evals, both Vercel previews, and 375/768/1280 browser checks; its new base/head must rerun CI before review is accepted.
 - PR #106 merged at c7f3faa after verify, evals, and both Vercel previews passed.
 - PR #107 merged at 2fca99c after verify, evals, database contracts, and both Vercel previews passed.
 - PR #109 merged at 87744ed after documentation governance, verify, evals, database contracts, and both Vercel previews passed.

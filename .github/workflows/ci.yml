@@ -51,7 +51,7 @@ jobs:
           github-token: ${{ github.token }}
       - run: supabase start --workdir infra
       - run: supabase db reset --local --no-seed --workdir infra
-      - run: supabase test db supabase/tests/database --local --workdir infra
+      - run: bash infra/scripts/run-pgtap-contracts.sh
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @visepanda/ai build
       - run: pnpm --filter @visepanda/domain build

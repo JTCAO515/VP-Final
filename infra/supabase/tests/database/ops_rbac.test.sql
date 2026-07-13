@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(8);
+select plan(9);
 
 insert into auth.users (
   id, aud, role, email, encrypted_password, raw_app_meta_data, raw_user_meta_data,
@@ -40,11 +40,19 @@ select is(
   false,
   'authenticated users cannot read Ops audit evidence directly'
 );
+select ok(
+  exists (
+    select 1
+    from pg_constraint
+    where conrelid = 'public.ops_memberships'::regclass
+      and conname = 'ops_memberships_role_check'
+  ),
+  'Ops memberships constrains roles to the explicit matrix'
+);
 select throws_ok(
   $$insert into public.ops_memberships (user_id, role)
     values ('40000000-0000-4000-8000-000000000001', 'superadmin')$$,
-  '23514',
-  'membership rejects roles outside the explicit matrix'
+  '23514'
 );
 select ok(
   not exists (

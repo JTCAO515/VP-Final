@@ -2,7 +2,7 @@
 
 > **Status:** Active control baseline  
 > **Owner:** Overall design / architecture  
-> **Last reviewed:** 2026-07-11  
+> **Last reviewed:** 2026-07-14
 > **Authority:** This document is the dependency source of truth for Phase 0/1. GitHub Issue prose may link here but must not create a contradictory dependency.
 
 ## 1. Operating Rules
@@ -30,6 +30,7 @@
 | Real structured LLM execution         | [P0-07 #116](https://github.com/JTCAO515/VP-Final/issues/116), split into [07a #187](https://github.com/JTCAO515/VP-Final/issues/187) → [07b #188](https://github.com/JTCAO515/VP-Final/issues/188)                                                                                                                             | D2 AI runtime             | DOC-P0-02, P0-06, P0-09; 07b requires recorded OA-005 before external evidence       | P0-10, P0-20, launch evidence            | 07a merged PR #189; 07b blocked by OA-005             | 0B        |
 | Retrieval and citations               | [P0-08 #117](https://github.com/JTCAO515/VP-Final/issues/117), split into [08a #191](https://github.com/JTCAO515/VP-Final/issues/191) → [08b #192](https://github.com/JTCAO515/VP-Final/issues/192)                                                                                                                             | D2 knowledge              | DOC-P0-03, P0-06, P0-09; 08b also requires 08a                                       | citations/Explore/knowledge consumers    | 08a active; 08b blocked by 08a                        | 0B        |
 | Trace/cost evidence                   | [P0-09 #73](https://github.com/JTCAO515/VP-Final/issues/73)                                                                                                                                                                                                                                                                     | D2 observability          | P0-03, P0-06                                                                         | P0-07, P0-08, P0-10, P0-19               | Merged PR #182; Issue closed                          | 0B        |
+| Database contract gate integrity      | [P0-21 #211](https://github.com/JTCAO515/VP-Final/issues/211)                                                                                                                                                                                                                                                                    | D2 quality/security       | Local Supabase CLI observation; no product dependency                               | Any claim that Database contracts executed pgTAP/RLS checks | In progress; must pass independently in CI            | 0A        |
 | Durable two-stage generation          | [P0-10 #118](https://github.com/JTCAO515/VP-Final/issues/118)                                                                                                                                                                                                                                                                   | D2 Copilot lifecycle      | DOC-P0-02, P0-04, P0-06, P0-07, P0-09                                                | public Copilot generation                | Blocked                                               | 0B        |
 | Truthful states/dead-control removal  | [P0-11 #119](https://github.com/JTCAO515/VP-Final/issues/119)                                                                                                                                                                                                                                                                   | D2 product truth          | DOC-P0-02, P0-06                                                                     | Web launch safety                        | Blocked                                               | 0B        |
 | Copilot information architecture      | [P0-12 #120](https://github.com/JTCAO515/VP-Final/issues/120)                                                                                                                                                                                                                                                                   | D1 UX architecture        | P0-10, P0-11                                                                         | P0-18 commercial surface                 | Blocked                                               | 0B        |
@@ -49,6 +50,7 @@ DOC-P0-01 -> P0-03 -> P0-06 -> P0-09 -> P0-07 -> P0-10 -> P0-12
 DOC-P0-04 -> P0-13 -> P0-14 -> P0-15 -> P0-16
 DOC-P0-04 + VP-Codex-Final#169 D3/D4 + P0-20 -> P0-17
 P0-05 + P0-06 + P0-12 -> P0-18 -> P0-19 -> P0-20
+P0-21 -> every future Database contracts pass claim
 ```
 
 ## 3. Historical Migration Map
