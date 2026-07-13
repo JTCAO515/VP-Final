@@ -319,6 +319,10 @@ button:disabled {
   margin: 0;
 }
 
+.canvasToolbar > div {
+  min-width: 0;
+}
+
 .canvasToolbar span,
 .dayHeading p,
 .activityHeader p {
@@ -653,6 +657,83 @@ button:disabled {
   color: var(--ink-soft);
   font-size: 14px;
   line-height: 1.45;
+}
+
+.tripPreview {
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+  padding-top: 16px;
+}
+
+.tripPreviewHeading {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+.tripPreviewHeading span {
+  color: var(--red);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.tripPreviewHeading small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.tripPreview h3 {
+  font-size: 16px;
+  margin: 0;
+}
+
+.tripPreviewDays {
+  display: grid;
+  gap: 8px;
+}
+
+.tripPreviewDay {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--gold);
+  border-radius: 8px;
+  display: grid;
+  gap: 7px;
+  padding: 12px;
+}
+
+.tripPreviewDay > div {
+  align-items: baseline;
+  display: flex;
+  gap: 8px;
+}
+
+.tripPreviewDay strong {
+  font-size: 14px;
+}
+
+.tripPreviewDay span,
+.tripPreviewDay p,
+.tripPreviewDay li {
+  color: var(--ink-soft);
+  font-size: 13px;
+}
+
+.tripPreviewDay p {
+  background: transparent;
+  margin: 0;
+  padding: 0;
+}
+
+.tripPreviewDay ul {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding-left: 18px;
 }
 
 .typing p span {
@@ -1137,10 +1218,12 @@ button:disabled {
   }
 
   .primaryNav a {
+    font-size: 12px;
     justify-content: center;
     min-width: 0;
     padding: 0 4px;
-    white-space: nowrap;
+    text-align: center;
+    white-space: normal;
   }
 
   .tripMeta {
@@ -1156,6 +1239,12 @@ button:disabled {
 
   .conversationStatus {
     align-self: flex-start;
+  }
+
+  .canvasToolbar > div > span,
+  .scopeNote {
+    display: block;
+    overflow-wrap: anywhere;
   }
 
   .quickReplies {

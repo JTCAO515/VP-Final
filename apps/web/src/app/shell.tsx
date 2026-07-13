@@ -7,6 +7,7 @@ import {
   TripStateSchema,
   type CopilotEnvelope,
   type GenerationProgress,
+  type TripDay,
   type TripState,
 } from "@visepanda/domain";
 
@@ -14,6 +15,7 @@ type ChatMessage = {
   role: "user" | "assistant";
   body: string;
   envelope?: CopilotEnvelope;
+  trip?: TripState | null;
 };
 
 type CopilotSuccessResponse = {
@@ -72,11 +74,13 @@ export function CopilotShell() {
     }
   }
 
-  async function submitPrompt() {
+  async function submitPrompt({ retry = false }: { retry?: boolean } = {}) {
     const prompt = input.trim();
     if (!prompt || isWorking) return;
 
-    setMessages((current) => [...current, { role: "user", body: prompt }]);
+    if (!retry) {
+      setMessages((current) => [...current, { role: "user", body: prompt }]);
+    }
     setProgress({
       status: "skeleton",
       completedDays: 0,
@@ -105,7 +109,7 @@ export function CopilotShell() {
       const nextVersion = zeroOrPositiveInteger(data.version);
       setMessages((current) => [
         ...current,
-        { role: "assistant", body: envelope.message.body, envelope },
+        { role: "assistant", body: envelope.message.body, envelope, trip: nextTrip },
       ]);
       setTrip(nextTrip);
       setTripVersion(nextVersion);
@@ -163,7 +167,7 @@ export function CopilotShell() {
               <article className={`railMessage ${message.role}`} key={`${message.role}-${index}`}>
                 <b>{message.role === "user" ? "You" : "VisePanda Copilot"}</b>
                 {message.envelope ? (
-                  <EnvelopeMessage envelope={message.envelope} />
+                  <EnvelopeMessage envelope={message.envelope} trip={message.trip ?? null} />
                 ) : (
                   <p>{message.body}</p>
                 )}
@@ -199,7 +203,7 @@ export function CopilotShell() {
             <div className="copilotFailure" role="alert">
               <strong>Copilot could not respond.</strong>
               <span>{progress.error ?? "Please check your connection and try again."}</span>
-              <button onClick={() => void submitPrompt()} type="button">
+              <button onClick={() => void submitPrompt({ retry: true })} type="button">
                 Try again
               </button>
             </div>
@@ -227,7 +231,13 @@ export function CopilotShell() {
   );
 }
 
-function EnvelopeMessage({ envelope }: { envelope: CopilotEnvelope }) {
+function EnvelopeMessage({
+  envelope,
+  trip,
+}: {
+  envelope: CopilotEnvelope;
+  trip: TripState | null;
+}) {
   return (
     <div className="envelopeMessage">
       <h2>{envelope.message.headline}</h2>
@@ -239,8 +249,46 @@ function EnvelopeMessage({ envelope }: { envelope: CopilotEnvelope }) {
           ))}
         </ul>
       ) : null}
+      {trip ? <TripPreview trip={trip} /> : null}
     </div>
   );
+}
+
+function TripPreview({ trip }: { trip: TripState }) {
+  const days = previewTripDays(trip);
+  if (!days.length) return null;
+
+  return (
+    <section className="tripPreview" aria-label="Read-only trip preview">
+      <div className="tripPreviewHeading">
+        <span>Trip preview</span>
+        <small>Read-only in this demo</small>
+      </div>
+      <h3>{trip.title}</h3>
+      <div className="tripPreviewDays">
+        {days.map((day) => (
+          <article className="tripPreviewDay" key={day.id}>
+            <div>
+              <strong>Day {day.dayNumber}</strong>
+              {day.city ? <span>{day.city}</span> : null}
+            </div>
+            {(day.title ?? day.summary) ? <p>{day.title ?? day.summary}</p> : null}
+            {day.blocks.length ? (
+              <ul>
+                {day.blocks.slice(0, 3).map((block) => (
+                  <li key={block.id}>{block.title}</li>
+                ))}
+              </ul>
+            ) : null}
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+export function previewTripDays(trip: TripState): TripDay[] {
+  return trip.days.slice(0, 3);
 }
 
 function zeroOrPositiveInteger(value: unknown): number | null {
