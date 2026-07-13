@@ -274,7 +274,7 @@
       "status": "active",
       "owner": "AI",
       "summary": "Provider-neutral routing, output validation, maturity, and eval obligations.",
-      "sourcePrefixes": ["packages/ai/"]
+      "sourcePrefixes": ["packages/ai/", "turbo.json"]
     },
     {
       "path": "docs/modules/api-client.md",
@@ -766,7 +766,7 @@
       "status": "active",
       "owner": "AI / operator",
       "summary": "Configure bounded OpenAI-compatible providers without exposing secrets or overstating live evidence.",
-      "sourcePrefixes": ["packages/ai/"]
+      "sourcePrefixes": ["packages/ai/", "turbo.json"]
     },
     {
       "path": "docs/runbooks/human-task-concierge.md",
