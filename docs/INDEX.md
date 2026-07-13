@@ -9,25 +9,26 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 ## Current Handoff Snapshot
 
-- **Updated:** 2026-07-14 by Codex / P0-21 database-contract rebase
+- **Updated:** 2026-07-14 by Codex / #181 merge-gate and serialized-handoff correction
 - **Base branch:** `main`
-- **Last fully verified commit:** `a0af840 plus P0-21 local database-contract verification`
+- **Last fully verified commit:** `40e77f1 after P0-21 merged with green Database contracts`
 - **Current phase:** Phase 0 — production hardening
 - **Maturity:** Trusted demo skeleton; not yet a production-safe or billing-ready MVP.
-- **Last completed control action:** PR #210 merged the DEMO-01 v3 Copilot pipeline correction at a0af840. PR #213 is rebased to main and awaiting independent review; PR #212 is being rebased to restore enforced pgTAP evidence.
+- **Last completed control action:** PR #212 merged P0-21 at 40e77f1 after enforced pgTAP/adapter/security-advisor evidence. PR #210 previously merged the DEMO-01 v3 Copilot pipeline correction at a0af840.
 
 ### Active Work
 
 | Ref | Work | State | Owner | Next action |
 | --- | --- | --- | --- | --- |
-| Issue #211 / P0-21 | Make database contracts execute pgTAP and clear mutable search_path warning | D2 quality/security correction rebased to current main: the previous relative pgTAP command could report NOTESTS while exiting successfully. CI/runbook now share a fail-closed absolute-path runner; a forward migration fixes public.set_updated_at search_path. Local reset, 44 pgTAP cases, adapter integrations, and Security Advisor passed before rebase; independent CI remains required. | Codex | Resolve documentation handoff rebase, rerun the full gate, force-push PR #212, and request architecture review under #181. |
+| Issue #183 / DEMO-01 | Deliver the truthful real-LLM Copilot dialogue milestone | The v3 Copilot pipeline is merged. Productized dialogue UI is ready in PR #213; the cost-guard child #185 remains D2-blocked on a trusted IP contract, durable rate-limit adapter, and durable telemetry injection. | Codex | Obtain independent review for PR #213, then record real-provider staging evidence only after OA-005 verification. |
+| Issues #192, #127, #134 | Review-ready retrieval, design-token, and Human Help policy controls | PRs #200, #202, and #214 are current-main review-ready implementation/documentation controls. They remain unmerged under the #181 independent-review gate. | Codex / architecture review | Merge only after independent acceptance; subsequent feature work consumes the accepted interfaces without duplicate branches. |
 
 ### Immediate Queue
 
 | Priority | Control action | Exit criteria |
 | --- | --- | --- |
 | P0 | Obtain independent review for DEMO-01b PR #213, then keep DEMO-01c #185 blocked until its D2 IP/rate-limit/telemetry interfaces are explicitly owned. | #213 is reviewed and merged; #185 has either frozen durable interfaces or an honest blocked state. No fixture response is represented as a real provider result. |
-| P0 | Rebase and review P0-21 PR #212 before relying on a Database contracts green run as pgTAP evidence. | CI invokes a non-empty pgTAP runner, all contract cases pass, and the Security Advisor reports no mutable function search_path warning. |
+| P0 | Obtain independent review for PR #200 retrieval/citations, PR #202 design tokens, and PR #214 Human Help policy; do not start duplicate implementations. | Each PR merges through #181 and the next canonical dependency state is recorded in a serialized handoff refresh. |
 | P0 | Keep OA-005 open until the operator configures the four trusted provider credentials and catalog-confirmed model ids in a preview or staging environment. | OA-005 has sanitized configuration and measured staging evidence; until then no live-provider success is claimed. |
 | P0 | Before any external service claim, update the operator-action register with placeholder, owner, verification, and novice tutorial steps. | No third-party API, payment, deployment, DNS, or store capability is presented as live without recorded operator verification. |
 
@@ -36,13 +37,13 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 - P0-03 and P0-04 code are merged, but real Supabase evidence still awaits OA-001 through OA-004 before production readiness can be claimed.
 - Ops RBAC code is merged; real first-admin and deployed role evidence awaits OA-010.
 - OA-005 blocks real-provider evidence even after the P0-07 pipeline correction merged; missing provider configuration must remain an honest unavailable result.
-- P0-21 / PR #212 remains review pending; historical database-contract pgTAP-pass claims are not sufficient because the former command could pass with NOTESTS.
+- DEMO-01c #185 remains D2-blocked because no trusted request-IP contract, durable rate-limit adapter/configuration, or durable telemetry injection path is frozen.
 - Human Task, outbound click, and telemetry runtime persistence are incomplete.
 - Real payment evidence, rate limiting, observability, legal pages, and production smoke gates are incomplete.
 
 ### Last Verification Evidence
 
-- P0-21 local evidence before main rebase: Supabase reset succeeded; the fail-closed contract runner executed 44 pgTAP assertions; adapter integrations and Security Advisor passed after the forward set_updated_at search_path migration. CI evidence is required before merge.
+- P0-21 merged in PR #212 at 40e77f1 after Verify, Evals, Documentation Governance, Database contracts, and both Vercel previews passed. The fail-closed runner executed nonzero pgTAP cases and the Security Advisor reported no mutable set_updated_at search_path warning.
 - DEMO-01b evidence: PR #213 is rebased onto main after #210. The prior head passed Verify, Database contracts, Docs, Evals, both Vercel previews, and 375/768/1280 browser checks; its new base/head must rerun CI before review is accepted.
 - PR #106 merged at c7f3faa after verify, evals, and both Vercel previews passed.
 - PR #107 merged at 2fca99c after verify, evals, database contracts, and both Vercel previews passed.
@@ -195,10 +196,10 @@ How documents, Issues, pull requests, decisions, and lifecycle evidence are mana
 | [Claude Code Engineering Synchronization Prompt](governance/claude-code-sync-prompt.md) | reference | active | overall design | Portable prompt for synchronizing Claude Code with the full project engineering baseline. |
 | [Composite Engineering Baseline](governance/composite-engineering-baseline.md) | reference | active | overall design | Unified Qian, Matt-inspired documentation-as-code, and Karpathy engineering baseline for humans and Agents. |
 | [Documentation Templates](governance/document-templates.md) | reference | active | documentation governance | Templates for explanations, constraints, ADRs, runbooks, reviews, and retrospectives. |
-| [Documentation Workflow](governance/documentation-workflow.md) | constraint | active | documentation governance | Document classes, registry, code-sync loop, freshness, and emergency path. |
+| [Documentation Workflow](governance/documentation-workflow.md) | constraint | active | documentation governance | Document classes, registry, code-sync loop, serialized handoff freshness, and emergency path. |
 | [Engineering Governance Guide](governance/README.md) | reference | active | documentation governance | Navigation for document and work governance. |
-| [Handoff Snapshot Workflow](governance/handoff-workflow.md) | constraint | active | overall design | Mandatory current-state, reading-order, verification, blocker, and next-action synchronization for every project change. |
-| [Issue and PR Workflow](governance/issue-pr-workflow.md) | constraint | active | overall design | Issue/PR lifecycle, merge gates, multi-Agent rules, and emergency fixes. |
+| [Handoff Snapshot Workflow](governance/handoff-workflow.md) | constraint | active | overall design | Serialized merged-state, reading-order, verification, blocker, and next-action snapshot refresh workflow. |
+| [Issue and PR Workflow](governance/issue-pr-workflow.md) | constraint | active | overall design | Issue/PR lifecycle, main-base merge gate, serialized handoff rules, multi-Agent review, and emergency fixes. |
 | [Operator Action Register](governance/operator-action-register.md) | constraint | active | operator / overall design | Authoritative status, placeholders, owners, external setup gates, verification, and rollback for operator-only actions. |
 | [Operator Action Tutorial Template](governance/operator-action-tutorial-template.md) | reference | active | operator / delivery agent | Beginner-friendly Chinese template for safely executing and verifying registered external actions without exposing secrets. |
 | [Phase 0/1 Dependency Graph](governance/phase-0-1-dependency-graph.md) | reference | active | overall design | Canonical Phase 0/1 Issue ownership, blockers, migration map, lifecycle gates, and backlog-validation procedure. |

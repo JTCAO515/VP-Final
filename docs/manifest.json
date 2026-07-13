@@ -12,7 +12,7 @@
   "ignoredMarkdown": ["docs/INDEX.md"],
   "impact": {
     "handoffPath": "docs/handoff.json",
-    "requireHandoffForEveryChange": true,
+    "requireHandoffForEveryChange": false,
     "sourcePrefixes": [
       "apps/",
       "packages/",
@@ -518,7 +518,7 @@
       "type": "constraint",
       "status": "active",
       "owner": "documentation governance",
-      "summary": "Document classes, registry, code-sync loop, freshness, and emergency path.",
+      "summary": "Document classes, registry, code-sync loop, serialized handoff freshness, and emergency path.",
       "sourcePrefixes": [
         "scripts/docs/",
         ".github/ISSUE_TEMPLATE/",
@@ -553,7 +553,7 @@
       "type": "constraint",
       "status": "active",
       "owner": "overall design",
-      "summary": "Mandatory current-state, reading-order, verification, blocker, and next-action synchronization for every project change.",
+      "summary": "Serialized merged-state, reading-order, verification, blocker, and next-action snapshot refresh workflow.",
       "sourcePrefixes": ["scripts/docs/", ".github/", "package.json"]
     },
     {
@@ -573,7 +573,7 @@
       "type": "constraint",
       "status": "active",
       "owner": "overall design",
-      "summary": "Issue/PR lifecycle, merge gates, multi-Agent rules, and emergency fixes.",
+      "summary": "Issue/PR lifecycle, main-base merge gate, serialized handoff rules, multi-Agent review, and emergency fixes.",
       "sourcePrefixes": [".github/"]
     },
     {
