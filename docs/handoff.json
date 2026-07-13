@@ -1,19 +1,19 @@
 {
   "schemaVersion": 1,
   "updatedAt": "2026-07-12",
-  "updatedBy": "Codex / P0-08a fact eligibility lifecycle",
+  "updatedBy": "Codex / DEMO-01 provider inventory",
   "baseBranch": "main",
-  "lastVerifiedCommit": "170825d",
+  "lastVerifiedCommit": "9e4d5a1",
   "currentPhase": "Phase 0 — production hardening",
   "maturity": "Trusted demo skeleton; not yet a production-safe or billing-ready MVP.",
-  "lastCompleted": "PR #189 merged P0-07a bounded provider adapters after Verify, Database contracts, Docs, Evals, and Vercel previews passed. The PR added no Copilot runtime composition and made no real provider claim.",
+  "lastCompleted": "PR #193 merged P0-08a fact eligibility lifecycle after Verify, Database contracts, Docs, Evals, and Vercel previews passed.",
   "activeWork": [
     {
-      "ref": "Issue #191 / P0-08a",
-      "title": "Freeze fact eligibility lifecycle in domain",
-      "state": "Implementation active: ADR-0006 lifecycle schema and pure eligibility predicate. Legacy active facts remain readable but are deliberately ineligible; P0-08b #192 remains blocked by this contract.",
+      "ref": "Issue #116 / DEMO-01a",
+      "title": "Real LLM provider inventory and self-check",
+      "state": "Implementation active: v3 provider/key/model-slot inventory and safe readiness diagnostics. No Copilot wiring, real call, key, or mock-success claim is included in this boundary.",
       "owner": "Codex",
-      "next": "Complete Domain tests and full verification, synchronize docs/index, then submit the schema-only PR."
+      "next": "Run full repository gates, submit the provider-inventory PR, then separately wire model routing, envelope repair, and trace attempts."
     }
   ],
   "nextActions": [

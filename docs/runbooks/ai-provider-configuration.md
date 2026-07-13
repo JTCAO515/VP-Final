@@ -31,6 +31,13 @@ JSON object. It normalizes upstream status/body/network failures to safe failure
 log an upstream response body. A missing required name must leave that provider unavailable rather
 than fabricate a response.
 
+## DEMO-01 v3 Inventory
+
+Use only catalog-verified model names in `VISEPANDA_MODEL_*` route variables. The four trusted
+server-side key names are `DASHSCOPE_API_KEY`, `DEEPSEEK_API_KEY`, `MOONSHOT_API_KEY`, and
+`ZHIPU_API_KEY`. `PLANNING_REWRITE_ENABLED` stays false unless explicitly set to `true`; it remains
+off for the financing demo to enforce one main model call per turn.
+
 ## Steps
 
 1. In the deployment platform's server-side environment settings, add the required names for the

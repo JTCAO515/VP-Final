@@ -9,18 +9,18 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 ## Current Handoff Snapshot
 
-- **Updated:** 2026-07-12 by Codex / P0-08a fact eligibility lifecycle
+- **Updated:** 2026-07-12 by Codex / DEMO-01 provider inventory
 - **Base branch:** `main`
-- **Last fully verified commit:** `170825d`
+- **Last fully verified commit:** `9e4d5a1`
 - **Current phase:** Phase 0 — production hardening
 - **Maturity:** Trusted demo skeleton; not yet a production-safe or billing-ready MVP.
-- **Last completed control action:** PR #189 merged P0-07a bounded provider adapters after Verify, Database contracts, Docs, Evals, and Vercel previews passed. The PR added no Copilot runtime composition and made no real provider claim.
+- **Last completed control action:** PR #193 merged P0-08a fact eligibility lifecycle after Verify, Database contracts, Docs, Evals, and Vercel previews passed.
 
 ### Active Work
 
 | Ref | Work | State | Owner | Next action |
 | --- | --- | --- | --- | --- |
-| Issue #191 / P0-08a | Freeze fact eligibility lifecycle in domain | Implementation active: ADR-0006 lifecycle schema and pure eligibility predicate. Legacy active facts remain readable but are deliberately ineligible; P0-08b #192 remains blocked by this contract. | Codex | Complete Domain tests and full verification, synchronize docs/index, then submit the schema-only PR. |
+| Issue #116 / DEMO-01a | Real LLM provider inventory and self-check | Implementation active: v3 provider/key/model-slot inventory and safe readiness diagnostics. No Copilot wiring, real call, key, or mock-success claim is included in this boundary. | Codex | Run full repository gates, submit the provider-inventory PR, then separately wire model routing, envelope repair, and trace attempts. |
 
 ### Immediate Queue
 
