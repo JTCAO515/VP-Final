@@ -42,6 +42,31 @@ A PR may merge only when:
 - permissions, commercial tracking, evals, migrations, and runbooks are addressed where relevant;
 - no known unclassified deviation remains.
 
+### Independent architecture review and merge authority
+
+- An implementation Agent MUST NOT approve or merge its own PR to `main`.
+- Once all required checks are green, the implementation Agent marks the PR ready, requests
+  architecture review, posts concise check evidence, and stops implementation until review feedback
+  arrives. A green check is evidence, not merge authority.
+- Only the architecture owner or operator may merge. The GitHub audit trail MUST show that the
+  merger is not the PR implementation author.
+- The reviewer verifies the actual check results, the focused diff against the Issue acceptance, and
+  the applicable invariant set before merging:
+  - AI produces a validated envelope/Patch and never writes user data directly.
+  - Commercial links appear only after `commerce_intent`; money-adjacent behavior has ledger and
+    telemetry coverage with tests.
+  - Authorization trusts server-side identity, not client input.
+  - Production paths do not turn missing dependencies or external failures into mock or fabricated
+    success.
+  - D2/D3 work additionally receives a deliberate review of payment, identity, permission, public
+    promise, and data-ownership boundaries.
+- After an authorized merge, the implementation Agent updates `docs/handoff.json`, regenerates
+  `docs/INDEX.md`, and records any observed deviation or remaining operator action.
+
+Repository branch protection is an operator-controlled reinforcement, not evidence of compliance.
+Until it is enabled, every PR follows this documented gate. The operator action register records the
+optional rule: require one approving review and prohibit author approval on `main`.
+
 ## Multi-Agent Rules
 
 - Parallel Agents may work only on disjoint modules or against a frozen interface baseline.
