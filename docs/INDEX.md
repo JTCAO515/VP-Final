@@ -9,7 +9,7 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 ## Current Handoff Snapshot
 
-- **Updated:** 2026-07-12 by Codex / DEMO-01 provider inventory
+- **Updated:** 2026-07-12 by Codex / DEMO-01 model route executor
 - **Base branch:** `main`
 - **Last fully verified commit:** `9e4d5a1`
 - **Current phase:** Phase 0 — production hardening
@@ -20,7 +20,7 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 | Ref | Work | State | Owner | Next action |
 | --- | --- | --- | --- | --- |
-| Issue #116 / DEMO-01a | Real LLM provider inventory and self-check | Implementation active: v3 provider/key/model-slot inventory and safe readiness diagnostics. No Copilot wiring, real call, key, or mock-success claim is included in this boundary. | Codex | Run full repository gates, submit the provider-inventory PR, then separately wire model routing, envelope repair, and trace attempts. |
+| Issue #196 / DEMO-01a2 | Wire v3 model routes through ModelRouter | Implementation active: route executor composes environment-selected primary/fallback providers and fails honestly on missing route configuration. Copilot pipeline wiring/repair/trace remains #197. | Codex | Run full repository gates, submit the route-executor PR against #195, then implement #197 after review/merge dependencies permit. |
 
 ### Immediate Queue
 
