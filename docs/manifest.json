@@ -854,6 +854,20 @@
       ]
     },
     {
+      "path": "docs/commercial/human-help-launch-policy.md",
+      "title": "Human Help Controlled Preview Policy",
+      "category": "business",
+      "type": "constraint",
+      "status": "accepted",
+      "owner": "operator / commerce",
+      "summary": "Controlled-preview service scope, safety boundary, targets, payment gate, data minimization, escalation, and review cadence for Human Help.",
+      "sourcePrefixes": [
+        "apps/server/src/modules/task/",
+        "apps/ops/src/app/tasks/",
+        "apps/web/src/app/human-help/"
+      ]
+    },
+    {
       "path": "docs/compliance/README.md",
       "title": "Compliance Notes",
       "category": "business",

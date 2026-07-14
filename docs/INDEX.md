@@ -252,6 +252,7 @@ Revenue, partner, payment, privacy, safety, and platform boundaries.
 | --- | --- | --- | --- | --- |
 | [Commercial Documentation](commercial/README.md) | explanation | active | commerce | Revenue lines, payment maturity, partner rules, and required evidence. |
 | [Compliance Notes](compliance/README.md) | explanation | active | operator / compliance | Privacy, payment, AI safety, retention, and disclosure boundaries. |
+| [Human Help Controlled Preview Policy](commercial/human-help-launch-policy.md) | constraint | accepted | operator / commerce | Controlled-preview service scope, safety boundary, targets, payment gate, data minimization, escalation, and review cadence for Human Help. |
 
 ## Planning and Reviews
 
