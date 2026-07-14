@@ -5,7 +5,7 @@ import { z } from "zod";
 import { getServerCaller } from "../_server";
 import { runtimeUnavailableResponse } from "../_runtimeError";
 import { applyIdentityCookies, resolveRequestIdentity } from "../../../lib/requestIdentity";
-import { findModelFailure } from "./modelFailure";
+import { findModelFailure, summarizeModelFailure } from "./modelFailure";
 
 const CopilotRequestSchema = z.object({
   message: z.string().min(1),
@@ -51,6 +51,8 @@ export async function POST(request: Request) {
     if (unavailable) return applyIdentityCookies(unavailable, cookieResponse);
     const modelFailure = findModelFailure(error);
     if (modelFailure) {
+      const diagnostic = summarizeModelFailure(error);
+      if (diagnostic) console.warn("copilot_model_provider_failure", diagnostic);
       return applyIdentityCookies(
         NextResponse.json(
           {

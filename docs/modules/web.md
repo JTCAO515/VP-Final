@@ -49,6 +49,11 @@ fixture text. The API route returns only a dialogue envelope for DEMO-01: Trip m
 Human Help, tool cards, and citations are intentionally absent until their separately governed work
 is complete.
 
+When configured model routes all fail, the route keeps the same public 503 contract and emits only a
+sanitized runtime diagnostic: route/provider id, configured model id, failure class, and latency. It
+never logs a prompt, provider response body, credential, cookie, or raw error payload. This is the
+minimum evidence needed to diagnose the real-provider gate without widening public error details.
+
 DEMO-01b keeps the Web surface deliberately narrow: it renders only the validated assistant
 headline/body/highlights envelope, a static read-only preview of up to three returned Trip days,
 and visible waiting, failure, and retry states. The preview contains no editing or action control;
