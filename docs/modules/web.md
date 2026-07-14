@@ -49,6 +49,13 @@ fixture text. The API route returns only a dialogue envelope for DEMO-01: Trip m
 Human Help, tool cards, and citations are intentionally absent until their separately governed work
 is complete.
 
+DEMO-01b keeps the Web surface deliberately narrow: it renders only the validated assistant
+headline/body/highlights envelope, a static read-only preview of up to three returned Trip days,
+and visible waiting, failure, and retry states. The preview contains no editing or action control;
+it is evidence of the response shape rather than a Trip Canvas. The previous fixture Trip Canvas,
+booking/share controls, Human Help CTA, commercial actions, tool cards, and citations are absent
+from this surface until their owning Phase 0 Issues are accepted.
+
 Trip and Copilot routes resolve a server-issued anonymous session cookie or verified Supabase SSR
 identity under [ADR-0004](../adr/ADR-0004-identity-trip-ownership-security.md). The browser stores only
 the last Trip id as a convenience; it does not store or submit owner identity or an authoritative
@@ -80,6 +87,8 @@ payloads, cookies, credentials, or narrative errors.
 - A disabled or unavailable action is hidden or clearly disabled; inert controls are not allowed.
 - Commercial actions show disclosure and use `/outbound`.
 - Responsive behavior is verified at 375, 768, 1280, and 1440 pixel widths.
+- At narrow widths, primary navigation uses four equal tracks and prompt cards wrap their text; no
+  Copilot element may force horizontal page scrolling.
 
 ## Verification
 
