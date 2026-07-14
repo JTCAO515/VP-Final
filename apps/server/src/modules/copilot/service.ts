@@ -238,7 +238,7 @@ function parseGeneratedEnvelope(value: unknown): {
   for (const [index, candidate] of candidates.entries()) {
     try {
       return {
-        envelope: CopilotEnvelopeSchema.parse(candidate),
+        envelope: CopilotEnvelopeSchema.parse(normalizeEnvelopeCandidate(candidate)),
         attempts: generated.attempts ?? [],
         repairCount: index,
       };
@@ -263,6 +263,20 @@ function repairCandidates(value: unknown): unknown[] {
         return candidate;
       }
     });
+}
+
+function normalizeEnvelopeCandidate(value: unknown): unknown {
+  if (!isRecord(value) || typeof value.message !== "string") return value;
+  const body = value.message.trim();
+  if (body.length === 0) return value;
+  return {
+    ...value,
+    message: {
+      headline: "China travel answer",
+      body,
+      highlights: [],
+    },
+  };
 }
 
 function assertDemoDialogueEnvelope(envelope: CopilotEnvelope): CopilotEnvelope {
@@ -581,4 +595,8 @@ function shouldRecordKnowledgeGap(envelope: CopilotEnvelope): boolean {
     body.includes("do not know") ||
     body.includes("could not answer")
   );
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
 }

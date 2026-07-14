@@ -107,7 +107,7 @@ export function createDemoCopilotModelDependencies(environment: Environment): {
         task: chain === "planning" ? "trip_writer" : "knowledge_qa",
         effort: chain === "planning" ? "high" : "medium",
         maxTokens: chain === "planning" ? 1_600 : 900,
-        prompt: `You are a China travel AI copilot. Return only a JSON Copilot envelope with intent \"${request.intent}\" for this message: ${request.message}. DEMO-01 is dialogue-only: tripActions, toolCards, commercialActions, and citations must be empty arrays and humanHelp must be null.`,
+        prompt: `You are a China travel AI copilot. Return only a JSON Copilot envelope for this message: ${request.message}. Required shape: {"intent":"${request.intent}","message":{"headline":"short title","body":"helpful answer","highlights":["optional short point"]},"tripActions":[],"toolCards":[],"commercialActions":[],"humanHelp":null,"risk":{"level":"low","reason":null},"citations":[]}. DEMO-01 is dialogue-only: tripActions, toolCards, commercialActions, and citations must be empty arrays and humanHelp must be null.`,
       });
       if (chain !== "planning" || !rewritePlanning) {
         return { candidate: firstResult.content, attempts: toTraceAttempts(firstResult.attempts) };

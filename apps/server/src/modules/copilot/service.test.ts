@@ -236,6 +236,32 @@ describe("createCopilotPipeline", () => {
     expect(JSON.stringify(traceService.listRuns())).not.toContain("How does this work?");
   });
 
+  it("repairs a string message from real providers into the typed message object", async () => {
+    const pipeline = createCopilotPipeline({
+      tripService: createVersionedInMemoryTripService(),
+      traceService: createInMemoryAgentTraceService(),
+      routeIntent: () => "question",
+      generateEnvelope: () =>
+        JSON.stringify({
+          intent: "question",
+          message: "Set up Alipay or WeChat Pay before you leave the airport.",
+          tripActions: [],
+          toolCards: [],
+          commercialActions: [],
+          humanHelp: null,
+          citations: [],
+        }),
+    });
+
+    const result = await pipeline.run({ message: "How should I prepare payments?" }, identity);
+
+    expect(result.envelope.message).toEqual({
+      headline: "China travel answer",
+      body: "Set up Alipay or WeChat Pay before you leave the airport.",
+      highlights: [],
+    });
+  });
+
   it("records anonymous success without retaining prompt or response text", async () => {
     const traceService = createInMemoryAgentTraceService();
     const pipeline = createCopilotPipeline({
