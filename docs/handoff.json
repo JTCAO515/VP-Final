@@ -1,61 +1,79 @@
 {
   "schemaVersion": 1,
   "updatedAt": "2026-07-14",
-  "updatedBy": "Codex / #181 merge-gate and serialized-handoff correction",
+  "updatedBy": "Codex / serialized handoff after merge-queue cleanup",
   "baseBranch": "main",
-  "lastVerifiedCommit": "40e77f1 after P0-21 merged with green Database contracts",
+  "lastVerifiedCommit": "b4b85fd after DOC-P0-04 merged; GitHub verify/docs/evals/Database contracts passed, Vercel Ops preview was externally rate-limited",
   "currentPhase": "Phase 0 — production hardening",
-  "maturity": "Trusted demo skeleton; not yet a production-safe or billing-ready MVP.",
-  "lastCompleted": "PR #212 merged P0-21 at 40e77f1 after enforced pgTAP/adapter/security-advisor evidence. PR #210 previously merged the DEMO-01 v3 Copilot pipeline correction at a0af840.",
+  "maturity": "Trusted demo skeleton with real-provider Copilot smoke evidence; not yet production-safe, billing-ready, or cost-guarded.",
+  "lastCompleted": "PR #214 merged DOC-P0-04 Human Help controlled-preview policy at b4b85fd. Stale PR #203 was closed as superseded, and Issue #197 was closed because the v3 pipeline implementation is on main. #188 has real public 200 Copilot responses, but direct production trace/cost row verification remains blocked by database/MCP read permission.",
   "activeWork": [
+    {
+      "ref": "Issue #188 / P0-07b",
+      "title": "Complete real-provider Copilot external evidence",
+      "state": "Public production requests to https://www.go2china.space/api/copilot returned real HTTP 200 CopilotEnvelope responses after #219/#220/#221. Safe trace summary is present, but direct production agent_runs attempts/cost row verification is blocked by Supabase/MCP database permission.",
+      "owner": "Codex / operator database access",
+      "next": "Obtain read-only access to the production project trace table or an approved sanitized export, then verify attempts_jsonb/cost_usd without exposing secrets or PII."
+    },
     {
       "ref": "Issue #183 / DEMO-01",
       "title": "Deliver the truthful real-LLM Copilot dialogue milestone",
-      "state": "The v3 Copilot pipeline is merged. Productized dialogue UI is ready in PR #213; the cost-guard child #185 remains D2-blocked on a trusted IP contract, durable rate-limit adapter, and durable telemetry injection.",
+      "state": "Dialogue UI, route executor, provider compatibility, bounded repair, and production real-provider smoke are on main. Public demo remains not cost-guarded because #185 is D2-blocked.",
       "owner": "Codex",
-      "next": "Obtain independent review for PR #213, then record real-provider staging evidence only after OA-005 verification."
+      "next": "Keep demo exposure controlled until #185 has frozen trusted-IP, durable rate-limit, and telemetry interfaces."
     },
     {
-      "ref": "Issues #192, #127, #134",
-      "title": "Review-ready retrieval, design-token, and Human Help policy controls",
-      "state": "PRs #200, #202, and #214 are current-main review-ready implementation/documentation controls. They remain unmerged under the #181 independent-review gate.",
-      "owner": "Codex / architecture review",
-      "next": "Merge only after independent acceptance; subsequent feature work consumes the accepted interfaces without duplicate branches."
+      "ref": "Issue #185 / DEMO-01c",
+      "title": "Demo cost guard and rate-limit controls",
+      "state": "Still D2-blocked. Current system lacks trusted request-IP extraction, durable rate-limit adapter/configuration, and durable telemetry injection path. In-memory guards are not acceptable production evidence.",
+      "owner": "Architecture / Codex after interface freeze",
+      "next": "Freeze the three interfaces before implementation; do not add fixture or process-local guards as completion."
+    },
+    {
+      "ref": "Issue #139 / governance delta",
+      "title": "Phase 2/3 dependency graph and owner-lane follow-up",
+      "state": "Original GOV-P0 work is complete. Stale PR #203 was closed because it deleted the canonical Phase 0/1 graph and edited handoff. A narrow successor may still add Phase 2/3/lane coverage without replacing the canonical graph.",
+      "owner": "Overall design / future narrow PR",
+      "next": "If still desired, open a fresh main-based docs PR that preserves phase-0-1-dependency-graph.md and does not edit handoff."
     }
   ],
   "nextActions": [
     {
       "priority": "P0",
-      "action": "Obtain independent review for DEMO-01b PR #213, then keep DEMO-01c #185 blocked until its D2 IP/rate-limit/telemetry interfaces are explicitly owned.",
-      "exitCriteria": "#213 is reviewed and merged; #185 has either frozen durable interfaces or an honest blocked state. No fixture response is represented as a real provider result."
+      "action": "Finish #188 by verifying production trace/cost persistence through an approved read-only database path.",
+      "exitCriteria": "A sanitized observation confirms agent_runs attempts/cost rows for real provider calls, or the issue records a durable operator-action blocker. No secret, prompt, or PII is exposed."
     },
     {
       "priority": "P0",
-      "action": "Obtain independent review for PR #200 retrieval/citations, PR #202 design tokens, and PR #214 Human Help policy; do not start duplicate implementations.",
-      "exitCriteria": "Each PR merges through #181 and the next canonical dependency state is recorded in a serialized handoff refresh."
+      "action": "Keep #185 blocked until trusted request-IP, durable rate-limit store, and telemetry injection interfaces are frozen.",
+      "exitCriteria": "The interface owner, privacy/retention rules, storage adapter, and limit_exceeded event path are accepted before any cost-guard code PR."
     },
     {
       "priority": "P0",
-      "action": "Keep OA-005 open until the operator configures the four trusted provider credentials and catalog-confirmed model ids in a preview or staging environment.",
-      "exitCriteria": "OA-005 has sanitized configuration and measured staging evidence; until then no live-provider success is claimed."
+      "action": "Treat #214 as the accepted Human Help controlled-preview baseline for P0-13 through P0-16; keep P0-17 payment deferred while OA-006 is deferred.",
+      "exitCriteria": "Human Task implementation consumes the policy without claiming paid fulfilment, emergency response, or guaranteed SLA."
     },
     {
-      "priority": "P0",
-      "action": "Before any external service claim, update the operator-action register with placeholder, owner, verification, and novice tutorial steps.",
-      "exitCriteria": "No third-party API, payment, deployment, DNS, or store capability is presented as live without recorded operator verification."
+      "priority": "P1",
+      "action": "Replace stale #203 only with a narrow Phase 2/3 owner-lane graph delta if still needed.",
+      "exitCriteria": "The successor preserves the canonical Phase 0/1 graph, avoids handoff edits, and passes docs governance."
     }
   ],
   "blockers": [
-    "P0-03 and P0-04 code are merged, but real Supabase evidence still awaits OA-001 through OA-004 before production readiness can be claimed.",
+    "Direct production trace/cost row verification for #188 is blocked by Supabase/MCP database read permission; public responses prove real Copilot success but not direct DB row evidence.",
+    "Vercel Ops preview deployment for PR #214 was externally build-rate-limited; local apps/ops build and GitHub verify/docs/evals/Database contracts passed before merge.",
+    "P0-03 and P0-04 code are merged, but real Supabase production evidence still awaits OA-001 through OA-004 before full production readiness can be claimed.",
     "Ops RBAC code is merged; real first-admin and deployed role evidence awaits OA-010.",
-    "OA-005 blocks real-provider evidence even after the P0-07 pipeline correction merged; missing provider configuration must remain an honest unavailable result.",
     "DEMO-01c #185 remains D2-blocked because no trusted request-IP contract, durable rate-limit adapter/configuration, or durable telemetry injection path is frozen.",
-    "Human Task, outbound click, and telemetry runtime persistence are incomplete.",
-    "Real payment evidence, rate limiting, observability, legal pages, and production smoke gates are incomplete."
+    "Human Task, outbound click, telemetry runtime persistence, real payment evidence, observability, legal pages, and production smoke gates remain incomplete or gated."
   ],
   "verification": [
+    "Merge queue cleanup: PR #214 was rebased onto main, removed docs/handoff.json edits, passed local docs:check, docs:impact, typecheck, lint, build, test, and evals; GitHub verify/docs/evals/Database contracts passed; merged at b4b85fd. Vercel Ops preview was externally rate-limited, while local apps/ops build passed.",
+    "Stale governance PR #203 was closed as superseded because it deleted docs/governance/phase-0-1-dependency-graph.md, edited docs/handoff.json, and would have replaced the current canonical graph instead of applying a narrow delta.",
+    "Issue #197 was closed as implemented because v3 route executor and Copilot pipeline/repair/trace composition are on main through PRs #205/#210 plus production fixes #219/#220/#221.",
+    "P0-07b #188 production smoke evidence: public POST to https://www.go2china.space/api/copilot returned HTTP 200 with a typed CopilotEnvelope for Shanghai payment/metro guidance in 24.643s; a second smoke returned safe trace summary keys. Direct production agent_runs attempts/cost row verification remains blocked by database permission.",
     "P0-21 merged in PR #212 at 40e77f1 after Verify, Evals, Documentation Governance, Database contracts, and both Vercel previews passed. The fail-closed runner executed nonzero pgTAP cases and the Security Advisor reported no mutable set_updated_at search_path warning.",
-    "DEMO-01b evidence: PR #213 is rebased onto main after #210. The prior head passed Verify, Database contracts, Docs, Evals, both Vercel previews, and 375/768/1280 browser checks; its new base/head must rerun CI before review is accepted.",
+    "DEMO-01b merge evidence: PR #213 productized the dialogue UI and merged before the current queue cleanup; subsequent real-provider production smoke is recorded under #188.",
     "PR #106 merged at c7f3faa after verify, evals, and both Vercel previews passed.",
     "PR #107 merged at 2fca99c after verify, evals, database contracts, and both Vercel previews passed.",
     "PR #109 merged at 87744ed after documentation governance, verify, evals, database contracts, and both Vercel previews passed.",
