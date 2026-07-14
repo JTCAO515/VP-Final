@@ -126,10 +126,8 @@ export function createCopilotPipeline({
         if (demoDialogueOnly && parsedGeneration.envelope.intent !== intent) {
           throw new Error("Copilot envelope intent does not match the router decision.");
         }
-        const citedEnvelope = validateCitations(parsedGeneration.envelope, retrievedFacts);
-        const envelope = demoDialogueOnly
-          ? assertDemoDialogueEnvelope(citedEnvelope)
-          : citedEnvelope;
+        if (demoDialogueOnly) assertDemoDialogueEnvelope(parsedGeneration.envelope);
+        const envelope = validateCitations(parsedGeneration.envelope, retrievedFacts);
         if (knowledgeService && shouldRecordKnowledgeGap(envelope)) {
           const city = detectCity(parsedInput.message);
           await knowledgeService.recordGap({
