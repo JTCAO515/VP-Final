@@ -45,11 +45,15 @@ pack. The frozen product baseline is `docs/planning/visepanda-v2-final-architect
 
 - Work one issue at a time.
 - Use the branch name assigned by the operator; otherwise follow the active repository convention.
-- Open PRs against the previous stacked branch or `main`, matching the issue sequence.
+- Open every implementation PR directly against current `main`; stacked PR bases are forbidden.
 - One PR may change one module boundary, one contract, or one UI flow. Do not bundle unrelated cleanup.
 - Fill every PR template section: contracts, tests, evals, commercial tracking, rollback.
 - Update at least one mapped non-generated document for every source/config change.
-- Update `docs/handoff.json` for every repository change and regenerate `docs/INDEX.md`.
+- An implementation Agent MUST NOT approve or merge its own PR. After all required checks are green,
+  request architecture review and stop; D2/D3 changes require an explicit invariant review.
+- Do not update `docs/handoff.json` or generated `docs/INDEX.md` in an ordinary feature PR. Record the
+  expected handoff delta in the PR, then refresh the snapshot in a serialized post-merge documentation
+  action. A PR whose purpose is that refresh updates both files and runs the generator.
 
 ## Schema First
 

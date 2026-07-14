@@ -18,6 +18,7 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm docs:index
       - run: pnpm docs:check
       - name: Verify source-to-document synchronization (pull request)
         if: github.event_name == 'pull_request'

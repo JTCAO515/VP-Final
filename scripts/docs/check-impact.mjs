@@ -44,19 +44,6 @@ const changedSources = [...changed].filter(
 );
 
 const failures = [];
-const meaningfulChanges = [...changed].filter(
-  (file) => file !== "docs/INDEX.md" && file !== manifest.impact.handoffPath,
-);
-
-if (
-  manifest.impact.requireHandoffForEveryChange &&
-  meaningfulChanges.length > 0 &&
-  !changed.has(manifest.impact.handoffPath)
-) {
-  failures.push(
-    `every project change must update ${manifest.impact.handoffPath} and regenerate docs/INDEX.md`,
-  );
-}
 
 for (const source of changedSources) {
   const mapped = manifest.documents.filter((document) =>
@@ -81,5 +68,5 @@ if (failures.length > 0) {
 }
 
 console.log(
-  `Documentation impact check passed: ${changedSources.length} source/config changes, ${changedDocs.size} documentation changes, handoff synchronized.`,
+  `Documentation impact check passed: ${changedSources.length} source/config changes and ${changedDocs.size} documentation changes.`,
 );

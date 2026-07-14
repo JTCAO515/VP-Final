@@ -6,11 +6,16 @@ Status: active
 `docs/INDEX.md`. It lets a new human or coding Agent understand what is active, what was last
 verified, what is blocked, what comes next, and which Markdown documents to read first.
 
-## Mandatory Update Rule
+## Serialized Update Rule
 
-Every repository change MUST update `docs/handoff.json`, including code, configuration,
-documentation, workflow, dependency, planning, and operational changes. Generated `docs/INDEX.md`
-does not count as the handoff source.
+`docs/handoff.json` records merged repository truth, not a collection of speculative branch states.
+Every implementation PR MUST describe its expected handoff delta in the PR, but MUST NOT edit the
+snapshot or its generated `docs/INDEX.md` solely because the branch is in review. This prevents
+parallel PRs from overwriting each other's current-state evidence.
+
+After an authorized merge batch, release decision, or D2/D3 observation, the documentation owner MUST
+make one serialized, `main`-based handoff refresh. Generated `docs/INDEX.md` does not count as the
+handoff source and must be regenerated whenever the snapshot changes.
 
 Update only facts changed by the PR:
 
@@ -25,12 +30,15 @@ Update only facts changed by the PR:
 
 ## Handoff Procedure
 
-1. Inspect `main`, current git state, open PRs/Issues, and relevant deployed state.
-2. Compare the accepted objective with current evidence; do not copy stale status forward.
-3. Update `docs/handoff.json` in the same PR as the project change.
-4. Run `pnpm docs:index`; never hand-edit `docs/INDEX.md`.
+1. In an implementation PR, inspect `main`, current state, the Issue, and deployed evidence; state the
+   expected handoff delta without editing the snapshot.
+2. After authorized merges, open the serialized refresh from current `main`; inspect the merged commits,
+   open PRs/Issues, and relevant deployed state.
+3. Compare the accepted objective with evidence; do not copy stale status forward.
+4. Update `docs/handoff.json`, then run `pnpm docs:index`; never hand-edit `docs/INDEX.md`.
 5. Run `pnpm docs:check` and `pnpm docs:impact -- --base <ref>`.
-6. In the PR, state what changed in the handoff and whether a production observation remains.
+6. In the refresh PR, state the merged changes represented, remaining production observations, and the
+   next execution horizon.
 
 ## Truthfulness Rules
 
@@ -44,6 +52,7 @@ Update only facts changed by the PR:
 
 ## CI Enforcement
 
-`pnpm docs:check` validates the handoff schema and reading-order paths. `pnpm docs:impact` rejects
-any meaningful repository change that does not include `docs/handoff.json`, while still requiring a
-separate mapped Markdown update for source/config changes.
+`pnpm docs:check` validates the handoff schema, reading-order paths, and generated Index. `pnpm
+docs:impact` requires a mapped Markdown update for source/config changes, but does not require the
+serialized snapshot in every implementation PR. The merge reviewer enforces the expected-handoff-delta
+template; the refresh PR closes that delta with merged evidence.

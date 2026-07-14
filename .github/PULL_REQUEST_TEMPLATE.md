@@ -38,7 +38,8 @@ Closes #
 
 ## Handoff synchronization
 
-<!-- summarize changes to docs/handoff.json and the generated Index -->
+<!-- State the expected post-merge handoff delta. Only a serialized snapshot-refresh PR edits
+docs/handoff.json and regenerates docs/INDEX.md. -->
 
 ## Operator actions
 
@@ -56,7 +57,8 @@ Closes #
 - [ ] Each implementation step has reproducible verification; unexpected complexity is reduced or justified.
 - [ ] Interface baseline and consumers were reviewed when applicable.
 - [ ] Source changes update mapped documentation.
-- [ ] `docs/handoff.json` and the generated Index reflect the post-merge state.
+- [ ] Expected handoff delta is recorded; ordinary implementation PRs do not edit the shared snapshot.
+- [ ] If this is a snapshot/registry/authority refresh, `docs/handoff.json` and generated Index reflect merged truth.
 - [ ] Missing data and unavailable dependencies fail/degrade honestly.
 - [ ] External manual work is registered with owner/status/verification/rollback; no secret is present.
 - [ ] Unrun checks and residual risk are disclosed.
