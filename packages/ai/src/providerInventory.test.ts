@@ -29,6 +29,44 @@ describe("demo provider inventory", () => {
     );
   });
 
+  it("applies provider-specific demo compatibility defaults", () => {
+    expect(
+      resolveDemoModelRoute(
+        {
+          MOONSHOT_API_KEY: "secret",
+          VISEPANDA_MODEL_CONCIERGE_PRIMARY: "kimi-k2.6",
+        },
+        "concierge_primary",
+      ),
+    ).toMatchObject({
+      baseUrl: "https://api.moonshot.ai/v1",
+      extraBody: { thinking: { type: "disabled" } },
+    });
+    expect(
+      resolveDemoModelRoute(
+        {
+          ZHIPU_API_KEY: "secret",
+          VISEPANDA_MODEL_CONCIERGE_FALLBACK: "glm-5.2",
+        },
+        "concierge_fallback",
+      ),
+    ).toMatchObject({
+      baseUrl: "https://api.z.ai/api/paas/v4",
+      extraBody: { thinking: { type: "disabled" } },
+    });
+    expect(
+      resolveDemoModelRoute(
+        {
+          DEEPSEEK_API_KEY: "secret",
+          VISEPANDA_MODEL_CONCIERGE_TERTIARY: "deepseek-v4-pro",
+        },
+        "concierge_tertiary",
+      ),
+    ).toMatchObject({
+      extraBody: { thinking: { type: "disabled" } },
+    });
+  });
+
   it("keeps planning rewrite disabled unless explicitly enabled", () => {
     expect(planningRewriteEnabled({})).toBe(false);
     expect(planningRewriteEnabled({ PLANNING_REWRITE_ENABLED: "true" })).toBe(true);

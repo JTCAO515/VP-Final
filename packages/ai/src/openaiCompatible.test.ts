@@ -49,6 +49,42 @@ describe("OpenAI-compatible provider", () => {
     );
   });
 
+  it("merges provider-specific body fields without overriding the core request", async () => {
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          choices: [{ message: { content: '{"intent":"chat_only"}' } }],
+        }),
+        { status: 200 },
+      ),
+    );
+    const provider = createOpenAiCompatibleProvider({
+      id: "primary",
+      baseUrl: "https://provider.example/v1",
+      apiKey: "test-key",
+      model: "configured-model",
+      timeoutMs: 1_000,
+      maxTokens: 100,
+      extraBody: {
+        thinking: { type: "disabled" },
+        model: "should-not-win",
+        response_format: { type: "text" },
+      },
+      fetchImpl,
+    });
+
+    await provider.generate({ task: "router", prompt: "Classify", effort: "low" });
+
+    const [, init] = fetchImpl.mock.calls[0] ?? [];
+    expect(JSON.parse(String(init?.body))).toEqual({
+      thinking: { type: "disabled" },
+      model: "configured-model",
+      messages: [{ role: "user", content: "Classify" }],
+      max_tokens: 100,
+      response_format: { type: "json_object" },
+    });
+  });
+
   it("normalizes HTTP and malformed responses without preserving provider text", async () => {
     const httpProvider = createOpenAiCompatibleProvider({
       id: "primary",

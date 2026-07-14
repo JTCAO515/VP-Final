@@ -22,7 +22,9 @@ Copilot-specific provider composition belong in their owning runtime module.
 - Environment resolver for intentionally configured primary/fallback provider slots. It reports an
   incomplete slot as unavailable and does not choose a vendor or make a network call by itself.
 - DEMO-01 v3 provider inventory for DashScope, DeepSeek, Moonshot, and Zhipu. Route model names
-  are environment-selected and readiness diagnostics never expose key values.
+  are environment-selected and readiness diagnostics never expose key values. Moonshot, DeepSeek,
+  and Zhipu routes inject their documented non-thinking request body because DEMO-01 expects short
+  JSON envelopes rather than reasoning traces.
 
 ## Not Yet Production-Implemented
 
