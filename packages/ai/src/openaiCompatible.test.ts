@@ -104,6 +104,43 @@ describe("OpenAI-compatible provider", () => {
       timeoutProvider.generate({ task: "router", prompt: "Classify", effort: "low" }),
     ).rejects.toEqual(expect.objectContaining({ failureClass: "timeout" }));
   });
+
+  it("uses the provider timeout as the per-attempt cap", async () => {
+    vi.useFakeTimers();
+    try {
+      const fetchImpl = vi.fn<typeof fetch>(
+        (_input, init) =>
+          new Promise((_resolve, reject) => {
+            init?.signal?.addEventListener("abort", () => {
+              reject(new DOMException("Aborted", "AbortError"));
+            });
+          }),
+      );
+      const provider = createOpenAiCompatibleProvider({
+        id: "primary",
+        baseUrl: "https://provider.example",
+        apiKey: "test-key",
+        model: "model",
+        timeoutMs: 1_000,
+        maxTokens: 100,
+        fetchImpl,
+      });
+
+      const result = provider.generate({
+        task: "router",
+        prompt: "Classify",
+        effort: "low",
+        timeoutMs: 25_000,
+      });
+
+      await vi.advanceTimersByTimeAsync(999);
+      await expect(Promise.race([result, Promise.resolve("pending")])).resolves.toBe("pending");
+      await vi.advanceTimersByTimeAsync(1);
+      await expect(result).rejects.toEqual(expect.objectContaining({ failureClass: "timeout" }));
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });
 
 describe("provider configuration", () => {

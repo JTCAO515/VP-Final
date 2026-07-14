@@ -17,8 +17,8 @@ Copilot-specific provider composition belong in their owning runtime module.
 - Token and cost calculation from provider pricing.
 - In-memory cost ledger for tests.
 - Static provider for deterministic tests.
-- OpenAI-compatible adapter contract: bounded JSON-object request, abortable timeout, safe response
-  parsing, and no upstream-body leakage.
+- OpenAI-compatible adapter contract: bounded JSON-object request, per-attempt timeout cap,
+  abortable timeout, safe response parsing, and no upstream-body leakage.
 - Environment resolver for intentionally configured primary/fallback provider slots. It reports an
   incomplete slot as unavailable and does not choose a vendor or make a network call by itself.
 - DEMO-01 v3 provider inventory for DashScope, DeepSeek, Moonshot, and Zhipu. Route model names
@@ -41,6 +41,9 @@ Copilot-specific provider composition belong in their owning runtime module.
 
 - Provider-specific behavior is isolated behind `ModelProvider`.
 - A provider failure may trigger the next configured provider; all failures produce an honest error.
+- A route-level router budget is a total ceiling, not permission for one provider to consume the
+  whole chain. The adapter must cap each attempt at the provider's configured timeout so fallback
+  providers can still execute within the total budget.
 - Missing keys or total provider failure must not return a fabricated answer.
 - DEMO-01 accepts a bounded locally repaired JSON candidate only after `CopilotEnvelopeSchema` passes.
   It permits dialogue only: no Trip actions, tools, commerce, Human Help, or citations. A main-model

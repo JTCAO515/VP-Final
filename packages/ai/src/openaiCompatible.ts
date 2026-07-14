@@ -70,7 +70,8 @@ export function createOpenAiCompatibleProvider(
     model: config.model,
     async generate(request: RoutedModelRequest): Promise<ModelProviderResult> {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), request.timeoutMs ?? config.timeoutMs);
+      const timeoutMs = Math.min(request.timeoutMs ?? config.timeoutMs, config.timeoutMs);
+      const timeout = setTimeout(() => controller.abort(), timeoutMs);
       try {
         const response = await (config.fetchImpl ?? fetch)(
           `${withoutTrailingSlash(config.baseUrl)}/chat/completions`,
