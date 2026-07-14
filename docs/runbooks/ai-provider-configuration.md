@@ -60,8 +60,9 @@ set to `true`; it remains off for the financing demo to enforce one main model c
    the matching variables; a production-only runtime mode does not create a valid Preview/staging
    verification target. Do not add them to any client-exposed environment namespace.
 2. Keep `PLANNING_REWRITE_ENABLED` absent or `false` for the demo. The runtime uses a 20 second
-   per-provider ceiling inside a 25 second router budget; do not claim a latency target until OA-005
-   records a measured call.
+   per-provider ceiling inside a 25 second router budget. The provider ceiling is the per-attempt
+   cap; it must not be stretched to the remaining route budget, otherwise a slow primary provider can
+   starve every fallback provider. Do not claim a latency target until OA-005 records a measured call.
 3. Deploy to preview/staging with the explicit runtime mode required by ADR-0005. Check the build log
    has no Turborepo warning that a listed server variable is unavailable to the application. Do not use
    `local-demo` as a production fallback.
