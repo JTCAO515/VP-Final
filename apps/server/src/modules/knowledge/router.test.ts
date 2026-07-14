@@ -39,7 +39,7 @@ describe("knowledgeRouter", () => {
               verifiedAt: "2026-07-01T00:00:00.000Z",
               expiresAt: null,
               version: 1,
-              status: "active",
+              status: "reviewed",
             },
             {
               id: "fact-expired",
@@ -51,7 +51,7 @@ describe("knowledgeRouter", () => {
               verifiedAt: "2026-01-01T00:00:00.000Z",
               expiresAt: nowExpired,
               version: 1,
-              status: "active",
+              status: "reviewed",
             },
           ],
         },
@@ -96,7 +96,7 @@ describe("knowledgeRouter", () => {
         confidence: 0.7,
         source: "editorial",
       }),
-    ).resolves.toMatchObject({ factType: "rainy_fit", status: "active" });
+    ).resolves.toMatchObject({ factType: "rainy_fit", status: "draft" });
 
     await expect(
       caller.knowledge.createFact({
@@ -131,7 +131,7 @@ describe("knowledgeRouter", () => {
               verifiedAt: "2026-01-01T00:00:00.000Z",
               expiresAt: nowExpired,
               version: 1,
-              status: "active",
+              status: "reviewed",
             },
           ],
         },

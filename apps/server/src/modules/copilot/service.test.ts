@@ -112,6 +112,107 @@ describe("createCopilotPipeline", () => {
     ]);
   });
 
+  it("grounds citations in eligible retrieved facts and ignores expired evidence", async () => {
+    const knowledgeService = createInMemoryKnowledgeService([
+      {
+        id: "poi-yu-garden",
+        city: "Shanghai",
+        category: "attraction",
+        nameEn: "Yu Garden",
+        sourceIds: {},
+        commercialLinks: [],
+        facts: [
+          {
+            id: "fact-reviewed",
+            poiId: "poi-yu-garden",
+            factType: "metro_access",
+            value: { label: "Near Yuyuan Garden station" },
+            confidence: 0.9,
+            source: "editorial-review",
+            verifiedAt: "2026-07-10T00:00:00.000Z",
+            expiresAt: null,
+            version: 1,
+            status: "reviewed",
+          },
+          {
+            id: "fact-expired",
+            poiId: "poi-yu-garden",
+            factType: "hours",
+            value: { label: "Old hours" },
+            confidence: 0.9,
+            source: "editorial-review",
+            verifiedAt: "2026-01-01T00:00:00.000Z",
+            expiresAt: "2026-07-01T00:00:00.000Z",
+            version: 1,
+            status: "reviewed",
+          },
+        ],
+      },
+    ]);
+    const pipeline = createCopilotPipeline({
+      knowledgeService,
+      tripService: createVersionedInMemoryTripService(),
+      generateEnvelope: ({ intent, retrievedFacts }) => ({
+        intent,
+        message: { headline: "Grounded", body: "Use the metro.", highlights: [] },
+        citations: retrievedFacts.map((fact) => ({
+          fact_id: fact.id,
+          label: "Model-controlled label",
+          source: "Model-controlled source",
+        })),
+      }),
+    });
+
+    const result = await pipeline.run(
+      { message: "How do I get to Yu Garden in Shanghai?" },
+      identity,
+    );
+
+    expect(result.trace.retrievedFactIds).toEqual(["fact-reviewed"]);
+    expect(result.envelope.citations).toEqual([
+      {
+        fact_id: "fact-reviewed",
+        label: "Yu Garden: metro_access",
+        source: "editorial-review",
+      },
+    ]);
+  });
+
+  it("rejects citations that are outside the retrieval allowlist", async () => {
+    const knowledgeService = createInMemoryKnowledgeService([], []);
+    const pipeline = createCopilotPipeline({
+      knowledgeService,
+      tripService: createVersionedInMemoryTripService(),
+      generateEnvelope: ({ intent }) => ({
+        intent,
+        message: { headline: "Ungrounded", body: "No.", highlights: [] },
+        citations: [{ fact_id: "invented-fact" }],
+      }),
+    });
+
+    await expect(pipeline.run({ message: "How does payment work?" }, identity)).rejects.toThrow(
+      "Citation does not reference retrieved evidence",
+    );
+  });
+
+  it("returns an honest no-evidence answer and redacts PII from the stored gap", async () => {
+    const knowledgeService = createInMemoryKnowledgeService([], []);
+    const pipeline = createCopilotPipeline({
+      knowledgeService,
+      tripService: createVersionedInMemoryTripService(),
+    });
+
+    const result = await pipeline.run(
+      { message: "What is the newest rule? Contact me at alex@example.com or +1 415 555 0123" },
+      identity,
+    );
+
+    expect(result.envelope.message.headline).toBe("Not enough verified information yet");
+    await expect(knowledgeService.listGaps({ status: "open" })).resolves.toMatchObject([
+      { questionPattern: "what is the newest rule contact me at private email or private number" },
+    ]);
+  });
+
   it("rejects generator output that does not match CopilotEnvelope", async () => {
     const traceService = createInMemoryAgentTraceService();
     const pipeline = createCopilotPipeline({

@@ -52,6 +52,9 @@ Copilot-specific provider composition belong in their owning runtime module.
 - Cost records are measurements, not billing ledgers.
 - Trace storage follows [ADR-0007](../adr/ADR-0007-agent-trace-privacy-retention.md): it stores only
   allowlisted metadata and digests, never raw model/tool payloads, and has a 30-day retention deadline.
+- Retrieval context contains only currently eligible reviewed POI facts. Model citations are validated
+  against that per-request allowlist; labels and sources are derived from facts, never trusted from
+  model output. A no-evidence answer remains explicit rather than speculative.
 
 ## Verification
 

@@ -1,6 +1,7 @@
 import {
   INITIAL_KNOWLEDGE_GAPS,
   INITIAL_POIS,
+  isEligiblePoiFact,
   KnowledgeGapSchema,
   PoiSchema,
   updatePoiFact,
@@ -59,13 +60,11 @@ export function createInMemoryKnowledgeService(
         .map((poi) =>
           PoiSchema.parse({
             ...poi,
-            facts: poi.facts.filter(
-              (fact) =>
-                (input.includeExpired ||
-                  !fact.expiresAt ||
-                  Date.parse(fact.expiresAt) >= Date.now()) &&
-                (input.includeDeprecated || fact.status !== "deprecated"),
-            ),
+            facts: poi.facts.filter((fact) => {
+              if (isEligiblePoiFact(fact)) return true;
+              if (input.includeDeprecated && fact.status === "deprecated") return true;
+              return input.includeExpired && isExpired(fact);
+            }),
             commercialLinks: poi.commercialLinks.filter((link) => link.url.length > 0),
           }),
         );
@@ -84,7 +83,7 @@ export function createInMemoryKnowledgeService(
         verifiedAt: new Date().toISOString(),
         expiresAt: input.expiresAt ?? null,
         version: 1,
-        status: "active",
+        status: "draft",
       };
       pois = pois.map((candidate) =>
         candidate.id === input.poiId
@@ -113,7 +112,7 @@ export function createInMemoryKnowledgeService(
       return pois.flatMap((poi) =>
         poi.facts.filter(
           (fact) =>
-            fact.status === "active" &&
+            fact.status === "reviewed" &&
             fact.expiresAt &&
             Date.parse(fact.expiresAt) < now.getTime(),
         ),
@@ -124,7 +123,7 @@ export function createInMemoryKnowledgeService(
       if (!existing) return null;
       pois = updatePoiFact(pois, input.factId, existing.value, {
         expiresAt: input.expiresAt ?? null,
-        status: "active",
+        status: "reviewed",
       });
       return findFact(pois, input.factId);
     },
@@ -194,7 +193,13 @@ function assertWritableFact(input: {
 function normalizeGapPattern(question: string): string {
   return question
     .toLowerCase()
+    .replace(/[\w.+-]+@[\w.-]+\.[a-z]{2,}/g, " private email ")
+    .replace(/\b(?:\+?\d[\d\s()-]{6,}\d)\b/g, " private number ")
     .replace(/[^a-z0-9\s]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function isExpired(fact: { expiresAt: string | null }): boolean {
+  return fact.expiresAt !== null && Date.parse(fact.expiresAt) < Date.now();
 }

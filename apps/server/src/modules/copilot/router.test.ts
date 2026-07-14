@@ -16,7 +16,7 @@ describe("copilotRouter", () => {
     });
 
     expect(result.trip?.title).toBe("Beijing first-timer");
-    expect(result.trace.retrievedFactIds).toEqual(["stub:china-execution-basics"]);
+    expect(result.trace.retrievedFactIds).toEqual([]);
   });
 
   it("runs second-pass completion through the app router", async () => {
