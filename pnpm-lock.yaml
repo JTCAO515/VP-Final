@@ -51,6 +51,9 @@ importers:
       '@visepanda/domain':
         specifier: workspace:*
         version: link:../../packages/domain
+      '@visepanda/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       next:
         specifier: '15'
         version: 15.5.20(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -128,6 +131,9 @@ importers:
       '@visepanda/domain':
         specifier: workspace:*
         version: link:../../packages/domain
+      '@visepanda/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       next:
         specifier: '15'
         version: 15.5.20(react-dom@19.2.7(react@19.2.7))(react@19.2.7)

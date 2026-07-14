@@ -1,6 +1,6 @@
 # VisePanda V2 Red Gold Design System
 
-状态：Recommended Theme Candidate v0.2
+状态：Active canonical v1.0
 日期：2026-07-09
 输入来源：UI-UX-Pro-MAX + frontend-design + impeccable 第二轮评审
 明确要求：中国元素；主题使用中国红与烫金。
@@ -128,15 +128,15 @@ Master tokens use OKLCH. Hex fallback is included for implementation convenience
   color-scheme: light;
 
   /* Surface */
-  --vp-bg: oklch(0.995 0.002 90);              /* #fefdf9 */
-  --vp-app: oklch(0.972 0.006 90);             /* #f8f6ee */
-  --vp-surface: oklch(1 0 0);                  /* #ffffff */
-  --vp-surface-warm: oklch(0.985 0.007 90);    /* #fbfaf5 */
-  --vp-surface-red: oklch(0.955 0.025 28);     /* soft red wash */
-  --vp-surface-gold: oklch(0.945 0.045 82);    /* soft foil wash */
+  --vp-bg: oklch(0.995 0.002 90); /* #fefdf9 */
+  --vp-app: oklch(0.972 0.006 90); /* #f8f6ee */
+  --vp-surface: oklch(1 0 0); /* #ffffff */
+  --vp-surface-warm: oklch(0.985 0.007 90); /* #fbfaf5 */
+  --vp-surface-red: oklch(0.955 0.025 28); /* soft red wash */
+  --vp-surface-gold: oklch(0.945 0.045 82); /* soft foil wash */
 
   /* Ink */
-  --vp-ink: oklch(0.18 0.018 35);              /* near black warm ink */
+  --vp-ink: oklch(0.18 0.018 35); /* near black warm ink */
   --vp-ink-soft: oklch(0.34 0.018 35);
   --vp-muted: oklch(0.47 0.014 35);
   --vp-faint: oklch(0.64 0.012 35);
@@ -146,11 +146,11 @@ Master tokens use OKLCH. Hex fallback is included for implementation convenience
   --vp-line-strong: oklch(0.76 0.018 80);
 
   /* Brand */
-  --vp-china-red: oklch(0.53 0.20 28);         /* primary red */
-  --vp-china-red-hover: oklch(0.45 0.20 28);
+  --vp-china-red: oklch(0.53 0.2 28); /* primary red */
+  --vp-china-red-hover: oklch(0.45 0.2 28);
   --vp-china-red-soft: oklch(0.94 0.045 28);
 
-  --vp-foil-gold: oklch(0.68 0.14 82);         /* usable foil gold */
+  --vp-foil-gold: oklch(0.68 0.14 82); /* usable foil gold */
   --vp-foil-gold-dark: oklch(0.52 0.12 82);
   --vp-foil-gold-soft: oklch(0.93 0.05 82);
 
@@ -177,13 +177,13 @@ Master tokens use OKLCH. Hex fallback is included for implementation convenience
 
 ### 4.1 Color Distribution
 
-| Color | Target share | Use |
-|---|---:|---|
-| Porcelain / white | 60-70% | page and panels |
-| Ink | 15-20% | text and structure |
-| China red | 8-12% | primary action, active state |
-| Foil gold | 4-8% | premium/help/disclosure |
-| Jade / river | 3-6% | semantic success/info |
+| Color             | Target share | Use                          |
+| ----------------- | -----------: | ---------------------------- |
+| Porcelain / white |       60-70% | page and panels              |
+| Ink               |       15-20% | text and structure           |
+| China red         |        8-12% | primary action, active state |
+| Foil gold         |         4-8% | premium/help/disclosure      |
+| Jade / river      |         3-6% | semantic success/info        |
 
 If red exceeds 15% of the viewport, the UI will feel aggressive. If gold exceeds 10%, it will feel decorative instead of premium.
 
@@ -212,15 +212,15 @@ Rules:
 
 Scale:
 
-| Token | Size | Line height | Use |
-|---|---:|---:|---|
-| xs | 12px | 16px | metadata, chips |
-| sm | 14px | 20px | labels, helper |
-| md | 16px | 24px | body, input |
-| lg | 18px | 26px | card title |
-| xl | 22px | 30px | panel title |
-| 2xl | 28px | 36px | workspace title |
-| 3xl | 40px | 48px | compact first-screen H1 |
+| Token | Size | Line height | Use                     |
+| ----- | ---: | ----------: | ----------------------- |
+| xs    | 12px |        16px | metadata, chips         |
+| sm    | 14px |        20px | labels, helper          |
+| md    | 16px |        24px | body, input             |
+| lg    | 18px |        26px | card title              |
+| xl    | 22px |        30px | panel title             |
+| 2xl   | 28px |        36px | workspace title         |
+| 3xl   | 40px |        48px | compact first-screen H1 |
 
 ---
 
@@ -403,6 +403,34 @@ Non-negotiable:
 
 ## 10. Implementation Guidance
 
+### 10.1 Executable Token Contract
+
+`packages/ui/src/index.ts` is the single executable source for the semantic `--vp-*` token set.
+It exports platform-neutral values and `designTokenCss`; Web and Ops inject that CSS once at their
+root layouts. Native consumers import the same values directly when a Native surface exists.
+
+Applications may define local aliases such as `--accent` or `--panel` for readability, but aliases
+must resolve to `--vp-*` variables. Core red, gold, porcelain, ink, jade, river, line, and primary
+text colors must not be copied into `apps/**` stylesheets. `packages/ui` tests enforce WCAG AA text
+pairs and scan current product styles for token drift.
+
+The current implementation values deliberately preserve the accepted Web visual baseline:
+
+| Semantic token                            | Value                 | Intended use                               |
+| ----------------------------------------- | --------------------- | ------------------------------------------ |
+| `--vp-bg` / `--vp-app`                    | `#fefdf9` / `#f8f6ee` | porcelain page and application backgrounds |
+| `--vp-surface` / `--vp-surface-warm`      | `#ffffff` / `#fbfaf5` | panels and quiet secondary surfaces        |
+| `--vp-china-red` / `--vp-china-red-hover` | `#b92420` / `#a51f24` | primary action and active state            |
+| `--vp-foil-gold` / `--vp-foil-gold-dark`  | `#b98522` / `#7a5314` | premium, disclosure, and warning text      |
+| `--vp-jade` / `--vp-river`                | `#1f7a5a` / `#2f6f8f` | success and informational state            |
+
+### 10.2 Image Rules
+
+Travel imagery must show an inspectable execution context, have a recorded license/source before
+publication, use a fixed crop ratio appropriate to its card, and include meaningful alt text. A
+decorative image with no travel task context is not a substitute for product content. Attribution is
+stored with the content record or editorial source, never guessed from an image URL.
+
 For #39/#40:
 
 - Use this red-gold theme in `apps/web/src/app/styles.css`.
@@ -420,7 +448,7 @@ Recommended first CSS primitives:
 - `.vpRouteLedger`
 - `.vpExecutionCard`
 
-Do not create `packages/ui` components until another surface needs them.
+Do not create `packages/ui` page components until another surface needs them.
 
 ---
 

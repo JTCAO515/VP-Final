@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { designTokenCss } from "@visepanda/ui";
 import "./styles.css";
 
 export const metadata: Metadata = {
@@ -10,6 +11,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <html lang="en">
+      <head>
+        <style id="visepanda-design-tokens">{designTokenCss}</style>
+      </head>
       <body>{children}</body>
     </html>
   );

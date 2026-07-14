@@ -1,12 +1,12 @@
 :root {
   color-scheme: light;
-  --bg: #f8f6f2;
-  --panel: #ffffff;
-  --line: #ded6cc;
-  --text: #171412;
-  --muted: #74675e;
-  --accent: #c82f36;
-  --soft: #f1ebe3;
+  --bg: var(--vp-app);
+  --panel: var(--vp-surface);
+  --line: var(--vp-line);
+  --text: var(--vp-ink);
+  --muted: var(--vp-muted);
+  --accent: var(--vp-china-red);
+  --soft: var(--vp-surface-warm);
 }
 
 * {
@@ -128,7 +128,7 @@ input {
 }
 
 select {
-  background: #fff;
+  background: var(--vp-surface);
   border: 1px solid var(--line);
   border-radius: 6px;
   min-width: 160px;
@@ -139,7 +139,7 @@ button {
   background: var(--accent);
   border: 0;
   border-radius: 6px;
-  color: #fff;
+  color: var(--vp-on-primary);
   cursor: pointer;
   font-weight: 700;
   padding: 8px 12px;
@@ -199,7 +199,7 @@ button:disabled {
 
 .filters button.selected {
   background: var(--accent);
-  color: #fff;
+  color: var(--vp-on-primary);
 }
 
 .pill {

@@ -7,7 +7,7 @@
 | `packages/domain` | Domain | Zod schemas, pure state functions, domain events, seed fixtures | Implemented and tested |
 | `packages/ai` | AI runtime | Provider-neutral model router, effort, usage, and cost types | Router skeleton; only static test provider |
 | `packages/api-client` | API | Typed tRPC client derived from the server router | Implemented; external server endpoint is not yet deployed |
-| `packages/ui` | Design system | Shared tokens and web/native primitive contracts | Placeholder |
+| `packages/ui` | Design system | Shared semantic tokens and web/native primitive contracts | Implemented token contract; no page components |
 | `apps/server` | Backend | Modular tRPC router, services, DB adapters, two-pass Trip completion, and injected AI route executor | Partially implemented |
 | `apps/web` | Traveler Web | Next.js product and public acquisition surfaces | Implemented MVP shell; not production-ready |
 | `apps/ops` | Operations | Fact, gap, and Human Task workflows | Implemented shell; auth and persistence incomplete |
@@ -38,6 +38,10 @@
   not depend on internal file layout without an explicit export.
 - Workspace type checking follows the upstream build graph so a clean CI checkout resolves declared
   workspace package exports before a dependent package is typechecked.
+- `apps/web` and `apps/ops` declare `@visepanda/ui` as a workspace dependency and consume its public
+  token export; they must not import package internals or duplicate core design values.
+- Workspace `typecheck` tasks build direct workspace dependencies first, so public declarations are
+  available in a clean CI checkout rather than only in a developer's cached `dist` directory.
 - Tests live beside the behavior they protect unless a database or end-to-end runner requires a
   dedicated directory.
 - Database changes are new migration files. Existing landed migrations are immutable.
