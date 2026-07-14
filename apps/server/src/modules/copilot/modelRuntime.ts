@@ -68,6 +68,7 @@ export function createDemoModelRuntime(environment: Environment) {
             model: configuration.model,
             timeoutMs: 20_000,
             maxTokens: request.maxTokens ?? 1_200,
+            ...(configuration.extraBody ? { extraBody: configuration.extraBody } : {}),
           });
         }),
       });

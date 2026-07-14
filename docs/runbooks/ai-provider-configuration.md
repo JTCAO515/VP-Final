@@ -53,6 +53,18 @@ The four trusted server-side key names are `DASHSCOPE_API_KEY`, `DEEPSEEK_API_KE
 `MOONSHOT_API_KEY`, and `ZHIPU_API_KEY`. `PLANNING_REWRITE_ENABLED` stays false unless explicitly
 set to `true`; it remains off for the financing demo to enforce one main model call per turn.
 
+Default OpenAI-compatible base URLs are provider-specific and should only be overridden when the
+operator has verified a replacement endpoint in the provider console:
+
+- Moonshot/Kimi: `https://api.moonshot.ai/v1`
+- DeepSeek: `https://api.deepseek.com/v1`
+- Z.AI/GLM: `https://api.z.ai/api/paas/v4`
+
+For DEMO-01 envelope generation, the runtime injects `{"thinking":{"type":"disabled"}}` for
+Moonshot, DeepSeek, and Zhipu routes. This follows the providers' current compatibility guidance for
+non-thinking JSON output and prevents reasoning tokens from starving the short demo budget. Do not
+remove this setting without new provider evidence and a prompt/model eval run.
+
 ## Steps
 
 1. In the deployment platform's server-side environment settings, add all selected route model names,

@@ -17,6 +17,7 @@ type ProviderDefinition = {
   keyEnvironment: string;
   baseUrlEnvironment: string;
   defaultBaseUrl: string;
+  extraBody?: Record<string, unknown>;
 };
 
 const PROVIDERS: Record<ProviderName, ProviderDefinition> = {
@@ -29,16 +30,19 @@ const PROVIDERS: Record<ProviderName, ProviderDefinition> = {
     keyEnvironment: "DEEPSEEK_API_KEY",
     baseUrlEnvironment: "DEEPSEEK_BASE_URL",
     defaultBaseUrl: "https://api.deepseek.com/v1",
+    extraBody: { thinking: { type: "disabled" } },
   },
   moonshot: {
     keyEnvironment: "MOONSHOT_API_KEY",
     baseUrlEnvironment: "MOONSHOT_BASE_URL",
-    defaultBaseUrl: "https://api.moonshot.cn/v1",
+    defaultBaseUrl: "https://api.moonshot.ai/v1",
+    extraBody: { thinking: { type: "disabled" } },
   },
   zhipu: {
     keyEnvironment: "ZHIPU_API_KEY",
     baseUrlEnvironment: "ZHIPU_BASE_URL",
-    defaultBaseUrl: "https://open.bigmodel.cn/api/paas/v4",
+    defaultBaseUrl: "https://api.z.ai/api/paas/v4",
+    extraBody: { thinking: { type: "disabled" } },
   },
 };
 
@@ -59,6 +63,7 @@ export type DemoModelRouteConfig = {
   model: string;
   baseUrl: string;
   apiKey: string;
+  extraBody?: Record<string, unknown>;
 };
 
 export type ProviderReadiness = {
@@ -84,6 +89,7 @@ export function resolveDemoModelRoute(
     model,
     apiKey,
     baseUrl: environment[definition.baseUrlEnvironment] ?? definition.defaultBaseUrl,
+    ...(definition.extraBody ? { extraBody: definition.extraBody } : {}),
   };
 }
 

@@ -27,6 +27,7 @@ export type OpenAiCompatibleProviderConfig = {
   model: string;
   timeoutMs: number;
   maxTokens: number;
+  extraBody?: Record<string, unknown>;
   pricing?: ModelPricing;
   fetchImpl?: typeof fetch;
 };
@@ -82,6 +83,7 @@ export function createOpenAiCompatibleProvider(
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
+              ...(config.extraBody ?? {}),
               model: config.model,
               messages: [{ role: "user", content: request.prompt }],
               max_tokens: Math.min(request.maxTokens ?? config.maxTokens, config.maxTokens),
