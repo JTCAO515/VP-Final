@@ -39,9 +39,10 @@ modules yet.
   allowlisted operational metadata. Provider/tool payloads and raw errors are excluded.
 - Copilot retains deterministic defaults only in explicit tests and `local-demo`. In any other runtime,
   DEMO-01 injects the v3 provider route executor, records safe attempts through Trace, performs bounded
-  JSON candidate repair before Zod validation, forwards provider-specific compatibility body fields
-  from the AI inventory, and fails with a typed configuration-unavailable error when a required route
-  lacks a trusted model name or credential.
+  JSON candidate repair before Zod validation, normalizes a provider string `message` into the typed
+  Copilot message object, forwards provider-specific compatibility body fields from the AI inventory,
+  and fails with a typed configuration-unavailable error when a required route lacks a trusted model
+  name or credential.
 - The deployed DEMO-01 path is dialogue-only. It rejects Trip actions, tools, commerce, Human Help,
   and citations before any state-changing branch can run. Real provider evidence remains blocked on
   OA-005 and is not claimed by this repository change.
