@@ -16,6 +16,25 @@ real Copilot model calls. It supports the bounded OpenAI-compatible adapter intr
 - Begin in preview or staging. A real call is evidence only after the operator records the target
   environment, date, verifier, and sanitized result in OA-005.
 
+## Build Environment Contract
+
+Turborepo runs in strict environment mode. The root `turbo.json` therefore declares the server-only
+variables needed by the Web, server, and Ops build tasks in `globalEnv`. This has two purposes:
+
+- the configured variables are available to the task that builds the deployment; and
+- a change to their values invalidates the affected build cache rather than reusing an artifact built
+  with a different runtime contract.
+
+The allowlist contains only variable **names**. It includes database and signed-anonymous-session
+configuration, the explicit runtime mode, the four provider key/base-URL pairs, `VISEPANDA_MODEL_*`,
+and `PLANNING_REWRITE_ENABLED`. It must never contain a secret value, and `NEXT_PUBLIC_*` is not an
+alternative for server credentials.
+
+When adding a new server environment variable that changes build or runtime behavior, add its name to
+the root `globalEnv` list in the same PR, update this runbook, and redeploy the target environment.
+Do not use Turborepo loose mode or `passThroughEnv` to silence a missing-variable warning: both weaken
+the cache and configuration contract this runbook is meant to preserve.
+
 ## DEMO-01 v3 Inventory
 
 Use only catalog-verified model names in `VISEPANDA_MODEL_*` route variables. Every configured route
@@ -37,12 +56,14 @@ set to `true`; it remains off for the financing demo to enforce one main model c
 ## Steps
 
 1. In the deployment platform's server-side environment settings, add all selected route model names,
-   their provider credentials, and an explicit non-demo runtime mode. Do not add them to any
-   client-exposed environment namespace.
+   their provider credentials, and an explicit non-demo runtime mode. Ensure each intended target has
+   the matching variables; a production-only runtime mode does not create a valid Preview/staging
+   verification target. Do not add them to any client-exposed environment namespace.
 2. Keep `PLANNING_REWRITE_ENABLED` absent or `false` for the demo. The runtime uses a 20 second
    per-provider ceiling inside a 25 second router budget; do not claim a latency target until OA-005
    records a measured call.
-3. Deploy to preview/staging with the explicit runtime mode required by ADR-0005. Do not use
+3. Deploy to preview/staging with the explicit runtime mode required by ADR-0005. Check the build log
+   has no Turborepo warning that a listed server variable is unavailable to the application. Do not use
    `local-demo` as a production fallback.
 4. Once P0-07b is accepted, make one sanitized staging request through the Copilot route. Check
    that the response is typed, failures are honest, and no secret or raw provider payload appears in

@@ -1,5 +1,25 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "globalEnv": [
+    "DATABASE_URL",
+    "SUPABASE_URL",
+    "SUPABASE_ANON_KEY",
+    "VISEPANDA_ANON_SESSION_SECRET",
+    "VISEPANDA_ANON_SESSION_KEY_ID",
+    "VISEPANDA_ANON_SESSION_PREVIOUS_SECRET",
+    "VISEPANDA_ANON_SESSION_PREVIOUS_KEY_ID",
+    "VISEPANDA_RUNTIME_MODE",
+    "DASHSCOPE_API_KEY",
+    "DASHSCOPE_BASE_URL",
+    "DEEPSEEK_API_KEY",
+    "DEEPSEEK_BASE_URL",
+    "MOONSHOT_API_KEY",
+    "MOONSHOT_BASE_URL",
+    "ZHIPU_API_KEY",
+    "ZHIPU_BASE_URL",
+    "VISEPANDA_MODEL_*",
+    "PLANNING_REWRITE_ENABLED"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],

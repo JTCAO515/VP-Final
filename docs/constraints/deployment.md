@@ -17,6 +17,12 @@ Status: active
 - `VISEPANDA_RUNTIME_MODE` MUST be set explicitly to `preview`, `staging`, or `production` in a
   deployed environment. `NODE_ENV`, `VERCEL_ENV`, missing configuration, and transient failure MUST
   NOT infer `local-demo`.
+- Turborepo strict-mode builds MUST declare every server variable that changes build or runtime
+  behavior in root `globalEnv`. The declaration is names only, participates in the build cache key,
+  and MUST NOT expose a secret through a `NEXT_PUBLIC_*` variable.
+- A deployment review MUST treat a Turborepo warning that a required server variable is unavailable to
+  the application as a configuration failure. It must be fixed and redeployed before a real-provider
+  or production-success claim.
 - Feature flags MUST have owner, default, exposure rule, expiry/review date, and rollback behavior.
 - Rollback MUST NOT reverse an already-applied destructive data change; migrations require a forward
   recovery plan.
