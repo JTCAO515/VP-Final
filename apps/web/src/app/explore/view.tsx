@@ -8,20 +8,29 @@ import {
   type TravelerSceneTag,
 } from "@visepanda/domain";
 import { poiEntries } from "../poiSeo";
+import { deriveExploreFacts } from "./factPresentation";
 
-export function ExploreView({ pois }: Readonly<{ pois: Poi[] }>) {
+type ExploreViewProps = Readonly<{
+  pois: Poi[];
+  availability: "ready" | "unavailable";
+  asOf: string;
+}>;
+
+export function ExploreView({ pois, availability, asOf }: ExploreViewProps) {
   const [selectedTag, setSelectedTag] = useState<TravelerSceneTag | "All">("All");
   const entries = useMemo(() => poiEntries(), []);
+  const referenceTime = useMemo(() => new Date(asOf), [asOf]);
   const rows = useMemo(
     () =>
       pois
         .map((poi) => ({
           poi,
           href: entries.find((entry) => entry.poi.id === poi.id),
-          tags: derivePoiSceneTags(poi),
+          facts: deriveExploreFacts(poi, referenceTime),
+          tags: derivePoiSceneTags(poi, referenceTime),
         }))
         .filter(({ tags }) => selectedTag === "All" || tags.includes(selectedTag)),
-    [entries, pois, selectedTag],
+    [entries, pois, referenceTime, selectedTag],
   );
 
   return (
@@ -57,7 +66,18 @@ export function ExploreView({ pois }: Readonly<{ pois: Poi[] }>) {
       </section>
 
       <section className="poiGrid">
-        {rows.map(({ href, poi, tags }) => (
+        {availability === "unavailable" ? (
+          <div className="exploreEmpty" role="status">
+            <h2>Explore data is unavailable</h2>
+            <p>Verified place facts could not be loaded. Please try again later.</p>
+          </div>
+        ) : rows.length === 0 ? (
+          <div className="exploreEmpty" role="status">
+            <h2>No verified places match</h2>
+            <p>Try another scene filter. We do not fill gaps with unverified claims.</p>
+          </div>
+        ) : null}
+        {rows.map(({ facts, href, poi, tags }) => (
           <article className="poiCard" key={poi.id}>
             <div>
               <span>{poi.city}</span>
@@ -65,6 +85,19 @@ export function ExploreView({ pois }: Readonly<{ pois: Poi[] }>) {
             </div>
             <h2>{poi.nameEn}</h2>
             {poi.nameZh ? <p>{poi.nameZh}</p> : null}
+            {facts.length > 0 ? (
+              <div className="poiFacts" aria-label="Verified travel facts">
+                <strong>Verified travel facts</strong>
+                <ul>
+                  {facts.map((fact) => (
+                    <li key={fact.id}>
+                      <span>{fact.kind}</span>
+                      {fact.label}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
             {href ? (
               <a className="poiLink" href={`/${href.citySlug}/${href.poiSlug}`}>
                 Open guide

@@ -95,6 +95,13 @@ payloads, cookies, credentials, or narrative errors.
 - At narrow widths, primary navigation uses four equal tracks and prompt cards wrap their text; no
   Copilot element may force horizontal page scrolling.
 
+Explore reads POIs through the runtime-owned KnowledgeService. Deployed modes therefore use the
+durable Postgres adapter, while only explicit `local-demo` may render the labelled seed dataset.
+Cards show short labels only for current reviewed `payment_acceptance`, `metro_access`,
+`booking_required`/`reservation_helpful`, `crowd_pattern`, and `rainy_fit` facts. Unknown, expired,
+unreviewed, deprecated, or unlabeled facts stay hidden; load failure produces an honest unavailable
+state rather than fixture content.
+
 ## Verification
 
 ```bash
