@@ -31,7 +31,10 @@ commercial evidence, Human Tasks, and telemetry. Repository migrations are the s
 
 ## Access Model
 
-- Public POI and current fact reads may be exposed through explicit grants plus RLS.
+- Public POI reads and eligible fact reads may be exposed through explicit grants plus RLS. A fact is
+  eligible only when its lifecycle status is `reviewed`, its source is non-blank, its verification time
+  is not in the future, and it is not expired. Legacy `active` rows are migrated to `draft`; a migration
+  MUST NOT promote them to `reviewed` without review evidence.
 - Traveler-owned data requires verified identity and owner policies.
 - Trip rows require one exclusive authenticated or signed-anonymous owner. Owner-scoped conditional
   writes and event append occur in one transaction; public share tokens are revocable read-only

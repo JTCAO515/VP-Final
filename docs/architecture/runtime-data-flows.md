@@ -106,9 +106,9 @@ flowchart LR
   Gap --> OpsReview
 ```
 
-Only active, non-expired facts may reach public consumers. `source`, confidence, verification time,
-expiry, status, and version are part of the fact contract. A low-evidence answer must say that the
-system does not know.
+Only reviewed, source-backed, non-expired facts whose verification time is not in the future may reach
+public consumers. `source`, confidence, verification time, expiry, status, and version are part of the
+fact contract. A low-evidence answer must say that the system does not know.
 
 ## Human Task Flow
 
