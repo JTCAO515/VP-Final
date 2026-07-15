@@ -12,6 +12,7 @@ New ADRs are append-only and use the next numeric prefix.
 | [ADR-0005](ADR-0005-runtime-modes-and-production-adapter-ownership.md) | Accepted | Explicit runtime modes, single durable production ownership, and fail-closed truthfulness are mandatory before public persistence. |
 | [ADR-0006](ADR-0006-knowledge-evidence-and-index-quality.md) | Accepted | Only reviewed/current evidence may power public facts, Copilot citations, or indexable guidance. |
 | [ADR-0007](ADR-0007-agent-trace-privacy-retention.md) | Accepted | Server-only AI trace metadata is minimized, redacted, retained for 30 days, and purged through a restricted routine. |
+| [ADR-0008](ADR-0008-platform-settlement-and-legal-entity.md) | Draft | Freezes the no-implementation boundary and required legal/entity, take-rate, settlement, tax, KYC, and dispute decisions before Phase 3. |
 
 ## When to Add an ADR
 
