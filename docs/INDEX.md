@@ -268,6 +268,7 @@ Frozen product direction and dated evidence-based project reviews.
 | Document | Type | Status | Owner | Purpose |
 | --- | --- | --- | --- | --- |
 | [Planning Guide](planning/README.md) | reference | active | overall design | Authority and lifecycle rules for baselines, plans, and dated reviews. |
+| [Six-City Knowledge Expansion Plan](planning/six-city-knowledge-expansion-plan.md) | planning | active | knowledge operations | Quality-gated six-city POI coverage targets, evidence rules, editorial waves, and bulk-import handoff. |
 | [VisePanda V2 Frozen Product Baseline](planning/visepanda-v2-final-architecture.md) | planning | frozen | operator / architecture | Accepted product thesis, Fable-5 architecture, commercial model, roadmap, and anti-goals. |
 | [VisePanda V2 Project Review — 2026-07-10](planning/visepanda-v2-project-review-2026-07-10.md) | planning | historical | overall design | Evidence-based implementation audit, gaps, architecture corrections, and revised execution path. |
 

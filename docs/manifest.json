@@ -922,6 +922,16 @@
       "summary": "Evidence-based implementation audit, gaps, architecture corrections, and revised execution path.",
       "sourcePrefixes": []
     },
+    {
+      "path": "docs/planning/six-city-knowledge-expansion-plan.md",
+      "title": "Six-City Knowledge Expansion Plan",
+      "category": "planning",
+      "type": "planning",
+      "status": "active",
+      "owner": "knowledge operations",
+      "summary": "Quality-gated six-city POI coverage targets, evidence rules, editorial waves, and bulk-import handoff.",
+      "sourcePrefixes": []
+    },
 
     {
       "path": "evals/README.md",

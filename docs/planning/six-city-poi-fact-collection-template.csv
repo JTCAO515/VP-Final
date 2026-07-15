@@ -1,0 +1,1 @@
+collection_row_id,poi_id,city,category,name_en,name_zh,address,latitude,longitude,source_ids_json,fact_id,fact_type,value_json,confidence,fact_status,verified_at,expires_at,source_class,source_locator,evidence_summary,collection_status,researcher,reviewer,review_notes
