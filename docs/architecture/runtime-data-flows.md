@@ -89,7 +89,8 @@ the registered OA-010 trusted-console bootstrap.
 2. The UI renders the skeleton and a generation state.
 3. A silent second pass fills empty days; it does not create a second chat message.
 4. Each completed day becomes a validated patch.
-5. Durable implementation must use a job id and idempotency key so retries cannot duplicate blocks.
+5. A durable completion job is unique per accepted Trip/base version and carries a job id plus
+   idempotency key so retries cannot duplicate blocks.
 6. Partial failure preserves valid completed work and exposes a retryable state.
 
 ## Knowledge Flow

@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(19);
+select plan(22);
 
 select ok(
   (select relrowsecurity from pg_class where oid = 'public.partners'::regclass),
@@ -19,6 +19,10 @@ select ok(
 select ok(
   (select relrowsecurity from pg_class where oid = 'public.human_tasks'::regclass),
   'human tasks has row level security enabled'
+);
+select ok(
+  (select relrowsecurity from pg_class where oid = 'public.copilot_completion_jobs'::regclass),
+  'completion jobs have row level security enabled'
 );
 
 select is(
@@ -61,12 +65,22 @@ select is(
   false,
   'authenticated users cannot read human help requests directly'
 );
+select is(
+  has_table_privilege('anon', 'public.copilot_completion_jobs', 'select'),
+  false,
+  'anon cannot read completion jobs directly'
+);
+select is(
+  has_table_privilege('authenticated', 'public.copilot_completion_jobs', 'select'),
+  false,
+  'authenticated users cannot read completion jobs directly'
+);
 select ok(
   not exists (
     select 1
     from information_schema.role_table_grants
     where table_schema = 'public'
-      and table_name in ('partners', 'outbound_clicks', 'events', 'human_tasks')
+      and table_name in ('partners', 'outbound_clicks', 'events', 'human_tasks', 'copilot_completion_jobs')
       and grantee in ('PUBLIC', 'anon', 'authenticated')
   ),
   'operational tables have no direct Data API grants'

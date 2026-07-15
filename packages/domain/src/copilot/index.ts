@@ -65,6 +65,55 @@ export const GenerationProgressSchema = z.object({
   error: z.string().nullable().default(null),
 });
 
+export const CompletionJobStateSchema = z.enum([
+  "queued",
+  "running",
+  "completed",
+  "partial",
+  "failed",
+  "conflicted",
+]);
+
+export const CompletionJobSchema = z.object({
+  id: z.string().uuid(),
+  tripId: z.string().uuid(),
+  baseVersion: z.number().int().nonnegative(),
+  idempotencyKey: z.string().uuid(),
+  state: CompletionJobStateSchema,
+  attempt: z.number().int().nonnegative(),
+  maxAttempts: z.number().int().positive().max(3),
+  errorCode: z.string().min(1).nullable(),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+  startedAt: z.string().datetime().nullable(),
+  completedAt: z.string().datetime().nullable(),
+});
+
+export const CompletionJobRetryInputSchema = z.object({
+  id: z.string().uuid(),
+  idempotencyKey: z.string().uuid(),
+});
+
+const COMPLETION_JOB_TRANSITIONS: Readonly<Record<CompletionJobState, CompletionJobState[]>> = {
+  queued: ["running"],
+  running: ["completed", "partial", "failed", "conflicted"],
+  completed: [],
+  partial: ["queued"],
+  failed: ["queued"],
+  conflicted: [],
+};
+
+export function canTransitionCompletionJob(
+  current: CompletionJobState,
+  next: CompletionJobState,
+): boolean {
+  return current === next || COMPLETION_JOB_TRANSITIONS[current].includes(next);
+}
+
+export type CompletionJobState = z.infer<typeof CompletionJobStateSchema>;
+export type CompletionJob = z.infer<typeof CompletionJobSchema>;
+export type CompletionJobRetryInput = z.infer<typeof CompletionJobRetryInputSchema>;
+
 export const CopilotEnvelopeSchema = z
   .object({
     intent: CopilotIntentSchema,

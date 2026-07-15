@@ -53,6 +53,9 @@ modules yet.
   made yet.
 - Trip and Copilot routers accept identity only from `ServerContext`; owner fields and replacement
   snapshots are not transport inputs.
+- P0-10 freezes a server-only completion-job contract before connecting a durable queue. Job rows are
+  uniquely keyed by accepted Trip/base version and idempotency key; no worker may mutate a Trip except
+  through the existing owner/version-scoped Patch service.
 - The package exports router types and selected service factories, but does not itself expose an HTTP
   listener.
 
