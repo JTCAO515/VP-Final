@@ -73,6 +73,10 @@ P0-10 starts with a server-only `copilot_completion_jobs` contract. One row is u
 create multiple completion effects for the same accepted skeleton. The table contains no prompt,
 provider payload, credential, or replacement Trip snapshot. It has RLS enabled and no direct
 Data API grants; a later owner-scoped server status endpoint and authenticated worker will consume it.
+`trip_events.completion_job_id` and `completion_attempt` are nullable, server-only provenance. They
+must be present together on an `ai_copilot` event, and one job attempt can append at most one event.
+This lets a partial retry prove whether the current Trip head was advanced by the same job instead of
+guessing from version offsets or block ids.
 
 ## Verification
 

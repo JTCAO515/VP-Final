@@ -62,6 +62,7 @@ export type {
 export type {
   ApplyTripPatchInput,
   ClaimIdentity,
+  TripCompletionProvenance,
   TripEvent,
   TripEventSource,
   TripIdentity,

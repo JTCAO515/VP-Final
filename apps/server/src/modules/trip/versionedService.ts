@@ -16,6 +16,12 @@ export type TripEvent = {
   version: number;
   patch: TripPatch;
   source: TripEventSource;
+  completion?: TripCompletionProvenance;
+};
+
+export type TripCompletionProvenance = {
+  jobId: string;
+  attempt: number;
 };
 
 export type TripIdentity = Exclude<RequestIdentity, { kind: "none" }>;
@@ -34,6 +40,7 @@ export type ApplyTripPatchInput = {
   expectedVersion: number;
   patch: TripPatch;
   source: TripEventSource;
+  completion?: TripCompletionProvenance;
 };
 
 export type VersionedTripService = {
@@ -111,7 +118,13 @@ export function createVersionedInMemoryTripService(): VersionedTripService {
       trips.set(input.id, next);
       events.set(input.id, [
         ...(events.get(input.id) ?? []),
-        { tripId: input.id, version, patch, source: input.source },
+        {
+          tripId: input.id,
+          version,
+          patch,
+          source: input.source,
+          ...(input.completion ? { completion: { ...input.completion } } : {}),
+        },
       ]);
       return cloneSnapshot(next);
     },

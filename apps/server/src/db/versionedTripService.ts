@@ -94,6 +94,8 @@ export function createDbVersionedTripService(db: Db): VersionedTripService {
           version: nextVersion,
           patchJsonb: patch,
           source: input.source,
+          completionJobId: input.completion?.jobId ?? null,
+          completionAttempt: input.completion?.attempt ?? null,
         });
         return snapshotFromRow(updated);
       });
@@ -162,6 +164,14 @@ export function createDbVersionedTripService(db: Db): VersionedTripService {
         version: row.version,
         patch: TripPatchSchema.parse(row.patchJsonb),
         source: row.source as "user_chat" | "user_manual" | "ai_copilot" | "system",
+        ...(row.completionJobId && row.completionAttempt
+          ? {
+              completion: {
+                jobId: row.completionJobId,
+                attempt: row.completionAttempt,
+              },
+            }
+          : {}),
       }));
     },
   };

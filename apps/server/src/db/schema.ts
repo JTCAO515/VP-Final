@@ -79,6 +79,10 @@ export const tripEvents = pgTable(
     version: integer("version").notNull(),
     patchJsonb: jsonb("patch_jsonb").notNull(),
     source: text("source").notNull(),
+    completionJobId: uuid("completion_job_id").references(() => copilotCompletionJobs.id, {
+      onDelete: "restrict",
+    }),
+    completionAttempt: integer("completion_attempt"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
@@ -91,6 +95,13 @@ export const tripEvents = pgTable(
       "trip_events_source_check",
       sql`${table.source} in ('user_chat', 'user_manual', 'ai_copilot', 'system')`,
     ),
+    completionProvenanceCheck: check(
+      "trip_events_completion_provenance_check",
+      sql`num_nonnulls(${table.completionJobId}, ${table.completionAttempt}) = 0 or (num_nonnulls(${table.completionJobId}, ${table.completionAttempt}) = 2 and ${table.completionAttempt} > 0 and ${table.source} = 'ai_copilot')`,
+    ),
+    completionJobAttemptUnique: uniqueIndex("trip_events_completion_job_attempt_unique")
+      .on(table.completionJobId, table.completionAttempt)
+      .where(sql`${table.completionJobId} is not null`),
   }),
 );
 

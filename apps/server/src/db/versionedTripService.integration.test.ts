@@ -9,6 +9,7 @@ const databaseUrl = process.env.DATABASE_URL;
 const describeDatabase = databaseUrl ? describe : describe.skip;
 const tripId = "20000000-0000-0000-0000-000000000001";
 const userId = "20000000-0000-0000-0000-000000000002";
+const completionJobId = "20000000-0000-0000-0000-000000000003";
 const trip = {
   id: tripId,
   title: "Shanghai",
@@ -61,6 +62,43 @@ describeDatabase("database VersionedTripService", () => {
     );
     await expect(service.get(tripId, anonA)).resolves.toMatchObject({ version: 2 });
     await expect(service.getEvents(tripId, anonA)).resolves.toHaveLength(2);
+  });
+
+  it("persists one linked event per completion attempt", async () => {
+    await service.create(trip, anonA, "user_manual");
+    await sql`
+      insert into public.copilot_completion_jobs (
+        id, trip_id, base_version, idempotency_key
+      ) values (
+        ${completionJobId}, ${tripId}, 1, '20000000-0000-0000-0000-000000000004'
+      )
+    `;
+    const input = {
+      id: tripId,
+      identity: anonA,
+      expectedVersion: 1,
+      patch: { operations: [{ op: "update_trip" as const, fields: { title: "Completed" } }] },
+      source: "ai_copilot" as const,
+      completion: { jobId: completionJobId, attempt: 1 },
+    };
+
+    await expect(service.apply(input)).resolves.toMatchObject({ version: 2 });
+    await expect(service.getEvents(tripId, anonA)).resolves.toContainEqual(
+      expect.objectContaining({
+        version: 2,
+        completion: { jobId: completionJobId, attempt: 1 },
+      }),
+    );
+
+    let duplicateError: unknown;
+    try {
+      await service.apply({ ...input, expectedVersion: 2 });
+    } catch (error) {
+      duplicateError = error;
+    }
+    expect(duplicateError).toBeInstanceOf(Error);
+    expect((duplicateError as { cause?: { code?: string } }).cause?.code).toBe("23505");
+    await expect(service.get(tripId, anonA)).resolves.toMatchObject({ version: 2 });
   });
 
   it("claims only an anonymous-owned row and remains idempotent", async () => {
