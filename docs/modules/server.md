@@ -15,7 +15,7 @@ Next.js runtimes rather than deployed as an independent service.
 - `copilot`: route, retrieve, generate, validate, apply Trip actions, and two-pass completion.
 - `trip`: owner-scoped create/read/Patch/claim/share/revoke operations through the versioned Trip service.
 - `knowledge`: POI/fact/gap reads and operations workflow.
-- `task`: Human Task creation and updates.
+- `task`: owner-scoped Human Task intake and traveler reads. State transitions are not active yet.
 - `telemetry`: event validation and ingestion interface.
 - `trace`: private agent-run and tool-call metadata recording.
 
@@ -34,7 +34,7 @@ modules yet.
 
 ## Current State
 
-- Trip, knowledge, and agent trace have in-memory and Postgres adapters. Trace records use one trusted
+- Trip, knowledge, agent trace, and Human Task intake have in-memory and Postgres adapters. Trace records use one trusted
   authenticated identity, one signed anonymous identity, or neither; they persist only digests and
   allowlisted operational metadata. Provider/tool payloads and raw errors are excluded.
 - Copilot retains deterministic defaults only in explicit tests and `local-demo`. In any other runtime,
@@ -48,6 +48,10 @@ modules yet.
   OA-005 and is not claimed by this repository change.
 - Knowledge, Human Task, and Telemetry routers require a service selected by the composition root;
   omitted capabilities return typed `SERVICE_UNAVAILABLE` and never construct memory internally.
+- Human Task creation accepts only a trusted authenticated or signed-anonymous identity, a UUID
+  idempotency key, and the minimized controlled-preview request. The Postgres adapter serializes the
+  daily Shanghai capacity check, stores exactly one owner, and replays a successful retry without a
+  duplicate row. P0-13 exposes no state-transition, quote, payment, assignment, or fulfilment method.
 - The runtime resolver and router injection boundary are implemented and tested, but Web/Ops
   composition migration remains in P0-06c and P0-06d. Therefore no deployed durable-path claim is
   made yet.

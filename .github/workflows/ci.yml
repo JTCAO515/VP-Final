@@ -56,13 +56,13 @@ jobs:
       - run: pnpm --filter @visepanda/ai build
       - run: pnpm --filter @visepanda/domain build
       - run: pnpm --filter @visepanda/app-server build
-      - run: pnpm --filter @visepanda/app-server exec vitest run src/db/versionedTripService.integration.test.ts src/db/opsAuthorizationService.integration.test.ts src/db/agentTraceService.integration.test.ts src/db/knowledgeService.integration.test.ts
+      - run: pnpm --filter @visepanda/app-server exec vitest run src/db/versionedTripService.integration.test.ts src/db/opsAuthorizationService.integration.test.ts src/db/agentTraceService.integration.test.ts src/db/knowledgeService.integration.test.ts src/db/humanTaskService.integration.test.ts
         env:
           DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
       - run: pnpm --filter @visepanda/app-web exec vitest run src/app/api/serverComposition.integration.test.ts
         env:
           DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
-      - run: pnpm --filter @visepanda/app-ops exec vitest run src/app/api/knowledge/store.integration.test.ts
+      - run: pnpm --filter @visepanda/app-ops exec vitest run src/app/api/knowledge/store.integration.test.ts src/app/api/tasks/store.integration.test.ts
         env:
           DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
       - run: supabase db advisors --local --type security --level warn --fail-on error --workdir infra

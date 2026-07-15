@@ -12,9 +12,9 @@ the public Web application and protected by server-side role checks.
 
 - `/facts`: list, create, update, renew, and deprecate execution facts.
 - `/gaps`: inspect and resolve knowledge gaps.
-- `/tasks`: inspect and transition Human Tasks.
+- `/tasks`: inspect the durable Human Task intake queue (read-only in P0-13).
 - `/api/knowledge/*`: server-side knowledge operations.
-- `/api/tasks`: task list and update endpoint.
+- `/api/tasks`: permission-protected task list endpoint.
 - `/login`: verified Supabase Ops sign-in.
 - `/roles` and `/api/roles`: Admin-only membership management.
 
@@ -22,14 +22,15 @@ the public Web application and protected by server-side role checks.
 
 - Knowledge follows the explicit runtime resolver: deployed modes require the Postgres adapter,
   tests inject memory, and only `local-demo` may use labelled process memory.
-- Human Tasks remain seeded/process-memory fixtures, but deployed Ops Task APIs now return typed 503
-  until P0-13/P0-15 provide their durable owner.
+- Human Tasks use the same durable server adapter as Web intake. The deployed Ops API requires
+  `task.contact.read` and fails closed if the adapter is unavailable.
 - Supabase SSR authentication and database-backed RBAC are implemented. Operational routes derive
   identity from the verified session and enforce the same server-side permission matrix as pages.
 - `ops_memberships` is the sole role authority; client metadata, user metadata, email addresses, and
   navigation visibility are never authorization inputs.
-- Role changes write membership and audit evidence atomically. Knowledge uses the durable server
-  adapter; Human Task fixture mutations are unreachable in deployed modes.
+- Role changes write membership and audit evidence atomically. Knowledge and Human Task reads use
+  durable server adapters. Task transitions, notes, quotes, and payment controls are intentionally
+  absent until P0-14, P0-15, and P0-17 provide their governed workflows.
 - Partner and payment operations are not yet available.
 
 Production use still requires OA-001, OA-004, and OA-010 verification. Missing Auth or database

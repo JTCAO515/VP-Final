@@ -1,0 +1,150 @@
+import { HumanTaskSchema, type HumanTask } from "@visepanda/domain";
+import { and, count, desc, eq, gte, isNull, lt, sql } from "drizzle-orm";
+import type { Db } from "./client.js";
+import { humanTasks, users } from "./schema.js";
+import {
+  HUMAN_TASK_DAILY_CAPACITY,
+  HumanTaskCapacityError,
+  HumanTaskIdempotencyConflictError,
+  chinaDayKey,
+  validateHumanTaskPreviewRequest,
+  type HumanTaskIdentity,
+  type HumanTaskService,
+} from "../modules/task/service.js";
+
+export function createDbHumanTaskService(db: Db, options?: { now?: () => Date }): HumanTaskService {
+  const now = options?.now ?? (() => new Date());
+
+  return {
+    async create(input) {
+      const request = validateHumanTaskPreviewRequest(input.request);
+      return db.transaction(async (tx) => {
+        await tx.execute(
+          sql`select pg_advisory_xact_lock(hashtextextended(${`human-task-idempotency:${input.idempotencyKey}`}, 0))`,
+        );
+        const [replay] = await tx
+          .select()
+          .from(humanTasks)
+          .where(eq(humanTasks.idempotencyKey, input.idempotencyKey))
+          .limit(1);
+        if (replay) {
+          if (!rowBelongsTo(replay, input.identity) || !rowMatchesRequest(replay, request)) {
+            throw new HumanTaskIdempotencyConflictError();
+          }
+          return taskFromRow(replay);
+        }
+
+        const requestedAt = now();
+        const bounds = chinaDayBounds(requestedAt);
+        await tx.execute(
+          sql`select pg_advisory_xact_lock(hashtextextended(${`human-task-capacity:${bounds.key}`}, 0))`,
+        );
+        const [daily] = await tx
+          .select({ value: count() })
+          .from(humanTasks)
+          .where(
+            and(gte(humanTasks.createdAt, bounds.start), lt(humanTasks.createdAt, bounds.end)),
+          );
+        if ((daily?.value ?? 0) >= HUMAN_TASK_DAILY_CAPACITY) {
+          throw new HumanTaskCapacityError();
+        }
+
+        await ensureAuthenticatedUser(tx, input.identity);
+        const [created] = await tx
+          .insert(humanTasks)
+          .values({
+            ...ownerValues(input.identity),
+            idempotencyKey: input.idempotencyKey,
+            city: request.city,
+            kind: request.kind,
+            description: request.description,
+            contact: request.contact,
+            status: "requested",
+            createdAt: requestedAt,
+            updatedAt: requestedAt,
+          })
+          .returning();
+        if (!created) throw new Error("Human Task insert returned no record");
+        return taskFromRow(created);
+      });
+    },
+
+    async listForOwner(identity) {
+      const rows = await db
+        .select()
+        .from(humanTasks)
+        .where(ownerPredicate(identity))
+        .orderBy(desc(humanTasks.createdAt));
+      return rows.map(taskFromRow);
+    },
+
+    async listForOps() {
+      const rows = await db.select().from(humanTasks).orderBy(desc(humanTasks.createdAt));
+      return rows.map(taskFromRow);
+    },
+  };
+}
+
+function ownerPredicate(identity: HumanTaskIdentity) {
+  return identity.kind === "anonymous"
+    ? and(eq(humanTasks.anonId, identity.anonId), isNull(humanTasks.userId))!
+    : and(eq(humanTasks.userId, identity.userId), isNull(humanTasks.anonId))!;
+}
+
+function ownerValues(identity: HumanTaskIdentity) {
+  return identity.kind === "anonymous"
+    ? { userId: null, anonId: identity.anonId }
+    : { userId: identity.userId, anonId: null };
+}
+
+function rowBelongsTo(
+  row: { userId: string | null; anonId: string | null },
+  identity: HumanTaskIdentity,
+): boolean {
+  return identity.kind === "anonymous"
+    ? row.userId === null && row.anonId === identity.anonId
+    : row.anonId === null && row.userId === identity.userId;
+}
+
+function rowMatchesRequest(
+  row: { city: string; kind: string; description: string; contact: string },
+  request: { city: string; kind: string; description: string; contact: string },
+): boolean {
+  return (
+    row.city === request.city &&
+    row.kind === request.kind &&
+    row.description === request.description &&
+    row.contact === request.contact
+  );
+}
+
+async function ensureAuthenticatedUser(db: Pick<Db, "insert">, identity: HumanTaskIdentity) {
+  if (identity.kind !== "authenticated") return;
+  await db
+    .insert(users)
+    .values({ id: identity.userId, ...(identity.email ? { email: identity.email } : {}) })
+    .onConflictDoNothing();
+}
+
+function chinaDayBounds(now: Date): { key: string; start: Date; end: Date } {
+  const key = chinaDayKey(now);
+  const start = new Date(`${key}T00:00:00.000+08:00`);
+  return { key, start, end: new Date(start.getTime() + 24 * 60 * 60 * 1000) };
+}
+
+function taskFromRow(row: typeof humanTasks.$inferSelect): HumanTask {
+  return HumanTaskSchema.parse({
+    id: row.id,
+    city: row.city,
+    kind: row.kind,
+    description: row.description,
+    contact: row.contact,
+    status: row.status,
+    price_usd: row.priceUsd === null ? null : Number(row.priceUsd),
+    payment_link: row.paymentLink,
+    operator_note: row.operatorNote,
+    retention_expires_at: row.retentionExpiresAt?.toISOString() ?? null,
+    created_at: row.createdAt.toISOString(),
+    updated_at: row.updatedAt.toISOString(),
+  });
+}

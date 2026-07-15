@@ -40,6 +40,12 @@ commercial evidence, Human Tasks, and telemetry. Repository migrations are the s
   writes and event append occur in one transaction; public share tokens are revocable read-only
   capabilities. See [ADR-0004](../adr/ADR-0004-identity-trip-ownership-security.md).
 - Partner config, outbound clicks, telemetry, Human Tasks, and internal aggregates are server-only.
+- A Human Task has exactly one authenticated or signed-anonymous owner and a globally unique UUID
+  idempotency key. Direct `anon` and `authenticated` Data API reads are revoked. The initial status is
+  `requested`; P0-13 does not expose mutation paths for later states. A restricted
+  `internal.purge_expired_human_tasks()` routine removes terminal rows after their explicit retention
+  deadline. Production scheduling and terminal-deadline assignment remain later operational work and
+  are not claimed as active.
 - Ops users access data through protected server routes, not broad direct table grants.
 - Ops membership and audit tables are server-only with RLS enabled and no `anon` or `authenticated`
   Data API grants. Supabase Auth proves identity; `ops_memberships` independently grants authority.
@@ -63,6 +69,10 @@ The adapter and migration are implemented, but OA-004 remains open until an appr
 environment is configured and replayed. Local replay requires Docker Desktop; CI's pinned Supabase
 CLI database-contract job runs reset, pgTAP ownership checks, the adapter integration suite, and
 security advisors.
+
+P0-13 migration `20260716110000_durable_human_task_ownership.sql` deliberately aborts if an environment
+contains ownerless pre-P0-13 rows. Such rows require an operator-approved ownership/removal decision;
+the migration never deletes them or invents an owner. Empty and verified environments migrate normally.
 
 P0-05 adds a non-hierarchical `operator` / `editor` / `admin` membership table and append-only Ops
 audit evidence. The migration references verified `auth.users` ids, denies direct client access, and

@@ -31,7 +31,7 @@ the outbound gateway.
 
 The Next.js API layer creates an in-process server caller through one composition root. Explicit
 `preview`, `staging`, and `production` modes require `DATABASE_URL` and select only the existing
-Postgres Trip, Knowledge, and Agent Trace adapters. Missing/invalid mode or database configuration returns typed
+Postgres Trip, Knowledge, Agent Trace, and Human Task adapters. Missing/invalid mode or database configuration returns typed
 503 `RUNTIME_UNAVAILABLE`; it never selects memory. Tests inject services explicitly. Only explicit
 `local-demo` may use a process-cached, non-durable memory pair. The selected durable service pair is
 also process-cached so requests reuse the Postgres pool; persistence remains in Postgres across cold
@@ -76,8 +76,12 @@ authorization is implemented by P0-04. Existing writes carry `expectedVersion`; 
 signed anonymous cookie, and owner-created public shares can be revoked. Real Supabase release evidence
 still depends on OA-001 through OA-003.
 
-Human Help and outbound fixture ledgers remain for explicit test/local-demo only. Deployed requests
-return 503 `CAPABILITY_UNAVAILABLE` until P0-13 and P0-18 implement their durable owners.
+Human Help now writes through the durable P0-13 adapter. `/api/human-help` derives owner identity from
+the verified session or signed anonymous cookie, requires an idempotency key, and returns only the
+task id, `requested` status, and creation time. It never echoes contact or description and never
+returns a quote or payment claim. The public page states the Shanghai/English/capacity and safety
+limits; database or runtime failure returns an honest error and no receipt. Outbound remains unavailable
+until P0-18 implements its durable owner.
 
 Copilot writes a best-effort private Agent Trace after a validated result or failure. A trace write
 failure cannot alter the public response or Trip state. Trace records follow

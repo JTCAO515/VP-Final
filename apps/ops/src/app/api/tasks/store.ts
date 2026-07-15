@@ -1,49 +1,51 @@
 import {
-  HumanTaskUpdateSchema,
-  createHumanTask,
-  updateHumanTask,
-  type HumanTask,
-  type HumanTaskUpdate,
-} from "@visepanda/domain";
+  createDb,
+  createDbHumanTaskService,
+  createInMemoryHumanTaskService,
+  resolveDatabaseAdapter,
+  resolveRuntimeMode,
+  type HumanTaskService,
+} from "@visepanda/app-server";
 
 const store = globalThis as typeof globalThis & {
-  __visepandaOpsHumanTasks?: HumanTask[];
+  __visepandaOpsDemoHumanTasks?: HumanTaskService;
+  __visepandaOpsDurableHumanTasks?: HumanTaskService;
+  __visepandaOpsTestHumanTasks?: HumanTaskService;
 };
 
-const seedTasks = [
-  createHumanTask(
-    {
-      city: "Shanghai",
-      kind: "call_restaurant",
-      description: "Confirm whether the restaurant can hold a table and accept foreign cards.",
-      contact: "traveler@example.com",
-    },
-    new Date("2026-07-09T08:00:00.000Z"),
-  ),
-  createHumanTask(
-    {
-      city: "Beijing",
-      kind: "ticket_help",
-      description: "Check passport-name requirements for a Forbidden City booking.",
-      contact: "guest@example.com",
-    },
-    new Date("2026-07-09T08:10:00.000Z"),
-  ),
-];
-
-export function listTasks(): HumanTask[] {
-  store.__visepandaOpsHumanTasks ??= seedTasks;
-  return store.__visepandaOpsHumanTasks;
+export function getHumanTaskService(): HumanTaskService {
+  const runtime = resolveRuntimeMode(process.env);
+  if (runtime.ok && runtime.mode !== "test" && runtime.mode !== "local-demo") {
+    store.__visepandaOpsDurableHumanTasks ??= createOpsHumanTaskService(process.env);
+    return store.__visepandaOpsDurableHumanTasks;
+  }
+  return createOpsHumanTaskService(process.env);
 }
 
-export function updateTask(input: HumanTaskUpdate): HumanTask {
-  const update = HumanTaskUpdateSchema.parse(input);
-  const task = listTasks().find((candidate) => candidate.id === update.id);
-  if (!task) throw new Error("Human task not found");
+export function createOpsHumanTaskService(
+  environment: Readonly<Record<string, string | undefined>>,
+): HumanTaskService {
+  const runtime = resolveRuntimeMode(environment);
+  if (!runtime.ok) throw new Error("Ops Human Tasks are unavailable.");
+  if (runtime.mode === "test") {
+    if (!store.__visepandaOpsTestHumanTasks) {
+      throw new Error("Ops test Human Tasks are not injected.");
+    }
+    return store.__visepandaOpsTestHumanTasks;
+  }
 
-  const next = updateHumanTask(task, update);
-  store.__visepandaOpsHumanTasks = listTasks().map((candidate) =>
-    candidate.id === next.id ? next : candidate,
-  );
-  return next;
+  const availability = resolveDatabaseAdapter(runtime, environment);
+  if (availability.adapter === "memory-demo") {
+    store.__visepandaOpsDemoHumanTasks ??= createInMemoryHumanTaskService();
+    return store.__visepandaOpsDemoHumanTasks;
+  }
+  if (availability.status !== "ready" || !environment.DATABASE_URL) {
+    throw new Error("Ops Human Tasks are unavailable.");
+  }
+  return createDbHumanTaskService(createDb(environment.DATABASE_URL));
+}
+
+export function setTestOpsHumanTaskService(service: HumanTaskService | null): void {
+  if (service) store.__visepandaOpsTestHumanTasks = service;
+  else delete store.__visepandaOpsTestHumanTasks;
 }

@@ -19,6 +19,11 @@ Status: active
   code MUST NOT contain a bootstrap email, default admin, or self-elevation path.
 - Users MUST only read/write their own Trips, memory, entitlements, and Human Tasks unless a documented
   share or operator workflow applies.
+- Human Task owner identity MUST be server-derived and exactly one of verified user or signed anonymous
+  session. Public submission responses MUST be minimized to receipt fields. Contacts and descriptions
+  are readable only through an owner-scoped service or an Ops route with `task.contact.read`; direct
+  client table access is forbidden. Deleting the authenticated owner MUST cascade-delete their Human
+  Tasks rather than leave ownerless records or block account deletion.
 - A Trip MUST have exactly one effective owner. Anonymous-to-authenticated claim MUST require both the
   current verified user and the current signed anonymous session, be idempotent, and never transfer an
   already authenticated Trip.

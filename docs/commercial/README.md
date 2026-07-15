@@ -6,12 +6,12 @@ telemetry plan.
 
 ## Current Revenue Lines
 
-| Line | Current state | Required tracking |
-|---|---|---|
-| Outbound affiliate | Gateway and click ledger skeleton | `outbound_clicks` + telemetry |
-| Human Task | Manual quote flow; operator may attach payment link | `human_tasks` status trail + future payment ledger |
-| Trip Pass | Not active | Entitlement + purchase/restore ledger when implemented |
-| Custom quote / lead fee | Not active | Quote object + partner/agency ledger when implemented |
+| Line                    | Current state                                              | Required tracking                                      |
+| ----------------------- | ---------------------------------------------------------- | ------------------------------------------------------ |
+| Outbound affiliate      | Gateway and click ledger skeleton                          | `outbound_clicks` + telemetry                          |
+| Human Task              | Durable controlled-preview intake; no quote or payment yet | `human_tasks` receipt + future state/payment ledger    |
+| Trip Pass               | Not active                                                 | Entitlement + purchase/restore ledger when implemented |
+| Custom quote / lead fee | Not active                                                 | Quote object + partner/agency ledger when implemented  |
 
 ## Human Help Controlled Preview
 
@@ -26,8 +26,8 @@ promise from the existing placeholder UI.
 - Human Task is a real-world service. Stripe external payment is expected once merchant-of-record
   details are decided.
 - Trip Pass is a digital entitlement. Mobile implementation must account for Apple IAP rules.
-- Until payment routing is final, PRs may implement manual quote placeholders but must not claim
-  real payment collection.
+- Until payment routing is final, public and Ops surfaces must not expose quote/payment controls or
+  claim payment collection.
 
 ## Partner Rules
 
