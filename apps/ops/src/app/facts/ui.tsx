@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import type { Poi } from "@visepanda/domain";
+import { PoiFactSourceClassSchema, type Poi, type PoiFactSourceClass } from "@visepanda/domain";
 
 type SaveState = "idle" | "saving" | "saved" | "error";
 
@@ -275,12 +275,20 @@ function SourceClassSelect({
   return (
     <select aria-label={ariaLabel} defaultValue={defaultValue} id={id} name={name} required>
       <option value="">Source class</option>
-      <option value="official">Official</option>
-      <option value="operator_verified">Operator verified</option>
-      <option value="reputable_editorial">Reputable editorial</option>
-      <option value="user_report">User report (draft only)</option>
-      <option value="model_output">Model output (draft only)</option>
-      <option value="uncorroborated_scrape">Uncorroborated scrape (draft only)</option>
+      {PoiFactSourceClassSchema.options.map((sourceClass) => (
+        <option key={sourceClass} value={sourceClass}>
+          {SOURCE_CLASS_LABELS[sourceClass]}
+        </option>
+      ))}
     </select>
   );
 }
+
+const SOURCE_CLASS_LABELS: Record<PoiFactSourceClass, string> = {
+  official: "Official",
+  operator_verified: "Operator verified",
+  reputable_editorial: "Reputable editorial",
+  user_report: "User report (draft only)",
+  model_output: "Model output (draft only)",
+  uncorroborated_scrape: "Uncorroborated scrape (draft only)",
+};

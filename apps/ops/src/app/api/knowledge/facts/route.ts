@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { PoiFactSourceClassSchema } from "@visepanda/domain";
 import { getKnowledgeService } from "../store";
 import {
   applyOpsCookies,
@@ -19,12 +20,13 @@ export async function POST(request: Request) {
     evidenceSummary?: unknown;
     expiresAt?: unknown;
   };
+  const sourceClass = PoiFactSourceClassSchema.safeParse(body.sourceClass);
   if (
     typeof body.poiId !== "string" ||
     typeof body.factType !== "string" ||
     !isRecord(body.value) ||
     typeof body.confidence !== "number" ||
-    !isSourceClass(body.sourceClass) ||
+    !sourceClass.success ||
     typeof body.sourceLocator !== "string" ||
     typeof body.evidenceSummary !== "string"
   ) {
@@ -49,7 +51,7 @@ export async function POST(request: Request) {
       factType: body.factType,
       value: body.value,
       confidence: body.confidence,
-      sourceClass: body.sourceClass,
+      sourceClass: sourceClass.data,
       sourceLocator: body.sourceLocator,
       evidenceSummary: body.evidenceSummary,
       ...(typeof body.expiresAt === "string" || body.expiresAt === null
@@ -78,6 +80,7 @@ export async function PATCH(request: Request) {
     expiresAt?: unknown;
     action?: unknown;
   };
+  const sourceClass = PoiFactSourceClassSchema.safeParse(body.sourceClass);
   if (
     typeof body.factId !== "string" ||
     (body.action !== "renew" && body.action !== "deprecate" && !isRecord(body.value))
@@ -112,7 +115,7 @@ export async function PATCH(request: Request) {
       factId: body.factId,
       value: body.value,
       ...(typeof body.confidence === "number" ? { confidence: body.confidence } : {}),
-      ...(isSourceClass(body.sourceClass) ? { sourceClass: body.sourceClass } : {}),
+      ...(sourceClass.success ? { sourceClass: sourceClass.data } : {}),
       ...(typeof body.sourceLocator === "string" ? { sourceLocator: body.sourceLocator } : {}),
       ...(typeof body.evidenceSummary === "string"
         ? { evidenceSummary: body.evidenceSummary }
@@ -144,23 +147,4 @@ async function auditFactMutation(
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-function isSourceClass(
-  value: unknown,
-): value is
-  | "official"
-  | "operator_verified"
-  | "reputable_editorial"
-  | "user_report"
-  | "model_output"
-  | "uncorroborated_scrape" {
-  return (
-    value === "official" ||
-    value === "operator_verified" ||
-    value === "reputable_editorial" ||
-    value === "user_report" ||
-    value === "model_output" ||
-    value === "uncorroborated_scrape"
-  );
 }
