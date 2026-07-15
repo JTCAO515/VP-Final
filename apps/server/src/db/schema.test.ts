@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { getTableConfig } from "drizzle-orm/pg-core";
 import {
   agentRuns,
+  copilotCompletionJobs,
   humanTasks,
   knowledgeGaps,
   outboundClicks,
@@ -43,6 +44,15 @@ describe("database schema", () => {
     expect(toolCalls.agentRunId.name).toBe("agent_run_id");
     expect(toolCalls.toolName.name).toBe("tool_name");
     expect(toolCalls.inputDigest.name).toBe("input_digest");
+  });
+
+  it("maps server-only completion job records", () => {
+    expect(copilotCompletionJobs.tripId.name).toBe("trip_id");
+    expect(copilotCompletionJobs.baseVersion.name).toBe("base_version");
+    expect(copilotCompletionJobs.idempotencyKey.name).toBe("idempotency_key");
+    expect(
+      getTableConfig(copilotCompletionJobs).checks.map((constraint) => constraint.name),
+    ).toContain("copilot_completion_jobs_state_check");
   });
 
   it("maps the Ops authorization and audit tables", () => {

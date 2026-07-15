@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { CopilotEnvelopeSchema, GenerationProgressSchema } from "./index.js";
+import {
+  CompletionJobSchema,
+  CopilotEnvelopeSchema,
+  GenerationProgressSchema,
+  canTransitionCompletionJob,
+} from "./index.js";
 
 const message = {
   headline: "Plan updated",
@@ -60,5 +65,40 @@ describe("GenerationProgressSchema", () => {
       attempts: 0,
       error: null,
     });
+  });
+});
+
+describe("CompletionJobSchema", () => {
+  const job = {
+    id: "59bf9155-8a71-442f-9c63-127a033f9564",
+    tripId: "3e812700-ae6a-4eb9-ac60-189f847c33c2",
+    baseVersion: 1,
+    idempotencyKey: "d5527bc5-b918-44ba-bf2f-43f19337df1d",
+    state: "queued",
+    attempt: 0,
+    maxAttempts: 2,
+    errorCode: null,
+    createdAt: "2026-07-15T00:00:00.000Z",
+    updatedAt: "2026-07-15T00:00:00.000Z",
+    startedAt: null,
+    completedAt: null,
+  };
+
+  it("accepts the minimal durable completion state without a prompt or snapshot", () => {
+    expect(CompletionJobSchema.parse(job)).toEqual(job);
+  });
+
+  it("keeps attempts bounded and rejects unrecognized lifecycle states", () => {
+    expect(() => CompletionJobSchema.parse({ ...job, maxAttempts: 4 })).toThrow();
+    expect(() => CompletionJobSchema.parse({ ...job, state: "retrying" })).toThrow();
+  });
+
+  it("allows only idempotent, terminal, and bounded retry transitions", () => {
+    expect(canTransitionCompletionJob("queued", "running")).toBe(true);
+    expect(canTransitionCompletionJob("running", "partial")).toBe(true);
+    expect(canTransitionCompletionJob("failed", "queued")).toBe(true);
+    expect(canTransitionCompletionJob("completed", "completed")).toBe(true);
+    expect(canTransitionCompletionJob("completed", "queued")).toBe(false);
+    expect(canTransitionCompletionJob("conflicted", "running")).toBe(false);
   });
 });

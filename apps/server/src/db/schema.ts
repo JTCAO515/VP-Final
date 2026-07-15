@@ -94,6 +94,52 @@ export const tripEvents = pgTable(
   }),
 );
 
+export const copilotCompletionJobs = pgTable(
+  "copilot_completion_jobs",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tripId: uuid("trip_id")
+      .notNull()
+      .references(() => trips.id, { onDelete: "cascade" }),
+    baseVersion: integer("base_version").notNull(),
+    idempotencyKey: uuid("idempotency_key").notNull(),
+    state: text("state").notNull().default("queued"),
+    attempt: integer("attempt").notNull().default(0),
+    maxAttempts: integer("max_attempts").notNull().default(2),
+    errorCode: text("error_code"),
+    startedAt: timestamp("started_at", { withTimezone: true }),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    tripBaseVersionUnique: uniqueIndex("copilot_completion_jobs_trip_base_version_unique").on(
+      table.tripId,
+      table.baseVersion,
+    ),
+    idempotencyKeyUnique: uniqueIndex("copilot_completion_jobs_idempotency_key_unique").on(
+      table.idempotencyKey,
+    ),
+    stateCreatedIdx: index("copilot_completion_jobs_state_created_idx").on(
+      table.state,
+      table.createdAt,
+    ),
+    baseVersionCheck: check(
+      "copilot_completion_jobs_base_version_check",
+      sql`${table.baseVersion} >= 0`,
+    ),
+    attemptCheck: check("copilot_completion_jobs_attempt_check", sql`${table.attempt} >= 0`),
+    maxAttemptsCheck: check(
+      "copilot_completion_jobs_max_attempts_check",
+      sql`${table.maxAttempts} between 1 and 3`,
+    ),
+    stateCheck: check(
+      "copilot_completion_jobs_state_check",
+      sql`${table.state} in ('queued', 'running', 'completed', 'partial', 'failed', 'conflicted')`,
+    ),
+  }),
+);
+
 export const agentRuns = pgTable(
   "agent_runs",
   {
@@ -404,11 +450,19 @@ export const tripsRelations = relations(trips, ({ one, many }) => ({
   }),
   events: many(tripEvents),
   agentRuns: many(agentRuns),
+  completionJobs: many(copilotCompletionJobs),
 }));
 
 export const tripEventsRelations = relations(tripEvents, ({ one }) => ({
   trip: one(trips, {
     fields: [tripEvents.tripId],
+    references: [trips.id],
+  }),
+}));
+
+export const copilotCompletionJobsRelations = relations(copilotCompletionJobs, ({ one }) => ({
+  trip: one(trips, {
+    fields: [copilotCompletionJobs.tripId],
     references: [trips.id],
   }),
 }));

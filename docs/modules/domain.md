@@ -9,15 +9,15 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
 
 ## Public Areas
 
-| Area        | Owns                                                                                                          |
-| ----------- | ------------------------------------------------------------------------------------------------------------- |
-| `trip`      | TripState, TripPatch operations, `applyPatch`, `diffTrips`, generation progress                               |
-| `copilot`   | Intent, message, citations, tool cards, commercial actions, Human Help handoff, envelope                      |
-| `knowledge` | POI, execution facts, knowledge gaps, scene-tag derivation, reviewed seed data, and ADR-0006 fact eligibility |
-| `task`      | Human Task input, state, legal transitions, updates                                                           |
-| `commerce`  | Partner configuration, outbound click, URL validation and tracking construction                               |
-| `events`    | Telemetry event contract                                                                                      |
-| `errors`    | Shared typed error shapes                                                                                     |
+| Area        | Owns                                                                                                              |
+| ----------- | ----------------------------------------------------------------------------------------------------------------- |
+| `trip`      | TripState, TripPatch operations, `applyPatch`, `diffTrips`, generation progress                                   |
+| `copilot`   | Intent, message, citations, tool cards, commercial actions, Human Help handoff, envelope, completion-job contract |
+| `knowledge` | POI, execution facts, knowledge gaps, scene-tag derivation, reviewed seed data, and ADR-0006 fact eligibility     |
+| `task`      | Human Task input, state, legal transitions, updates                                                               |
+| `commerce`  | Partner configuration, outbound click, URL validation and tracking construction                                   |
+| `events`    | Telemetry event contract                                                                                          |
+| `errors`    | Shared typed error shapes                                                                                         |
 
 ## Invariants
 
@@ -28,6 +28,7 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
 - Domain enums are never copied into app-local constants.
 - Optional fields stay optional; consumers do not fabricate values to make a card look complete.
 - Knowledge consumers follow [ADR-0006](../adr/ADR-0006-knowledge-evidence-and-index-quality.md): model output cannot invent facts or citations. Retrieval accepts only `isEligiblePoiFact` results, citation ids are request-allowlisted, and no-match answers are explicit.
+- A completion job carries only a Trip reference, base version, idempotency key, bounded attempt state, and safe error code. Its pure state-transition rule permits idempotent reads, `queued -> running`, a running terminal result, and `partial`/`failed -> queued` retry only. It never carries a prompt, model credential, or replacement Trip snapshot.
 
 ## Change Workflow
 

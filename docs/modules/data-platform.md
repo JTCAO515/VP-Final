@@ -11,7 +11,7 @@ commercial evidence, Human Tasks, and telemetry. Repository migrations are the s
 
 | Area              | Relations                                                     |
 | ----------------- | ------------------------------------------------------------- |
-| Identity and Trip | `users`, `trips`, `trip_events`                               |
+| Identity and Trip | `users`, `trips`, `trip_events`, `copilot_completion_jobs`    |
 | AI trace          | `agent_runs`, `tool_calls`                                    |
 | Knowledge         | `pois`, `poi_facts`, `knowledge_gaps`, `poi_commercial_links` |
 | Commerce          | `partners`, `outbound_clicks`                                 |
@@ -64,6 +64,12 @@ security advisors.
 P0-05 adds a non-hierarchical `operator` / `editor` / `admin` membership table and append-only Ops
 audit evidence. The migration references verified `auth.users` ids, denies direct client access, and
 requires OA-010 for the first Admin bootstrap. Runtime code contains no default administrator.
+
+P0-10 starts with a server-only `copilot_completion_jobs` contract. One row is unique per
+`trip_id`/`base_version` and separately by idempotency key, so at-least-once queue delivery cannot
+create multiple completion effects for the same accepted skeleton. The table contains no prompt,
+provider payload, credential, or replacement Trip snapshot. It has RLS enabled and no direct
+Data API grants; a later owner-scoped server status endpoint and authenticated worker will consume it.
 
 ## Verification
 
