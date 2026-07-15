@@ -4,6 +4,13 @@ import { createVersionedInMemoryTripService } from "../trip/versionedService.js"
 import { createInMemoryKnowledgeService } from "./service.js";
 
 const nowExpired = "2026-07-08T00:00:00.000Z";
+const reviewedEvidence = {
+  source: "https://example.com/editorial-source",
+  sourceClass: "reputable_editorial" as const,
+  sourceLocator: "https://example.com/editorial-source",
+  evidenceSummary: "The editorial source supports this execution fact.",
+  ingestedAt: "2026-06-30T00:00:00.000Z",
+};
 
 describe("knowledgeRouter", () => {
   it("fails closed when the composition root omits Knowledge", async () => {
@@ -35,7 +42,7 @@ describe("knowledgeRouter", () => {
               factType: "metro_access",
               value: { easy: true },
               confidence: 0.9,
-              source: "editor",
+              ...reviewedEvidence,
               verifiedAt: "2026-07-01T00:00:00.000Z",
               expiresAt: null,
               version: 1,
@@ -47,7 +54,7 @@ describe("knowledgeRouter", () => {
               factType: "hours",
               value: { note: "old" },
               confidence: 0.9,
-              source: "editor",
+              ...reviewedEvidence,
               verifiedAt: "2026-01-01T00:00:00.000Z",
               expiresAt: nowExpired,
               version: 1,
@@ -76,13 +83,21 @@ describe("knowledgeRouter", () => {
       value: { label: "Metro exit note updated from ops" },
     });
 
-    const pois = await caller.knowledge.listPois({ city: "Shanghai", category: "attraction" });
+    const pois = await caller.knowledge.listPois({
+      city: "Shanghai",
+      category: "attraction",
+      includeDrafts: true,
+    });
 
     expect(pois[0]?.facts[0]?.value).toEqual({ label: "Metro exit note updated from ops" });
     expect(pois[0]?.facts[0]?.version).toBe(2);
+    expect(pois[0]?.facts[0]).toMatchObject({ status: "draft", verifiedAt: null });
+    await expect(
+      caller.knowledge.listPois({ city: "Shanghai", category: "attraction" }),
+    ).resolves.toMatchObject([{ facts: [] }]);
   });
 
-  it("creates facts and rejects missing source or confidence", async () => {
+  it("creates honest drafts and rejects incomplete or unsafe evidence", async () => {
     const caller = appRouter.createCaller({
       tripService: createVersionedInMemoryTripService(),
       knowledgeService: createInMemoryKnowledgeService(),
@@ -94,9 +109,11 @@ describe("knowledgeRouter", () => {
         factType: "rainy_fit",
         value: { label: "Good rainy-day backup" },
         confidence: 0.7,
-        source: "editorial",
+        sourceClass: "reputable_editorial",
+        sourceLocator: "https://example.com/rain-guide",
+        evidenceSummary: "The guide identifies this POI as suitable on rainy days.",
       }),
-    ).resolves.toMatchObject({ factType: "rainy_fit", status: "draft" });
+    ).resolves.toMatchObject({ factType: "rainy_fit", status: "draft", verifiedAt: null });
 
     await expect(
       caller.knowledge.createFact({
@@ -104,7 +121,9 @@ describe("knowledgeRouter", () => {
         factType: "bad",
         value: { label: "Bad" },
         confidence: 0.5,
-        source: "",
+        sourceClass: "reputable_editorial",
+        sourceLocator: "",
+        evidenceSummary: "Email editor@example.com for proof.",
       }),
     ).rejects.toThrow();
   });
@@ -127,7 +146,7 @@ describe("knowledgeRouter", () => {
               factType: "hours",
               value: { note: "old" },
               confidence: 0.9,
-              source: "editor",
+              ...reviewedEvidence,
               verifiedAt: "2026-01-01T00:00:00.000Z",
               expiresAt: nowExpired,
               version: 1,
@@ -149,6 +168,27 @@ describe("knowledgeRouter", () => {
       { facts: [{ status: "deprecated" }] },
     ]);
     await expect(caller.knowledge.listPois()).resolves.toMatchObject([{ facts: [] }]);
+  });
+
+  it("refuses to review a draft backed only by model output", async () => {
+    const knowledgeService = createInMemoryKnowledgeService();
+    const caller = appRouter.createCaller({
+      tripService: createVersionedInMemoryTripService(),
+      knowledgeService,
+    });
+    const created = await caller.knowledge.createFact({
+      poiId: "poi-shanghai-yu-garden",
+      factType: "hours",
+      value: { label: "Uncorroborated opening hours" },
+      confidence: 0.4,
+      sourceClass: "model_output",
+      sourceLocator: "internal://model-run/run-1",
+      evidenceSummary: "A model suggested these hours without independent evidence.",
+    });
+
+    await expect(caller.knowledge.renewFact({ factId: created.id })).rejects.toThrow(
+      "independently reviewable evidence",
+    );
   });
 
   it("clusters and resolves knowledge gaps", async () => {

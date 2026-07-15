@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  PoiFactEvidenceSummarySchema,
   PoiSchema,
   derivePoiSceneTags,
   isEligiblePoiFact,
@@ -17,6 +18,10 @@ const fact: PoiFact = {
   value: { easy: true },
   confidence: 0.9,
   source: "editor",
+  sourceClass: "reputable_editorial",
+  sourceLocator: "https://example.com/fact-1",
+  evidenceSummary: "The source confirms nearby metro access.",
+  ingestedAt: "2026-06-30T00:00:00.000Z",
   verifiedAt: "2026-07-01T00:00:00.000Z",
   expiresAt: null,
   version: 1,
@@ -53,13 +58,41 @@ describe("isCurrentPoiFact", () => {
     expect(isEligiblePoiFact({ ...fact, status: "draft" })).toBe(false);
     expect(isEligiblePoiFact({ ...fact, status: "rejected" })).toBe(false);
     expect(isEligiblePoiFact({ ...fact, status: "active" })).toBe(false);
-    expect(isEligiblePoiFact({ ...fact, source: " " })).toBe(false);
+    expect(isEligiblePoiFact({ ...fact, sourceLocator: null })).toBe(false);
+    expect(isEligiblePoiFact({ ...fact, sourceClass: "user_report" })).toBe(false);
+    expect(isEligiblePoiFact({ ...fact, verifiedAt: null })).toBe(false);
     expect(
       isEligiblePoiFact(
         { ...fact, verifiedAt: "2026-07-10T00:00:00.000Z" },
         new Date("2026-07-09"),
       ),
     ).toBe(false);
+  });
+
+  it("allows honest unverified drafts while rejecting PII evidence summaries", () => {
+    expect(
+      PoiSchema.parse({
+        id: "poi-draft",
+        city: "Shanghai",
+        category: "attraction",
+        nameEn: "Draft POI",
+        facts: [
+          {
+            ...fact,
+            id: "fact-draft",
+            sourceClass: null,
+            sourceLocator: null,
+            evidenceSummary: null,
+            verifiedAt: null,
+            status: "draft",
+          },
+        ],
+      }).facts[0]?.verifiedAt,
+    ).toBeNull();
+    expect(
+      PoiFactEvidenceSummarySchema.safeParse("Email editor@example.com for proof").success,
+    ).toBe(false);
+    expect(PoiFactEvidenceSummarySchema.safeParse("Call +86 138 0013 8000").success).toBe(false);
   });
 });
 

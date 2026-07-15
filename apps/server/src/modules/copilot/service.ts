@@ -518,14 +518,19 @@ async function retrieveEligibleFacts(
   });
   return pois
     .flatMap((poi) =>
-      poi.facts.map((fact) => ({
-        id: fact.id,
-        label: `${poi.nameEn}: ${fact.factType}`,
-        summary: boundedFactSummary(fact.value),
-        source: fact.source,
-        verifiedAt: fact.verifiedAt,
-        confidence: fact.confidence,
-      })),
+      poi.facts.flatMap((fact) => {
+        if (!fact.sourceClass || !fact.verifiedAt) return [];
+        return [
+          {
+            id: fact.id,
+            label: `${poi.nameEn}: ${fact.factType}`,
+            summary: boundedFactSummary(fact.value),
+            source: fact.sourceClass,
+            verifiedAt: fact.verifiedAt,
+            confidence: fact.confidence,
+          },
+        ];
+      }),
     )
     .slice(0, 3)
     .map((fact) => RetrievalFactSchema.parse(fact));

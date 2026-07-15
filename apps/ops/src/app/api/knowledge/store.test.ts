@@ -21,11 +21,16 @@ describe("ops knowledge store", () => {
       value: { label: "Metro: Yuyuan Garden Station" },
     });
 
-    const fact = (await service.listPois())
+    const fact = (await service.listPois({ includeDrafts: true }))
       .flatMap((poi: Poi) => poi.facts)
       .find((candidate: PoiFact) => candidate.id === "fact-yu-garden-metro");
 
     expect(fact?.value).toEqual({ label: "Metro: Yuyuan Garden Station" });
     expect(fact?.version).toBe(2);
+    expect(fact).toMatchObject({ status: "draft", verifiedAt: null });
+    const publicFact = (await service.listPois())
+      .flatMap((poi: Poi) => poi.facts)
+      .find((candidate: PoiFact) => candidate.id === "fact-yu-garden-metro");
+    expect(publicFact).toBeUndefined();
   });
 });

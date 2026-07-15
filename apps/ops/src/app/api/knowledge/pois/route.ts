@@ -17,6 +17,7 @@ export async function GET(request: Request) {
         ...(city ? { city } : {}),
         includeExpired: params.get("includeExpired") === "1",
         includeDeprecated: params.get("includeDeprecated") === "1",
+        includeDrafts: params.get("includeDrafts") === "1",
       }),
     ),
     authorization.cookieResponse,

@@ -10,7 +10,9 @@ export function FactEditor() {
   const [saveState, setSaveState] = useState<SaveState>("idle");
 
   async function loadPois() {
-    const response = await fetch("/api/knowledge/pois?includeExpired=1&includeDeprecated=1");
+    const response = await fetch(
+      "/api/knowledge/pois?includeDrafts=1&includeExpired=1&includeDeprecated=1",
+    );
     setPois((await response.json()) as Poi[]);
   }
 
@@ -32,32 +34,70 @@ export function FactEditor() {
   );
 
   async function saveFact(factId: string) {
+    setSaveState("saving");
+    const saved = await persistDraft(factId);
+    setSaveState(saved ? "saved" : "error");
+  }
+
+  async function persistDraft(factId: string): Promise<boolean> {
     const value = document.getElementById(`fact-${factId}`) as HTMLInputElement | null;
-    const source = document.getElementById(`source-${factId}`) as HTMLInputElement | null;
+    const sourceClass = document.getElementById(
+      `source-class-${factId}`,
+    ) as HTMLSelectElement | null;
+    const sourceLocator = document.getElementById(
+      `source-locator-${factId}`,
+    ) as HTMLInputElement | null;
+    const evidenceSummary = document.getElementById(
+      `evidence-summary-${factId}`,
+    ) as HTMLInputElement | null;
     const confidence = document.getElementById(`confidence-${factId}`) as HTMLInputElement | null;
-    if (!value || !source || !confidence || !source.value.trim()) {
-      setSaveState("error");
-      return;
+    if (
+      !value ||
+      !sourceClass?.value ||
+      !sourceLocator?.value.trim() ||
+      !evidenceSummary?.value.trim() ||
+      !confidence
+    ) {
+      return false;
     }
 
-    setSaveState("saving");
     const response = await fetch("/api/knowledge/facts", {
       method: "PATCH",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
         factId,
         value: { label: value.value },
-        source: source.value,
+        sourceClass: sourceClass.value,
+        sourceLocator: sourceLocator.value,
+        evidenceSummary: evidenceSummary.value,
         confidence: Number(confidence.value),
       }),
     });
 
     if (!response.ok) {
-      setSaveState("error");
-      return;
+      return false;
     }
 
     setPois((await response.json()) as Poi[]);
+    return true;
+  }
+
+  async function reviewFact(factId: string) {
+    setSaveState("saving");
+    if (!(await persistDraft(factId))) {
+      setSaveState("error");
+      return;
+    }
+    const response = await fetch("/api/knowledge/facts", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ factId, action: "renew" }),
+    });
+    if (!response.ok) {
+      setSaveState("error");
+      return;
+    }
+    await loadPois();
     setSaveState("saved");
   }
 
@@ -72,7 +112,9 @@ export function FactEditor() {
         poiId: String(form.get("poiId") ?? ""),
         factType: String(form.get("factType") ?? ""),
         value: { label: String(form.get("label") ?? "") },
-        source: String(form.get("source") ?? ""),
+        sourceClass: String(form.get("sourceClass") ?? ""),
+        sourceLocator: String(form.get("sourceLocator") ?? ""),
+        evidenceSummary: String(form.get("evidenceSummary") ?? ""),
         confidence: Number(form.get("confidence") ?? 0),
       }),
     });
@@ -107,7 +149,14 @@ export function FactEditor() {
           step="0.05"
           type="number"
         />
-        <input name="source" placeholder="source" required />
+        <SourceClassSelect name="sourceClass" />
+        <input name="sourceLocator" placeholder="source URL or evidence reference" required />
+        <input
+          maxLength={240}
+          name="evidenceSummary"
+          placeholder="what this source supports (no PII)"
+          required
+        />
         <button disabled={saveState === "saving"} type="submit">
           Add fact
         </button>
@@ -153,9 +202,20 @@ export function FactEditor() {
                     id={`fact-${fact.id}`}
                   />
                   <input
-                    aria-label={`${fact.id} source`}
-                    defaultValue={fact.source}
-                    id={`source-${fact.id}`}
+                    aria-label={`${fact.id} source locator`}
+                    defaultValue={fact.sourceLocator ?? ""}
+                    id={`source-locator-${fact.id}`}
+                  />
+                  <SourceClassSelect
+                    ariaLabel={`${fact.id} source class`}
+                    defaultValue={fact.sourceClass ?? ""}
+                    id={`source-class-${fact.id}`}
+                  />
+                  <input
+                    aria-label={`${fact.id} evidence summary`}
+                    defaultValue={fact.evidenceSummary ?? ""}
+                    id={`evidence-summary-${fact.id}`}
+                    maxLength={240}
                   />
                   <input
                     aria-label={`${fact.id} confidence`}
@@ -177,6 +237,18 @@ export function FactEditor() {
                     >
                       Save
                     </button>
+                    {fact.status === "draft" ? (
+                      <button
+                        disabled={saveState === "saving"}
+                        onClick={() => void reviewFact(fact.id)}
+                        type="button"
+                      >
+                        Mark reviewed
+                      </button>
+                    ) : null}
+                    <small>
+                      {fact.verifiedAt ? `verified ${fact.verifiedAt.slice(0, 10)}` : "unverified"}
+                    </small>
                     {saveState !== "idle" ? <small>{saveState}</small> : null}
                   </div>
                 </td>
@@ -186,5 +258,29 @@ export function FactEditor() {
         </table>
       )}
     </section>
+  );
+}
+
+function SourceClassSelect({
+  ariaLabel,
+  defaultValue = "",
+  id,
+  name,
+}: {
+  ariaLabel?: string;
+  defaultValue?: string;
+  id?: string;
+  name?: string;
+}) {
+  return (
+    <select aria-label={ariaLabel} defaultValue={defaultValue} id={id} name={name} required>
+      <option value="">Source class</option>
+      <option value="official">Official</option>
+      <option value="operator_verified">Operator verified</option>
+      <option value="reputable_editorial">Reputable editorial</option>
+      <option value="user_report">User report (draft only)</option>
+      <option value="model_output">Model output (draft only)</option>
+      <option value="uncorroborated_scrape">Uncorroborated scrape (draft only)</option>
+    </select>
   );
 }

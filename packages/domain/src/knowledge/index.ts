@@ -11,14 +11,48 @@ export const PoiFactStatusSchema = z.enum([
   "active",
 ]);
 
+export const PoiFactSourceClassSchema = z.enum([
+  "official",
+  "operator_verified",
+  "reputable_editorial",
+  "user_report",
+  "model_output",
+  "uncorroborated_scrape",
+]);
+
+export const PoiFactSourceLocatorSchema = z.string().trim().min(1).max(500);
+
+export const PoiFactEvidenceSummarySchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(240)
+  .refine((value) => !/[\w.+-]+@[\w.-]+\.[a-z]{2,}/i.test(value), {
+    message: "Evidence summary must not contain an email address",
+  })
+  .refine((value) => !/\b(?:\+?\d[\d\s()-]{6,}\d)\b/.test(value), {
+    message: "Evidence summary must not contain a phone number",
+  });
+
+export const PoiFactEvidenceSchema = z.object({
+  sourceClass: PoiFactSourceClassSchema,
+  sourceLocator: PoiFactSourceLocatorSchema,
+  evidenceSummary: PoiFactEvidenceSummarySchema,
+});
+
 export const PoiFactSchema = z.object({
   id: z.string().min(1),
   poiId: z.string().min(1),
   factType: z.string().min(1),
   value: z.record(z.unknown()),
   confidence: z.number().min(0).max(1),
+  // Compatibility projection for pre-evidence-contract consumers. New writes mirror sourceLocator.
   source: z.string().min(1),
-  verifiedAt: z.string().datetime(),
+  sourceClass: PoiFactSourceClassSchema.nullable().default(null),
+  sourceLocator: PoiFactSourceLocatorSchema.nullable().default(null),
+  evidenceSummary: PoiFactEvidenceSummarySchema.nullable().default(null),
+  ingestedAt: z.string().datetime(),
+  verifiedAt: z.string().datetime().nullable().default(null),
   expiresAt: z.string().datetime().nullable().default(null),
   version: z.number().int().positive(),
   status: PoiFactStatusSchema.default("draft"),
@@ -63,6 +97,7 @@ export const KnowledgeGapSchema = z.object({
 
 export type PoiCategory = z.infer<typeof PoiCategorySchema>;
 export type PoiFactStatus = z.infer<typeof PoiFactStatusSchema>;
+export type PoiFactSourceClass = z.infer<typeof PoiFactSourceClassSchema>;
 export type PoiFact = z.infer<typeof PoiFactSchema>;
 export type Poi = z.infer<typeof PoiSchema>;
 export type KnowledgeGap = z.infer<typeof KnowledgeGapSchema>;
@@ -80,11 +115,25 @@ export type TravelerSceneTag = (typeof TRAVELER_SCENE_TAGS)[number];
 export function isEligiblePoiFact(fact: PoiFact, now = new Date()): boolean {
   return (
     fact.status === "reviewed" &&
-    fact.source.trim().length > 0 &&
+    hasReviewablePoiFactEvidence(fact) &&
+    fact.verifiedAt !== null &&
     Number.isFinite(Date.parse(fact.verifiedAt)) &&
     Date.parse(fact.verifiedAt) <= now.getTime() &&
     (!fact.expiresAt || Date.parse(fact.expiresAt) >= now.getTime())
   );
+}
+
+export function hasReviewablePoiFactEvidence(
+  fact: Pick<PoiFact, "sourceClass" | "sourceLocator" | "evidenceSummary">,
+): boolean {
+  if (
+    fact.sourceClass !== "official" &&
+    fact.sourceClass !== "operator_verified" &&
+    fact.sourceClass !== "reputable_editorial"
+  ) {
+    return false;
+  }
+  return PoiFactEvidenceSchema.safeParse(fact).success;
 }
 
 // Kept for existing callers. "Current" now means eligible under ADR-0006, not merely non-expired.
@@ -94,7 +143,19 @@ export function updatePoiFact(
   pois: Poi[],
   factId: string,
   value: Record<string, unknown>,
-  fields: Partial<Pick<PoiFact, "confidence" | "source" | "expiresAt" | "status">> = {},
+  fields: Partial<
+    Pick<
+      PoiFact,
+      | "confidence"
+      | "source"
+      | "sourceClass"
+      | "sourceLocator"
+      | "evidenceSummary"
+      | "expiresAt"
+      | "status"
+      | "verifiedAt"
+    >
+  > = {},
 ): Poi[] {
   return pois.map((poi) => ({
     ...poi,
@@ -104,7 +165,6 @@ export function updatePoiFact(
             ...fact,
             ...fields,
             value,
-            verifiedAt: new Date().toISOString(),
             version: fact.version + 1,
           }
         : fact,

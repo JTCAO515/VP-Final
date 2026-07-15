@@ -14,7 +14,9 @@ export async function POST(request: Request) {
     factType?: unknown;
     value?: unknown;
     confidence?: unknown;
-    source?: unknown;
+    sourceClass?: unknown;
+    sourceLocator?: unknown;
+    evidenceSummary?: unknown;
     expiresAt?: unknown;
   };
   if (
@@ -22,10 +24,15 @@ export async function POST(request: Request) {
     typeof body.factType !== "string" ||
     !isRecord(body.value) ||
     typeof body.confidence !== "number" ||
-    typeof body.source !== "string"
+    !isSourceClass(body.sourceClass) ||
+    typeof body.sourceLocator !== "string" ||
+    typeof body.evidenceSummary !== "string"
   ) {
     return NextResponse.json(
-      { error: "Expected poiId, factType, value, confidence, and source." },
+      {
+        error:
+          "Expected poiId, factType, value, confidence, sourceClass, sourceLocator, and evidenceSummary.",
+      },
       { status: 400 },
     );
   }
@@ -42,7 +49,9 @@ export async function POST(request: Request) {
       factType: body.factType,
       value: body.value,
       confidence: body.confidence,
-      source: body.source,
+      sourceClass: body.sourceClass,
+      sourceLocator: body.sourceLocator,
+      evidenceSummary: body.evidenceSummary,
       ...(typeof body.expiresAt === "string" || body.expiresAt === null
         ? { expiresAt: body.expiresAt }
         : {}),
@@ -63,7 +72,9 @@ export async function PATCH(request: Request) {
     factId?: unknown;
     value?: unknown;
     confidence?: unknown;
-    source?: unknown;
+    sourceClass?: unknown;
+    sourceLocator?: unknown;
+    evidenceSummary?: unknown;
     expiresAt?: unknown;
     action?: unknown;
   };
@@ -101,7 +112,11 @@ export async function PATCH(request: Request) {
       factId: body.factId,
       value: body.value,
       ...(typeof body.confidence === "number" ? { confidence: body.confidence } : {}),
-      ...(typeof body.source === "string" ? { source: body.source } : {}),
+      ...(isSourceClass(body.sourceClass) ? { sourceClass: body.sourceClass } : {}),
+      ...(typeof body.sourceLocator === "string" ? { sourceLocator: body.sourceLocator } : {}),
+      ...(typeof body.evidenceSummary === "string"
+        ? { evidenceSummary: body.evidenceSummary }
+        : {}),
       ...(typeof body.expiresAt === "string" || body.expiresAt === null
         ? { expiresAt: body.expiresAt }
         : {}),
@@ -129,4 +144,23 @@ async function auditFactMutation(
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isSourceClass(
+  value: unknown,
+): value is
+  | "official"
+  | "operator_verified"
+  | "reputable_editorial"
+  | "user_report"
+  | "model_output"
+  | "uncorroborated_scrape" {
+  return (
+    value === "official" ||
+    value === "operator_verified" ||
+    value === "reputable_editorial" ||
+    value === "user_report" ||
+    value === "model_output" ||
+    value === "uncorroborated_scrape"
+  );
 }

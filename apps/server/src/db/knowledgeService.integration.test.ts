@@ -31,10 +31,12 @@ describeDatabase("database KnowledgeService", () => {
       factType: "metro_access",
       value: { label: "Near metro" },
       confidence: 0.9,
-      source: "https://example.com/integration-source",
+      sourceClass: "official",
+      sourceLocator: "https://example.com/integration-source",
+      evidenceSummary: "The official source confirms nearby metro access.",
     });
 
-    expect(created.status).toBe("draft");
+    expect(created).toMatchObject({ status: "draft", verifiedAt: null });
     await expect(service.listPois({ city: "Integration City" })).resolves.toMatchObject([
       { id: poiId, facts: [] },
     ]);
@@ -43,6 +45,31 @@ describeDatabase("database KnowledgeService", () => {
     expect(reviewed).toMatchObject({ id: created.id, status: "reviewed" });
     await expect(service.listPois({ city: "Integration City" })).resolves.toMatchObject([
       { id: poiId, facts: [{ id: created.id, status: "reviewed" }] },
+    ]);
+  });
+
+  it("demotes edited reviewed facts and preserves ingestion time", async () => {
+    const created = await service.createFact({
+      poiId,
+      factType: "hours",
+      value: { label: "Open daily" },
+      confidence: 0.8,
+      sourceClass: "official",
+      sourceLocator: "https://example.com/hours",
+      evidenceSummary: "The official page publishes daily opening hours.",
+    });
+    const reviewed = await service.renewFact({ factId: created.id });
+    const updatedPois = await service.updateFact({
+      factId: created.id,
+      value: { label: "Hours changed; review required" },
+    });
+    const updated = updatedPois[0]?.facts.find((fact) => fact.id === created.id);
+
+    expect(updated).toMatchObject({ status: "draft", verifiedAt: null });
+    expect(updated?.ingestedAt).toBe(created.ingestedAt);
+    expect(reviewed?.verifiedAt).not.toBeNull();
+    await expect(service.listPois({ city: "Integration City" })).resolves.toMatchObject([
+      { id: poiId, facts: [] },
     ]);
   });
 });

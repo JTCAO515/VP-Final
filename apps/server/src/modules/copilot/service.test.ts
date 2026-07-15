@@ -129,6 +129,10 @@ describe("createCopilotPipeline", () => {
             value: { label: "Near Yuyuan Garden station" },
             confidence: 0.9,
             source: "editorial-review",
+            sourceClass: "reputable_editorial",
+            sourceLocator: "https://example.com/yu-garden-metro",
+            evidenceSummary: "The editorial source confirms nearby metro access.",
+            ingestedAt: "2026-07-09T00:00:00.000Z",
             verifiedAt: "2026-07-10T00:00:00.000Z",
             expiresAt: null,
             version: 1,
@@ -141,6 +145,10 @@ describe("createCopilotPipeline", () => {
             value: { label: "Old hours" },
             confidence: 0.9,
             source: "editorial-review",
+            sourceClass: "reputable_editorial",
+            sourceLocator: "https://example.com/yu-garden-hours",
+            evidenceSummary: "The editorial source published the old opening hours.",
+            ingestedAt: "2026-01-01T00:00:00.000Z",
             verifiedAt: "2026-01-01T00:00:00.000Z",
             expiresAt: "2026-07-01T00:00:00.000Z",
             version: 1,
@@ -173,7 +181,7 @@ describe("createCopilotPipeline", () => {
       {
         fact_id: "fact-reviewed",
         label: "Yu Garden: metro_access",
-        source: "editorial-review",
+        source: "reputable_editorial",
       },
     ]);
   });

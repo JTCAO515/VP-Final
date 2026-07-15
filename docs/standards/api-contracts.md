@@ -61,6 +61,15 @@ Anonymous-to-authenticated claim consumes only a verified authenticated identity
 the current signed anonymous id. Share capabilities are opaque, owner-created, read-only, and
 owner-revocable. P0-04b and P0-04c implement the database and HTTP mappings respectively.
 
+## Knowledge Evidence Contract
+
+Fact create/update inputs carry typed `sourceClass`, `sourceLocator`, a PII-free `evidenceSummary`,
+and confidence. Creation returns an unverified draft with `verifiedAt: null`; `ingestedAt` is the
+database insertion time. Editing content or evidence is a material change and returns the fact to
+draft. Only the explicit review/renew action may set `verifiedAt` and `reviewed`, and it rejects source
+classes that have not been independently corroborated. Public consumers never treat the legacy
+`source` compatibility field as evidence.
+
 ## Ops Authorization Contract
 
 Ops pages and APIs verify the Supabase user server-side, then resolve an explicit database membership.

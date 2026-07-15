@@ -51,7 +51,10 @@ The role source must be trusted app metadata or an independent membership table.
 metadata is forbidden.
 
 Fact review, expiry, conflict resolution, and sanitized knowledge-gap handling follow
-[ADR-0006](../adr/ADR-0006-knowledge-evidence-and-index-quality.md).
+[ADR-0006](../adr/ADR-0006-knowledge-evidence-and-index-quality.md). Fact creation and editing retain
+source class, locator, bounded evidence summary, and confidence. Save always leaves changed evidence
+as an unverified draft; `Mark reviewed` is a separate action and rejects model-only, user-report, or
+uncorroborated evidence until an editor replaces it with independently reviewable evidence.
 
 ## Verification
 
