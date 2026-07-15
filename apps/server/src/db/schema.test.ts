@@ -56,6 +56,10 @@ describe("database schema", () => {
     expect(pois.nameEn.name).toBe("name_en");
     expect(poiFacts.factType.name).toBe("fact_type");
     expect(poiFacts.status.name).toBe("status");
+    expect(poiFacts.status.default).toBe("draft");
+    expect(getTableConfig(poiFacts).checks.map((constraint) => constraint.name)).toContain(
+      "poi_facts_status_check",
+    );
     expect(knowledgeGaps.questionPattern.name).toBe("question_pattern");
     expect(knowledgeGaps.resolvedAt.name).toBe("resolved_at");
     expect(poiCommercialLinks.poiId.name).toBe("poi_id");

@@ -12,8 +12,10 @@ Explore, and SEO, so provenance and freshness are release-critical.
 
 1. Open the expired/reported fact queue and group by city, POI, fact type, and user exposure.
 2. Check the original source and a current owner/official source when possible.
-3. Record source, observed value, confidence, `verifiedAt`, and `expiresAt`.
-4. Renew unchanged facts, update changed facts as a new version, or deprecate unsupported facts.
+3. Record source, observed value, confidence, `verifiedAt`, and `expiresAt`. A newly entered or
+   migrated fact remains `draft`; never treat a legacy `active` label as review evidence.
+4. Renew unchanged facts into `reviewed`, update changed facts as a new version, or deprecate/reject
+   unsupported facts.
 5. Confirm deprecated/expired facts are excluded from public derivation and Copilot retrieval.
 6. Link recurring unanswered questions to knowledge gaps and mark resolved only when evidence exists.
 7. Sample the resulting Explore/guide/Copilot presentation for misleading wording.

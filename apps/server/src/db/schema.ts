@@ -226,7 +226,7 @@ export const poiFacts = pgTable(
     verifiedAt: timestamp("verified_at", { withTimezone: true }).notNull(),
     expiresAt: timestamp("expires_at", { withTimezone: true }),
     version: integer("version").notNull().default(1),
-    status: text("status").notNull().default("active"),
+    status: text("status").notNull().default("draft"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
@@ -236,7 +236,10 @@ export const poiFacts = pgTable(
       sql`${table.confidence} >= 0 and ${table.confidence} <= 1`,
     ),
     versionCheck: check("poi_facts_version_check", sql`${table.version} > 0`),
-    statusCheck: check("poi_facts_status_check", sql`${table.status} in ('active', 'deprecated')`),
+    statusCheck: check(
+      "poi_facts_status_check",
+      sql`${table.status} in ('draft', 'reviewed', 'deprecated', 'rejected')`,
+    ),
   }),
 );
 
