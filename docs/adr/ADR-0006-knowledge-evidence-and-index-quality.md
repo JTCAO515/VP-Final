@@ -18,12 +18,23 @@ Every execution fact has a stable id, source class/locator, evidence summary, co
 `expiresAt`, and status: `draft`, `reviewed`, `deprecated`, or `rejected`. Only a current `reviewed`
 fact is eligible for public display, AI retrieval, or SEO.
 
-| Source | Eligibility after review |
-| --- | --- |
-| Official first-party/government source | eligible while current |
-| Direct operator verification with retained evidence | eligible with expiry |
-| Reputable editorial source | eligible with conservative wording and expiry |
-| User report, model output, or uncorroborated scrape | ineligible until independently reviewed |
+The implemented source-class vocabulary is `official`, `operator_verified`,
+`reputable_editorial`, `user_report`, `model_output`, and `uncorroborated_scrape`. `created_at`
+is exposed as `ingestedAt` and records system ingestion; it is not evidence of review. `verifiedAt`
+is nullable for drafts and is written only by the explicit review/renew transition. Editing fact
+content or evidence returns the fact to `draft` and clears `verifiedAt`. The pre-contract `source`
+column remains a compatibility projection only and cannot satisfy eligibility by itself.
+
+| Source                                              | Eligibility after review                      |
+| --------------------------------------------------- | --------------------------------------------- |
+| Official first-party/government source              | eligible while current                        |
+| Direct operator verification with retained evidence | eligible with expiry                          |
+| Reputable editorial source                          | eligible with conservative wording and expiry |
+| User report, model output, or uncorroborated scrape | ineligible until independently reviewed       |
+
+Independent review reclassifies evidence into an eligible source class; changing status alone is
+insufficient. Evidence summaries are bounded to 240 characters and exclude email addresses, phone
+numbers, raw prompts, and private service transcripts.
 
 Expired, deprecated, rejected, source-less, or unresolved-conflict facts are withheld. Consumers omit
 them or say evidence is unavailable; they never infer a substitute. Conflicting facts remain withheld

@@ -1,4 +1,10 @@
-import { KnowledgeGapSchema, PoiCategorySchema } from "@visepanda/domain";
+import {
+  KnowledgeGapSchema,
+  PoiCategorySchema,
+  PoiFactEvidenceSummarySchema,
+  PoiFactSourceClassSchema,
+  PoiFactSourceLocatorSchema,
+} from "@visepanda/domain";
 import { z } from "zod";
 import { publicProcedure, router } from "../../trpc.js";
 import { requireService } from "../../runtime/requireService.js";
@@ -9,6 +15,7 @@ const ListPoisInputSchema = z
     category: PoiCategorySchema.optional(),
     includeExpired: z.boolean().optional(),
     includeDeprecated: z.boolean().optional(),
+    includeDrafts: z.boolean().optional(),
   })
   .optional();
 
@@ -17,7 +24,9 @@ const CreateFactInputSchema = z.object({
   factType: z.string().min(1),
   value: z.record(z.unknown()),
   confidence: z.number().min(0).max(1),
-  source: z.string().min(1),
+  sourceClass: PoiFactSourceClassSchema,
+  sourceLocator: PoiFactSourceLocatorSchema,
+  evidenceSummary: PoiFactEvidenceSummarySchema,
   expiresAt: z.string().datetime().nullable().optional(),
 });
 
@@ -25,7 +34,9 @@ const UpdateFactInputSchema = z.object({
   factId: z.string().min(1),
   value: z.record(z.unknown()),
   confidence: z.number().min(0).max(1).optional(),
-  source: z.string().min(1).optional(),
+  sourceClass: PoiFactSourceClassSchema.optional(),
+  sourceLocator: PoiFactSourceLocatorSchema.optional(),
+  evidenceSummary: PoiFactEvidenceSummarySchema.optional(),
   expiresAt: z.string().datetime().nullable().optional(),
 });
 
@@ -69,7 +80,9 @@ export const knowledgeRouter = router({
       factType: input.factType,
       value: input.value,
       confidence: input.confidence,
-      source: input.source,
+      sourceClass: input.sourceClass,
+      sourceLocator: input.sourceLocator,
+      evidenceSummary: input.evidenceSummary,
       ...(input.expiresAt !== undefined ? { expiresAt: input.expiresAt } : {}),
     });
   }),
@@ -78,7 +91,9 @@ export const knowledgeRouter = router({
       factId: input.factId,
       value: input.value,
       ...(input.confidence !== undefined ? { confidence: input.confidence } : {}),
-      ...(input.source !== undefined ? { source: input.source } : {}),
+      ...(input.sourceClass !== undefined ? { sourceClass: input.sourceClass } : {}),
+      ...(input.sourceLocator !== undefined ? { sourceLocator: input.sourceLocator } : {}),
+      ...(input.evidenceSummary !== undefined ? { evidenceSummary: input.evidenceSummary } : {}),
       ...(input.expiresAt !== undefined ? { expiresAt: input.expiresAt } : {}),
     });
   }),
@@ -120,10 +135,12 @@ function toPoiFilter(input: z.infer<typeof ListPoisInputSchema>) {
     category?: z.infer<typeof PoiCategorySchema>;
     includeExpired?: boolean;
     includeDeprecated?: boolean;
+    includeDrafts?: boolean;
   } = {};
   if (input?.city) filter.city = input.city;
   if (input?.category) filter.category = input.category;
   if (input?.includeExpired) filter.includeExpired = input.includeExpired;
   if (input?.includeDeprecated) filter.includeDeprecated = input.includeDeprecated;
+  if (input?.includeDrafts) filter.includeDrafts = input.includeDrafts;
   return filter;
 }

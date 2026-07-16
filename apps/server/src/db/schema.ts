@@ -280,7 +280,10 @@ export const poiFacts = pgTable(
     valueJsonb: jsonb("value_jsonb").notNull(),
     confidence: numeric("confidence", { precision: 4, scale: 3 }).notNull(),
     source: text("source").notNull(),
-    verifiedAt: timestamp("verified_at", { withTimezone: true }).notNull(),
+    sourceClass: text("source_class"),
+    sourceLocator: text("source_locator"),
+    evidenceSummary: text("evidence_summary"),
+    verifiedAt: timestamp("verified_at", { withTimezone: true }),
     expiresAt: timestamp("expires_at", { withTimezone: true }),
     version: integer("version").notNull().default(1),
     status: text("status").notNull().default("draft"),
@@ -296,6 +299,14 @@ export const poiFacts = pgTable(
     statusCheck: check(
       "poi_facts_status_check",
       sql`${table.status} in ('draft', 'reviewed', 'deprecated', 'rejected')`,
+    ),
+    sourceClassCheck: check(
+      "poi_facts_source_class_check",
+      sql`${table.sourceClass} is null or ${table.sourceClass} in ('official', 'operator_verified', 'reputable_editorial', 'user_report', 'model_output', 'uncorroborated_scrape')`,
+    ),
+    reviewedEvidenceCheck: check(
+      "poi_facts_reviewed_evidence_check",
+      sql`${table.status} <> 'reviewed' or (${table.sourceClass} is not null and ${table.sourceClass} in ('official', 'operator_verified', 'reputable_editorial') and ${table.sourceLocator} is not null and btrim(${table.sourceLocator}) <> '' and ${table.evidenceSummary} is not null and btrim(${table.evidenceSummary}) <> '' and char_length(${table.evidenceSummary}) <= 240 and ${table.verifiedAt} is not null)`,
     ),
   }),
 );

@@ -83,9 +83,10 @@ distinguish its own previous partial effect from a later unrelated Trip edit.
 - AI output must parse as a Copilot envelope before any action is applied.
 - Knowledge-backed Copilot retrieval selects only eligible reviewed facts, carries bounded evidence
   metadata, and rejects citations outside the fetched allowlist. The durable fact service creates
-  `draft` facts, promotes only through an explicit review/renewal transition, and mirrors the same
-  reviewed/source/verification/expiry eligibility boundary in public RLS. Gap persistence normalizes
-  email and phone-like substrings before storing a question pattern.
+  unverified `draft` facts, demotes edited facts back to draft, and promotes only complete independently
+  reviewable evidence through an explicit review/renewal transition. Public RLS mirrors the same
+  source-class/evidence/verification/expiry boundary. Gap persistence normalizes email and phone-like
+  substrings before storing a question pattern.
 - Existing Trip persistence receives only a validated Patch plus trusted identity, expected version,
   and event source; creation receives the initial validated Trip.
 - A module may not import another module's tables.

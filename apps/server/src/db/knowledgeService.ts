@@ -1,6 +1,8 @@
 import {
   KnowledgeGapSchema,
+  hasReviewablePoiFactEvidence,
   isEligiblePoiFact,
+  PoiFactEvidenceSchema,
   PoiFactSchema,
   PoiSchema,
   type KnowledgeGap,
@@ -19,6 +21,7 @@ export function createDbKnowledgeService(db: Db): KnowledgeService {
       return listPois(db, input);
     },
     async createFact(input) {
+      const evidence = PoiFactEvidenceSchema.parse(input);
       const [row] = await db
         .insert(poiFacts)
         .values({
@@ -26,8 +29,11 @@ export function createDbKnowledgeService(db: Db): KnowledgeService {
           factType: input.factType,
           valueJsonb: input.value,
           confidence: String(input.confidence),
-          source: input.source,
-          verifiedAt: new Date(),
+          source: evidence.sourceLocator,
+          sourceClass: evidence.sourceClass,
+          sourceLocator: evidence.sourceLocator,
+          evidenceSummary: evidence.evidenceSummary,
+          verifiedAt: null,
           expiresAt: input.expiresAt ? new Date(input.expiresAt) : null,
           status: "draft",
         })
@@ -38,13 +44,21 @@ export function createDbKnowledgeService(db: Db): KnowledgeService {
     async updateFact(input) {
       const existing = await getFact(db, input.factId);
       if (!existing) throw new Error("Fact not found");
+      const evidence = PoiFactEvidenceSchema.parse({
+        sourceClass: input.sourceClass ?? existing.sourceClass,
+        sourceLocator: input.sourceLocator ?? existing.sourceLocator,
+        evidenceSummary: input.evidenceSummary ?? existing.evidenceSummary,
+      });
       await db
         .update(poiFacts)
         .set({
           valueJsonb: input.value,
           confidence: String(input.confidence ?? existing.confidence),
-          source: input.source ?? existing.source,
-          verifiedAt: new Date(),
+          source: evidence.sourceLocator,
+          sourceClass: evidence.sourceClass,
+          sourceLocator: evidence.sourceLocator,
+          evidenceSummary: evidence.evidenceSummary,
+          verifiedAt: null,
           expiresAt:
             input.expiresAt === undefined
               ? existing.expiresAt
@@ -54,9 +68,14 @@ export function createDbKnowledgeService(db: Db): KnowledgeService {
                 ? new Date(input.expiresAt)
                 : null,
           version: existing.version + 1,
+          status: "draft",
         })
         .where(eq(poiFacts.id, input.factId));
-      return listPois(db);
+      return listPois(db, {
+        includeDrafts: true,
+        includeExpired: true,
+        includeDeprecated: true,
+      });
     },
     async listExpiredFacts(input = {}) {
       const all = await listPois(db, { includeExpired: true });
@@ -73,6 +92,9 @@ export function createDbKnowledgeService(db: Db): KnowledgeService {
     async renewFact(input) {
       const existing = await getFact(db, input.factId);
       if (!existing) return null;
+      if (!hasReviewablePoiFactEvidence(existing)) {
+        throw new Error("Fact requires independently reviewable evidence before review");
+      }
       const [row] = await db
         .update(poiFacts)
         .set({
@@ -152,6 +174,7 @@ async function listPois(
     category?: PoiCategory;
     includeExpired?: boolean;
     includeDeprecated?: boolean;
+    includeDrafts?: boolean;
   } = {},
 ): Promise<Poi[]> {
   const where = [
@@ -181,6 +204,7 @@ async function listPois(
         .map(rowToFact)
         .filter((fact) => {
           if (isEligiblePoiFact(fact)) return true;
+          if (input.includeDrafts && fact.status === "draft") return true;
           if (input.includeDeprecated && fact.status === "deprecated") return true;
           return input.includeExpired && isExpired(fact);
         }),
@@ -210,7 +234,11 @@ function rowToFact(row: typeof poiFacts.$inferSelect): PoiFact {
     value: row.valueJsonb,
     confidence: Number(row.confidence),
     source: row.source,
-    verifiedAt: row.verifiedAt.toISOString(),
+    sourceClass: row.sourceClass,
+    sourceLocator: row.sourceLocator,
+    evidenceSummary: row.evidenceSummary,
+    ingestedAt: row.createdAt.toISOString(),
+    verifiedAt: row.verifiedAt?.toISOString() ?? null,
     expiresAt: row.expiresAt?.toISOString() ?? null,
     version: row.version,
     status: row.status,

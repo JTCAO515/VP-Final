@@ -1,14 +1,17 @@
 import {
   INITIAL_KNOWLEDGE_GAPS,
   INITIAL_POIS,
+  hasReviewablePoiFactEvidence,
   isEligiblePoiFact,
   KnowledgeGapSchema,
+  PoiFactEvidenceSchema,
   PoiSchema,
   updatePoiFact,
   type KnowledgeGap,
   type Poi,
   type PoiCategory,
   type PoiFact,
+  type PoiFactSourceClass,
 } from "@visepanda/domain";
 
 export type KnowledgeService = {
@@ -17,20 +20,25 @@ export type KnowledgeService = {
     category?: PoiCategory;
     includeExpired?: boolean;
     includeDeprecated?: boolean;
+    includeDrafts?: boolean;
   }): Promise<Poi[]>;
   createFact(input: {
     poiId: string;
     factType: string;
     value: Record<string, unknown>;
     confidence: number;
-    source: string;
+    sourceClass: PoiFactSourceClass;
+    sourceLocator: string;
+    evidenceSummary: string;
     expiresAt?: string | null;
   }): Promise<PoiFact>;
   updateFact(input: {
     factId: string;
     value: Record<string, unknown>;
     confidence?: number;
-    source?: string;
+    sourceClass?: PoiFactSourceClass;
+    sourceLocator?: string;
+    evidenceSummary?: string;
     expiresAt?: string | null;
   }): Promise<Poi[]>;
   listExpiredFacts(input?: { now?: Date }): Promise<PoiFact[]>;
@@ -62,6 +70,7 @@ export function createInMemoryKnowledgeService(
             ...poi,
             facts: poi.facts.filter((fact) => {
               if (isEligiblePoiFact(fact)) return true;
+              if (input.includeDrafts && fact.status === "draft") return true;
               if (input.includeDeprecated && fact.status === "deprecated") return true;
               return input.includeExpired && isExpired(fact);
             }),
@@ -71,16 +80,20 @@ export function createInMemoryKnowledgeService(
     },
     async createFact(input) {
       assertWritableFact(input);
+      const evidence = PoiFactEvidenceSchema.parse(input);
       const poi = pois.find((candidate) => candidate.id === input.poiId);
       if (!poi) throw new Error("POI not found");
+      const ingestedAt = new Date().toISOString();
       const fact: PoiFact = {
         id: crypto.randomUUID(),
         poiId: input.poiId,
         factType: input.factType,
         value: input.value,
         confidence: input.confidence,
-        source: input.source,
-        verifiedAt: new Date().toISOString(),
+        source: evidence.sourceLocator,
+        ...evidence,
+        ingestedAt,
+        verifiedAt: null,
         expiresAt: input.expiresAt ?? null,
         version: 1,
         status: "draft",
@@ -95,17 +108,25 @@ export function createInMemoryKnowledgeService(
     async updateFact(input) {
       const existing = findFact(pois, input.factId);
       if (!existing) throw new Error("Fact not found");
+      const evidence = PoiFactEvidenceSchema.parse({
+        sourceClass: input.sourceClass ?? existing.sourceClass,
+        sourceLocator: input.sourceLocator ?? existing.sourceLocator,
+        evidenceSummary: input.evidenceSummary ?? existing.evidenceSummary,
+      });
       assertWritableFact({
         value: input.value,
         confidence: input.confidence ?? existing.confidence,
-        source: input.source ?? existing.source,
+        ...evidence,
       });
       pois = updatePoiFact(pois, input.factId, input.value, {
         ...(input.confidence !== undefined ? { confidence: input.confidence } : {}),
-        ...(input.source !== undefined ? { source: input.source } : {}),
+        source: evidence.sourceLocator,
+        ...evidence,
         ...(input.expiresAt !== undefined ? { expiresAt: input.expiresAt } : {}),
+        status: "draft",
+        verifiedAt: null,
       });
-      return this.listPois();
+      return this.listPois({ includeDrafts: true, includeExpired: true, includeDeprecated: true });
     },
     async listExpiredFacts(input = {}) {
       const now = input.now ?? new Date();
@@ -121,9 +142,13 @@ export function createInMemoryKnowledgeService(
     async renewFact(input) {
       const existing = findFact(pois, input.factId);
       if (!existing) return null;
+      if (!hasReviewablePoiFactEvidence(existing)) {
+        throw new Error("Fact requires independently reviewable evidence before review");
+      }
       pois = updatePoiFact(pois, input.factId, existing.value, {
         expiresAt: input.expiresAt ?? null,
         status: "reviewed",
+        verifiedAt: new Date().toISOString(),
       });
       return findFact(pois, input.factId);
     },
@@ -183,11 +208,13 @@ function findFact(pois: Poi[], factId: string): PoiFact | null {
 function assertWritableFact(input: {
   value: Record<string, unknown>;
   confidence: number;
-  source: string;
+  sourceClass: PoiFactSourceClass;
+  sourceLocator: string;
+  evidenceSummary: string;
 }) {
   if (Object.keys(input.value).length === 0) throw new Error("Fact value is required");
-  if (!input.source.trim()) throw new Error("Fact source is required");
   if (input.confidence < 0 || input.confidence > 1) throw new Error("Fact confidence is invalid");
+  PoiFactEvidenceSchema.parse(input);
 }
 
 function normalizeGapPattern(question: string): string {

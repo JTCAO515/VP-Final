@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { PoiFactSourceClassSchema } from "@visepanda/domain";
 import { getKnowledgeService } from "../store";
 import {
   applyOpsCookies,
@@ -14,18 +15,26 @@ export async function POST(request: Request) {
     factType?: unknown;
     value?: unknown;
     confidence?: unknown;
-    source?: unknown;
+    sourceClass?: unknown;
+    sourceLocator?: unknown;
+    evidenceSummary?: unknown;
     expiresAt?: unknown;
   };
+  const sourceClass = PoiFactSourceClassSchema.safeParse(body.sourceClass);
   if (
     typeof body.poiId !== "string" ||
     typeof body.factType !== "string" ||
     !isRecord(body.value) ||
     typeof body.confidence !== "number" ||
-    typeof body.source !== "string"
+    !sourceClass.success ||
+    typeof body.sourceLocator !== "string" ||
+    typeof body.evidenceSummary !== "string"
   ) {
     return NextResponse.json(
-      { error: "Expected poiId, factType, value, confidence, and source." },
+      {
+        error:
+          "Expected poiId, factType, value, confidence, sourceClass, sourceLocator, and evidenceSummary.",
+      },
       { status: 400 },
     );
   }
@@ -42,7 +51,9 @@ export async function POST(request: Request) {
       factType: body.factType,
       value: body.value,
       confidence: body.confidence,
-      source: body.source,
+      sourceClass: sourceClass.data,
+      sourceLocator: body.sourceLocator,
+      evidenceSummary: body.evidenceSummary,
       ...(typeof body.expiresAt === "string" || body.expiresAt === null
         ? { expiresAt: body.expiresAt }
         : {}),
@@ -63,10 +74,13 @@ export async function PATCH(request: Request) {
     factId?: unknown;
     value?: unknown;
     confidence?: unknown;
-    source?: unknown;
+    sourceClass?: unknown;
+    sourceLocator?: unknown;
+    evidenceSummary?: unknown;
     expiresAt?: unknown;
     action?: unknown;
   };
+  const sourceClass = PoiFactSourceClassSchema.safeParse(body.sourceClass);
   if (
     typeof body.factId !== "string" ||
     (body.action !== "renew" && body.action !== "deprecate" && !isRecord(body.value))
@@ -101,7 +115,11 @@ export async function PATCH(request: Request) {
       factId: body.factId,
       value: body.value,
       ...(typeof body.confidence === "number" ? { confidence: body.confidence } : {}),
-      ...(typeof body.source === "string" ? { source: body.source } : {}),
+      ...(sourceClass.success ? { sourceClass: sourceClass.data } : {}),
+      ...(typeof body.sourceLocator === "string" ? { sourceLocator: body.sourceLocator } : {}),
+      ...(typeof body.evidenceSummary === "string"
+        ? { evidenceSummary: body.evidenceSummary }
+        : {}),
       ...(typeof body.expiresAt === "string" || body.expiresAt === null
         ? { expiresAt: body.expiresAt }
         : {}),
