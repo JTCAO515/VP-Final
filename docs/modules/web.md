@@ -99,6 +99,11 @@ payloads, cookies, credentials, or narrative errors.
 - The home product preview is illustrative only. It must not claim that bookings, payments, or
   Human Help have occurred, and it must not introduce inert controls.
 - The canonical visual source is the Red Gold Design System.
+- Public product routes share one navigation and footer rhythm. Floating navigation may use a
+  translucent material, but content hierarchy and legibility take priority over decoration.
+- Interactive controls provide immediate press feedback and preserve a 44-pixel minimum target.
+  Reduced-motion, reduced-transparency, and increased-contrast preferences must retain a complete,
+  understandable experience.
 - Unknown, offline, demo, and failed states must be explicit.
 - A disabled or unavailable action is hidden or clearly disabled; inert controls are not allowed.
 - Commercial actions show disclosure and use `/outbound`.

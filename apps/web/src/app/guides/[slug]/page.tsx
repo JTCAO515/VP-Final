@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { GUIDES, getGuide } from "../data";
+import { SiteFooter, SiteHeader } from "../../site-chrome";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -31,18 +32,20 @@ export default async function GuidePage({ params }: Props) {
 
   return (
     <main className="shell guidePage">
+      <SiteHeader active="explore" context="China travel guide" />
       <script
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd(guide)) }}
         type="application/ld+json"
       />
-      <section className="hero">
+      <section className="hero pageHero articleHero">
         <div>
-          <a className="status" href="/">
-            Copilot
-          </a>
+          <p className="pageEyebrow">Practical guide</p>
           <h1>{guide.title}</h1>
           <p>{guide.description}</p>
         </div>
+        <a className="pageAction" href="/">
+          Ask Copilot
+        </a>
       </section>
 
       <article className="guideArticle">
@@ -65,6 +68,7 @@ export default async function GuidePage({ params }: Props) {
           ))}
         </section>
       </article>
+      <SiteFooter />
     </main>
   );
 }

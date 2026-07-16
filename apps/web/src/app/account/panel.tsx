@@ -74,20 +74,21 @@ export function AccountPanel() {
   }
 
   return (
-    <main className="accountPage">
-      <a className="brandMark" href="/">
-        <span>V</span>
-        <b>VisePanda</b>
-      </a>
-      <section className="accountPanel">
-        <p className="eyebrow">Traveler account</p>
-        <h1>{sessionEmail ? "Your session is active" : "Sign in to keep your trips"}</h1>
+    <section className="accountStage" aria-labelledby="account-title">
+      <div className="accountPanel">
+        <p className="pageEyebrow">Traveler account</p>
+        <h1 id="account-title">
+          {sessionEmail ? "Your session is active" : "Keep your trip close."}
+        </h1>
         <p>
-          Authentication is verified by the server. Anonymous planning remains available without an
+          Sign in to keep your travel plans with you. You can still ask the Copilot without an
           account.
         </p>
         {loading ? (
-          <p role="status">Checking session...</p>
+          <div className="accountLoading" role="status">
+            <span aria-hidden="true" />
+            Checking your session
+          </div>
         ) : sessionEmail ? (
           <div className="accountSession">
             <span>Signed in as</span>
@@ -103,6 +104,7 @@ export function AccountPanel() {
               <input
                 autoComplete="email"
                 onChange={(event) => setEmail(event.target.value)}
+                placeholder="you@example.com"
                 required
                 type="email"
                 value={email}
@@ -114,6 +116,7 @@ export function AccountPanel() {
                 autoComplete="current-password"
                 minLength={8}
                 onChange={(event) => setPassword(event.target.value)}
+                placeholder="At least 8 characters"
                 required
                 type="password"
                 value={password}
@@ -130,9 +133,44 @@ export function AccountPanel() {
           </p>
         ) : null}
         <a className="backLink" href="/">
-          Back to Copilot
+          Continue without signing in
         </a>
-      </section>
-    </main>
+      </div>
+
+      <aside className="accountProduct" aria-label="VisePanda product preview">
+        <div className="accountProductChrome">
+          <span aria-hidden="true" />
+          <b>Your China arrival plan</b>
+          <small>Product preview</small>
+        </div>
+        <div className="accountProductBody">
+          <p className="pageEyebrow">Tomorrow · Shanghai</p>
+          <h2>A calm first day, ready when you land.</h2>
+          <div className="accountProductSteps">
+            <div>
+              <time>09:30</time>
+              <span>
+                <b>Get connected</b>
+                <small>Activate your travel connection first.</small>
+              </span>
+            </div>
+            <div>
+              <time>11:00</time>
+              <span>
+                <b>Set up payment</b>
+                <small>Keep one backup option available.</small>
+              </span>
+            </div>
+            <div>
+              <time>14:00</time>
+              <span>
+                <b>Move with confidence</b>
+                <small>Choose the simplest route to your hotel.</small>
+              </span>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </section>
   );
 }

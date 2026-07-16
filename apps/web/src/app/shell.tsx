@@ -10,6 +10,7 @@ import {
   type TripDay,
   type TripState,
 } from "@visepanda/domain";
+import { SiteFooter, SiteHeader } from "./site-chrome";
 
 type ChatMessage = {
   role: "user" | "assistant";
@@ -170,24 +171,7 @@ export function CopilotShell() {
 
   return (
     <main className="shell copilotShell">
-      <header className="copilotTopbar">
-        <a className="brandMark" href="/">
-          <span>V</span>
-          <b>VisePanda</b>
-        </a>
-        <nav className="primaryNav" aria-label="Primary navigation">
-          <a className="active" href="/">
-            Copilot
-          </a>
-          <a href="#scenarios">How it helps</a>
-          <a href="#integrations">Ecosystem</a>
-          <a href="/account">Account</a>
-        </nav>
-        <div className="tripMeta">
-          <span>China Travel AI Copilot</span>
-          <i aria-hidden="true" />
-        </div>
-      </header>
+      <SiteHeader active="copilot" />
 
       <section className="homeHero" aria-labelledby="home-title">
         <div className="homeHeroCopy">
@@ -221,7 +205,7 @@ export function CopilotShell() {
           <div className="productFrameBar">
             <span className="productLiveDot" aria-hidden="true" />
             <span>Shanghai arrival brief</span>
-            <small>Live preview</small>
+            <small>Product preview</small>
           </div>
           <div className="productFrameBody">
             <section className="previewPlan">
@@ -330,7 +314,7 @@ export function CopilotShell() {
                 <strong>Start with a practical question</strong>
                 <span>Ask in plain English</span>
               </div>
-              <span className="online">Online</span>
+              <span className="previewBadge">Preview</span>
             </div>
             <div className="quickReplies" aria-label="Example questions">
               {EXAMPLE_PROMPTS.map((prompt) => (
@@ -437,18 +421,7 @@ export function CopilotShell() {
         </div>
       </section>
 
-      <footer className="siteFooter">
-        <a className="brandMark" href="/">
-          <span>V</span>
-          <b>VisePanda</b>
-        </a>
-        <p>China Travel AI Copilot. Practical guidance for travel decisions.</p>
-        <div>
-          <a href="/guides/payment">Payment guide</a>
-          <a href="/human-help">Human Help</a>
-          <a href="/account">Account</a>
-        </div>
-      </footer>
+      <SiteFooter />
     </main>
   );
 }

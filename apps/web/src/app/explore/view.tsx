@@ -8,6 +8,7 @@ import {
   type TravelerSceneTag,
 } from "@visepanda/domain";
 import { poiEntries } from "../poiSeo";
+import { SiteFooter, SiteHeader } from "../site-chrome";
 import { deriveExploreFacts } from "./factPresentation";
 
 type ExploreViewProps = Readonly<{
@@ -35,13 +36,15 @@ export function ExploreView({ pois, availability, asOf }: ExploreViewProps) {
 
   return (
     <main className="shell">
-      <section className="hero">
+      <SiteHeader active="explore" context="Verified place context" />
+      <section className="hero pageHero">
         <div>
+          <p className="pageEyebrow">Discover with context</p>
           <h1>Explore China</h1>
           <p>Scene tags are derived from verified POI facts. Missing facts stay quiet.</p>
         </div>
-        <a className="status" href="/">
-          Copilot
+        <a className="pageAction" href="/">
+          Ask Copilot
         </a>
       </section>
 
@@ -113,6 +116,7 @@ export function ExploreView({ pois, availability, asOf }: ExploreViewProps) {
           </article>
         ))}
       </section>
+      <SiteFooter />
     </main>
   );
 }

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { derivePoiSceneTags } from "@visepanda/domain";
 import { findPoiEntry, poiDescription, poiEntries } from "../../poiSeo";
+import { SiteFooter, SiteHeader } from "../../site-chrome";
 
 export const revalidate = 86400;
 
@@ -41,14 +42,18 @@ export default async function PoiPage({ params }: Props) {
 
   return (
     <main className="shell guidePage">
-      <section className="hero">
+      <SiteHeader active="explore" context={`${entry.poi.city} place guide`} />
+      <section className="hero pageHero articleHero">
         <div>
-          <a className="status" href="/explore">
-            Explore
-          </a>
+          <p className="pageEyebrow">
+            {entry.poi.city} · {entry.poi.category}
+          </p>
           <h1>{entry.poi.nameEn}</h1>
           <p>{poiDescription(entry.poi)}</p>
         </div>
+        <a className="pageAction" href="/explore">
+          Back to Explore
+        </a>
       </section>
 
       <article className="guideArticle">
@@ -74,6 +79,7 @@ export default async function PoiPage({ params }: Props) {
           ))}
         </section>
       </article>
+      <SiteFooter />
     </main>
   );
 }

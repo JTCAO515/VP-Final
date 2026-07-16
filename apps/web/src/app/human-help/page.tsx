@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import type { HumanTaskReceipt } from "@visepanda/domain";
+import { SiteFooter, SiteHeader } from "../site-chrome";
 
 type SubmitState = "idle" | "submitting" | "sent" | "error";
 
@@ -65,12 +66,14 @@ export default function HumanHelpPage() {
 
   return (
     <main className="shell humanHelp">
-      <section className="hero">
+      <SiteHeader active="help" context="Controlled preview" />
+      <section className="hero pageHero">
         <div>
+          <p className="pageEyebrow">Manual travel assistance</p>
           <h1>Human Help</h1>
           <p>Submit a limited Shanghai request for manual review during the Phase 0 preview.</p>
         </div>
-        <a className="status" href="/">
+        <a className="pageAction" href="/">
           Back to Copilot
         </a>
       </section>
@@ -139,6 +142,7 @@ export default function HumanHelpPage() {
           )}
         </aside>
       </section>
+      <SiteFooter />
     </main>
   );
 }

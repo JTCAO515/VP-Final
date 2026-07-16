@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getServerCaller } from "../../../api/_server";
+import { SiteFooter, SiteHeader } from "../../../site-chrome";
 
 type SharedTripPageProps = {
   params: Promise<{ token: string }>;
@@ -34,7 +35,8 @@ export default async function SharedTripPage({ params }: SharedTripPageProps) {
 
   return (
     <main className="shell sharedTrip">
-      <section className="hero sharedHero">
+      <SiteHeader context="Read-only shared trip" />
+      <section className="hero pageHero sharedHero">
         <div>
           <span className="eyebrow">Shared Trip Canvas</span>
           <h1>{trip.title}</h1>
@@ -43,7 +45,7 @@ export default async function SharedTripPage({ params }: SharedTripPageProps) {
             editing controls are hidden.
           </p>
         </div>
-        <a className="status" href="/">
+        <a className="pageAction" href="/">
           Plan with VisePanda
         </a>
       </section>
@@ -74,6 +76,7 @@ export default async function SharedTripPage({ params }: SharedTripPageProps) {
           </article>
         ))}
       </section>
+      <SiteFooter />
     </main>
   );
 }
