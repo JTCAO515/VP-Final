@@ -23,6 +23,14 @@ Status: active
 - A deployment review MUST treat a Turborepo warning that a required server variable is unavailable to
   the application as a configuration failure. It must be fixed and redeployed before a real-provider
   or production-success claim.
+- Durable Trip completion MUST use the reviewed official QStash client and the four server-only names
+  registered by OA-011: `QSTASH_TOKEN`, `QSTASH_CURRENT_SIGNING_KEY`,
+  `QSTASH_NEXT_SIGNING_KEY`, and `COPILOT_COMPLETION_CALLBACK_URL`. The callback URL MUST be the exact
+  public route used during signature verification. Partial or missing configuration keeps completion
+  unavailable; it MUST NOT select process-local delivery or disable signature checks.
+- The completion callback and QStash delivery use a five-minute request budget. The ten-minute job
+  claim lease MUST remain longer than that budget so a still-running callback cannot be reclaimed by
+  an overlapping delivery.
 - Feature flags MUST have owner, default, exposure rule, expiry/review date, and rollback behavior.
 - Rollback MUST NOT reverse an already-applied destructive data change; migrations require a forward
   recovery plan.

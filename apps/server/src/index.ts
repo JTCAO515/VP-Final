@@ -14,6 +14,7 @@ export { createDbHumanTaskService } from "./db/humanTaskService.js";
 export { createDbAgentTraceService } from "./db/agentTraceService.js";
 export { createDbOpsAuthorizationService } from "./db/opsAuthorizationService.js";
 export { createDbVersionedTripService } from "./db/versionedTripService.js";
+export { createDbCompletionJobService } from "./db/completionJobService.js";
 export {
   adapterInventory,
   resolveDatabaseAdapter,
@@ -31,6 +32,18 @@ export {
   createInMemoryHumanTaskService,
 } from "./modules/task/service.js";
 export { createInMemoryAgentTraceService, normalizeAgentFailure } from "./modules/trace/service.js";
+export { createInMemoryCompletionJobService } from "./modules/copilot/completionJobService.js";
+export {
+  CompletionDeliverySchema,
+  CompletionQueueUnavailableError,
+  createQStashCompletionQueue,
+  resolveQStashCompletionQueueConfig,
+} from "./modules/copilot/completionQueue.js";
+export { createCompletionProcessor } from "./modules/copilot/completionProcessor.js";
+export {
+  createModelCompleteDay,
+  parseGeneratedBlock,
+} from "./modules/copilot/completionDayModel.js";
 export {
   createDemoCopilotModelDependencies,
   createDemoModelRuntime,
@@ -53,6 +66,20 @@ export {
 export type { RequestIdentity } from "./context.js";
 export type { AdapterAvailability, RuntimeMode, RuntimeResolution } from "./runtime/runtimeMode.js";
 export type { KnowledgeService } from "./modules/knowledge/service.js";
+export type {
+  ClaimedCompletionJob,
+  CompletionJobService,
+  CreateCompletionJobInput,
+} from "./modules/copilot/completionJobService.js";
+export type {
+  CompletionDelivery,
+  CompletionQueue,
+  QStashCompletionQueueConfig,
+} from "./modules/copilot/completionQueue.js";
+export type {
+  CompleteDay,
+  CompletionProcessResult,
+} from "./modules/copilot/completionProcessor.js";
 export type {
   CreateHumanTaskCommand,
   HumanTaskIdentity,

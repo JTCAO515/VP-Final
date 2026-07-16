@@ -3,7 +3,7 @@ import { createVersionedInMemoryTripService } from "../trip/versionedService.js"
 import { createTwoPassWorker } from "./twoPassWorker.js";
 
 const skeletonTrip = {
-  id: "trip-two-pass",
+  id: "22000000-0000-0000-0000-000000000001",
   title: "Two pass",
   destinationCountry: "CN" as const,
   days: [
@@ -22,7 +22,15 @@ async function seededTripService() {
 describe("createTwoPassWorker", () => {
   it("fills empty skeleton days and reports progress", async () => {
     const tripService = await seededTripService();
-    const worker = createTwoPassWorker({ tripService });
+    const worker = createTwoPassWorker({
+      tripService,
+      completeDay: async (day) => ({
+        id: `auto-${day.id}`,
+        type: "free_time",
+        title: day.title ? `${day.title} details` : `Day ${day.dayNumber} details`,
+        status: "planned",
+      }),
+    });
 
     const progress = await worker.completeTrip(
       { tripId: skeletonTrip.id, expectedVersion: 1 },

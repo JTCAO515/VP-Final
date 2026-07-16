@@ -96,6 +96,16 @@ the registered OA-010 trusted-console bootstrap.
 7. A partial retry may continue only when the current Trip head matches the latest event linked to
    that job. A later unrelated edit yields a conflict instead of a silent overwrite.
 8. Partial failure preserves valid completed work and exposes a retryable state.
+9. The public completion route creates an owner-verified Postgres job and publishes only its job id
+   and idempotency key. QStash delivery is verified against the configured callback URL before the
+   body is parsed or a job is claimed.
+10. A callback atomically claims one attempt, derives Trip ownership from Postgres, applies at most
+    one validated Patch event for that attempt, and requeues only below the frozen attempt limit.
+    Missing QStash configuration leaves the job path honestly unavailable; it never selects memory
+    delivery in a deployed runtime.
+11. An active `running` claim suppresses concurrent delivery. After the fixed ten-minute lease, a
+    replacement process may reclaim it; persisted event provenance determines whether to finish,
+    continue on a new attempt, or preserve a terminal partial result without duplicating a Patch.
 
 ## Knowledge Flow
 

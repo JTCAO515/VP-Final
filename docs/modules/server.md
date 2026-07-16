@@ -62,6 +62,14 @@ modules yet.
   through the existing owner/version-scoped Patch service. A completion Patch carries optional
   server-only job/attempt provenance into its Trip event; normal traveler and Copilot events remain
   unchanged.
+- P0-10b connects that contract to the official QStash client. The queue payload contains only job id
+  and idempotency key; callback signatures are checked before parsing or claiming. The Postgres job
+  service derives ownership from the linked Trip, atomically increments attempts, suppresses
+  duplicate delivery, and exposes owner-scoped status/retry operations. The real planning route
+  produces one strictly validated block per empty day and records only digests plus provider cost in
+  Agent Trace. There is no deterministic production block generator. A ten-minute claim lease lets
+  a later process reconcile an interrupted `running` job without overlapping the five-minute callback
+  budget or duplicating an event already linked by provenance.
 - The package exports router types and selected service factories, but does not itself expose an HTTP
   listener.
 
@@ -105,6 +113,8 @@ distinguish its own previous partial effect from a later unrelated Trip edit.
   owner, share, claim, and optimistic-concurrency contract for P0-03/P0-04.
 - [ADR-0007](../adr/ADR-0007-agent-trace-privacy-retention.md) freezes trace minimization, restricted
   retention, and non-blocking trace persistence. Real provider attempt production data remains P0-07.
+- OA-011 remains the release gate for QStash token, signing keys, callback URL, and one sanitized
+  signed-delivery observation. Until then deployed completion returns an honest unavailable state.
 
 ## Verification
 
