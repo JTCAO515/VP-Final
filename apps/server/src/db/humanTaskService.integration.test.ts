@@ -11,6 +11,7 @@ const anonA = "a".repeat(43);
 const anonB = "b".repeat(43);
 const anonCapacity = "c".repeat(43);
 const userId = "71000000-0000-4000-8000-000000000001";
+const operatorId = "71000000-0000-4000-8000-000000000002";
 const request = {
   city: "Shanghai",
   kind: "call_restaurant" as const,
@@ -26,12 +27,23 @@ describeDatabase("database HumanTaskService", () => {
     await sql`delete from public.human_tasks where anon_id in (${anonA}, ${anonB}, ${anonCapacity}) or user_id = ${userId}`;
     await sql`delete from public.users where id = ${userId}`;
     await sql`delete from auth.users where id = ${userId}`;
+    await sql`delete from auth.users where id = ${operatorId}`;
+    await sql`
+      insert into auth.users (
+        id, aud, role, email, encrypted_password, raw_app_meta_data, raw_user_meta_data,
+        created_at, updated_at
+      ) values (
+        ${operatorId}, 'authenticated', 'authenticated', 'operator@example.com', '',
+        '{}'::jsonb, '{}'::jsonb, now(), now()
+      )
+    `;
   });
 
   afterAll(async () => {
     await sql`delete from public.human_tasks where anon_id in (${anonA}, ${anonB}, ${anonCapacity}) or user_id = ${userId}`;
     await sql`delete from public.users where id = ${userId}`;
     await sql`delete from auth.users where id = ${userId}`;
+    await sql`delete from auth.users where id = ${operatorId}`;
     await sql.end();
   });
 
@@ -104,5 +116,75 @@ describeDatabase("database HumanTaskService", () => {
     await expect(
       service.create({ identity, idempotencyKey: crypto.randomUUID(), request }),
     ).rejects.toBeInstanceOf(HumanTaskCapacityError);
+  });
+
+  it("updates status and appends actor/reason audit evidence atomically", async () => {
+    const service = createDbHumanTaskService(db);
+    const created = await service.create({
+      identity: { kind: "anonymous", anonId: anonA },
+      idempotencyKey: crypto.randomUUID(),
+      request,
+    });
+    const actor = {
+      userId: operatorId,
+      role: "operator" as const,
+      permissions: ["task.read", "task.contact.read", "task.write"] as const,
+    };
+
+    const result = await service.transition({
+      taskId: created.id,
+      actor: { ...actor, permissions: [...actor.permissions] },
+      toStatus: "triaged",
+      reason: "Scope, safety, capacity, and required information were reviewed.",
+    });
+
+    expect(result.task.status).toBe("triaged");
+    expect(new Date(result.task.updated_at).getTime()).toBeGreaterThanOrEqual(
+      new Date(created.created_at).getTime(),
+    );
+    await expect(
+      service.listTransitions(created.id, { ...actor, permissions: [...actor.permissions] }),
+    ).resolves.toEqual([result.transition]);
+    const [audit] = await sql`
+      select actor_id, from_status, to_status, reason
+      from public.human_task_transitions where task_id = ${created.id}
+    `;
+    expect(audit).toMatchObject({
+      actor_id: operatorId,
+      from_status: "requested",
+      to_status: "triaged",
+      reason: "Scope, safety, capacity, and required information were reviewed.",
+    });
+  });
+
+  it("leaves status and audit unchanged when policy or transition validation rejects", async () => {
+    const service = createDbHumanTaskService(db, {
+      now: () => new Date("2099-01-05T04:00:00.000Z"),
+    });
+    const created = await service.create({
+      identity: { kind: "anonymous", anonId: anonB },
+      idempotencyKey: crypto.randomUUID(),
+      request,
+    });
+    const actor = {
+      userId: operatorId,
+      role: "operator" as const,
+      permissions: ["task.read", "task.contact.read", "task.write"] as const,
+    };
+
+    await expect(
+      service.transition({
+        taskId: created.id,
+        actor: { ...actor, permissions: [...actor.permissions] },
+        toStatus: "done",
+        reason: "Attempted to skip all required lifecycle and payment states.",
+      }),
+    ).rejects.toMatchObject({ code: "INVALID_HUMAN_TASK_TRANSITION" });
+    const [row] = await sql`select status from public.human_tasks where id = ${created.id}`;
+    const [count] = await sql`
+      select count(*)::int as value from public.human_task_transitions where task_id = ${created.id}
+    `;
+    expect(row?.status).toBe("requested");
+    expect(count?.value).toBe(0);
   });
 });

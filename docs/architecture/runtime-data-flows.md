@@ -118,13 +118,18 @@ fact contract. A low-evidence answer must say that the system does not know.
 
 1. A traveler or Copilot creates a draft request.
 2. The traveler reviews and submits it; no task is created silently.
-3. Ops triages the task and may quote a price.
-4. Payment evidence moves the task to paid; status alone is insufficient evidence.
-5. An operator fulfils the task, records evidence, and closes or cancels it.
-6. Safe transcript patterns may create knowledge-gap drafts after redaction and review.
+3. An Ops user with `task.write` requests a named transition; the server derives actor identity,
+   validates the canonical edge and controlled-preview policy, then atomically writes status and
+   append-only reason evidence.
+4. During controlled preview only triage and pre-payment cancellation are enabled. Quote/payment
+   transitions remain blocked until P0-17 and the receiving-entity/provider decision are accepted.
+5. Future verified payment evidence may move a task to paid; status alone is insufficient evidence.
+6. An operator fulfils the task, records evidence, and closes or cancels it.
+7. Safe transcript patterns may create knowledge-gap drafts after redaction and review.
 
-The current Web and Ops task paths are not yet one durable production flow. Until persistence,
-identity, and role checks are complete, the UI must not claim production concierge fulfilment.
+Web intake and Ops triage share the durable Human Task service. Paid fulfilment is still unavailable;
+the UI must not claim a quote, payment, completion, or service guarantee before those later controls
+are operationally verified.
 
 ## Outbound Commercial Flow
 

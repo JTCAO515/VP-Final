@@ -14,7 +14,7 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
 | `trip`      | TripState, TripPatch operations, `applyPatch`, `diffTrips`, generation progress                                   |
 | `copilot`   | Intent, message, citations, tool cards, commercial actions, Human Help handoff, envelope, completion-job contract |
 | `knowledge` | POI, execution facts, knowledge gaps, scene-tag derivation, reviewed seed data, and ADR-0006 fact eligibility     |
-| `task`      | Human Task input, state, legal transitions, updates                                                               |
+| `task`      | Human Task input, canonical lifecycle, transition command/evidence, and non-status updates                        |
 | `commerce`  | Partner configuration, outbound click, URL validation and tracking construction                                   |
 | `events`    | Telemetry event contract                                                                                          |
 | `errors`    | Shared typed error shapes                                                                                         |
@@ -29,6 +29,10 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
 - Optional fields stay optional; consumers do not fabricate values to make a card look complete.
 - Knowledge consumers follow [ADR-0006](../adr/ADR-0006-knowledge-evidence-and-index-quality.md): model output cannot invent facts or citations. Facts retain typed source class/locator, a bounded PII-free evidence summary, ingestion time, and a nullable independent verification time. Retrieval accepts only `isEligiblePoiFact` results, citation ids are request-allowlisted, and no-match answers are explicit.
 - A completion job carries only a Trip reference, base version, idempotency key, bounded attempt state, and safe error code. Its pure state-transition rule permits idempotent reads, `queued -> running`, a running terminal result, and `partial`/`failed -> queued` retry only. It never carries a prompt, model credential, or replacement Trip snapshot.
+- Human Task status changes use `transitionHumanTask`; the generic update contract cannot carry a
+  status. The canonical forward path is `requested -> triaged -> quoted -> payment_pending -> paid ->
+fulfilling -> done`, with explicit cancellation edges and no terminal recovery. A transition reason
+  is trimmed and bounded to 10-500 characters.
 
 ## Change Workflow
 

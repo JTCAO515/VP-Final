@@ -92,3 +92,10 @@ operator fields, quotes, and payment data are not returned. Retrying the same ke
 returns the original receipt. Capacity, scope, conflict, missing runtime, and persistence failures
 return non-2xx responses and never fabricate a receipt. Reusing a key with changed request content is
 a conflict, even for the same owner.
+
+`PATCH /api/tasks/:taskId/status` is an Ops-only contract requiring `task.write`. The body accepts
+only `{ to_status, reason }`; actor identity is derived from the verified Ops session and a supplied
+`actor_id` has no authority. Success returns `{ ok: true, task, transition }`. Invalid schema returns
+400, missing task 404, unauthorized/forbidden requests 401/403, and illegal or currently policy-gated
+edges 409. The controlled preview enables `requested -> triaged` and cancellation before payment;
+quote/payment/fulfilment progression is not activated by this endpoint.

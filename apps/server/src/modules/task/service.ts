@@ -1,13 +1,21 @@
 import {
   HumanTaskCreateSchema,
+  HumanTaskSchema,
+  HumanTaskTransitionCommandSchema,
+  HumanTaskTransitionSchema,
   createHumanTask,
+  transitionHumanTask,
   type HumanTask,
   type HumanTaskCreate,
+  type HumanTaskStatus,
+  type HumanTaskTransition,
 } from "@visepanda/domain";
 import type { RequestIdentity } from "../../context.js";
+import type { OpsAccess } from "../opsAuthorization/service.js";
 
 export const HUMAN_TASK_PREVIEW_CITY = "Shanghai";
 export const HUMAN_TASK_DAILY_CAPACITY = 5;
+export const HUMAN_TASK_TERMINAL_RETENTION_DAYS = 90;
 
 export type HumanTaskIdentity = Exclude<RequestIdentity, { kind: "none" }>;
 
@@ -17,10 +25,24 @@ export type CreateHumanTaskCommand = {
   request: HumanTaskCreate;
 };
 
+export type TransitionHumanTaskCommand = {
+  taskId: string;
+  actor: OpsAccess;
+  toStatus: HumanTaskStatus;
+  reason: string;
+};
+
+export type HumanTaskTransitionResult = {
+  task: HumanTask;
+  transition: HumanTaskTransition;
+};
+
 export type HumanTaskService = {
   create(input: CreateHumanTaskCommand): Promise<HumanTask>;
   listForOwner(identity: HumanTaskIdentity): Promise<HumanTask[]>;
   listForOps(): Promise<HumanTask[]>;
+  transition(input: TransitionHumanTaskCommand): Promise<HumanTaskTransitionResult>;
+  listTransitions(taskId: string, actor: OpsAccess): Promise<HumanTaskTransition[]>;
 };
 
 export class HumanTaskCapacityError extends Error {
@@ -50,6 +72,33 @@ export class HumanTaskIdempotencyConflictError extends Error {
   }
 }
 
+export class HumanTaskNotFoundError extends Error {
+  readonly code = "HUMAN_TASK_NOT_FOUND";
+
+  constructor() {
+    super("Human Task was not found.");
+    this.name = "HumanTaskNotFoundError";
+  }
+}
+
+export class HumanTaskTransitionForbiddenError extends Error {
+  readonly code = "HUMAN_TASK_TRANSITION_FORBIDDEN";
+
+  constructor() {
+    super("This Ops role cannot change Human Task status.");
+    this.name = "HumanTaskTransitionForbiddenError";
+  }
+}
+
+export class HumanTaskTransitionPolicyError extends Error {
+  readonly code = "HUMAN_TASK_TRANSITION_POLICY_BLOCKED";
+
+  constructor() {
+    super("This Human Task transition is not enabled during the controlled preview.");
+    this.name = "HumanTaskTransitionPolicyError";
+  }
+}
+
 type OwnedTask = {
   task: HumanTask;
   identity: HumanTaskIdentity;
@@ -59,6 +108,7 @@ type OwnedTask = {
 export function createInMemoryHumanTaskService(options?: { now?: () => Date }): HumanTaskService {
   const now = options?.now ?? (() => new Date());
   let records: OwnedTask[] = [];
+  const transitions: HumanTaskTransition[] = [];
 
   return {
     async create(input) {
@@ -94,7 +144,72 @@ export function createInMemoryHumanTaskService(options?: { now?: () => Date }): 
     async listForOps() {
       return records.map((record) => record.task);
     },
+    async transition(input) {
+      const index = records.findIndex((record) => record.task.id === input.taskId);
+      if (index < 0) throw new HumanTaskNotFoundError();
+      const record = records[index]!;
+      const { task, transition } = prepareHumanTaskTransition(record.task, input, now());
+      records[index] = { ...record, task };
+      transitions.push(transition);
+      return { task, transition };
+    },
+    async listTransitions(taskId, actor) {
+      assertTaskPermission(actor, "task.read");
+      return transitions.filter((transition) => transition.task_id === taskId);
+    },
   };
+}
+
+export function prepareHumanTaskTransition(
+  current: HumanTask,
+  input: TransitionHumanTaskCommand,
+  now: Date,
+): HumanTaskTransitionResult {
+  assertTaskPermission(input.actor, "task.write");
+  const command = HumanTaskTransitionCommandSchema.parse({
+    to_status: input.toStatus,
+    reason: input.reason,
+  });
+  const task = applyHumanTaskTransition(current, command.to_status, now);
+  const transition = HumanTaskTransitionSchema.parse({
+    id: crypto.randomUUID(),
+    task_id: task.id,
+    from_status: current.status,
+    to_status: task.status,
+    actor_id: input.actor.userId,
+    reason: command.reason,
+    created_at: now.toISOString(),
+  });
+  return { task, transition };
+}
+
+export function applyHumanTaskTransition(
+  task: HumanTask,
+  next: HumanTaskStatus,
+  now: Date,
+): HumanTask {
+  const transitioned = transitionHumanTask(task, next, now);
+  if (!isPreviewTransitionEnabled(task.status, next)) {
+    throw new HumanTaskTransitionPolicyError();
+  }
+  return HumanTaskSchema.parse({
+    ...transitioned,
+    retention_expires_at:
+      next === "done" || next === "cancelled"
+        ? new Date(now.getTime() + HUMAN_TASK_TERMINAL_RETENTION_DAYS * 86_400_000).toISOString()
+        : transitioned.retention_expires_at,
+  });
+}
+
+function isPreviewTransitionEnabled(from: HumanTaskStatus, to: HumanTaskStatus): boolean {
+  return (
+    (from === "requested" && (to === "triaged" || to === "cancelled")) ||
+    (from === "triaged" && to === "cancelled")
+  );
+}
+
+function assertTaskPermission(actor: OpsAccess, permission: "task.read" | "task.write"): void {
+  if (!actor.permissions.includes(permission)) throw new HumanTaskTransitionForbiddenError();
 }
 
 export function validateHumanTaskPreviewRequest(input: HumanTaskCreate): HumanTaskCreate {

@@ -3,6 +3,7 @@ import { getTableConfig } from "drizzle-orm/pg-core";
 import {
   agentRuns,
   copilotCompletionJobs,
+  humanTaskTransitions,
   humanTasks,
   knowledgeGaps,
   outboundClicks,
@@ -106,5 +107,10 @@ describe("database schema", () => {
     expect(getTableConfig(humanTasks).indexes.map((index) => index.config.name)).toContain(
       "human_tasks_idempotency_key_unique",
     );
+    expect(humanTaskTransitions.actorId.name).toBe("actor_id");
+    expect(humanTaskTransitions.reason.name).toBe("reason");
+    expect(
+      getTableConfig(humanTaskTransitions).checks.map((constraint) => constraint.name),
+    ).toContain("human_task_transitions_reason_length_check");
   });
 });

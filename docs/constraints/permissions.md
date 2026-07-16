@@ -24,6 +24,9 @@ Status: active
   are readable only through an owner-scoped service or an Ops route with `task.contact.read`; direct
   client table access is forbidden. Deleting the authenticated owner MUST cascade-delete their Human
   Tasks rather than leave ownerless records or block account deletion.
+- Human Task status mutation MUST require `task.write`; the actor MUST come from the verified Ops
+  session, never request JSON. Every accepted change MUST atomically persist from/to status, actor,
+  bounded reason, and timestamp. Generic task updates MUST NOT accept status.
 - A Trip MUST have exactly one effective owner. Anonymous-to-authenticated claim MUST require both the
   current verified user and the current signed anonymous session, be idempotent, and never transfer an
   already authenticated Trip.

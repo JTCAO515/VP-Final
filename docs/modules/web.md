@@ -83,6 +83,11 @@ returns a quote or payment claim. The public page states the Shanghai/English/ca
 limits; database or runtime failure returns an honest error and no receipt. Outbound remains unavailable
 until P0-18 implements its durable owner.
 
+P0-14 adds the Human Task lifecycle contract behind that intake path, but does not change the public
+receipt or expose a public status mutation. Web test fixtures inject the complete service interface so
+an unavailable durable adapter still returns the existing honest intake failure rather than fabricating
+a transition or payment state.
+
 Copilot writes a best-effort private Agent Trace after a validated result or failure. A trace write
 failure cannot alter the public response or Trip state. Trace records follow
 [ADR-0007](../adr/ADR-0007-agent-trace-privacy-retention.md) and never contain raw prompts, envelope
