@@ -91,6 +91,9 @@ distinguish its own previous partial effect from a later unrelated Trip edit.
   reviewable evidence through an explicit review/renewal transition. Public RLS mirrors the same
   source-class/evidence/verification/expiry boundary. Gap persistence normalizes email and phone-like
   substrings before storing a question pattern.
+- POI fact review is accepted only through the authenticated Ops endpoint. Reviewer identity comes
+  from server-side access; fact promotion and `knowledge.fact.review.completed` audit append commit
+  atomically. Public tRPC callers cannot promote a fact.
 - Existing Trip persistence receives only a validated Patch plus trusted identity, expected version,
   and event source; creation receives the initial validated Trip.
 - A module may not import another module's tables.

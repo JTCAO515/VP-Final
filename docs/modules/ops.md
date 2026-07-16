@@ -56,6 +56,8 @@ Fact review, expiry, conflict resolution, and sanitized knowledge-gap handling f
 source class, locator, bounded evidence summary, and confidence. Save always leaves changed evidence
 as an unverified draft; `Mark reviewed` is a separate action and rejects model-only, user-report, or
 uncorroborated evidence until an editor replaces it with independently reviewable evidence.
+The review action derives reviewer identity from authenticated Ops access, applies the deterministic
+v1 cadence, and cannot accept a client-authored reviewer or an expiry beyond the policy maximum.
 
 ## Verification
 

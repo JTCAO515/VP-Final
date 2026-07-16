@@ -40,6 +40,28 @@ export const PoiFactEvidenceSchema = z.object({
   evidenceSummary: PoiFactEvidenceSummarySchema,
 });
 
+export const PoiFactReviewPolicySchema = z.enum([
+  "volatile-30d-v1",
+  "execution-90d-v1",
+  "stable-180d-v1",
+]);
+
+const REVIEW_POLICY_DAYS = {
+  "volatile-30d-v1": 30,
+  "execution-90d-v1": 90,
+  "stable-180d-v1": 180,
+} as const;
+
+const VOLATILE_FACT_TYPES = new Set([
+  "booking_required",
+  "hours",
+  "payment_acceptance",
+  "reservation_helpful",
+  "ticket_availability",
+]);
+
+const STABLE_FACT_TYPES = new Set(["rainy_fit"]);
+
 export const PoiFactSchema = z.object({
   id: z.string().min(1),
   poiId: z.string().min(1),
@@ -54,6 +76,7 @@ export const PoiFactSchema = z.object({
   ingestedAt: z.string().datetime(),
   verifiedAt: z.string().datetime().nullable().default(null),
   expiresAt: z.string().datetime().nullable().default(null),
+  reviewPolicy: PoiFactReviewPolicySchema.nullable().default(null),
   version: z.number().int().positive(),
   status: PoiFactStatusSchema.default("draft"),
 });
@@ -98,6 +121,7 @@ export const KnowledgeGapSchema = z.object({
 export type PoiCategory = z.infer<typeof PoiCategorySchema>;
 export type PoiFactStatus = z.infer<typeof PoiFactStatusSchema>;
 export type PoiFactSourceClass = z.infer<typeof PoiFactSourceClassSchema>;
+export type PoiFactReviewPolicy = z.infer<typeof PoiFactReviewPolicySchema>;
 export type PoiFact = z.infer<typeof PoiFactSchema>;
 export type Poi = z.infer<typeof PoiSchema>;
 export type KnowledgeGap = z.infer<typeof KnowledgeGapSchema>;
@@ -117,10 +141,65 @@ export function isEligiblePoiFact(fact: PoiFact, now = new Date()): boolean {
     fact.status === "reviewed" &&
     hasReviewablePoiFactEvidence(fact) &&
     fact.verifiedAt !== null &&
+    hasValidPoiFactReview(fact) &&
+    fact.expiresAt !== null &&
     Number.isFinite(Date.parse(fact.verifiedAt)) &&
     Date.parse(fact.verifiedAt) <= now.getTime() &&
-    (!fact.expiresAt || Date.parse(fact.expiresAt) >= now.getTime())
+    Date.parse(fact.expiresAt) >= now.getTime()
   );
+}
+
+export function hasValidPoiFactReview(
+  fact: Pick<PoiFact, "factType" | "reviewPolicy" | "verifiedAt" | "expiresAt">,
+): boolean {
+  if (
+    fact.reviewPolicy === null ||
+    fact.verifiedAt === null ||
+    fact.expiresAt === null ||
+    fact.reviewPolicy !== reviewPolicyForFactType(fact.factType)
+  ) {
+    return false;
+  }
+  const verifiedAt = new Date(fact.verifiedAt);
+  try {
+    const review = resolvePoiFactReview({
+      factType: fact.factType,
+      verifiedAt,
+      requestedExpiresAt: fact.expiresAt,
+    });
+    return Date.parse(review.expiresAt) === Date.parse(fact.expiresAt);
+  } catch {
+    return false;
+  }
+}
+
+export function reviewPolicyForFactType(factType: string): PoiFactReviewPolicy {
+  if (VOLATILE_FACT_TYPES.has(factType)) return "volatile-30d-v1";
+  if (STABLE_FACT_TYPES.has(factType)) return "stable-180d-v1";
+  return "execution-90d-v1";
+}
+
+export function resolvePoiFactReview(input: {
+  factType: string;
+  verifiedAt: Date;
+  requestedExpiresAt?: string | null;
+}): { reviewPolicy: PoiFactReviewPolicy; expiresAt: string } {
+  const reviewPolicy = reviewPolicyForFactType(input.factType);
+  const maximum = new Date(input.verifiedAt);
+  maximum.setUTCDate(maximum.getUTCDate() + REVIEW_POLICY_DAYS[reviewPolicy]);
+
+  if (input.requestedExpiresAt === undefined || input.requestedExpiresAt === null) {
+    return { reviewPolicy, expiresAt: maximum.toISOString() };
+  }
+
+  const requested = new Date(input.requestedExpiresAt);
+  if (!Number.isFinite(requested.getTime()) || requested <= input.verifiedAt) {
+    throw new Error("Review expiry must be later than the verification time");
+  }
+  if (requested > maximum) {
+    throw new Error(`Review expiry exceeds ${reviewPolicy} maximum`);
+  }
+  return { reviewPolicy, expiresAt: requested.toISOString() };
 }
 
 export function hasReviewablePoiFactEvidence(
@@ -154,6 +233,7 @@ export function updatePoiFact(
       | "expiresAt"
       | "status"
       | "verifiedAt"
+      | "reviewPolicy"
     >
   > = {},
 ): Poi[] {

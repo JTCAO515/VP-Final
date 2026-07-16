@@ -6,6 +6,7 @@ import {
   PoiFactSourceLocatorSchema,
 } from "@visepanda/domain";
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
 import { publicProcedure, router } from "../../trpc.js";
 import { requireService } from "../../runtime/requireService.js";
 
@@ -100,10 +101,10 @@ export const knowledgeRouter = router({
   listExpiredFacts: publicProcedure.query(({ ctx }) => {
     return requireService(ctx.knowledgeService, "Knowledge").listExpiredFacts();
   }),
-  renewFact: publicProcedure.input(RenewFactInputSchema).mutation(({ ctx, input }) => {
-    return requireService(ctx.knowledgeService, "Knowledge").renewFact({
-      factId: input.factId,
-      expiresAt: input.expiresAt ?? null,
+  renewFact: publicProcedure.input(RenewFactInputSchema).mutation(() => {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "POI facts can only be reviewed through the authenticated Ops endpoint.",
     });
   }),
   deprecateFact: publicProcedure.input(FactIdInputSchema).mutation(({ ctx, input }) => {

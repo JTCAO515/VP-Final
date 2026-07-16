@@ -10,6 +10,7 @@ const reviewedEvidence = {
   sourceLocator: "https://example.com/editorial-source",
   evidenceSummary: "The editorial source supports this execution fact.",
   ingestedAt: "2026-06-30T00:00:00.000Z",
+  reviewPolicy: "execution-90d-v1" as const,
 };
 
 describe("knowledgeRouter", () => {
@@ -44,7 +45,7 @@ describe("knowledgeRouter", () => {
               confidence: 0.9,
               ...reviewedEvidence,
               verifiedAt: "2026-07-01T00:00:00.000Z",
-              expiresAt: null,
+              expiresAt: "2026-09-29T00:00:00.000Z",
               version: 1,
               status: "reviewed",
             },
@@ -129,39 +130,45 @@ describe("knowledgeRouter", () => {
   });
 
   it("supports expired fact review, renewal, and deprecation", async () => {
+    const knowledgeService = createInMemoryKnowledgeService([
+      {
+        id: "poi-yu-garden",
+        city: "Shanghai",
+        category: "attraction",
+        nameEn: "Yu Garden",
+        sourceIds: {},
+        commercialLinks: [],
+        facts: [
+          {
+            id: "fact-expired",
+            poiId: "poi-yu-garden",
+            factType: "hours",
+            value: { note: "old" },
+            confidence: 0.9,
+            ...reviewedEvidence,
+            verifiedAt: "2026-01-01T00:00:00.000Z",
+            expiresAt: nowExpired,
+            version: 1,
+            status: "reviewed",
+          },
+        ],
+      },
+    ]);
     const caller = appRouter.createCaller({
       tripService: createVersionedInMemoryTripService(),
-      knowledgeService: createInMemoryKnowledgeService([
-        {
-          id: "poi-yu-garden",
-          city: "Shanghai",
-          category: "attraction",
-          nameEn: "Yu Garden",
-          sourceIds: {},
-          commercialLinks: [],
-          facts: [
-            {
-              id: "fact-expired",
-              poiId: "poi-yu-garden",
-              factType: "hours",
-              value: { note: "old" },
-              confidence: 0.9,
-              ...reviewedEvidence,
-              verifiedAt: "2026-01-01T00:00:00.000Z",
-              expiresAt: nowExpired,
-              version: 1,
-              status: "reviewed",
-            },
-          ],
-        },
-      ]),
+      knowledgeService,
     });
 
     await expect(caller.knowledge.listExpiredFacts()).resolves.toHaveLength(1);
-    await expect(caller.knowledge.renewFact({ factId: "fact-expired" })).resolves.toMatchObject({
-      expiresAt: null,
-      version: 2,
+    await expect(caller.knowledge.renewFact({ factId: "fact-expired" })).rejects.toMatchObject({
+      code: "FORBIDDEN",
     });
+    await expect(
+      knowledgeService.renewFact({
+        factId: "fact-expired",
+        reviewedBy: "30000000-0000-4000-8000-000000000010",
+      }),
+    ).resolves.toMatchObject({ version: 2, reviewPolicy: "volatile-30d-v1" });
     await expect(caller.knowledge.listExpiredFacts()).resolves.toHaveLength(0);
     await caller.knowledge.deprecateFact({ factId: "fact-expired" });
     await expect(caller.knowledge.listPois({ includeDeprecated: true })).resolves.toMatchObject([
@@ -186,9 +193,12 @@ describe("knowledgeRouter", () => {
       evidenceSummary: "A model suggested these hours without independent evidence.",
     });
 
-    await expect(caller.knowledge.renewFact({ factId: created.id })).rejects.toThrow(
-      "independently reviewable evidence",
-    );
+    await expect(
+      knowledgeService.renewFact({
+        factId: created.id,
+        reviewedBy: "30000000-0000-4000-8000-000000000010",
+      }),
+    ).rejects.toThrow("independently reviewable evidence");
   });
 
   it("clusters and resolves knowledge gaps", async () => {

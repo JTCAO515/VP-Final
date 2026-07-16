@@ -74,9 +74,17 @@ describe("database schema", () => {
     expect(pois.nameEn.name).toBe("name_en");
     expect(poiFacts.factType.name).toBe("fact_type");
     expect(poiFacts.status.name).toBe("status");
+    expect(poiFacts.reviewPolicy.name).toBe("review_policy");
+    expect(poiFacts.reviewedBy.name).toBe("reviewed_by");
     expect(poiFacts.status.default).toBe("draft");
     expect(getTableConfig(poiFacts).checks.map((constraint) => constraint.name)).toContain(
       "poi_facts_status_check",
+    );
+    expect(getTableConfig(poiFacts).checks.map((constraint) => constraint.name)).toContain(
+      "poi_facts_reviewed_evidence_check",
+    );
+    expect(getTableConfig(poiFacts).checks.map((constraint) => constraint.name)).toContain(
+      "poi_facts_review_expiry_check",
     );
     expect(knowledgeGaps.questionPattern.name).toBe("question_pattern");
     expect(knowledgeGaps.resolvedAt.name).toBe("resolved_at");

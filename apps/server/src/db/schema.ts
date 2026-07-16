@@ -285,6 +285,8 @@ export const poiFacts = pgTable(
     evidenceSummary: text("evidence_summary"),
     verifiedAt: timestamp("verified_at", { withTimezone: true }),
     expiresAt: timestamp("expires_at", { withTimezone: true }),
+    reviewPolicy: text("review_policy"),
+    reviewedBy: uuid("reviewed_by"),
     version: integer("version").notNull().default(1),
     status: text("status").notNull().default("draft"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -306,7 +308,15 @@ export const poiFacts = pgTable(
     ),
     reviewedEvidenceCheck: check(
       "poi_facts_reviewed_evidence_check",
-      sql`${table.status} <> 'reviewed' or (${table.sourceClass} is not null and ${table.sourceClass} in ('official', 'operator_verified', 'reputable_editorial') and ${table.sourceLocator} is not null and btrim(${table.sourceLocator}) <> '' and ${table.evidenceSummary} is not null and btrim(${table.evidenceSummary}) <> '' and char_length(${table.evidenceSummary}) <= 240 and ${table.verifiedAt} is not null)`,
+      sql`${table.status} <> 'reviewed' or (${table.sourceClass} is not null and ${table.sourceClass} in ('official', 'operator_verified', 'reputable_editorial') and ${table.sourceLocator} is not null and btrim(${table.sourceLocator}) <> '' and ${table.evidenceSummary} is not null and btrim(${table.evidenceSummary}) <> '' and char_length(${table.evidenceSummary}) <= 240 and ${table.verifiedAt} is not null and ${table.expiresAt} is not null and ${table.expiresAt} > ${table.verifiedAt} and ${table.reviewPolicy} is not null and ${table.reviewPolicy} in ('volatile-30d-v1', 'execution-90d-v1', 'stable-180d-v1') and ${table.reviewedBy} is not null)`,
+    ),
+    reviewPolicyAssignmentCheck: check(
+      "poi_facts_review_policy_assignment_check",
+      sql`${table.status} <> 'reviewed' or ${table.reviewPolicy} = case when ${table.factType} in ('booking_required', 'hours', 'payment_acceptance', 'reservation_helpful', 'ticket_availability') then 'volatile-30d-v1' when ${table.factType} = 'rainy_fit' then 'stable-180d-v1' else 'execution-90d-v1' end`,
+    ),
+    reviewExpiryCheck: check(
+      "poi_facts_review_expiry_check",
+      sql`${table.status} <> 'reviewed' or (${table.reviewPolicy} = 'volatile-30d-v1' and ${table.expiresAt} <= ${table.verifiedAt} + interval '30 days') or (${table.reviewPolicy} = 'execution-90d-v1' and ${table.expiresAt} <= ${table.verifiedAt} + interval '90 days') or (${table.reviewPolicy} = 'stable-180d-v1' and ${table.expiresAt} <= ${table.verifiedAt} + interval '180 days')`,
     ),
   }),
 );
