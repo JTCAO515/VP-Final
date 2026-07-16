@@ -26,8 +26,16 @@ describe("database schema", () => {
     expect(trips.anonId.name).toBe("anon_id");
     expect(trips.shareToken.name).toBe("share_token");
     expect(tripEvents.tripId.name).toBe("trip_id");
+    expect(tripEvents.completionJobId.name).toBe("completion_job_id");
+    expect(tripEvents.completionAttempt.name).toBe("completion_attempt");
     expect(getTableConfig(trips).checks.map((constraint) => constraint.name)).toContain(
       "trips_exactly_one_owner_check",
+    );
+    expect(getTableConfig(tripEvents).checks.map((constraint) => constraint.name)).toContain(
+      "trip_events_completion_provenance_check",
+    );
+    expect(getTableConfig(tripEvents).indexes.map((index) => index.config.name)).toContain(
+      "trip_events_completion_job_attempt_unique",
     );
   });
 

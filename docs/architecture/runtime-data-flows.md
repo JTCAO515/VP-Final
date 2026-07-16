@@ -91,7 +91,11 @@ the registered OA-010 trusted-console bootstrap.
 4. Each completed day becomes a validated patch.
 5. A durable completion job is unique per accepted Trip/base version and carries a job id plus
    idempotency key so retries cannot duplicate blocks.
-6. Partial failure preserves valid completed work and exposes a retryable state.
+6. Every persisted completion Patch links its Trip event to the job and positive attempt; the pair is
+   unique so callback replay cannot append the same attempt twice.
+7. A partial retry may continue only when the current Trip head matches the latest event linked to
+   that job. A later unrelated edit yields a conflict instead of a silent overwrite.
+8. Partial failure preserves valid completed work and exposes a retryable state.
 
 ## Knowledge Flow
 

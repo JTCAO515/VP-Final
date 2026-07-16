@@ -62,6 +62,28 @@ describe("VersionedTripService", () => {
     await expect(service.getEvents(trip.id, anonA)).resolves.toHaveLength(2);
   });
 
+  it("retains server-only completion provenance on its Trip event", async () => {
+    const service = createVersionedInMemoryTripService();
+    await service.create(trip, anonA, "user_manual");
+    const completion = {
+      jobId: "59bf9155-8a71-442f-9c63-127a033f9564",
+      attempt: 1,
+    };
+
+    await service.apply({
+      id: trip.id,
+      identity: anonA,
+      expectedVersion: 1,
+      patch: { operations: [{ op: "update_trip", fields: { title: "Completed" } }] },
+      source: "ai_copilot",
+      completion,
+    });
+
+    await expect(service.getEvents(trip.id, anonA)).resolves.toContainEqual(
+      expect.objectContaining({ version: 2, completion }),
+    );
+  });
+
   it("rejects a stale version without changing snapshot or events", async () => {
     const service = createVersionedInMemoryTripService();
     await service.create(trip, anonA, "user_manual");

@@ -55,7 +55,9 @@ modules yet.
   snapshots are not transport inputs.
 - P0-10 freezes a server-only completion-job contract before connecting a durable queue. Job rows are
   uniquely keyed by accepted Trip/base version and idempotency key; no worker may mutate a Trip except
-  through the existing owner/version-scoped Patch service.
+  through the existing owner/version-scoped Patch service. A completion Patch carries optional
+  server-only job/attempt provenance into its Trip event; normal traveler and Copilot events remain
+  unchanged.
 - The package exports router types and selected service factories, but does not itself expose an HTTP
   listener.
 
@@ -73,7 +75,8 @@ conditional version updates, transactional event append, atomic claim, and locke
 P0-04c (#168) switches routers, Copilot workers, and Web consumers to this contract and removes the
 legacy snapshot-saving service and adapter. The Copilot first pass creates or applies a validated
 Patch, while silent completion applies one owner/version-scoped Patch and cannot overwrite newer
-state.
+state. The linked completion job/attempt is unique in `trip_events`, giving a retry a durable way to
+distinguish its own previous partial effect from a later unrelated Trip edit.
 
 ## Hard Boundaries
 

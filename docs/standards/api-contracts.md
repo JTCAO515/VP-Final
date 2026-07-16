@@ -57,6 +57,11 @@ not-found result as an absent Trip. Empty Patches are successful no-ops and do n
 New Copilot Trips receive a server-generated id. A client sends `tripId` only when referencing an
 existing owner-scoped Trip, preventing caller-selected ids from becoming an existence side channel.
 
+Background completion provenance is internal authority, never client identity. A completion Patch may
+append `completion_job_id` plus a positive `completion_attempt` to its Trip event only when both are
+provided and the source is `ai_copilot`. The pair is unique. Normal Trip writes leave both null, and a
+callback cannot use these fields to bypass owner or expected-version checks.
+
 Anonymous-to-authenticated claim consumes only a verified authenticated identity that also carries
 the current signed anonymous id. Share capabilities are opaque, owner-created, read-only, and
 owner-revocable. P0-04b and P0-04c implement the database and HTTP mappings respectively.
