@@ -42,6 +42,48 @@ const initialMessages: ChatMessage[] = [
   },
 ];
 
+const SCENARIO_GROUPS = [
+  {
+    label: "Before you fly",
+    title: "Arrive prepared, not merely inspired.",
+    description:
+      "Turn the China-specific parts of a trip into a short, calm checklist before you land.",
+    items: [
+      ["Payment setup", "Understand cards, cash, and the first payment steps before departure."],
+      ["Connection plan", "Choose an eSIM and keep essential travel details accessible offline."],
+      ["Entry essentials", "Keep the practical documents and first-day decisions in one place."],
+    ],
+  },
+  {
+    label: "On the move",
+    title: "Move through the day with less friction.",
+    description:
+      "A single practical surface for metro questions, places, language, and the next decision.",
+    items: [
+      ["Metro-friendly routes", "Ask for the simplest route, not the most impressive itinerary."],
+      [
+        "Show to Local",
+        "Turn a clear need into something you can show at a counter or restaurant.",
+      ],
+      ["Place context", "See what needs booking, what is nearby, and what is worth knowing first."],
+    ],
+  },
+  {
+    label: "When plans change",
+    title: "Keep moving when the trip gets real.",
+    description:
+      "Get a truthful next step when a payment, booking, connection, or plan stops working.",
+    items: [
+      ["Practical re-planning", "Ask for alternatives with the information currently available."],
+      ["Clear limits", "Know when the Copilot does not have enough evidence to make a claim."],
+      [
+        "Human help, later",
+        "A distinct assisted path is reserved for cases software should not fake.",
+      ],
+    ],
+  },
+] as const;
+
 export function CopilotShell() {
   const [input, setInput] = useState(EXAMPLE_PROMPTS[0] ?? "");
   const [progress, setProgress] = useState<GenerationProgress>({
@@ -137,8 +179,8 @@ export function CopilotShell() {
           <a className="active" href="/">
             Copilot
           </a>
-          <a href="/explore">Explore</a>
-          <a href="/guides/payment">Tools</a>
+          <a href="#scenarios">How it helps</a>
+          <a href="#integrations">Ecosystem</a>
           <a href="/account">Account</a>
         </nav>
         <div className="tripMeta">
@@ -147,86 +189,266 @@ export function CopilotShell() {
         </div>
       </header>
 
-      <section className="copilotLayout">
-        <section className="conversationPanel" aria-label="Copilot conversation">
-          <div className="canvasToolbar">
-            <div>
-              <h1>Conversation</h1>
-              <span>Practical China travel guidance</span>
-            </div>
-            <span className={`conversationStatus ${progress.status}`}>
-              {progressLabel(progress)}
-            </span>
-          </div>
-          <p className="scopeNote">
-            This financing demo answers travel questions. It does not save or edit itineraries, book
-            services, or connect you to a human agent.
+      <section className="homeHero" aria-labelledby="home-title">
+        <div className="homeHeroCopy">
+          <p className="homeEyebrow">China Travel AI Copilot</p>
+          <h1 id="home-title">China, handled.</h1>
+          <p className="homeHeroLead">
+            A practical Copilot for the decisions that make a China trip feel easy: payment,
+            transport, language, tickets, and the next step when plans change.
           </p>
-          <div className="railMessages">
-            {messages.map((message, index) => (
-              <article className={`railMessage ${message.role}`} key={`${message.role}-${index}`}>
-                <b>{message.role === "user" ? "You" : "VisePanda Copilot"}</b>
-                {message.envelope ? (
-                  <EnvelopeMessage envelope={message.envelope} trip={message.trip ?? null} />
-                ) : (
-                  <p>{message.body}</p>
-                )}
-              </article>
-            ))}
-            {isWorking ? (
-              <article className="railMessage assistant typing" aria-live="polite">
-                <b>VisePanda Copilot</b>
-                <p>
-                  <span aria-hidden="true">● ● ●</span> Thinking through your travel question
-                </p>
-              </article>
-            ) : null}
+          <div className="heroActions">
+            <a className="primaryAction" href="#ask-copilot">
+              Ask the Copilot
+            </a>
+            <a className="secondaryAction" href="/explore">
+              Explore places
+            </a>
           </div>
-        </section>
-
-        <aside className="copilotRail" aria-label="Copilot prompt composer">
-          <div className="railHeader">
+          <dl className="heroProof">
             <div>
-              <strong>Start with a practical question</strong>
-              <span>Ask in plain English</span>
+              <dt>Built for</dt>
+              <dd>foreign travelers in China</dd>
             </div>
-            <span className="online">Online</span>
-          </div>
-          <div className="quickReplies" aria-label="Example questions">
-            {EXAMPLE_PROMPTS.map((prompt) => (
-              <button key={prompt} onClick={() => setInput(prompt)} type="button">
-                {prompt}
-              </button>
-            ))}
-          </div>
-          {progress.status === "failed" ? (
-            <div className="copilotFailure" role="alert">
-              <strong>Copilot could not respond.</strong>
-              <span>{progress.error ?? "Please check your connection and try again."}</span>
-              <button onClick={() => void submitPrompt({ retry: true })} type="button">
-                Try again
-              </button>
+            <div>
+              <dt>Designed around</dt>
+              <dd>real-world travel decisions</dd>
             </div>
-          ) : null}
-          <form
-            className="railComposer"
-            onSubmit={(event) => {
-              event.preventDefault();
-              void submitPrompt();
-            }}
-          >
-            <input
-              aria-label="Trip prompt"
-              onChange={(event) => setInput(event.target.value)}
-              placeholder="Ask about payments, transport, language, or travel basics"
-              value={input}
-            />
-            <button disabled={isWorking} type="submit">
-              {isWorking ? "Thinking" : "Ask Copilot"}
-            </button>
-          </form>
-        </aside>
+          </dl>
+        </div>
+
+        <div className="productFrame" aria-label="VisePanda Copilot product preview">
+          <div className="productFrameBar">
+            <span className="productLiveDot" aria-hidden="true" />
+            <span>Shanghai arrival brief</span>
+            <small>Live preview</small>
+          </div>
+          <div className="productFrameBody">
+            <section className="previewPlan">
+              <div className="previewSectionHeading">
+                <span>Day 1</span>
+                <b>Start smoothly</b>
+              </div>
+              <article>
+                <time>09:30</time>
+                <div>
+                  <strong>Airport to your hotel</strong>
+                  <span>Choose the route after your connection is live.</span>
+                </div>
+                <em>Transport</em>
+              </article>
+              <article>
+                <time>12:00</time>
+                <div>
+                  <strong>First payment setup</strong>
+                  <span>Keep a backup plan before your first checkout.</span>
+                </div>
+                <em>Payment</em>
+              </article>
+              <article>
+                <time>18:30</time>
+                <div>
+                  <strong>Dinner near your hotel</strong>
+                  <span>Show dietary needs clearly when you arrive.</span>
+                </div>
+                <em>Language</em>
+              </article>
+            </section>
+            <aside className="previewCopilot">
+              <span className="miniLabel">Copilot</span>
+              <p>“What is the calmest way to get from Pudong to my hotel after a long flight?”</p>
+              <div className="previewAnswer">
+                <b>Start with the direct route.</b>
+                <span>We will help you compare metro and taxi once you know your hotel area.</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setInput("How do I get from Pudong Airport to my hotel?")}
+              >
+                Use this question
+              </button>
+            </aside>
+          </div>
+        </div>
       </section>
+
+      <section
+        className="copilotWorkbench"
+        id="ask-copilot"
+        aria-labelledby="copilot-workbench-title"
+      >
+        <div className="workbenchIntro">
+          <div>
+            <p className="homeEyebrow">Your practical starting point</p>
+            <h2 id="copilot-workbench-title">Ask one clear question. Get one useful next step.</h2>
+          </div>
+          <p>
+            The Copilot is intentionally focused. It does not pretend to book, edit, or promise what
+            it cannot verify.
+          </p>
+        </div>
+        <div className="copilotLayout">
+          <section className="conversationPanel" aria-label="Copilot conversation">
+            <div className="canvasToolbar">
+              <div>
+                <h1>Conversation</h1>
+                <span>Practical China travel guidance</span>
+              </div>
+              <span className={`conversationStatus ${progress.status}`}>
+                {progressLabel(progress)}
+              </span>
+            </div>
+            <p className="scopeNote">
+              This financing demo answers travel questions. It does not save or edit itineraries,
+              book services, or connect you to a human agent.
+            </p>
+            <div className="railMessages">
+              {messages.map((message, index) => (
+                <article className={`railMessage ${message.role}`} key={`${message.role}-${index}`}>
+                  <b>{message.role === "user" ? "You" : "VisePanda Copilot"}</b>
+                  {message.envelope ? (
+                    <EnvelopeMessage envelope={message.envelope} trip={message.trip ?? null} />
+                  ) : (
+                    <p>{message.body}</p>
+                  )}
+                </article>
+              ))}
+              {isWorking ? (
+                <article className="railMessage assistant typing" aria-live="polite">
+                  <b>VisePanda Copilot</b>
+                  <p>
+                    <span aria-hidden="true">● ● ●</span> Thinking through your travel question
+                  </p>
+                </article>
+              ) : null}
+            </div>
+          </section>
+
+          <aside className="copilotRail" aria-label="Copilot prompt composer">
+            <div className="railHeader">
+              <div>
+                <strong>Start with a practical question</strong>
+                <span>Ask in plain English</span>
+              </div>
+              <span className="online">Online</span>
+            </div>
+            <div className="quickReplies" aria-label="Example questions">
+              {EXAMPLE_PROMPTS.map((prompt) => (
+                <button key={prompt} onClick={() => setInput(prompt)} type="button">
+                  {prompt}
+                </button>
+              ))}
+            </div>
+            {progress.status === "failed" ? (
+              <div className="copilotFailure" role="alert">
+                <strong>Copilot could not respond.</strong>
+                <span>{progress.error ?? "Please check your connection and try again."}</span>
+                <button onClick={() => void submitPrompt({ retry: true })} type="button">
+                  Try again
+                </button>
+              </div>
+            ) : null}
+            <form
+              className="railComposer"
+              onSubmit={(event) => {
+                event.preventDefault();
+                void submitPrompt();
+              }}
+            >
+              <input
+                aria-label="Trip prompt"
+                onChange={(event) => setInput(event.target.value)}
+                placeholder="Ask about payments, transport, language, or travel basics"
+                value={input}
+              />
+              <button disabled={isWorking} type="submit">
+                {isWorking ? "Thinking" : "Ask Copilot"}
+              </button>
+            </form>
+          </aside>
+        </div>
+      </section>
+
+      <section className="scenarioSection" id="scenarios" aria-labelledby="scenario-title">
+        <div className="sectionIntro">
+          <p className="homeEyebrow">Travel situations</p>
+          <h2 id="scenario-title">Tools make sense when they arrive in the right moment.</h2>
+          <p>
+            VisePanda groups practical help around the moments travelers actually encounter, rather
+            than asking you to decode a long toolbox.
+          </p>
+        </div>
+        <div className="scenarioStack">
+          {SCENARIO_GROUPS.map((group, index) => (
+            <section className="scenarioGroup" key={group.label}>
+              <div className="scenarioHeading">
+                <span>0{index + 1}</span>
+                <p>{group.label}</p>
+                <h3>{group.title}</h3>
+                <small>{group.description}</small>
+              </div>
+              <div className="scenarioCards">
+                {group.items.map(([title, description]) => (
+                  <article key={title}>
+                    <span aria-hidden="true">↗</span>
+                    <h4>{title}</h4>
+                    <p>{description}</p>
+                  </article>
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
+      </section>
+
+      <section className="ecosystemSection" id="integrations" aria-labelledby="ecosystem-title">
+        <div className="ecosystemCopy">
+          <p className="homeEyebrow">An execution ecosystem</p>
+          <h2 id="ecosystem-title">One trip, connected to the services that make it happen.</h2>
+          <p>
+            VisePanda keeps planning, trusted place context, payment preparation, and human support
+            as distinct layers. No hidden booking claim, no disguised recommendation.
+          </p>
+          <a className="textAction" href="/guides/payment">
+            Read the payment guide <span aria-hidden="true">→</span>
+          </a>
+        </div>
+        <div className="ecosystemMap" aria-label="VisePanda ecosystem layers">
+          <article>
+            <span>01</span>
+            <b>Copilot</b>
+            <p>Practical questions and clear limits.</p>
+          </article>
+          <article>
+            <span>02</span>
+            <b>Explore</b>
+            <p>Evidence-backed place context.</p>
+          </article>
+          <article>
+            <span>03</span>
+            <b>Tools</b>
+            <p>Payment, language, transport, and offline essentials.</p>
+          </article>
+          <article>
+            <span>04</span>
+            <b>Human help</b>
+            <p>A separate path for work software should not pretend to do.</p>
+          </article>
+        </div>
+      </section>
+
+      <footer className="siteFooter">
+        <a className="brandMark" href="/">
+          <span>V</span>
+          <b>VisePanda</b>
+        </a>
+        <p>China Travel AI Copilot. Practical guidance for travel decisions.</p>
+        <div>
+          <a href="/guides/payment">Payment guide</a>
+          <a href="/human-help">Human Help</a>
+          <a href="/account">Account</a>
+        </div>
+      </footer>
     </main>
   );
 }

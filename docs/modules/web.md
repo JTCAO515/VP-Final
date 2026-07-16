@@ -90,7 +90,14 @@ payloads, cookies, credentials, or narrative errors.
 
 ## UI Rules
 
-- The first screen is the usable Copilot workspace, not a marketing-only hero.
+- The home page opens with a product-first Copilot introduction: a single clear promise and a
+  read-only product preview establish the task before the usable Copilot workspace immediately
+  below it. It is not a marketing-only hero.
+- Home-page capability content is grouped by traveler scenario (before flying, on the move, and
+  when plans change). Ecosystem surfaces appear in a separate section so one viewport has one
+  primary job.
+- The home product preview is illustrative only. It must not claim that bookings, payments, or
+  Human Help have occurred, and it must not introduce inert controls.
 - The canonical visual source is the Red Gold Design System.
 - Unknown, offline, demo, and failed states must be explicit.
 - A disabled or unavailable action is hidden or clearly disabled; inert controls are not allowed.
