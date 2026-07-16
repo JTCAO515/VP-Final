@@ -104,7 +104,8 @@ durable Postgres adapter, while only explicit `local-demo` may render the labell
 Cards show short labels only for current reviewed `payment_acceptance`, `metro_access`,
 `booking_required`/`reservation_helpful`, `crowd_pattern`, and `rainy_fit` facts. Unknown, expired,
 unreviewed, deprecated, or unlabeled facts stay hidden; load failure produces an honest unavailable
-state rather than fixture content.
+state rather than fixture content. Explore tests construct facts through the authoritative domain
+schema and include the evidence metadata required by the reviewed-fact eligibility boundary.
 
 ## Verification
 
