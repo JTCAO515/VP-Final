@@ -1,6 +1,6 @@
 # Human Help Controlled Preview Policy
 
-Status: accepted controlled-preview policy; pending repository merge  
+Status: accepted controlled-preview policy; merged and implemented by the P0-13 intake boundary
 Owner: JTCao (operations owner)  
 Effective for: controlled preview only  
 Review date: 2026-08-14 or before any public paid launch, whichever is earlier
@@ -18,26 +18,26 @@ the replacement decision before resuming.
 
 ## Launch Envelope
 
-| Dimension | Controlled-preview baseline | Boundary |
-| --- | --- | --- |
-| City | Shanghai only | Requests for another city are declined or redirected to self-service guidance. |
-| Traveler language | English | The operator may use Chinese internally; this is not a promise of support in any other traveler language. |
-| Operating window | 09:00-21:00 China Standard Time, seven days | Outside-window requests may be queued; no immediate reply is promised. |
-| Capacity | Maximum five new requests per operating day | Stop accepting new requests when capacity is reached. Never silently queue paid work. |
-| Fulfilment owner | JTCao or a named, authorized on-duty operator | No contractor, guide, or partner may receive task details without a documented authorized workflow. |
+| Dimension         | Controlled-preview baseline                   | Boundary                                                                                                  |
+| ----------------- | --------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| City              | Shanghai only                                 | Requests for another city are declined or redirected to self-service guidance.                            |
+| Traveler language | English                                       | The operator may use Chinese internally; this is not a promise of support in any other traveler language. |
+| Operating window  | 09:00-21:00 China Standard Time, seven days   | Outside-window requests may be queued; no immediate reply is promised.                                    |
+| Capacity          | Maximum five new requests per operating day   | Stop accepting new requests when capacity is reached. Never silently queue paid work.                     |
+| Fulfilment owner  | JTCao or a named, authorized on-duty operator | No contractor, guide, or partner may receive task details without a documented authorized workflow.       |
 
 ## Supported Work
 
 Human Help is best-effort travel coordination, not a booking, emergency, professional-advice, or
 payment service. The controlled preview may triage these task kinds:
 
-| Domain task kind | Allowed preview work | Required user confirmation |
-| --- | --- | --- |
-| `call_restaurant` | Call to ask about hours, availability, dietary accommodation, or a reservation request. | Confirm the venue, date, party size, contact details, and that availability is not guaranteed. |
-| `ticket_help` | Explain an official booking path, check publicly available ticket information, or ask a venue about ordinary availability. | Confirm attraction, date, traveller eligibility, and that VisePanda does not hold inventory. |
-| `translation_help` | Translate or relay a short travel-related message; clarify a routine service conversation. | Confirm the exact message and intended recipient. |
-| `transport_help` | Explain a route, local transport options, or how to use a third-party transport service. | Confirm origin, destination, timing, and that VisePanda will not place rides or access accounts. |
-| `other` | Triage only. It may be declined, reframed into a supported task, or routed to official/self-service guidance. | No fulfilment begins without a newly confirmed supported scope. |
+| Domain task kind   | Allowed preview work                                                                                                       | Required user confirmation                                                                       |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `call_restaurant`  | Call to ask about hours, availability, dietary accommodation, or a reservation request.                                    | Confirm the venue, date, party size, contact details, and that availability is not guaranteed.   |
+| `ticket_help`      | Explain an official booking path, check publicly available ticket information, or ask a venue about ordinary availability. | Confirm attraction, date, traveller eligibility, and that VisePanda does not hold inventory.     |
+| `translation_help` | Translate or relay a short travel-related message; clarify a routine service conversation.                                 | Confirm the exact message and intended recipient.                                                |
+| `transport_help`   | Explain a route, local transport options, or how to use a third-party transport service.                                   | Confirm origin, destination, timing, and that VisePanda will not place rides or access accounts. |
+| `other`            | Triage only. It may be declined, reframed into a supported task, or routed to official/self-service guidance.              | No fulfilment begins without a newly confirmed supported scope.                                  |
 
 ## Exclusions and Safety Boundary
 
@@ -82,16 +82,16 @@ availability, and safety review can delay or prevent fulfilment. User-facing cop
 
 ### State mapping
 
-| Task state | Policy meaning | Operator rule |
-| --- | --- | --- |
-| `requested` | User submitted a triage request. | Acknowledge or decline; do not promise fulfilment. |
-| `triaged` | Scope, safety, capacity, and data sufficiency were reviewed. | Record supported/declined decision and reason. |
-| `quoted` | A non-binding proposed price/scope exists. | Only available after a future approved payment route. |
-| `payment_pending` | Awaiting verified provider payment. | Not used during controlled preview. |
-| `paid` | Provider payment evidence verified. | Not used until P0-17 is accepted. |
-| `fulfilling` | Operator is performing approved, paid work. | Record only truthful actions and evidence. |
-| `done` | Agreed work outcome was communicated. | Record what was done, what remains third-party dependent, and user notification. |
-| `cancelled` | Work did not proceed or stopped. | Record initiator, reason, and any applicable refund outcome. |
+| Task state        | Policy meaning                                               | Operator rule                                                                    |
+| ----------------- | ------------------------------------------------------------ | -------------------------------------------------------------------------------- |
+| `requested`       | User submitted a triage request.                             | Acknowledge or decline; do not promise fulfilment.                               |
+| `triaged`         | Scope, safety, capacity, and data sufficiency were reviewed. | Record supported/declined decision and reason.                                   |
+| `quoted`          | A non-binding proposed price/scope exists.                   | Only available after a future approved payment route.                            |
+| `payment_pending` | Awaiting verified provider payment.                          | Not used during controlled preview.                                              |
+| `paid`            | Provider payment evidence verified.                          | Not used until P0-17 is accepted.                                                |
+| `fulfilling`      | Operator is performing approved, paid work.                  | Record only truthful actions and evidence.                                       |
+| `done`            | Agreed work outcome was communicated.                        | Record what was done, what remains third-party dependent, and user notification. |
+| `cancelled`       | Work did not proceed or stopped.                             | Record initiator, reason, and any applicable refund outcome.                     |
 
 ### Future paid-service rules
 
@@ -114,9 +114,10 @@ medical records, or unnecessary location history.
   server-side RBAC path, never email allowlists or client metadata.
 - Routine telemetry must contain event metadata only, not task descriptions, contacts, transcripts, or
   payment evidence.
-- Future durable task data requires an explicit retention/deletion implementation before collection.
-  The intended controlled-preview target is deletion or irreversible de-identification within 90 days
-  after `done` or `cancelled`; this target is not satisfied until enforcement and verification exist.
+- Durable task data carries a retention deadline only after `done` or `cancelled`; a restricted purge
+  routine enforces deletion once that deadline arrives. P0-13 does not yet expose terminal transitions
+  or production scheduling, so the intended 90-day target is not claimed as operational until those
+  later controls are verified.
 
 ### Escalation
 
@@ -152,6 +153,6 @@ owner, and a new review date.
 
 - 2026-07-14: initial conservative controlled-preview baseline established under the operator's
   delegated OA-007 instruction.
-- Pending: repository review and merge under the normal #181 gate.
+- 2026-07-16: P0-13 durable owner/idempotency/capacity intake boundary implemented for review.
 - Required before a public paid launch: payment/entity/legal decision, verified provider integration,
   durable task controls, public-copy implementation, and a fresh policy review.

@@ -29,6 +29,7 @@ export const HumanTaskSchema = z.object({
   price_usd: z.number().nonnegative().nullable().default(null),
   payment_link: z.string().url().nullable().default(null),
   operator_note: z.string().nullable().default(null),
+  retention_expires_at: z.string().datetime().nullable().default(null),
   created_at: z.string().datetime(),
   updated_at: z.string().datetime(),
 });
@@ -38,6 +39,16 @@ export const HumanTaskCreateSchema = HumanTaskSchema.pick({
   kind: true,
   description: true,
   contact: true,
+});
+
+export const HumanTaskSubmissionSchema = HumanTaskCreateSchema.extend({
+  idempotency_key: z.string().uuid(),
+});
+
+export const HumanTaskReceiptSchema = HumanTaskSchema.pick({
+  id: true,
+  status: true,
+  created_at: true,
 });
 
 export const HumanTaskUpdateSchema = z.object({
@@ -75,4 +86,6 @@ export type HumanTaskKind = z.infer<typeof HumanTaskKindSchema>;
 export type HumanTaskStatus = z.infer<typeof HumanTaskStatusSchema>;
 export type HumanTask = z.infer<typeof HumanTaskSchema>;
 export type HumanTaskCreate = z.infer<typeof HumanTaskCreateSchema>;
+export type HumanTaskSubmission = z.infer<typeof HumanTaskSubmissionSchema>;
+export type HumanTaskReceipt = z.infer<typeof HumanTaskReceiptSchema>;
 export type HumanTaskUpdate = z.infer<typeof HumanTaskUpdateSchema>;

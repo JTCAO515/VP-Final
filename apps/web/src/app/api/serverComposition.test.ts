@@ -1,4 +1,5 @@
 import {
+  createInMemoryHumanTaskService,
   createInMemoryAgentTraceService,
   createInMemoryKnowledgeService,
   createVersionedInMemoryTripService,
@@ -29,6 +30,7 @@ describe("Web server composition", () => {
     );
 
     const injected = {
+      humanTaskService: createInMemoryHumanTaskService(),
       knowledgeService: createInMemoryKnowledgeService(),
       traceService: createInMemoryAgentTraceService(),
       tripService: createVersionedInMemoryTripService(),
@@ -39,6 +41,7 @@ describe("Web server composition", () => {
 
   it("allows labelled local demo memory only when explicitly selected", () => {
     expect(createWebServerServices({ VISEPANDA_RUNTIME_MODE: "local-demo" })).toMatchObject({
+      humanTaskService: expect.any(Object),
       knowledgeService: expect.any(Object),
       tripService: expect.any(Object),
     });

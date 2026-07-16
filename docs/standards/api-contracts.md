@@ -81,3 +81,14 @@ Ops pages and APIs verify the Supabase user server-side, then resolve an explici
 Unauthenticated requests return 401; verified users without the required permission return 403;
 missing production Auth/database configuration returns an honest unavailable response. Every
 privileged mutation records actor, action, target, and timestamp in the server-only audit ledger.
+
+## Human Help Intake Contract
+
+`POST /api/human-help` accepts `city`, `kind`, `description`, `contact`, and UUID
+`idempotency_key`. Identity is server-derived; body owner fields have no authority. P0-13 accepts only
+the Shanghai controlled preview and at most five new requests per China calendar day. A successful
+response is `{ ok: true, task: { id, status: "requested", created_at } }`; private request content,
+operator fields, quotes, and payment data are not returned. Retrying the same key for the same owner
+returns the original receipt. Capacity, scope, conflict, missing runtime, and persistence failures
+return non-2xx responses and never fabricate a receipt. Reusing a key with changed request content is
+a conflict, even for the same owner.

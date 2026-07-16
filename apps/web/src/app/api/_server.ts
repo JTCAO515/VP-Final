@@ -2,15 +2,18 @@ import {
   appRouter,
   createDb,
   createDbAgentTraceService,
+  createDbHumanTaskService,
   createDbKnowledgeService,
   createDbVersionedTripService,
   createDemoCopilotModelDependencies,
   createInMemoryKnowledgeService,
+  createInMemoryHumanTaskService,
   createInMemoryAgentTraceService,
   createVersionedInMemoryTripService,
   resolveDatabaseAdapter,
   resolveRuntimeMode,
   type AgentTraceService,
+  type HumanTaskService,
   type KnowledgeService,
   type RequestIdentity,
   type VersionedTripService,
@@ -18,6 +21,7 @@ import {
 
 type Environment = Readonly<Record<string, string | undefined>>;
 type WebServerServices = {
+  humanTaskService: HumanTaskService;
   knowledgeService: KnowledgeService;
   traceService: AgentTraceService;
   tripService: VersionedTripService;
@@ -72,6 +76,7 @@ export function createWebServerServices(environment: Environment): WebServerServ
 
   if (availability.adapter === "memory-demo") {
     return {
+      humanTaskService: createInMemoryHumanTaskService(),
       knowledgeService: createInMemoryKnowledgeService(),
       traceService: createInMemoryAgentTraceService(),
       tripService: createVersionedInMemoryTripService(),
@@ -82,6 +87,7 @@ export function createWebServerServices(environment: Environment): WebServerServ
   if (!databaseUrl) throw new WebRuntimeUnavailableError("database_url_missing");
   const db = createDb(databaseUrl);
   return {
+    humanTaskService: createDbHumanTaskService(db),
     knowledgeService: createDbKnowledgeService(db),
     traceService: createDbAgentTraceService(db),
     tripService: createDbVersionedTripService(db),

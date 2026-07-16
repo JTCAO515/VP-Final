@@ -14,6 +14,9 @@ Status: active
 - A durable lifecycle transition added to a server service MUST be exercised against the reset local
   Postgres database in the Database contracts CI job; an in-memory fixture or schema-only assertion is
   insufficient evidence that the migrated state can be written and read safely.
+- A new durable cross-surface intake path MUST test both its server adapter and each production
+  composition root that reads it. P0-13 therefore runs Human Task cold-start/ownership tests in the
+  server and the Ops durable-store integration suite in the Database contracts job.
 - The Database contracts gate MUST execute a nonzero pgTAP file and test count. `Result: NOTESTS` is
   a failed verification state even if the CLI process exits successfully.
 - A failed check MUST NOT be described as passed; residual risk and blockers must be explicit.

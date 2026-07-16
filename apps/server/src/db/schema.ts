@@ -431,7 +431,9 @@ export const humanTasks = pgTable(
   "human_tasks",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    userId: uuid("user_id").references(() => users.id, { onDelete: "set null" }),
+    userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }),
+    anonId: text("anon_id"),
+    idempotencyKey: uuid("idempotency_key").notNull(),
     city: text("city").notNull(),
     kind: text("kind").notNull(),
     description: text("description").notNull(),
@@ -440,12 +442,24 @@ export const humanTasks = pgTable(
     priceUsd: numeric("price_usd", { precision: 12, scale: 2 }),
     paymentLink: text("payment_link"),
     operatorNote: text("operator_note"),
+    retentionExpiresAt: timestamp("retention_expires_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
     statusCreatedIdx: index("human_tasks_status_created_idx").on(table.status, table.createdAt),
     cityStatusIdx: index("human_tasks_city_status_idx").on(table.city, table.status),
+    userCreatedIdx: index("human_tasks_user_created_idx").on(table.userId, table.createdAt),
+    anonCreatedIdx: index("human_tasks_anon_created_idx").on(table.anonId, table.createdAt),
+    idempotencyUnique: uniqueIndex("human_tasks_idempotency_key_unique").on(table.idempotencyKey),
+    ownerCheck: check(
+      "human_tasks_exactly_one_owner_check",
+      sql`num_nonnulls(${table.userId}, ${table.anonId}) = 1`,
+    ),
+    anonIdCheck: check(
+      "human_tasks_anon_id_format_check",
+      sql`${table.anonId} is null or ${table.anonId} ~ '^[A-Za-z0-9_-]{43}$'`,
+    ),
     statusCheck: check(
       "human_tasks_status_check",
       sql`${table.status} in ('requested', 'triaged', 'quoted', 'payment_pending', 'paid', 'fulfilling', 'done', 'cancelled')`,
@@ -457,6 +471,10 @@ export const humanTasks = pgTable(
     priceCheck: check(
       "human_tasks_price_usd_check",
       sql`${table.priceUsd} is null or ${table.priceUsd} >= 0`,
+    ),
+    retentionCheck: check(
+      "human_tasks_retention_terminal_check",
+      sql`${table.retentionExpiresAt} is null or ${table.status} in ('done', 'cancelled')`,
     ),
   }),
 );

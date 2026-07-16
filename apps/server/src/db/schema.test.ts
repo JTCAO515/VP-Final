@@ -93,9 +93,18 @@ describe("database schema", () => {
     expect(telemetryEvents.propsJsonb.name).toBe("props_jsonb");
   });
 
-  it("maps the human task quote fields", () => {
+  it("maps the private Human Task ownership and lifecycle fields", () => {
     expect(humanTasks.status.name).toBe("status");
+    expect(humanTasks.anonId.name).toBe("anon_id");
+    expect(humanTasks.idempotencyKey.name).toBe("idempotency_key");
     expect(humanTasks.priceUsd.name).toBe("price_usd");
     expect(humanTasks.paymentLink.name).toBe("payment_link");
+    expect(humanTasks.retentionExpiresAt.name).toBe("retention_expires_at");
+    expect(getTableConfig(humanTasks).checks.map((constraint) => constraint.name)).toContain(
+      "human_tasks_exactly_one_owner_check",
+    );
+    expect(getTableConfig(humanTasks).indexes.map((index) => index.config.name)).toContain(
+      "human_tasks_idempotency_key_unique",
+    );
   });
 });

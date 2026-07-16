@@ -10,6 +10,7 @@ export { appRouter } from "./router.js";
 export type { AppRouter } from "./router.js";
 export { createDb } from "./db/client.js";
 export { createDbKnowledgeService } from "./db/knowledgeService.js";
+export { createDbHumanTaskService } from "./db/humanTaskService.js";
 export { createDbAgentTraceService } from "./db/agentTraceService.js";
 export { createDbOpsAuthorizationService } from "./db/opsAuthorizationService.js";
 export { createDbVersionedTripService } from "./db/versionedTripService.js";
@@ -21,6 +22,14 @@ export {
 } from "./runtime/runtimeMode.js";
 export { requireService } from "./runtime/requireService.js";
 export { createInMemoryKnowledgeService } from "./modules/knowledge/service.js";
+export {
+  HUMAN_TASK_DAILY_CAPACITY,
+  HUMAN_TASK_PREVIEW_CITY,
+  HumanTaskCapacityError,
+  HumanTaskIdempotencyConflictError,
+  HumanTaskPreviewScopeError,
+  createInMemoryHumanTaskService,
+} from "./modules/task/service.js";
 export { createInMemoryAgentTraceService, normalizeAgentFailure } from "./modules/trace/service.js";
 export {
   createDemoCopilotModelDependencies,
@@ -44,6 +53,11 @@ export {
 export type { RequestIdentity } from "./context.js";
 export type { AdapterAvailability, RuntimeMode, RuntimeResolution } from "./runtime/runtimeMode.js";
 export type { KnowledgeService } from "./modules/knowledge/service.js";
+export type {
+  CreateHumanTaskCommand,
+  HumanTaskIdentity,
+  HumanTaskService,
+} from "./modules/task/service.js";
 export type {
   AgentAttemptTrace,
   AgentTraceService,
