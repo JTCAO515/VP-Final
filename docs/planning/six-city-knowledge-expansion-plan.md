@@ -33,11 +33,10 @@ The work moves through four gates. A city/category cannot skip a gate.
 | G2 Evidence complete | Required fact types meet the category coverage floor                            | Missing cells remain explicitly `missing`           |
 | G3 Reviewed          | Independent editor checks source, wording, confidence, freshness, and conflicts | Only current `reviewed` facts are consumer-eligible |
 
-G0 currently has one open deviation: ADR-0006 requires source class, source locator, and evidence
-summary, while the durable `poi_facts` schema exposes one `source` string and requires `verified_at`
-even for a draft. V2-75 MUST NOT flatten these meanings or invent a verification timestamp. The
-contract correction is a prerequisite for bulk import, not for this planning artifact.
-The corrective contract work is tracked in GitHub Issue #230.
+G0 is closed by the durable lifecycle/evidence-contract corrections. V2-75 retains source class,
+locator, summary, researcher/reviewer provenance, and a supplied evidence-review time without using
+any of them to publish a fact. The importer leaves every new fact in `draft`; it never invents a
+verification timestamp or silently discards collection metadata.
 
 ## POI quantity targets
 
@@ -158,9 +157,10 @@ Required collection states:
 - `reviewed`: an independent editor completed source, confidence, freshness, and wording checks.
 - `rejected`: evidence is inadequate or the candidate is outside scope.
 
-The CSV contains both current storage fields and ADR-required collection fields. Until G0 closes,
-`source_class`, `source_locator`, and `evidence_summary` are collection-only and MUST NOT be silently
-discarded during import.
+The CSV contains both current storage fields and ADR-required collection fields. The importer persists
+public-safe evidence fields with the draft and writes researcher/reviewer/review-time/note provenance
+to a server-only audit relation. None of those fields makes a fact consumer-eligible before the normal
+explicit review transition.
 
 ## Editorial schedule
 
@@ -197,13 +197,15 @@ correction/staleness rates.
 
 The future bulk importer must:
 
-1. dry-run every row through schema and controlled-vocabulary validation;
+1. dry-run every row through schema, controlled-vocabulary, duplicate, and conflict validation;
 2. reject unknown city/category/fact-type values instead of coercing them;
-3. preserve source class, locator, evidence summary, reviewer, and review time;
+3. preserve source class, locator, evidence summary, researcher/reviewer handles, notes, and supplied
+   evidence-review time in their correct public/private storage boundary;
 4. never synthesize missing values or verification timestamps;
 5. create drafts by default and require an explicit review transition;
 6. detect duplicate POI identities and duplicate fact versions;
 7. emit imported, skipped, conflicted, and rejected counts;
-8. be idempotent when the same collection row is replayed.
+8. be idempotent when the same collection row and content digest are replayed, and reject changed
+   content under an existing collection row id.
 
 No import implementation begins until the G0 contract deviation has an accepted resolution.

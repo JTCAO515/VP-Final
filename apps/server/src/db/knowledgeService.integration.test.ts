@@ -96,7 +96,9 @@ describeDatabase("database KnowledgeService", () => {
       factId: created.id,
       value: { label: "Hours changed; review required" },
     });
-    const updated = updatedPois[0]?.facts.find((fact) => fact.id === created.id);
+    const updated = updatedPois
+      .find((poi) => poi.id === poiId)
+      ?.facts.find((fact) => fact.id === created.id);
 
     expect(updated).toMatchObject({ status: "draft", verifiedAt: null });
     expect(updated?.ingestedAt).toBe(created.ingestedAt);

@@ -86,6 +86,16 @@ Review is Ops-only: reviewer identity comes from authenticated server context, n
 Public output may expose `reviewPolicy`, `verifiedAt`, and `expiresAt`, but never private `reviewedBy`.
 Null review policy or expiry is valid for drafts and always ineligible for public reads.
 
+`POST /api/knowledge/import` is an internal Ops-only JSON endpoint with `{ csv, mode }`, where `mode`
+is `dry-run` or `commit`. It requires `knowledge.write`; identity and audit actor are server-derived.
+The CSV header is fixed by `KNOWLEDGE_FACT_IMPORT_HEADERS`, has 1 MB/1,000-row bounds, and validates
+six-city/category/evidence vocabulary before persistence. A dry-run returns a count/report only. A
+commit with any invalid or database-conflicting row returns `422` and writes nothing; a successful
+commit returns `201` with created/merged/duplicate counts. It stores review provenance only in a
+server-only audit relation and creates all facts as drafts. Replays with the same collection row and
+content digest are no-ops; changed content is a conflict, never an implicit update. The endpoint
+records sanitized attempt/completion audits and never stores the CSV body in the Ops audit log.
+
 ## Ops Authorization Contract
 
 Ops pages and APIs verify the Supabase user server-side, then resolve an explicit database membership.

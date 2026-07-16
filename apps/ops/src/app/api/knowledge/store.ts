@@ -1,15 +1,18 @@
 import {
   createDb,
+  createDbKnowledgeBulkImportService,
   createDbKnowledgeService,
   createInMemoryKnowledgeService,
   resolveDatabaseAdapter,
   resolveRuntimeMode,
+  type KnowledgeBulkImportService,
   type KnowledgeService,
 } from "@visepanda/app-server";
 
 const store = globalThis as typeof globalThis & {
   __visepandaOpsDemoKnowledge?: KnowledgeService;
   __visepandaOpsDurableKnowledge?: KnowledgeService;
+  __visepandaOpsDurableKnowledgeImport?: KnowledgeBulkImportService;
   __visepandaOpsTestKnowledge?: KnowledgeService;
 };
 
@@ -41,6 +44,21 @@ export function createOpsKnowledgeService(
     throw new Error("Ops Knowledge is unavailable.");
   }
   return createDbKnowledgeService(createDb(environment.DATABASE_URL));
+}
+
+export function getKnowledgeBulkImportService(): KnowledgeBulkImportService {
+  const runtime = resolveRuntimeMode(process.env);
+  if (!runtime.ok || runtime.mode === "test" || runtime.mode === "local-demo") {
+    throw new Error("Durable knowledge import is unavailable in this runtime.");
+  }
+  const availability = resolveDatabaseAdapter(runtime, process.env);
+  if (availability.status !== "ready" || !process.env.DATABASE_URL) {
+    throw new Error("Durable knowledge import is unavailable.");
+  }
+  store.__visepandaOpsDurableKnowledgeImport ??= createDbKnowledgeBulkImportService(
+    createDb(process.env.DATABASE_URL),
+  );
+  return store.__visepandaOpsDurableKnowledgeImport;
 }
 
 export function setTestOpsKnowledgeService(service: KnowledgeService | null): void {

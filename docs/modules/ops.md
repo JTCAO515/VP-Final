@@ -14,6 +14,8 @@ the public Web application and protected by server-side role checks.
 - `/gaps`: inspect and resolve knowledge gaps.
 - `/tasks`: inspect the durable Human Task intake queue.
 - `/api/knowledge/*`: server-side knowledge operations.
+- `/api/knowledge/import`: Editor-authorized CSV `dry-run` and atomic `commit` endpoint; no public
+  upload surface exists.
 - `/api/tasks`: permission-protected task list endpoint.
 - `/api/tasks/:taskId/status`: `task.write`-protected transition endpoint; actor is session-derived.
 - `/login`: verified Supabase Ops sign-in.
@@ -60,6 +62,12 @@ as an unverified draft; `Mark reviewed` is a separate action and rejects model-o
 uncorroborated evidence until an editor replaces it with independently reviewable evidence.
 The review action derives reviewer identity from authenticated Ops access, applies the deterministic
 v1 cadence, and cannot accept a client-authored reviewer or an expiry beyond the policy maximum.
+
+Bulk import accepts only the six-city collection-template header. A `dry-run` reports every malformed
+row before any write. `commit` refuses a file with any validation/conflict error, creates POIs and
+facts transactionally, leaves all facts `draft`, preserves reviewer provenance in the private audit
+relation, and uses collection-row digest plus fact identity to make replay idempotent. `missing`,
+`conflict`, and `rejected` collection rows are reported as skipped rather than treated as evidence.
 
 ## Verification
 

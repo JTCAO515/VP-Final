@@ -13,6 +13,7 @@ import {
   opsMemberships,
   partners,
   poiCommercialLinks,
+  poiFactEditorialAudit,
   poiFacts,
   pois,
   telemetryEvents,
@@ -94,6 +95,11 @@ describe("database schema", () => {
     expect(poiFacts.reviewPolicy.name).toBe("review_policy");
     expect(poiFacts.reviewedBy.name).toBe("reviewed_by");
     expect(poiFacts.status.default).toBe("draft");
+    expect(poiFactEditorialAudit.collectionRowId.name).toBe("collection_row_id");
+    expect(poiFactEditorialAudit.contentDigest.name).toBe("content_digest");
+    expect(
+      getTableConfig(poiFactEditorialAudit).checks.map((constraint) => constraint.name),
+    ).toContain("poi_fact_editorial_audit_reviewed_fields_check");
     expect(getTableConfig(poiFacts).checks.map((constraint) => constraint.name)).toContain(
       "poi_facts_status_check",
     );

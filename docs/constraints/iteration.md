@@ -17,6 +17,9 @@ Status: active
 - A new durable cross-surface intake path MUST test both its server adapter and each production
   composition root that reads it. P0-13 therefore runs Human Task cold-start/ownership tests in the
   server and the Ops durable-store integration suite in the Database contracts job.
+- A durable bulk-write path MUST include its Postgres integration test in the Database contracts job;
+  unit parsing tests and a migration replay alone do not prove atomicity, concurrent idempotency, or
+  downstream read visibility.
 - The Database contracts gate MUST execute a nonzero pgTAP file and test count. `Result: NOTESTS` is
   a failed verification state even if the CLI process exits successfully.
 - A failed check MUST NOT be described as passed; residual risk and blockers must be explicit.
