@@ -43,3 +43,4 @@
 | 2026-07-15 22:05:21 CST | ✅ 无变更 | `767aa69` | 767aa69 docs: monitor log [skip ci] |
 | 2026-07-16 00:05:22 CST | ✅ 无变更 | `bd368ae` | bd368ae docs: monitor log [skip ci] |
 | 2026-07-16 02:05:22 CST | 🔔 3 个新提交 | `061ec09` | 061ec09 DOC-P3-01: draft settlement and legal-entity boundary (#224) |
+| 2026-07-16 10:05:25 CST | 🔔 7 个新提交 | `e080c33` | e080c33 GOV: reconcile Phase 0 dependency authority (#237) |
