@@ -985,6 +985,12 @@ button:disabled {
   padding: 20px;
 }
 
+.poiCard {
+  align-content: start;
+  display: grid;
+  gap: 12px;
+}
+
 .poiCard h2,
 .guideArticle h2,
 .panelHeader h2,
@@ -997,6 +1003,64 @@ button:disabled {
 .poiCard p {
   color: var(--muted);
   line-height: 1.5;
+  margin: 0;
+}
+
+.poiFacts {
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 10px;
+  margin-top: 4px;
+  padding-top: 14px;
+}
+
+.poiFacts > strong {
+  color: var(--ink-soft);
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.poiFacts ul {
+  display: grid;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.poiFacts li {
+  align-items: baseline;
+  color: var(--ink-soft);
+  display: grid;
+  font-size: 14px;
+  gap: 9px;
+  grid-template-columns: 68px minmax(0, 1fr);
+  line-height: 1.4;
+}
+
+.poiFacts li span {
+  background: var(--jade-soft);
+  color: var(--jade);
+  font-size: 11px;
+  padding: 4px 7px;
+  text-align: center;
+}
+
+.exploreEmpty {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  grid-column: 1 / -1;
+  padding: 28px;
+}
+
+.exploreEmpty h2 {
+  margin: 0 0 8px;
+}
+
+.exploreEmpty p {
+  color: var(--muted);
+  margin: 0;
 }
 
 .sceneTags,
