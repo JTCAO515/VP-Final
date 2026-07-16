@@ -1,23 +1,27 @@
 import { describe, expect, it } from "vitest";
-import type { Poi, PoiFact } from "@visepanda/domain";
+import { PoiFactSchema, type Poi, type PoiFact } from "@visepanda/domain";
 import { deriveExploreFacts } from "./factPresentation";
 
 const NOW = new Date("2026-07-16T00:00:00.000Z");
 
 function fact(overrides: Partial<PoiFact> = {}): PoiFact {
-  return {
+  return PoiFactSchema.parse({
     id: "fact-1",
     poiId: "poi-1",
     factType: "metro_access",
     value: { label: "Easy by metro" },
     confidence: 0.9,
     source: "official",
+    sourceClass: "official",
+    sourceLocator: "https://example.test/official-source",
+    evidenceSummary: "Official visitor information reviewed by operations.",
+    ingestedAt: "2026-07-14T00:00:00.000Z",
     verifiedAt: "2026-07-15T00:00:00.000Z",
     expiresAt: null,
     version: 1,
     status: "reviewed",
     ...overrides,
-  };
+  });
 }
 
 function poi(facts: PoiFact[]): Poi {
