@@ -54,6 +54,13 @@ modules yet.
   held by in-flight requests are distinct errors, so concurrency cannot create a false registration
   claim. Authenticated users bypass this anonymous-only control. Missing Redis configuration fails
   closed under OA-012; only tests and explicit `local-demo` use the injected memory reference.
+- Every valid Copilot HTTP request also passes a route-level IP guard before the model pipeline. The
+  Web trust boundary supplies only the first valid Vercel `x-vercel-forwarded-for` address; the
+  limiter HMACs it with a separate server-only salt before an atomic Upstash sorted-set operation.
+  The default windows are 10 requests/minute and 60/hour, both env-configurable. Redis receives no
+  raw IP or salt and expires each bucket after one hour. Tests and explicit `local-demo` share one
+  fixed local identity; any other non-Vercel runtime, missing salt/configuration, invalid trusted
+  header, Redis failure, or invalid response fails closed before model execution under OA-013.
 - Knowledge, Human Task, and Telemetry routers require a service selected by the composition root;
   omitted capabilities return typed `SERVICE_UNAVAILABLE` and never construct memory internally.
 - The knowledge bulk-import adapter is durable-only. It validates the fixed six-city CSV at the trust
@@ -140,6 +147,9 @@ distinguish its own previous partial effect from a later unrelated Trip edit.
 - Anonymous turn limits MUST reserve capacity atomically before generation and MUST NOT trust a body,
   browser counter, or raw anonymous identifier. A blocked request cannot reach the model. A failed
   model request releases its reservation and does not consume a completed turn.
+- Copilot IP limits MUST trust only Vercel's `x-vercel-forwarded-for`; `x-forwarded-for`, request
+  bodies, cookies, and browser state have no IP authority. Raw client addresses and the HMAC salt
+  MUST NOT enter Redis keys, Redis arguments, logs, traces, events, or public errors.
 - P0-03 introduces the shared `RequestIdentity` context for verified Supabase sessions or signed
   anonymous sessions. P0-04 consumes it on every Trip owner route.
 - [ADR-0005](../adr/ADR-0005-runtime-modes-and-production-adapter-ownership.md) freezes explicit modes, single durable production owners, and the prohibition on implicit production memory fallback.
@@ -155,6 +165,9 @@ distinguish its own previous partial effect from a later unrelated Trip edit.
 - OA-012 remains the release gate for the Upstash Redis REST endpoint/token and one sanitized
   three-success/one-blocked observation. Until then anonymous Copilot access returns an honest 503;
   authenticated Copilot access does not depend on this anonymous-only counter.
+- OA-013 remains the release gate for the independent IP HMAC salt, deployed limits, Vercel trusted
+  header behavior, and one sanitized 429 observation. Until then every deployed Copilot request
+  fails honestly before model execution rather than bypassing request-cost protection.
 
 ## Verification
 

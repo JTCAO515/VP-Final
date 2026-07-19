@@ -91,6 +91,14 @@ configured limit from the domain-validated response. Missing Upstash configurati
 `ANONYMOUS_TURN_CONTROL_UNAVAILABLE`; no browser value can raise or reset the server count. Verified
 authenticated users bypass this anonymous-only wall.
 
+The separate network guard applies to both anonymous and authenticated Copilot requests before the
+model pipeline. On Vercel it reads only the first valid `x-vercel-forwarded-for` address and ignores
+client-controlled `x-forwarded-for`. Exceeding either configured sliding window returns HTTP 429
+`COPILOT_IP_RATE_LIMITED` with `Retry-After`; the workspace shows the server's wait message with zero
+model attempts. Missing trusted platform/header, salt, Redis configuration, or Redis availability
+returns HTTP 503 `COPILOT_IP_RATE_LIMIT_UNAVAILABLE`. Tests and explicit `local-demo` use one fixed
+local identity; other non-Vercel deployed modes fail closed. OA-013 owns production verification.
+
 Human Help now writes through the durable P0-13 adapter. `/api/human-help` derives owner identity from
 the verified session or signed anonymous cookie, requires an idempotency key, and returns only the
 task id, `requested` status, and creation time. It never echoes contact or description and never

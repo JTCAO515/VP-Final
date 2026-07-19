@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   createInMemoryAgentTraceService,
   createInMemoryAnonymousTurnCounter,
+  createInMemoryCopilotIpRateLimiter,
   createInMemoryHumanTaskService,
   createInMemoryKnowledgeService,
   createVersionedInMemoryTripService,
@@ -20,13 +21,16 @@ const originalSecret = process.env.VISEPANDA_ANON_SESSION_SECRET;
 const originalKeyId = process.env.VISEPANDA_ANON_SESSION_KEY_ID;
 const originalRuntimeMode = process.env.VISEPANDA_RUNTIME_MODE;
 const originalDatabaseUrl = process.env.DATABASE_URL;
+const originalVercel = process.env.VERCEL;
 
 beforeEach(() => {
   process.env.VISEPANDA_RUNTIME_MODE = "test";
   process.env.VISEPANDA_ANON_SESSION_SECRET = secret;
   process.env.VISEPANDA_ANON_SESSION_KEY_ID = "current";
+  process.env.VERCEL = "1";
   setTestWebServerServices({
     anonymousTurnCounter: createInMemoryAnonymousTurnCounter(),
+    copilotIpRateLimiter: createInMemoryCopilotIpRateLimiter(),
     humanTaskService: createInMemoryHumanTaskService(),
     knowledgeService: createInMemoryKnowledgeService(),
     traceService: createInMemoryAgentTraceService(),
@@ -39,6 +43,8 @@ afterEach(() => {
   else process.env.VISEPANDA_RUNTIME_MODE = originalRuntimeMode;
   if (originalDatabaseUrl === undefined) delete process.env.DATABASE_URL;
   else process.env.DATABASE_URL = originalDatabaseUrl;
+  if (originalVercel === undefined) delete process.env.VERCEL;
+  else process.env.VERCEL = originalVercel;
   setTestWebServerServices(null);
   if (originalSecret === undefined) delete process.env.VISEPANDA_ANON_SESSION_SECRET;
   else process.env.VISEPANDA_ANON_SESSION_SECRET = originalSecret;
@@ -209,7 +215,11 @@ function getRequest(tripId: string, cookie: string): Request {
 function jsonRequest(url: string, cookie: string, body: unknown, method = "POST"): Request {
   return new Request(url, {
     method,
-    headers: { "content-type": "application/json", cookie },
+    headers: {
+      "content-type": "application/json",
+      cookie,
+      "x-vercel-forwarded-for": "203.0.113.42",
+    },
     body: JSON.stringify(body),
   });
 }

@@ -8,6 +8,7 @@ import {
   createDbVersionedTripService,
   createDemoCopilotModelDependencies,
   createInMemoryAnonymousTurnCounter,
+  createInMemoryCopilotIpRateLimiter,
   createInMemoryCompletionJobService,
   createInMemoryKnowledgeService,
   createInMemoryHumanTaskService,
@@ -16,12 +17,15 @@ import {
   createModelCompleteDay,
   createQStashCompletionQueue,
   createUpstashAnonymousTurnCounter,
+  createUpstashCopilotIpRateLimiter,
   resolveQStashCompletionQueueConfig,
   resolveUpstashAnonymousTurnCounterConfig,
+  resolveUpstashCopilotIpRateLimiterConfig,
   resolveDatabaseAdapter,
   resolveRuntimeMode,
   type AgentTraceService,
   type AnonymousTurnCounter,
+  type CopilotIpRateLimiter,
   type CompleteDay,
   type CompletionJobService,
   type CompletionQueue,
@@ -41,6 +45,7 @@ type WebServerServices = {
   completionQueue?: CompletionQueue;
   completionDay?: CompleteDay;
   anonymousTurnCounter?: AnonymousTurnCounter;
+  copilotIpRateLimiter?: CopilotIpRateLimiter;
 };
 
 const store = globalThis as typeof globalThis & {
@@ -99,6 +104,7 @@ export function createWebServerServices(environment: Environment): WebServerServ
       tripService,
       completionJobService: createInMemoryCompletionJobService(tripService),
       anonymousTurnCounter: createInMemoryAnonymousTurnCounter(),
+      copilotIpRateLimiter: createInMemoryCopilotIpRateLimiter(),
     };
   }
 
@@ -108,6 +114,7 @@ export function createWebServerServices(environment: Environment): WebServerServ
   const traceService = createDbAgentTraceService(db);
   const completionQueue = resolveCompletionQueue(environment);
   const anonymousTurnCounter = resolveAnonymousTurnCounter(environment);
+  const copilotIpRateLimiter = resolveCopilotIpRateLimiter(environment);
   return {
     humanTaskService: createDbHumanTaskService(db),
     knowledgeService: createDbKnowledgeService(db),
@@ -116,8 +123,17 @@ export function createWebServerServices(environment: Environment): WebServerServ
     completionJobService: createDbCompletionJobService(db),
     ...(completionQueue ? { completionQueue } : {}),
     ...(anonymousTurnCounter ? { anonymousTurnCounter } : {}),
+    ...(copilotIpRateLimiter ? { copilotIpRateLimiter } : {}),
     completionDay: createModelCompleteDay({ environment, traceService }),
   };
+}
+
+function resolveCopilotIpRateLimiter(environment: Environment): CopilotIpRateLimiter | undefined {
+  try {
+    return createUpstashCopilotIpRateLimiter(resolveUpstashCopilotIpRateLimiterConfig(environment));
+  } catch {
+    return undefined;
+  }
 }
 
 function resolveAnonymousTurnCounter(environment: Environment): AnonymousTurnCounter | undefined {
@@ -152,6 +168,10 @@ function getWebServerServices(environment: Environment): WebServerServices {
 export function setTestWebServerServices(services: WebServerServices | null): void {
   if (services) store.__visepandaTestServices = services;
   else delete store.__visepandaTestServices;
+}
+
+export function getCopilotIpRateLimiter(): CopilotIpRateLimiter | undefined {
+  return getWebServerServices(process.env).copilotIpRateLimiter;
 }
 
 export function getCompletionCallbackRuntime() {
