@@ -65,6 +65,22 @@ export const GenerationProgressSchema = z.object({
   error: z.string().nullable().default(null),
 });
 
+export const AnonymousTurnUsageSchema = z
+  .object({
+    completedTurns: z.number().int().nonnegative(),
+    limit: z.number().int().positive(),
+    remaining: z.number().int().nonnegative(),
+  })
+  .superRefine((usage, ctx) => {
+    if (usage.remaining !== Math.max(0, usage.limit - usage.completedTurns)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["remaining"],
+        message: "remaining must equal limit minus completedTurns",
+      });
+    }
+  });
+
 export const CompletionJobStateSchema = z.enum([
   "queued",
   "running",
@@ -113,6 +129,7 @@ export function canTransitionCompletionJob(
 export type CompletionJobState = z.infer<typeof CompletionJobStateSchema>;
 export type CompletionJob = z.infer<typeof CompletionJobSchema>;
 export type CompletionJobRetryInput = z.infer<typeof CompletionJobRetryInputSchema>;
+export type AnonymousTurnUsage = z.infer<typeof AnonymousTurnUsageSchema>;
 
 export const CopilotEnvelopeSchema = z
   .object({

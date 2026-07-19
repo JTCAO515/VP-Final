@@ -46,6 +46,14 @@ modules yet.
 - The deployed DEMO-01 path is dialogue-only. It rejects Trip actions, tools, commerce, Human Help,
   and citations before any state-changing branch can run. Real provider evidence remains blocked on
   OA-005 and is not claimed by this repository change.
+- Anonymous Copilot access uses a server-owned turn-counter interface keyed only by a SHA-256 digest
+  of the verified signed anonymous id. The Upstash adapter atomically reserves one of the configured
+  slots (three by default), counts only successfully completed turns, releases model failures, and
+  expires inactive counters after 30 days. A per-lease completion marker makes an ambiguous HTTP
+  response safe to retry once without double-counting. A completed limit and capacity temporarily
+  held by in-flight requests are distinct errors, so concurrency cannot create a false registration
+  claim. Authenticated users bypass this anonymous-only control. Missing Redis configuration fails
+  closed under OA-012; only tests and explicit `local-demo` use the injected memory reference.
 - Knowledge, Human Task, and Telemetry routers require a service selected by the composition root;
   omitted capabilities return typed `SERVICE_UNAVAILABLE` and never construct memory internally.
 - The knowledge bulk-import adapter is durable-only. It validates the fixed six-city CSV at the trust
@@ -129,6 +137,9 @@ distinguish its own previous partial effect from a later unrelated Trip edit.
 - Routers MUST NOT import a memory service factory or select an adapter. Tests and composition roots
   inject services explicitly; an omitted optional capability fails closed.
 - Public request identity comes only from verified session context or the signed anonymous cookie.
+- Anonymous turn limits MUST reserve capacity atomically before generation and MUST NOT trust a body,
+  browser counter, or raw anonymous identifier. A blocked request cannot reach the model. A failed
+  model request releases its reservation and does not consume a completed turn.
 - P0-03 introduces the shared `RequestIdentity` context for verified Supabase sessions or signed
   anonymous sessions. P0-04 consumes it on every Trip owner route.
 - [ADR-0005](../adr/ADR-0005-runtime-modes-and-production-adapter-ownership.md) freezes explicit modes, single durable production owners, and the prohibition on implicit production memory fallback.
@@ -141,6 +152,9 @@ distinguish its own previous partial effect from a later unrelated Trip edit.
   writers; consumer wiring must remain non-blocking and use the configured 30-day deadline.
 - OA-011 remains the release gate for QStash token, signing keys, callback URL, and one sanitized
   signed-delivery observation. Until then deployed completion returns an honest unavailable state.
+- OA-012 remains the release gate for the Upstash Redis REST endpoint/token and one sanitized
+  three-success/one-blocked observation. Until then anonymous Copilot access returns an honest 503;
+  authenticated Copilot access does not depend on this anonymous-only counter.
 
 ## Verification
 

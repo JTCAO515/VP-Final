@@ -43,6 +43,16 @@ export {
 export { createInMemoryAgentTraceService, normalizeAgentFailure } from "./modules/trace/service.js";
 export { createInMemoryCompletionJobService } from "./modules/copilot/completionJobService.js";
 export {
+  ANONYMOUS_TURN_TTL_SECONDS,
+  DEFAULT_ANONYMOUS_TURN_LIMIT,
+  AnonymousTurnCapacityReservedError,
+  AnonymousTurnControlUnavailableError,
+  AnonymousTurnLimitExceededError,
+  createInMemoryAnonymousTurnCounter,
+  createUpstashAnonymousTurnCounter,
+  resolveUpstashAnonymousTurnCounterConfig,
+} from "./modules/copilot/anonymousTurnCounter.js";
+export {
   CompletionDeliverySchema,
   CompletionQueueUnavailableError,
   createQStashCompletionQueue,
@@ -75,6 +85,12 @@ export {
 export type { RequestIdentity } from "./context.js";
 export type { AdapterAvailability, RuntimeMode, RuntimeResolution } from "./runtime/runtimeMode.js";
 export type { KnowledgeService } from "./modules/knowledge/service.js";
+export type {
+  AnonymousTurnAdmission,
+  AnonymousTurnCounter,
+  AnonymousTurnReservation,
+  UpstashAnonymousTurnCounterConfig,
+} from "./modules/copilot/anonymousTurnCounter.js";
 export type {
   ClaimedCompletionJob,
   CompletionJobService,

@@ -1,7 +1,13 @@
 import * as React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { attachTripToLatestAssistant, CopilotShell, previewTripDays, progressLabel } from "./shell";
+import {
+  anonymousTurnNotice,
+  attachTripToLatestAssistant,
+  CopilotShell,
+  previewTripDays,
+  progressLabel,
+} from "./shell";
 
 const completedTrip = {
   id: "a0a00000-0000-4000-8000-000000000001",
@@ -81,6 +87,27 @@ describe("previewTripDays", () => {
     expect(progressLabel(progress("completed"), false)).toBe("Answer received");
     expect(progressLabel(progress("failed"), false)).toBe("Request failed");
     expect(progressLabel(progress("failed"), true)).toBe("Details need attention");
+  });
+
+  it("shows the account warning only after all anonymous turns are complete", () => {
+    expect(anonymousTurnNotice({ completedTurns: 2, limit: 3, remaining: 1 }, false)).toBeNull();
+    expect(anonymousTurnNotice({ completedTurns: 3, limit: 3, remaining: 0 }, false)).toEqual({
+      title: "Your next question needs an account.",
+      detail:
+        "You have used all 3 anonymous Copilot turns. Create an account or sign in before you continue.",
+    });
+  });
+
+  it("states that a blocked fourth question never reached a model", () => {
+    expect(anonymousTurnNotice({ completedTurns: 3, limit: 3, remaining: 0 }, true)).toEqual({
+      title: "Your anonymous preview is complete.",
+      detail:
+        "Create an account or sign in before asking another question. Your blocked question was not sent to a model.",
+    });
+    expect(anonymousTurnNotice(null, true)).toEqual({
+      title: "Sign in to continue.",
+      detail: "This anonymous question was blocked before it reached a model.",
+    });
   });
 });
 

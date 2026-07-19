@@ -1,5 +1,10 @@
 import { CopilotEnvelopeSchema } from "@visepanda/domain";
-import { TripVersionConflictError } from "@visepanda/app-server";
+import {
+  AnonymousTurnCapacityReservedError,
+  AnonymousTurnControlUnavailableError,
+  AnonymousTurnLimitExceededError,
+  TripVersionConflictError,
+} from "@visepanda/app-server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getServerCaller } from "../_server";
@@ -36,6 +41,7 @@ export async function POST(request: Request) {
         trip: result.trip,
         version: result.version,
         trace: result.trace,
+        anonymousUsage: result.anonymousUsage,
         progress: {
           status: emptyDays > 0 ? "skeleton" : "completed",
           completedDays: (result.trip?.days.length ?? 0) - emptyDays,
@@ -47,6 +53,52 @@ export async function POST(request: Request) {
       cookieResponse,
     );
   } catch (error) {
+    const capacityReserved = findError(error, AnonymousTurnCapacityReservedError);
+    if (capacityReserved) {
+      return applyIdentityCookies(
+        NextResponse.json(
+          {
+            ok: false,
+            code: capacityReserved.code,
+            error: "Another anonymous Copilot question is still finishing. Try again shortly.",
+            anonymousUsage: capacityReserved.usage,
+          },
+          { status: 409 },
+        ),
+        cookieResponse,
+      );
+    }
+    const turnLimit = findError(error, AnonymousTurnLimitExceededError);
+    if (turnLimit) {
+      return applyIdentityCookies(
+        NextResponse.json(
+          {
+            ok: false,
+            code: turnLimit.code,
+            error: "Sign in to continue using the Copilot.",
+            anonymousUsage: turnLimit.usage,
+          },
+          { status: 403 },
+        ),
+        cookieResponse,
+      );
+    }
+    const turnControl = findError(error, AnonymousTurnControlUnavailableError);
+    if (turnControl) {
+      console.warn("anonymous_turn_control_unavailable", { reason: turnControl.reason });
+      return applyIdentityCookies(
+        NextResponse.json(
+          {
+            ok: false,
+            code: turnControl.code,
+            error:
+              "Anonymous Copilot access is temporarily unavailable. Sign in or try again later.",
+          },
+          { status: 503 },
+        ),
+        cookieResponse,
+      );
+    }
     const unavailable = runtimeUnavailableResponse(error);
     if (unavailable) return applyIdentityCookies(unavailable, cookieResponse);
     const modelFailure = findModelFailure(error);
@@ -85,6 +137,17 @@ export async function POST(request: Request) {
       cookieResponse,
     );
   }
+}
+
+function findError<T extends Error>(
+  error: unknown,
+  errorType: abstract new (...args: never[]) => T,
+): T | null {
+  if (error instanceof errorType) return error;
+  if (error && typeof error === "object" && "cause" in error) {
+    return findError((error as { cause?: unknown }).cause, errorType);
+  }
+  return null;
 }
 
 function findTripConflict(error: unknown): TripVersionConflictError | null {

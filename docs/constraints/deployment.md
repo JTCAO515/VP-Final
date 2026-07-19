@@ -28,6 +28,12 @@ Status: active
   `QSTASH_NEXT_SIGNING_KEY`, and `COPILOT_COMPLETION_CALLBACK_URL`. The callback URL MUST be the exact
   public route used during signature verification. Partial or missing configuration keeps completion
   unavailable; it MUST NOT select process-local delivery or disable signature checks.
+- Anonymous Copilot turn control MUST use the official Upstash Redis client with server-only
+  `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN`. `VISEPANDA_ANON_TURN_LIMIT` is optional and
+  defaults to `3`; invalid values fail closed. Missing Redis configuration keeps anonymous Copilot
+  unavailable and MUST NOT select a process-local counter outside tests or explicit `local-demo`.
+  Reservations and idempotent completion markers MUST share the same 30-day key TTL; an in-flight
+  capacity response MUST remain distinct from a completed-limit registration wall.
 - The completion callback and QStash delivery use a five-minute request budget. The ten-minute job
   claim lease MUST remain longer than that budget so a still-running callback cannot be reclaimed by
   an overlapping delivery.

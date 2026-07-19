@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { appRouter } from "../../router.js";
 import { createVersionedInMemoryTripService } from "../trip/versionedService.js";
 import { createInMemoryCompletionJobService } from "./completionJobService.js";
+import { createInMemoryAnonymousTurnCounter } from "./anonymousTurnCounter.js";
 import type { CompletionQueue } from "./completionQueue.js";
 
 const identity = { kind: "anonymous" as const, anonId: "anon-beijing" };
@@ -11,6 +12,7 @@ describe("copilotRouter", () => {
     const caller = appRouter.createCaller({
       tripService: createVersionedInMemoryTripService(),
       identity,
+      anonymousTurnCounter: createInMemoryAnonymousTurnCounter(),
     });
 
     const result = await caller.copilot.run({
@@ -19,6 +21,77 @@ describe("copilotRouter", () => {
 
     expect(result.trip?.title).toBe("Beijing first-timer");
     expect(result.trace.retrievedFactIds).toEqual([]);
+    expect(result.anonymousUsage).toEqual({ completedTurns: 1, limit: 3, remaining: 2 });
+  });
+
+  it("rejects an anonymous fourth turn before model generation", async () => {
+    const anonymousTurnCounter = createInMemoryAnonymousTurnCounter({ limit: 3 });
+    let generationCalls = 0;
+    const caller = appRouter.createCaller({
+      tripService: createVersionedInMemoryTripService(),
+      identity,
+      anonymousTurnCounter,
+      copilotModelDependencies: {
+        routeIntent: () => "chat_only",
+        generateEnvelope: () => {
+          generationCalls += 1;
+          return {
+            intent: "chat_only",
+            message: { headline: "Answer", body: "Useful answer", highlights: [] },
+            citations: [],
+          };
+        },
+      },
+    });
+
+    await caller.copilot.run({ message: "First" });
+    await caller.copilot.run({ message: "Second" });
+    const third = await caller.copilot.run({ message: "Third" });
+    expect(third.anonymousUsage).toEqual({ completedTurns: 3, limit: 3, remaining: 0 });
+
+    await expect(caller.copilot.run({ message: "Fourth" })).rejects.toMatchObject({
+      cause: expect.objectContaining({ code: "ANONYMOUS_TURN_LIMIT_REACHED" }),
+    });
+    expect(generationCalls).toBe(3);
+  });
+
+  it("does not require the anonymous counter for an authenticated traveler", async () => {
+    const caller = appRouter.createCaller({
+      tripService: createVersionedInMemoryTripService(),
+      identity: { kind: "authenticated", userId: crypto.randomUUID() },
+    });
+
+    await expect(caller.copilot.run({ message: "Hello" })).resolves.toMatchObject({
+      anonymousUsage: null,
+    });
+  });
+
+  it("releases the anonymous reservation when model generation fails", async () => {
+    let attempts = 0;
+    const caller = appRouter.createCaller({
+      tripService: createVersionedInMemoryTripService(),
+      identity,
+      anonymousTurnCounter: createInMemoryAnonymousTurnCounter({ limit: 1 }),
+      copilotModelDependencies: {
+        routeIntent: () => "chat_only",
+        generateEnvelope: () => {
+          attempts += 1;
+          if (attempts === 1) throw new Error("provider unavailable");
+          return {
+            intent: "chat_only",
+            message: { headline: "Recovered", body: "Retry succeeded", highlights: [] },
+            citations: [],
+          };
+        },
+      },
+    });
+
+    await expect(caller.copilot.run({ message: "First attempt" })).rejects.toThrow(
+      "provider unavailable",
+    );
+    await expect(caller.copilot.run({ message: "Retry" })).resolves.toMatchObject({
+      anonymousUsage: { completedTurns: 1, limit: 1, remaining: 0 },
+    });
   });
 
   it("queues second-pass completion through injected durable services", async () => {
