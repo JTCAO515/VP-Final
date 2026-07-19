@@ -48,6 +48,10 @@ modules yet.
   OA-005 and is not claimed by this repository change.
 - Knowledge, Human Task, and Telemetry routers require a service selected by the composition root;
   omitted capabilities return typed `SERVICE_UNAVAILABLE` and never construct memory internally.
+- The knowledge bulk-import adapter is durable-only. It validates the fixed six-city CSV at the trust
+  boundary, dry-runs against database identities, commits only a wholly valid batch in one transaction,
+  and records private editorial provenance separately from public fact reads. `local-demo` and test
+  compositions do not pretend a persistent import occurred.
 - Human Task creation accepts only a trusted authenticated or signed-anonymous identity, a UUID
   idempotency key, and the minimized controlled-preview request. The Postgres adapter serializes the
   daily Shanghai capacity check, stores exactly one owner, and replays a successful retry without a
@@ -105,6 +109,10 @@ distinguish its own previous partial effect from a later unrelated Trip edit.
 - POI fact review is accepted only through the authenticated Ops endpoint. Reviewer identity comes
   from server-side access; fact promotion and `knowledge.fact.review.completed` audit append commit
   atomically. Public tRPC callers cannot promote a fact.
+- Bulk import never promotes an input row: imported facts are drafts even when their collection record
+  has been independently reviewed. The explicit fact review transition remains the only publication
+  path. A repeated collection row with the same digest is a no-op; a reused row id or fact id with
+  different content aborts the batch rather than overwriting evidence.
 - Existing Trip persistence receives only a validated Patch plus trusted identity, expected version,
   and event source; creation receives the initial validated Trip.
 - A module may not import another module's tables.

@@ -10,6 +10,10 @@ export { appRouter } from "./router.js";
 export type { AppRouter } from "./router.js";
 export { createDb } from "./db/client.js";
 export { createDbKnowledgeService } from "./db/knowledgeService.js";
+export {
+  createDbKnowledgeBulkImportService,
+  KnowledgeImportValidationError,
+} from "./db/knowledgeBulkImportService.js";
 export { createDbHumanTaskService } from "./db/humanTaskService.js";
 export { createDbAgentTraceService } from "./db/agentTraceService.js";
 export { createDbOpsAuthorizationService } from "./db/opsAuthorizationService.js";
@@ -84,6 +88,10 @@ export type {
   CompleteDay,
   CompletionProcessResult,
 } from "./modules/copilot/completionProcessor.js";
+export type {
+  KnowledgeBulkImportService,
+  KnowledgeImportReport,
+} from "./db/knowledgeBulkImportService.js";
 export type {
   CreateHumanTaskCommand,
   HumanTaskIdentity,

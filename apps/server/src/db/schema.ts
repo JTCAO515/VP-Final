@@ -448,6 +448,48 @@ export const poiFacts = pgTable(
   }),
 );
 
+// Editorial identity and notes never belong on the public POI-fact read model.
+// Keep them in a private, one-to-one audit relation instead.
+export const poiFactEditorialAudit = pgTable(
+  "poi_fact_editorial_audit",
+  {
+    factId: uuid("fact_id")
+      .primaryKey()
+      .references(() => poiFacts.id, { onDelete: "cascade" }),
+    collectionRowId: text("collection_row_id").notNull().unique(),
+    contentDigest: text("content_digest").notNull(),
+    collectionStatus: text("collection_status").notNull(),
+    researcher: text("researcher").notNull(),
+    reviewer: text("reviewer"),
+    evidenceReviewedAt: timestamp("evidence_reviewed_at", { withTimezone: true }),
+    reviewNotes: text("review_notes"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    statusCheck: check(
+      "poi_fact_editorial_audit_collection_status_check",
+      sql`${table.collectionStatus} in ('researched', 'reviewed')`,
+    ),
+    digestCheck: check(
+      "poi_fact_editorial_audit_content_digest_check",
+      sql`char_length(${table.contentDigest}) = 64`,
+    ),
+    reviewedFieldsCheck: check(
+      "poi_fact_editorial_audit_reviewed_fields_check",
+      sql`(
+        ${table.collectionStatus} = 'researched'
+        and ${table.reviewer} is null
+        and ${table.evidenceReviewedAt} is null
+      ) or (
+        ${table.collectionStatus} = 'reviewed'
+        and ${table.reviewer} is not null
+        and ${table.evidenceReviewedAt} is not null
+        and lower(${table.reviewer}) <> lower(${table.researcher})
+      )`,
+    ),
+  }),
+);
+
 export const knowledgeGaps = pgTable(
   "knowledge_gaps",
   {

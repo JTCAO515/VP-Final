@@ -28,6 +28,22 @@ Explore, and SEO, so provenance and freshness are release-critical.
 7. Link recurring unanswered questions to knowledge gaps and mark resolved only when evidence exists.
 8. Sample the resulting Explore/guide/Copilot presentation for misleading wording.
 
+## Bulk Collection Import
+
+1. Start from the header-only six-city collection template. Do not add columns or use spreadsheet
+   formulas that can silently change JSON/date fields.
+2. Give every importable row a unique `collection_row_id`, a stable POI source identity, researcher
+   handle, typed source metadata, and a JSON-object fact value. `reviewed` rows additionally require
+   a separate reviewer handle and real `verified_at` time. Do not use import time as verification time.
+3. Submit `mode: dry-run` through the protected Ops endpoint and resolve every reported error. A
+   `missing`, `conflict`, or `rejected` collection row is intentionally skipped, not proof of a fact.
+4. Submit the identical corrected file with `mode: commit`. The response must report zero errors;
+   inspect created, merged, skipped, and duplicate counts. Save only the sanitized report, never raw
+   research notes in public issue comments.
+5. Confirm newly imported facts remain drafts. Use the normal explicit review action before expecting
+   Copilot, Explore, or SEO to consume a fact. A repeated unchanged upload must report duplicates and
+   create no new records.
+
 ## Verification
 
 - No reviewed fact lacks an eligible source class, locator, evidence summary, confidence, or real
