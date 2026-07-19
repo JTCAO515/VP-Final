@@ -116,6 +116,10 @@ medical records, or unnecessary location history.
   writes require `task.write`; the server stores the note on the private task and atomically appends
   an audit event containing only actor, task id, timestamp, and whether a note exists. The audit event
   must not duplicate the note, request description, contact details, cookie, signature, or credential.
+- P0-16 private evidence may be appended only after `done` or `cancelled` while the retention deadline
+  is current. Contact data is redacted before storage; credential, OTP, payment-card, and
+  travel-document content is rejected. Evidence follows task deletion and never enters telemetry or
+  public responses. An evidence-derived gap is a sanitized open draft, not a fact or publication.
 - Routine telemetry must contain event metadata only, not task descriptions, contacts, transcripts, or
   payment evidence.
 - Durable task data carries a 90-day retention deadline only after `done` or `cancelled`; a restricted
@@ -161,5 +165,7 @@ owner, and a new review date.
 - 2026-07-20: P0-15 authorized task detail, minimized internal-note persistence, PII-free note audit,
   and controlled-preview triage UI implemented for review. Quote, payment, assignment, and paid
   fulfilment controls remain unavailable.
+- 2026-07-20: P0-16 private terminal evidence and sanitized evidence-to-gap proposal boundary
+  implemented for review. No transcript is public and no fact is automatically created or reviewed.
 - Required before a public paid launch: payment/entity/legal decision, verified provider integration,
   durable task controls, public-copy implementation, and a fresh policy review.

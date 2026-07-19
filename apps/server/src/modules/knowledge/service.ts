@@ -6,6 +6,7 @@ import {
   KnowledgeGapSchema,
   PoiFactEvidenceSchema,
   PoiSchema,
+  sanitizeEvidenceDerivedGapPattern,
   resolvePoiFactReview,
   updatePoiFact,
   type KnowledgeGap,
@@ -50,6 +51,13 @@ export type KnowledgeService = {
   }): Promise<PoiFact | null>;
   deprecateFact(input: { factId: string }): Promise<PoiFact | null>;
   recordGap(input: { question: string; city?: string }): Promise<KnowledgeGap>;
+  recordEvidenceGap(input: {
+    question: string;
+    city: string;
+    actorId: string;
+    taskId: string;
+    evidenceId: string;
+  }): Promise<KnowledgeGap>;
   listGaps(input?: { status?: KnowledgeGap["status"] }): Promise<KnowledgeGap[]>;
   updateGap(input: {
     gapId: string;
@@ -192,6 +200,12 @@ export function createInMemoryKnowledgeService(
       });
       gaps = [gap, ...gaps];
       return gap;
+    },
+    async recordEvidenceGap(input) {
+      return this.recordGap({
+        question: sanitizeEvidenceDerivedGapPattern(input.question),
+        city: input.city,
+      });
     },
     async listGaps(input = {}) {
       return gaps

@@ -4,12 +4,17 @@ import {
   HumanTaskTransitionCommandSchema,
   HumanTaskTransitionSchema,
   HumanTaskUpdateSchema,
+  HumanTaskEvidenceSchema,
+  isHumanTaskEvidenceWindowCurrent,
+  sanitizeHumanTaskEvidence,
   createHumanTask,
   transitionHumanTask,
   type HumanTask,
   type HumanTaskCreate,
   type HumanTaskStatus,
   type HumanTaskTransition,
+  type HumanTaskEvidence,
+  type HumanTaskEvidenceInput,
 } from "@visepanda/domain";
 import type { RequestIdentity } from "../../context.js";
 import type { OpsAccess } from "../opsAuthorization/service.js";
@@ -39,6 +44,12 @@ export type UpdateHumanTaskNoteCommand = {
   note: string | null;
 };
 
+export type AppendHumanTaskEvidenceCommand = {
+  taskId: string;
+  actor: OpsAccess;
+  evidence: HumanTaskEvidenceInput;
+};
+
 export type HumanTaskTransitionResult = {
   task: HumanTask;
   transition: HumanTaskTransition;
@@ -50,6 +61,8 @@ export type HumanTaskService = {
   listForOps(): Promise<HumanTask[]>;
   getForOps(taskId: string, actor: OpsAccess): Promise<HumanTask>;
   updateOperatorNote(input: UpdateHumanTaskNoteCommand): Promise<HumanTask>;
+  appendEvidence(input: AppendHumanTaskEvidenceCommand): Promise<HumanTaskEvidence>;
+  listEvidence(taskId: string, actor: OpsAccess): Promise<HumanTaskEvidence[]>;
   transition(input: TransitionHumanTaskCommand): Promise<HumanTaskTransitionResult>;
   listTransitions(taskId: string, actor: OpsAccess): Promise<HumanTaskTransition[]>;
 };
@@ -108,6 +121,15 @@ export class HumanTaskTransitionPolicyError extends Error {
   }
 }
 
+export class HumanTaskEvidencePolicyError extends Error {
+  readonly code = "HUMAN_TASK_EVIDENCE_POLICY";
+
+  constructor() {
+    super("Human Task evidence is available only for a current done or cancelled task.");
+    this.name = "HumanTaskEvidencePolicyError";
+  }
+}
+
 type OwnedTask = {
   task: HumanTask;
   identity: HumanTaskIdentity;
@@ -118,6 +140,7 @@ export function createInMemoryHumanTaskService(options?: { now?: () => Date }): 
   const now = options?.now ?? (() => new Date());
   let records: OwnedTask[] = [];
   const transitions: HumanTaskTransition[] = [];
+  const evidenceRecords: HumanTaskEvidence[] = [];
 
   return {
     async create(input) {
@@ -175,6 +198,32 @@ export function createInMemoryHumanTaskService(options?: { now?: () => Date }): 
       });
       records[index] = { ...record, task };
       return task;
+    },
+    async appendEvidence(input) {
+      assertTaskPermission(input.actor, "task.write");
+      const record = records.find((entry) => entry.task.id === input.taskId);
+      if (!record || !isHumanTaskEvidenceWindowCurrent(record.task, now())) {
+        throw new HumanTaskEvidencePolicyError();
+      }
+      const sanitized = sanitizeHumanTaskEvidence(input.evidence);
+      const evidence = HumanTaskEvidenceSchema.parse({
+        id: crypto.randomUUID(),
+        task_id: input.taskId,
+        kind: input.evidence.kind,
+        content: sanitized.content,
+        redaction_classes: sanitized.redactionClasses,
+        actor_id: input.actor.userId,
+        created_at: now().toISOString(),
+      });
+      evidenceRecords.push(evidence);
+      return evidence;
+    },
+    async listEvidence(taskId, actor) {
+      assertTaskPermission(actor, "task.contact.read");
+      const record = records.find((entry) => entry.task.id === taskId);
+      if (!record) throw new HumanTaskNotFoundError();
+      if (!isHumanTaskEvidenceWindowCurrent(record.task, now())) return [];
+      return evidenceRecords.filter((evidence) => evidence.task_id === taskId);
     },
     async transition(input) {
       const index = records.findIndex((record) => record.task.id === input.taskId);

@@ -2,18 +2,29 @@ import {
   HumanTaskSchema,
   HumanTaskTransitionSchema,
   HumanTaskUpdateSchema,
+  HumanTaskEvidenceSchema,
+  isHumanTaskEvidenceWindowCurrent,
+  sanitizeHumanTaskEvidence,
   type HumanTask,
   type HumanTaskTransition,
+  type HumanTaskEvidence,
 } from "@visepanda/domain";
 import { and, asc, count, desc, eq, gte, isNull, lt, sql } from "drizzle-orm";
 import type { Db } from "./client.js";
-import { humanTaskTransitions, humanTasks, opsAuditEvents, users } from "./schema.js";
+import {
+  humanTaskEvidence,
+  humanTaskTransitions,
+  humanTasks,
+  opsAuditEvents,
+  users,
+} from "./schema.js";
 import {
   HUMAN_TASK_DAILY_CAPACITY,
   HumanTaskCapacityError,
   HumanTaskIdempotencyConflictError,
   HumanTaskNotFoundError,
   HumanTaskTransitionForbiddenError,
+  HumanTaskEvidencePolicyError,
   chinaDayKey,
   prepareHumanTaskTransition,
   validateHumanTaskPreviewRequest,
@@ -125,6 +136,59 @@ export function createDbHumanTaskService(db: Db, options?: { now?: () => Date })
         });
         return taskFromRow(row);
       });
+    },
+
+    async appendEvidence(input) {
+      if (!input.actor.permissions.includes("task.write")) {
+        throw new HumanTaskTransitionForbiddenError();
+      }
+      const sanitized = sanitizeHumanTaskEvidence(input.evidence);
+      return db.transaction(async (tx) => {
+        const [task] = await tx
+          .select()
+          .from(humanTasks)
+          .where(eq(humanTasks.id, input.taskId))
+          .limit(1);
+        if (!task || !isHumanTaskEvidenceWindowCurrent(taskFromRow(task), now())) {
+          throw new HumanTaskEvidencePolicyError();
+        }
+        const [row] = await tx
+          .insert(humanTaskEvidence)
+          .values({
+            taskId: input.taskId,
+            kind: input.evidence.kind,
+            content: sanitized.content,
+            redactionClassesJsonb: sanitized.redactionClasses,
+            actorId: input.actor.userId,
+            createdAt: now(),
+          })
+          .returning();
+        if (!row) throw new Error("Human Task evidence insert failed.");
+        await tx.insert(opsAuditEvents).values({
+          actorId: input.actor.userId,
+          action: "human_task.evidence.appended",
+          targetType: "human_task_evidence",
+          targetId: row.id,
+          metadataJsonb: { taskId: input.taskId, kind: input.evidence.kind },
+        });
+        return evidenceFromRow(row);
+      });
+    },
+
+    async listEvidence(taskId, actor) {
+      if (!actor.permissions.includes("task.contact.read")) {
+        throw new HumanTaskTransitionForbiddenError();
+      }
+      const [task] = await db.select().from(humanTasks).where(eq(humanTasks.id, taskId)).limit(1);
+      if (!task) throw new HumanTaskNotFoundError();
+      if (!isHumanTaskEvidenceWindowCurrent(taskFromRow(task), now())) return [];
+      return (
+        await db
+          .select()
+          .from(humanTaskEvidence)
+          .where(eq(humanTaskEvidence.taskId, taskId))
+          .orderBy(asc(humanTaskEvidence.createdAt))
+      ).map(evidenceFromRow);
     },
 
     async transition(input) {
@@ -254,6 +318,18 @@ function transitionFromRow(row: typeof humanTaskTransitions.$inferSelect): Human
     to_status: row.toStatus,
     actor_id: row.actorId,
     reason: row.reason,
+    created_at: row.createdAt.toISOString(),
+  });
+}
+
+function evidenceFromRow(row: typeof humanTaskEvidence.$inferSelect): HumanTaskEvidence {
+  return HumanTaskEvidenceSchema.parse({
+    id: row.id,
+    task_id: row.taskId,
+    kind: row.kind,
+    content: row.content,
+    redaction_classes: row.redactionClassesJsonb,
+    actor_id: row.actorId,
     created_at: row.createdAt.toISOString(),
   });
 }

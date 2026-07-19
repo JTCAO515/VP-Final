@@ -64,6 +64,10 @@ modules yet.
   commits the note update and a PII-free `human_task.note.updated` audit event in one transaction.
   The audit metadata records only whether a note is present, never the note, request description,
   contact details, cookie, signature, or credential.
+- P0-16 adds append-only private evidence for current terminal Human Tasks. The service sanitizes
+  contact data before persistence, rejects high-risk secrets/documents, and atomically appends a
+  content-free audit event. A separate KnowledgeService transaction creates only a normalized open
+  gap plus audit; it cannot create, review, or publish a POI fact.
 - The runtime resolver and router injection boundary are implemented and tested, but Web/Ops
   composition migration remains in P0-06c and P0-06d. Therefore no deployed durable-path claim is
   made yet.

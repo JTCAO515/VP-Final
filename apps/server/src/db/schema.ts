@@ -6,6 +6,7 @@ import {
   integer,
   jsonb,
   numeric,
+  pgSchema,
   pgTable,
   text,
   timestamp,
@@ -13,6 +14,11 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
+
+const authSchema = pgSchema("auth");
+export const authUsers = authSchema.table("users", {
+  id: uuid("id").primaryKey(),
+});
 
 export const users = pgTable("users", {
   id: uuid("id").primaryKey(),
@@ -22,9 +28,11 @@ export const users = pgTable("users", {
 });
 
 export const opsMemberships = pgTable("ops_memberships", {
-  userId: uuid("user_id").primaryKey(),
+  userId: uuid("user_id")
+    .primaryKey()
+    .references(() => authUsers.id, { onDelete: "cascade" }),
   role: text("role").notNull(),
-  createdBy: uuid("created_by"),
+  createdBy: uuid("created_by").references(() => authUsers.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
@@ -33,7 +41,9 @@ export const opsAuditEvents = pgTable(
   "ops_audit_events",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    actorId: uuid("actor_id").notNull(),
+    actorId: uuid("actor_id")
+      .notNull()
+      .references(() => authUsers.id, { onDelete: "restrict" }),
     action: text("action").notNull(),
     targetType: text("target_type").notNull(),
     targetId: text("target_id"),
@@ -676,7 +686,9 @@ export const humanTaskTransitions = pgTable(
       .references(() => humanTasks.id, { onDelete: "cascade" }),
     fromStatus: text("from_status").notNull(),
     toStatus: text("to_status").notNull(),
-    actorId: uuid("actor_id").notNull(),
+    actorId: uuid("actor_id")
+      .notNull()
+      .references(() => authUsers.id, { onDelete: "restrict" }),
     reason: text("reason").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
@@ -704,6 +716,38 @@ export const humanTaskTransitions = pgTable(
     reasonLengthCheck: check(
       "human_task_transitions_reason_length_check",
       sql`char_length(btrim(${table.reason})) between 10 and 500`,
+    ),
+  }),
+);
+
+export const humanTaskEvidence = pgTable(
+  "human_task_evidence",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    taskId: uuid("task_id")
+      .notNull()
+      .references(() => humanTasks.id, { onDelete: "cascade" }),
+    kind: text("kind").notNull(),
+    content: text("content").notNull(),
+    redactionClassesJsonb: jsonb("redaction_classes_jsonb").notNull().default([]),
+    actorId: uuid("actor_id")
+      .notNull()
+      .references(() => authUsers.id, { onDelete: "restrict" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    taskCreatedIdx: index("human_task_evidence_task_created_idx").on(table.taskId, table.createdAt),
+    kindCheck: check(
+      "human_task_evidence_kind_check",
+      sql`${table.kind} in ('outcome', 'transcript_excerpt')`,
+    ),
+    contentLengthCheck: check(
+      "human_task_evidence_content_length_check",
+      sql`char_length(btrim(${table.content})) between 10 and 4000`,
+    ),
+    redactionClassesCheck: check(
+      "human_task_evidence_redaction_classes_check",
+      sql`jsonb_typeof(${table.redactionClassesJsonb}) = 'array'`,
     ),
   }),
 );
@@ -801,11 +845,19 @@ export const humanTasksRelations = relations(humanTasks, ({ one, many }) => ({
     references: [users.id],
   }),
   transitions: many(humanTaskTransitions),
+  evidence: many(humanTaskEvidence),
 }));
 
 export const humanTaskTransitionsRelations = relations(humanTaskTransitions, ({ one }) => ({
   task: one(humanTasks, {
     fields: [humanTaskTransitions.taskId],
+    references: [humanTasks.id],
+  }),
+}));
+
+export const humanTaskEvidenceRelations = relations(humanTaskEvidence, ({ one }) => ({
+  task: one(humanTasks, {
+    fields: [humanTaskEvidence.taskId],
     references: [humanTasks.id],
   }),
 }));

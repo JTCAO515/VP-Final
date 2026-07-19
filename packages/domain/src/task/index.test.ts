@@ -7,6 +7,11 @@ import {
   createHumanTask,
   transitionHumanTask,
   updateHumanTask,
+  canAppendHumanTaskEvidence,
+  isHumanTaskEvidenceWindowCurrent,
+  sanitizeEvidenceDerivedGapPattern,
+  sanitizeHumanTaskEvidence,
+  SensitiveHumanTaskEvidenceError,
 } from "./index.js";
 
 describe("human task domain", () => {
@@ -125,5 +130,86 @@ describe("human task domain", () => {
     expect(() => transitionHumanTask(cancelled, "requested")).toThrow(
       InvalidHumanTaskTransitionError,
     );
+  });
+});
+
+describe("Human Task evidence", () => {
+  it("allows evidence only after a terminal outcome", () => {
+    expect(canAppendHumanTaskEvidence("done")).toBe(true);
+    expect(canAppendHumanTaskEvidence("cancelled")).toBe(true);
+    expect(canAppendHumanTaskEvidence("fulfilling")).toBe(false);
+    expect(canAppendHumanTaskEvidence("triaged")).toBe(false);
+  });
+
+  it("requires a current retention window for evidence access", () => {
+    const task = HumanTaskSchema.parse({
+      id: "task-terminal",
+      city: "Shanghai",
+      kind: "other",
+      description: "Record a minimum private outcome for this completed request.",
+      contact: "traveler@example.com",
+      status: "cancelled",
+      retention_expires_at: "2026-08-01T00:00:00.000Z",
+      created_at: "2026-07-01T00:00:00.000Z",
+      updated_at: "2026-07-01T00:00:00.000Z",
+    });
+    expect(isHumanTaskEvidenceWindowCurrent(task, new Date("2026-07-31T23:59:59.000Z"))).toBe(true);
+    expect(isHumanTaskEvidenceWindowCurrent(task, new Date("2026-08-01T00:00:00.000Z"))).toBe(
+      false,
+    );
+  });
+
+  it("redacts contact data before persistence", () => {
+    expect(
+      sanitizeHumanTaskEvidence({
+        kind: "transcript_excerpt",
+        content:
+          "Traveler a@example.com confirmed by phone +86 138 0013 8000 that the venue was closed.",
+      }),
+    ).toEqual({
+      content:
+        "Traveler [redacted email] confirmed by phone [redacted phone] that the venue was closed.",
+      redactionClasses: ["email", "phone"],
+    });
+  });
+
+  it("rejects credential and document-number evidence", () => {
+    expect(() =>
+      sanitizeHumanTaskEvidence({
+        kind: "outcome",
+        content: "The traveler shared an OTP that must never be retained here.",
+      }),
+    ).toThrow(SensitiveHumanTaskEvidenceError);
+
+    expect(() =>
+      sanitizeHumanTaskEvidence({
+        kind: "outcome",
+        content: "The traveler pasted 4111 1111 1111 1111 into the transcript.",
+      }),
+    ).toThrow(SensitiveHumanTaskEvidenceError);
+
+    for (const content of [
+      "Travel document E12345678 was copied into this private outcome.",
+      "The traveler pasted Amex 378282246310005 into this outcome.",
+      "The operator accidentally pasted sk-test_12345678901234567890 here.",
+    ]) {
+      expect(() => sanitizeHumanTaskEvidence({ kind: "outcome", content })).toThrow(
+        SensitiveHumanTaskEvidenceError,
+      );
+    }
+  });
+
+  it("sanitizes evidence-derived gaps and rejects named or document-specific patterns", () => {
+    expect(
+      sanitizeEvidenceDerivedGapPattern(
+        "Can traveler@example.com find an accessible entrance near +86 138 0013 8000?",
+      ),
+    ).toBe("can private email find an accessible entrance near private number");
+    expect(() =>
+      sanitizeEvidenceDerivedGapPattern("Can traveler John Smith find an accessible entrance?"),
+    ).toThrow(SensitiveHumanTaskEvidenceError);
+    expect(() =>
+      sanitizeEvidenceDerivedGapPattern("Can passport E12345678 be used for this booking?"),
+    ).toThrow(SensitiveHumanTaskEvidenceError);
   });
 });

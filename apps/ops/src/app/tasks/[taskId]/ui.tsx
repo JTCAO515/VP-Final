@@ -1,12 +1,20 @@
 "use client";
 
 import { useCallback, useEffect, useState, type FormEvent } from "react";
-import type { HumanTask, HumanTaskStatus, HumanTaskTransition } from "@visepanda/domain";
+import type {
+  HumanTask,
+  HumanTaskEvidence,
+  HumanTaskEvidenceKind,
+  HumanTaskStatus,
+  HumanTaskTransition,
+} from "@visepanda/domain";
 
 type TaskDetailResponse = {
   ok: true;
   task: HumanTask;
   transitions: HumanTaskTransition[];
+  evidence: HumanTaskEvidence[];
+  evidence_writable: boolean;
   allowed_transitions: HumanTaskStatus[];
 };
 
@@ -21,6 +29,11 @@ export function HumanTaskDetail({ taskId }: Readonly<{ taskId: string }>) {
   const [note, setNote] = useState("");
   const [reason, setReason] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<HumanTaskStatus | "">("");
+  const [evidenceKind, setEvidenceKind] = useState<HumanTaskEvidenceKind>("outcome");
+  const [evidenceContent, setEvidenceContent] = useState("");
+  const [gapEvidenceId, setGapEvidenceId] = useState("");
+  const [gapPattern, setGapPattern] = useState("");
+  const [gapConfirmation, setGapConfirmation] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const loadTask = useCallback(async () => {
@@ -37,6 +50,7 @@ export function HumanTaskDetail({ taskId }: Readonly<{ taskId: string }>) {
       setDetail(payload);
       setNote(payload.task.operator_note ?? "");
       setSelectedStatus(payload.allowed_transitions[0] ?? "");
+      setGapEvidenceId(payload.evidence[0]?.id ?? "");
       setLoadState("ready");
     } catch (loadError) {
       setError(
@@ -113,6 +127,55 @@ export function HumanTaskDetail({ taskId }: Readonly<{ taskId: string }>) {
     }
   }
 
+  async function appendEvidence(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setNoteState("saving");
+    setError(null);
+    try {
+      const response = await fetch(`/api/tasks/${encodeURIComponent(taskId)}`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ kind: evidenceKind, content: evidenceContent }),
+      });
+      const payload = (await response.json()) as { error?: string };
+      if (!response.ok) throw new Error(payload.error ?? "Evidence was not saved.");
+      setEvidenceContent("");
+      setNoteState("idle");
+      await loadTask();
+    } catch (saveError) {
+      setError(saveError instanceof Error ? saveError.message : "Evidence was not saved.");
+      setNoteState("error");
+    }
+  }
+
+  async function proposeGap(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!gapEvidenceId) return;
+    setTransitionState("saving");
+    setError(null);
+    setGapConfirmation(null);
+    try {
+      const response = await fetch(
+        `/api/tasks/${encodeURIComponent(taskId)}/evidence/${encodeURIComponent(gapEvidenceId)}/gap`,
+        {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ question_pattern: gapPattern }),
+        },
+      );
+      const payload = (await response.json()) as { error?: string };
+      if (!response.ok) throw new Error(payload.error ?? "Gap proposal was not created.");
+      setGapPattern("");
+      setGapConfirmation("Open knowledge-gap draft created for editorial review.");
+      setTransitionState("idle");
+    } catch (proposalError) {
+      setError(
+        proposalError instanceof Error ? proposalError.message : "Gap proposal was not created.",
+      );
+      setTransitionState("error");
+    }
+  }
+
   if (loadState === "loading") {
     return <section className="panel empty">Loading task detail...</section>;
   }
@@ -127,7 +190,13 @@ export function HumanTaskDetail({ taskId }: Readonly<{ taskId: string }>) {
     );
   }
 
-  const { task, transitions, allowed_transitions: allowedTransitions } = detail;
+  const {
+    task,
+    transitions,
+    evidence,
+    evidence_writable: evidenceWritable,
+    allowed_transitions: allowedTransitions,
+  } = detail;
 
   return (
     <div className="taskDetail">
@@ -208,6 +277,91 @@ export function HumanTaskDetail({ taskId }: Readonly<{ taskId: string }>) {
             </ol>
           )}
         </section>
+
+        <section className="panel taskHistory" aria-labelledby="evidence-heading">
+          <h2 id="evidence-heading">Private outcome evidence</h2>
+          {evidence.length === 0 ? (
+            <p className="muted">No private evidence recorded.</p>
+          ) : (
+            <ol>
+              {evidence.map((item) => (
+                <li key={item.id}>
+                  <strong>{item.kind.replace("_", " ")}</strong>
+                  <span>{item.content}</span>
+                  <small>{new Date(item.created_at).toLocaleString()}</small>
+                </li>
+              ))}
+            </ol>
+          )}
+        </section>
+
+        <form className="panel taskForm" onSubmit={(event) => void appendEvidence(event)}>
+          <h2>Append private evidence</h2>
+          {evidenceWritable ? (
+            <>
+              <label htmlFor="evidence-kind">Evidence type</label>
+              <select
+                id="evidence-kind"
+                onChange={(event) => setEvidenceKind(event.target.value as HumanTaskEvidenceKind)}
+                value={evidenceKind}
+              >
+                <option value="outcome">Outcome</option>
+                <option value="transcript_excerpt">Redacted transcript excerpt</option>
+              </select>
+              <label htmlFor="evidence-content">Minimum necessary, already redacted content</label>
+              <textarea
+                id="evidence-content"
+                maxLength={4000}
+                minLength={10}
+                onChange={(event) => setEvidenceContent(event.target.value)}
+                required
+                value={evidenceContent}
+              />
+              <button disabled={noteState === "saving"} type="submit">
+                {noteState === "saving" ? "Saving..." : "Append evidence"}
+              </button>
+            </>
+          ) : (
+            <p className="muted">Evidence opens only after the task is done or cancelled.</p>
+          )}
+        </form>
+
+        <form className="panel taskForm" onSubmit={(event) => void proposeGap(event)}>
+          <h2>Propose knowledge gap</h2>
+          {evidence.length === 0 ? (
+            <p className="muted">Record private evidence first.</p>
+          ) : (
+            <>
+              <label htmlFor="gap-evidence">Source evidence</label>
+              <select
+                id="gap-evidence"
+                onChange={(event) => setGapEvidenceId(event.target.value)}
+                value={gapEvidenceId}
+              >
+                {evidence.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.kind.replace("_", " ")} · {new Date(item.created_at).toLocaleString()}
+                  </option>
+                ))}
+              </select>
+              <label htmlFor="gap-pattern">
+                Reusable question pattern, with no names or contacts
+              </label>
+              <textarea
+                id="gap-pattern"
+                maxLength={500}
+                minLength={10}
+                onChange={(event) => setGapPattern(event.target.value)}
+                required
+                value={gapPattern}
+              />
+              <button disabled={transitionState === "saving"} type="submit">
+                {transitionState === "saving" ? "Saving..." : "Create gap draft"}
+              </button>
+              {gapConfirmation ? <p role="status">{gapConfirmation}</p> : null}
+            </>
+          )}
+        </form>
 
         <form className="panel taskForm" onSubmit={(event) => void transitionTask(event)}>
           <h2>Triage decision</h2>

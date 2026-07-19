@@ -1,5 +1,6 @@
 import {
   KnowledgeGapSchema,
+  sanitizeEvidenceDerivedGapPattern,
   hasReviewablePoiFactEvidence,
   isEligiblePoiFact,
   PoiFactEvidenceSchema,
@@ -167,6 +168,34 @@ export function createDbKnowledgeService(db: Db): KnowledgeService {
         .returning();
       if (!row) throw new Error("Gap insert failed");
       return rowToGap(row);
+    },
+    async recordEvidenceGap(input) {
+      const questionPattern = sanitizeEvidenceDerivedGapPattern(input.question);
+      return db.transaction(async (tx) => {
+        const rows = await tx.select().from(knowledgeGaps);
+        const existing = rows.find(
+          (gap) => gap.questionPattern === questionPattern && (gap.city ?? "") === input.city,
+        );
+        const [row] = existing
+          ? await tx
+              .update(knowledgeGaps)
+              .set({ frequency: existing.frequency + 1, updatedAt: new Date() })
+              .where(eq(knowledgeGaps.id, existing.id))
+              .returning()
+          : await tx
+              .insert(knowledgeGaps)
+              .values({ questionPattern, city: input.city, status: "open" })
+              .returning();
+        if (!row) throw new Error("Evidence gap write failed");
+        await tx.insert(opsAuditEvents).values({
+          actorId: input.actorId,
+          action: "human_task.evidence.gap.proposed",
+          targetType: "knowledge_gap",
+          targetId: row.id,
+          metadataJsonb: { taskId: input.taskId, evidenceId: input.evidenceId },
+        });
+        return rowToGap(row);
+      });
     },
     async listGaps(input = {}) {
       const rows = await db.select().from(knowledgeGaps);

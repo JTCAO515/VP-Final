@@ -20,7 +20,9 @@ the public Web application and protected by server-side role checks.
   upload surface exists.
 - `/api/tasks`: permission-protected task list endpoint.
 - `/api/tasks/:taskId`: `task.contact.read`-protected detail and `task.write`-protected internal-note
-  endpoint. Note writes atomically append an Ops audit event without copying note/contact content.
+  and terminal-evidence endpoint. Writes append audit evidence without copying private content.
+- `/api/tasks/:taskId/evidence/:evidenceId/gap`: verifies task/evidence ownership and creates only a
+  normalized open knowledge-gap draft through the durable KnowledgeService.
 - `/api/tasks/:taskId/status`: `task.write`-protected transition endpoint; actor is session-derived.
   Mutation responses contain status/audit evidence only and never echo contact or description.
 - `/login`: verified Supabase Ops sign-in.
@@ -43,6 +45,9 @@ the public Web application and protected by server-side role checks.
   available transition list; controlled preview exposes only `requested -> triaged/cancelled` and
   `triaged -> cancelled`. Quote/payment activation, assignment, and fulfilment controls remain absent
   until their separately accepted boundaries.
+- P0-16 shows private evidence only inside the authorized detail. Append controls remain unavailable
+  until `done` or `cancelled`; Operators can propose a gap but cannot publish a fact or bypass Editor
+  review.
 - Partner and payment operations are not yet available.
 
 Production use still requires OA-001, OA-004, and OA-010 verification. Missing Auth or database

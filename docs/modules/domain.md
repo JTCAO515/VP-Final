@@ -9,16 +9,16 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
 
 ## Public Areas
 
-| Area        | Owns                                                                                                              |
-| ----------- | ----------------------------------------------------------------------------------------------------------------- |
-| `trip`      | TripState, TripPatch operations, `applyPatch`, `diffTrips`, generation progress                                   |
-| `copilot`   | Intent, message, citations, tool cards, commercial actions, Human Help handoff, envelope, completion-job contract |
-| `knowledge` | POI, execution facts, knowledge gaps, scene-tag derivation, reviewed seed data, and ADR-0006 fact eligibility     |
-| `task`      | Human Task input, canonical lifecycle, transition command/evidence, and non-status updates                        |
-| `commerce`  | Partner configuration, outbound click, URL validation and tracking construction                                   |
-| `events`    | Telemetry event contract                                                                                          |
-| `observability` | Redacted Copilot turn, per-attempt cost, product-event action, and forbidden-persistence contracts           |
-| `errors`    | Shared typed error shapes                                                                                         |
+| Area            | Owns                                                                                                              |
+| --------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `trip`          | TripState, TripPatch operations, `applyPatch`, `diffTrips`, generation progress                                   |
+| `copilot`       | Intent, message, citations, tool cards, commercial actions, Human Help handoff, envelope, completion-job contract |
+| `knowledge`     | POI, execution facts, knowledge gaps, scene-tag derivation, reviewed seed data, and ADR-0006 fact eligibility     |
+| `task`          | Human Task input, lifecycle, transition commands, private outcome evidence, and non-status updates                |
+| `commerce`      | Partner configuration, outbound click, URL validation and tracking construction                                   |
+| `events`        | Telemetry event contract                                                                                          |
+| `observability` | Redacted Copilot turn, per-attempt cost, product-event action, and forbidden-persistence contracts                |
+| `errors`        | Shared typed error shapes                                                                                         |
 
 ## Invariants
 
@@ -38,6 +38,9 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
   status. The canonical forward path is `requested -> triaged -> quoted -> payment_pending -> paid ->
 fulfilling -> done`, with explicit cancellation edges and no terminal recovery. A transition reason
   is trimmed and bounded to 10-500 characters.
+- Human Task evidence is typed as `outcome` or `transcript_excerpt` and is eligible only after
+  `done` or `cancelled`. Email/phone data is replaced before persistence; credential, payment, OTP,
+  and travel-document content is rejected.
 
 ## Change Workflow
 
