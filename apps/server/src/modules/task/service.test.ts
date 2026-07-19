@@ -146,9 +146,8 @@ describe("human task service", () => {
   });
 
   it("stores only sanitized private evidence for a terminal task", async () => {
-    const service = createInMemoryHumanTaskService({
-      now: () => new Date("2026-07-20T02:00:00.000Z"),
-    });
+    let now = new Date("2026-07-20T02:00:00.000Z");
+    const service = createInMemoryHumanTaskService({ now: () => now });
     const task = await service.create({
       identity: anonA,
       idempotencyKey: "00000000-0000-4000-8000-000000000116",
@@ -183,6 +182,10 @@ describe("human task service", () => {
     await expect(
       service.listEvidence(task.id, { ...operator, permissions: [...operator.permissions] }),
     ).resolves.toEqual([evidence]);
+    now = new Date("2026-10-19T02:00:00.000Z");
+    await expect(
+      service.listEvidence(task.id, { ...operator, permissions: [...operator.permissions] }),
+    ).resolves.toEqual([]);
   });
 
   it("rejects unauthorized, illegal, and policy-gated transitions", async () => {

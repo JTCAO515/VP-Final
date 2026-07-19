@@ -5,7 +5,7 @@ import {
   HumanTaskTransitionSchema,
   HumanTaskUpdateSchema,
   HumanTaskEvidenceSchema,
-  canAppendHumanTaskEvidence,
+  isHumanTaskEvidenceWindowCurrent,
   sanitizeHumanTaskEvidence,
   createHumanTask,
   transitionHumanTask,
@@ -202,13 +202,7 @@ export function createInMemoryHumanTaskService(options?: { now?: () => Date }): 
     async appendEvidence(input) {
       assertTaskPermission(input.actor, "task.write");
       const record = records.find((entry) => entry.task.id === input.taskId);
-      if (!record || !canAppendHumanTaskEvidence(record.task.status)) {
-        throw new HumanTaskEvidencePolicyError();
-      }
-      if (
-        !record.task.retention_expires_at ||
-        Date.parse(record.task.retention_expires_at) <= now().getTime()
-      ) {
+      if (!record || !isHumanTaskEvidenceWindowCurrent(record.task, now())) {
         throw new HumanTaskEvidencePolicyError();
       }
       const sanitized = sanitizeHumanTaskEvidence(input.evidence);
@@ -226,7 +220,9 @@ export function createInMemoryHumanTaskService(options?: { now?: () => Date }): 
     },
     async listEvidence(taskId, actor) {
       assertTaskPermission(actor, "task.contact.read");
-      if (!records.some((entry) => entry.task.id === taskId)) throw new HumanTaskNotFoundError();
+      const record = records.find((entry) => entry.task.id === taskId);
+      if (!record) throw new HumanTaskNotFoundError();
+      if (!isHumanTaskEvidenceWindowCurrent(record.task, now())) return [];
       return evidenceRecords.filter((evidence) => evidence.task_id === taskId);
     },
     async transition(input) {

@@ -2,9 +2,11 @@ import { describe, expect, it } from "vitest";
 import { getTableConfig } from "drizzle-orm/pg-core";
 import {
   agentRuns,
+  authUsers,
   copilotCompletionJobs,
   copilotConversationTurns,
   humanTaskTransitions,
+  humanTaskEvidence,
   humanTasks,
   knowledgeGaps,
   llmCallCosts,
@@ -82,10 +84,13 @@ describe("database schema", () => {
   });
 
   it("maps the Ops authorization and audit tables", () => {
+    expect(authUsers.id.name).toBe("id");
     expect(opsMemberships.userId.name).toBe("user_id");
     expect(opsMemberships.role.name).toBe("role");
     expect(opsAuditEvents.actorId.name).toBe("actor_id");
     expect(opsAuditEvents.metadataJsonb.name).toBe("metadata_jsonb");
+    expect(humanTaskEvidence.actorId.name).toBe("actor_id");
+    expect(getTableConfig(humanTaskEvidence).foreignKeys).toHaveLength(2);
   });
 
   it("maps the knowledge tables", () => {

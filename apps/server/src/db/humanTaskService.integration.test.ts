@@ -261,6 +261,15 @@ describeDatabase("database HumanTaskService", () => {
     expect(audit?.metadata_jsonb).toEqual({ taskId: created.id, kind: "outcome" });
     expect(JSON.stringify(audit)).not.toContain("traveler@example.com");
 
+    await sql`
+      update public.human_tasks
+      set retention_expires_at = '2099-01-05T00:00:00.000Z'
+      where id = ${created.id}
+    `;
+    await expect(
+      service.listEvidence(created.id, { ...actor, permissions: [...actor.permissions] }),
+    ).resolves.toEqual([]);
+
     await sql`delete from public.human_tasks where id = ${created.id}`;
     const [remaining] = await sql`
       select count(*)::int as value from public.human_task_evidence where id = ${evidence.id}

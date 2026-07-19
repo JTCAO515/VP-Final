@@ -6,6 +6,7 @@ import {
   integer,
   jsonb,
   numeric,
+  pgSchema,
   pgTable,
   text,
   timestamp,
@@ -13,6 +14,11 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
+
+const authSchema = pgSchema("auth");
+export const authUsers = authSchema.table("users", {
+  id: uuid("id").primaryKey(),
+});
 
 export const users = pgTable("users", {
   id: uuid("id").primaryKey(),
@@ -22,9 +28,11 @@ export const users = pgTable("users", {
 });
 
 export const opsMemberships = pgTable("ops_memberships", {
-  userId: uuid("user_id").primaryKey(),
+  userId: uuid("user_id")
+    .primaryKey()
+    .references(() => authUsers.id, { onDelete: "cascade" }),
   role: text("role").notNull(),
-  createdBy: uuid("created_by"),
+  createdBy: uuid("created_by").references(() => authUsers.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
@@ -35,7 +43,7 @@ export const opsAuditEvents = pgTable(
     id: uuid("id").primaryKey().defaultRandom(),
     actorId: uuid("actor_id")
       .notNull()
-      .references(() => users.id, { onDelete: "restrict" }),
+      .references(() => authUsers.id, { onDelete: "restrict" }),
     action: text("action").notNull(),
     targetType: text("target_type").notNull(),
     targetId: text("target_id"),
@@ -678,7 +686,9 @@ export const humanTaskTransitions = pgTable(
       .references(() => humanTasks.id, { onDelete: "cascade" }),
     fromStatus: text("from_status").notNull(),
     toStatus: text("to_status").notNull(),
-    actorId: uuid("actor_id").notNull(),
+    actorId: uuid("actor_id")
+      .notNull()
+      .references(() => authUsers.id, { onDelete: "restrict" }),
     reason: text("reason").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
@@ -720,7 +730,9 @@ export const humanTaskEvidence = pgTable(
     kind: text("kind").notNull(),
     content: text("content").notNull(),
     redactionClassesJsonb: jsonb("redaction_classes_jsonb").notNull().default([]),
-    actorId: uuid("actor_id").notNull(),
+    actorId: uuid("actor_id")
+      .notNull()
+      .references(() => authUsers.id, { onDelete: "restrict" }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({

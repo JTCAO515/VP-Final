@@ -136,5 +136,15 @@ describeDatabase("database KnowledgeService", () => {
       },
     });
     expect(JSON.stringify(audit)).not.toContain("traveler@example.com");
+
+    await expect(
+      service.recordEvidenceGap({
+        question: "Can traveler John Smith use passport E12345678 at this station?",
+        city: "Evidence City",
+        actorId: reviewerId,
+        taskId: "30000000-0000-4000-8000-000000000021",
+        evidenceId: "30000000-0000-4000-8000-000000000022",
+      }),
+    ).rejects.toMatchObject({ code: "SENSITIVE_HUMAN_TASK_EVIDENCE" });
   });
 });

@@ -8,6 +8,8 @@ import {
   transitionHumanTask,
   updateHumanTask,
   canAppendHumanTaskEvidence,
+  isHumanTaskEvidenceWindowCurrent,
+  sanitizeEvidenceDerivedGapPattern,
   sanitizeHumanTaskEvidence,
   SensitiveHumanTaskEvidenceError,
 } from "./index.js";
@@ -139,6 +141,24 @@ describe("Human Task evidence", () => {
     expect(canAppendHumanTaskEvidence("triaged")).toBe(false);
   });
 
+  it("requires a current retention window for evidence access", () => {
+    const task = HumanTaskSchema.parse({
+      id: "task-terminal",
+      city: "Shanghai",
+      kind: "other",
+      description: "Record a minimum private outcome for this completed request.",
+      contact: "traveler@example.com",
+      status: "cancelled",
+      retention_expires_at: "2026-08-01T00:00:00.000Z",
+      created_at: "2026-07-01T00:00:00.000Z",
+      updated_at: "2026-07-01T00:00:00.000Z",
+    });
+    expect(isHumanTaskEvidenceWindowCurrent(task, new Date("2026-07-31T23:59:59.000Z"))).toBe(true);
+    expect(isHumanTaskEvidenceWindowCurrent(task, new Date("2026-08-01T00:00:00.000Z"))).toBe(
+      false,
+    );
+  });
+
   it("redacts contact data before persistence", () => {
     expect(
       sanitizeHumanTaskEvidence({
@@ -166,6 +186,30 @@ describe("Human Task evidence", () => {
         kind: "outcome",
         content: "The traveler pasted 4111 1111 1111 1111 into the transcript.",
       }),
+    ).toThrow(SensitiveHumanTaskEvidenceError);
+
+    for (const content of [
+      "Travel document E12345678 was copied into this private outcome.",
+      "The traveler pasted Amex 378282246310005 into this outcome.",
+      "The operator accidentally pasted sk-test_12345678901234567890 here.",
+    ]) {
+      expect(() => sanitizeHumanTaskEvidence({ kind: "outcome", content })).toThrow(
+        SensitiveHumanTaskEvidenceError,
+      );
+    }
+  });
+
+  it("sanitizes evidence-derived gaps and rejects named or document-specific patterns", () => {
+    expect(
+      sanitizeEvidenceDerivedGapPattern(
+        "Can traveler@example.com find an accessible entrance near +86 138 0013 8000?",
+      ),
+    ).toBe("can private email find an accessible entrance near private number");
+    expect(() =>
+      sanitizeEvidenceDerivedGapPattern("Can traveler John Smith find an accessible entrance?"),
+    ).toThrow(SensitiveHumanTaskEvidenceError);
+    expect(() =>
+      sanitizeEvidenceDerivedGapPattern("Can passport E12345678 be used for this booking?"),
     ).toThrow(SensitiveHumanTaskEvidenceError);
   });
 });

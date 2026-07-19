@@ -60,8 +60,9 @@ commercial evidence, Human Tasks, and telemetry. Repository migrations are the s
   id, timestamp, and note-presence only, never note or contact content.
 - P0-16 stores pre-sanitized, append-only `human_task_evidence` only for unexpired `done` or
   `cancelled` tasks. Direct traveler roles have no privilege. Evidence is deleted with its task by
-  the 90-day purge/account cascade; actor deletion is restricted while evidence remains. Audit rows
-  contain ids/kind only, never evidence content.
+  the 90-day purge/account cascade; direct row updates/deletes are rejected while the task exists,
+  actor deletion is restricted while evidence remains, and API reads stop at expiry even before the
+  purge runs. Audit rows contain ids/kind only, never evidence content.
 - Ops users access data through protected server routes, not broad direct table grants.
 - Ops membership and audit tables are server-only with RLS enabled and no `anon` or `authenticated`
   Data API grants. Supabase Auth proves identity; `ops_memberships` independently grants authority.

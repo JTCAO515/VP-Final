@@ -95,4 +95,24 @@ describe("Human Task evidence gap proposal", () => {
     );
     expect(response.status).toBe(404);
   });
+
+  it("rejects named and travel-document gap proposals before persistence", async () => {
+    const setup = await fixture();
+    for (const question_pattern of [
+      "Can traveler John Smith find an accessible station entrance?",
+      "Can passport E12345678 be used at the accessible entrance?",
+    ]) {
+      const response = await handleGapProposal(
+        new Request("https://ops.example.com/gap", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ question_pattern }),
+        }),
+        { params: Promise.resolve({ taskId: setup.task.id, evidenceId: setup.evidence.id }) },
+        { ...setup.dependencies, getKnowledgeService: () => setup.knowledgeService },
+      );
+      expect(response.status).toBe(409);
+    }
+    await expect(setup.knowledgeService.listGaps()).resolves.toEqual([]);
+  });
 });

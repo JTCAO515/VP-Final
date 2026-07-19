@@ -149,16 +149,21 @@ export function canAppendHumanTaskEvidence(status: HumanTaskStatus): boolean {
   return status === "done" || status === "cancelled";
 }
 
+export function isHumanTaskEvidenceWindowCurrent(
+  task: Pick<HumanTask, "status" | "retention_expires_at">,
+  now = new Date(),
+): boolean {
+  if (!canAppendHumanTaskEvidence(task.status) || task.retention_expires_at === null) return false;
+  const expiresAt = Date.parse(task.retention_expires_at);
+  return Number.isFinite(expiresAt) && expiresAt > now.getTime();
+}
+
 export function sanitizeHumanTaskEvidence(input: HumanTaskEvidenceInput): {
   content: string;
   redactionClasses: HumanTaskEvidenceRedactionClass[];
 } {
   const parsed = HumanTaskEvidenceInputSchema.parse(input);
-  if (
-    /\b(password|passcode|otp|one[- ]time code|cvv|card number|passport)\b/i.test(parsed.content) ||
-    /\b(?:\d{4}[ -]){3}\d{4}\b/.test(parsed.content) ||
-    /\b\d{16}\b/.test(parsed.content)
-  ) {
+  if (containsForbiddenEvidenceContent(parsed.content)) {
     throw new SensitiveHumanTaskEvidenceError();
   }
   const redactionClasses = new Set<HumanTaskEvidenceRedactionClass>();
@@ -172,6 +177,56 @@ export function sanitizeHumanTaskEvidence(input: HumanTaskEvidenceInput): {
       return "[redacted phone]";
     });
   return { content, redactionClasses: [...redactionClasses] };
+}
+
+export function sanitizeEvidenceDerivedGapPattern(question: string): string {
+  const parsed = z.string().trim().min(10).max(500).parse(question);
+  if (
+    /\b(?:[Tt]ravell?er(?:'s)?(?:\s+name)?|[Nn]ame\s+is|Mr|Mrs|Ms|Miss|Dr)\.?\s+[A-Z][a-z'-]+(?:\s+[A-Z][a-z'-]+){0,2}\b/.test(
+      parsed,
+    )
+  ) {
+    throw new SensitiveHumanTaskEvidenceError();
+  }
+  const sanitized = sanitizeHumanTaskEvidence({ kind: "outcome", content: parsed })
+    .content.toLowerCase()
+    .replace(/\[redacted email\]/g, "private email")
+    .replace(/\[redacted phone\]/g, "private number")
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return z.string().min(10).max(500).parse(sanitized);
+}
+
+function containsForbiddenEvidenceContent(content: string): boolean {
+  if (
+    /\b(password|passcode|otp|one[- ]time code|cvv|cvc|card number|api[ _-]?key|secret|authorization|bearer|passport|travel[ -]?document|visa number)\b/i.test(
+      content,
+    ) ||
+    /\b(?:sk|pk|rk)[_-][a-z0-9_-]{12,}\b/i.test(content) ||
+    /\b(?=[a-z0-9]{8,12}\b)(?=[a-z0-9]*[a-z])(?=[a-z0-9]*\d)[a-z0-9]{8,12}\b/i.test(content)
+  ) {
+    return true;
+  }
+  return [...content.matchAll(/\b(?:\d[ -]?){12,18}\d\b/g)].some((match) =>
+    passesLuhn(match[0].replace(/\D/g, "")),
+  );
+}
+
+function passesLuhn(digits: string): boolean {
+  if (digits.length < 13 || digits.length > 19 || /^(\d)\1+$/.test(digits)) return false;
+  let sum = 0;
+  let double = false;
+  for (let index = digits.length - 1; index >= 0; index -= 1) {
+    let value = Number(digits[index]);
+    if (double) {
+      value *= 2;
+      if (value > 9) value -= 9;
+    }
+    sum += value;
+    double = !double;
+  }
+  return sum % 10 === 0;
 }
 
 export class SensitiveHumanTaskEvidenceError extends Error {

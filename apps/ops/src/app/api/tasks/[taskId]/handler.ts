@@ -7,7 +7,7 @@ import {
   HumanTaskEvidenceInputSchema,
   HumanTaskUpdateSchema,
   SensitiveHumanTaskEvidenceError,
-  canAppendHumanTaskEvidence,
+  isHumanTaskEvidenceWindowCurrent,
   type HumanTaskStatus,
 } from "@visepanda/domain";
 import { NextResponse } from "next/server";
@@ -27,11 +27,13 @@ type Dependencies = {
     permission: "task.contact.read" | "task.write",
   ) => Promise<AuthorizedOpsRequest | NextResponse>;
   getService: typeof getHumanTaskService;
+  now?: () => Date;
 };
 
 const defaultDependencies: Dependencies = {
   authorize: authorizeOpsRequest,
   getService: getHumanTaskService,
+  now: () => new Date(),
 };
 
 export async function handleTaskDetailGet(
@@ -56,7 +58,10 @@ export async function handleTaskDetailGet(
         task,
         transitions,
         evidence,
-        evidence_writable: canAppendHumanTaskEvidence(task.status),
+        evidence_writable: isHumanTaskEvidenceWindowCurrent(
+          task,
+          dependencies.now?.() ?? new Date(),
+        ),
         allowed_transitions: previewTransitions(task.status),
       }),
       authorization.cookieResponse,

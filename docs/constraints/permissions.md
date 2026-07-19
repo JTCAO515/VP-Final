@@ -31,9 +31,12 @@ Status: active
   MUST atomically append a server-derived Ops audit event. Audit metadata MUST NOT copy the note,
   description, contact, cookie, credential, or other task PII.
 - Private Human Task evidence requires `task.contact.read` to list and `task.write` to append. It MUST
-  remain server-only, append-only, terminal-task-bound, and outside public responses and telemetry.
-  Evidence-derived gap proposals MUST normalize PII and MUST NOT grant Operators general knowledge
-  write access or create, review, or publish a fact.
+  remain server-only, database-enforced append-only, terminal-task-bound, retention-current, and
+  outside public responses and telemetry. Once the retention deadline passes, the API MUST stop
+  returning evidence even before the purge job deletes it. Evidence-derived gap proposals MUST
+  reject named-person context, credentials, payment/travel-document identifiers, and normalize
+  contact PII; they MUST NOT grant Operators general knowledge write access or create, review, or
+  publish a fact.
 - A Trip MUST have exactly one effective owner. Anonymous-to-authenticated claim MUST require both the
   current verified user and the current signed anonymous session, be idempotent, and never transfer an
   already authenticated Trip.

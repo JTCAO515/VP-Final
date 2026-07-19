@@ -3,7 +3,7 @@ import {
   HumanTaskTransitionSchema,
   HumanTaskUpdateSchema,
   HumanTaskEvidenceSchema,
-  canAppendHumanTaskEvidence,
+  isHumanTaskEvidenceWindowCurrent,
   sanitizeHumanTaskEvidence,
   type HumanTask,
   type HumanTaskTransition,
@@ -149,12 +149,7 @@ export function createDbHumanTaskService(db: Db, options?: { now?: () => Date })
           .from(humanTasks)
           .where(eq(humanTasks.id, input.taskId))
           .limit(1);
-        if (
-          !task ||
-          !canAppendHumanTaskEvidence(task.status as HumanTask["status"]) ||
-          !task.retentionExpiresAt ||
-          task.retentionExpiresAt.getTime() <= now().getTime()
-        ) {
+        if (!task || !isHumanTaskEvidenceWindowCurrent(taskFromRow(task), now())) {
           throw new HumanTaskEvidencePolicyError();
         }
         const [row] = await tx
@@ -186,6 +181,7 @@ export function createDbHumanTaskService(db: Db, options?: { now?: () => Date })
       }
       const [task] = await db.select().from(humanTasks).where(eq(humanTasks.id, taskId)).limit(1);
       if (!task) throw new HumanTaskNotFoundError();
+      if (!isHumanTaskEvidenceWindowCurrent(taskFromRow(task), now())) return [];
       return (
         await db
           .select()

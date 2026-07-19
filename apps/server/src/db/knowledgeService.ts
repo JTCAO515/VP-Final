@@ -1,5 +1,6 @@
 import {
   KnowledgeGapSchema,
+  sanitizeEvidenceDerivedGapPattern,
   hasReviewablePoiFactEvidence,
   isEligiblePoiFact,
   PoiFactEvidenceSchema,
@@ -169,7 +170,7 @@ export function createDbKnowledgeService(db: Db): KnowledgeService {
       return rowToGap(row);
     },
     async recordEvidenceGap(input) {
-      const questionPattern = normalizeGapPattern(input.question);
+      const questionPattern = sanitizeEvidenceDerivedGapPattern(input.question);
       return db.transaction(async (tx) => {
         const rows = await tx.select().from(knowledgeGaps);
         const existing = rows.find(

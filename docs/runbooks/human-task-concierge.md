@@ -31,11 +31,13 @@ Use after a real Human Task enters the durable Ops queue in an approved deployme
 8. During preview, cancel only through the governed endpoint and record why work did not proceed.
    Cancelled tasks cannot be reopened; a genuine new request requires a new task. Complete future
    paid work honestly and never claim an external action was taken without evidence.
-9. After `done` or `cancelled`, append only the minimum private outcome evidence. The server redacts
-   email/phone data and rejects credentials, OTPs, payment details, and travel-document numbers.
+9. After `done` or `cancelled`, append only the minimum private outcome evidence while retention is
+   current. The server redacts email/phone data; rejects credentials, OTPs, valid payment-card
+   numbers, and travel-document identifiers; and stops returning evidence when retention expires.
 10. If the evidence reveals a reusable unknown, write a generic question pattern with no names or
-    contacts and create an open knowledge-gap draft. Never paste the private transcript into the gap
-    or publish a fact; an Editor must use the normal review path.
+    contacts and create an open knowledge-gap draft. The server rejects explicit person-name context
+    and the same sensitive identifiers before writing the draft. Never paste the private transcript
+    into the gap or publish a fact; an Editor must use the normal review path.
 
 ## Verification
 

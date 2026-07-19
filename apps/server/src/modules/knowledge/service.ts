@@ -6,6 +6,7 @@ import {
   KnowledgeGapSchema,
   PoiFactEvidenceSchema,
   PoiSchema,
+  sanitizeEvidenceDerivedGapPattern,
   resolvePoiFactReview,
   updatePoiFact,
   type KnowledgeGap,
@@ -201,7 +202,10 @@ export function createInMemoryKnowledgeService(
       return gap;
     },
     async recordEvidenceGap(input) {
-      return this.recordGap({ question: input.question, city: input.city });
+      return this.recordGap({
+        question: sanitizeEvidenceDerivedGapPattern(input.question),
+        city: input.city,
+      });
     },
     async listGaps(input = {}) {
       return gaps

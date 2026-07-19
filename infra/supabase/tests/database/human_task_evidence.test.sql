@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(11);
+select plan(14);
 
 select has_table('public', 'human_task_evidence', 'Private Human Task evidence exists');
 select has_column('public', 'human_task_evidence', 'redaction_classes_jsonb', 'Evidence records redaction classes');
@@ -82,6 +82,38 @@ select is(
   (select count(*)::integer from public.human_task_evidence),
   1,
   'Exactly one valid evidence row exists'
+);
+
+select throws_ok(
+  $$update public.human_task_evidence
+    set content = 'Mutated evidence must never be accepted.'
+    where id = '73000000-0000-4000-8000-000000000004'$$,
+  '55000',
+  'Human Task evidence is append-only',
+  'Privileged updates cannot rewrite append-only evidence'
+);
+select throws_ok(
+  $$delete from public.human_task_evidence
+    where id = '73000000-0000-4000-8000-000000000004'$$,
+  '55000',
+  'Human Task evidence can be deleted only with its task',
+  'Evidence cannot be deleted separately while its task remains'
+);
+
+update public.human_tasks
+set retention_expires_at = now() - interval '1 second'
+where id = '73000000-0000-4000-8000-000000000002';
+select throws_ok(
+  $$insert into public.human_task_evidence (
+      task_id, kind, content, actor_id
+    ) values (
+      '73000000-0000-4000-8000-000000000002', 'outcome',
+      'Expired task evidence must never be accepted.',
+      '73000000-0000-4000-8000-000000000001'
+    )$$,
+  '23514',
+  null,
+  'Expired terminal task evidence is rejected'
 );
 
 delete from public.human_tasks where id = '73000000-0000-4000-8000-000000000002';

@@ -51,3 +51,26 @@ revoke all on function internal.enforce_human_task_evidence_eligibility()
 create trigger human_task_evidence_enforce_eligibility
 before insert on public.human_task_evidence
 for each row execute function internal.enforce_human_task_evidence_eligibility();
+
+create or replace function internal.enforce_human_task_evidence_immutable()
+returns trigger
+language plpgsql
+set search_path = ''
+as $$
+begin
+  if tg_op = 'UPDATE' then
+    raise exception 'Human Task evidence is append-only' using errcode = '55000';
+  end if;
+  if exists (select 1 from public.human_tasks where id = old.task_id) then
+    raise exception 'Human Task evidence can be deleted only with its task' using errcode = '55000';
+  end if;
+  return old;
+end;
+$$;
+
+revoke all on function internal.enforce_human_task_evidence_immutable()
+  from public, anon, authenticated;
+
+create trigger human_task_evidence_enforce_immutable
+before update or delete on public.human_task_evidence
+for each row execute function internal.enforce_human_task_evidence_immutable();

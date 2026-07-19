@@ -1,5 +1,6 @@
 import type { HumanTaskService, KnowledgeService } from "@visepanda/app-server";
 import { NextResponse } from "next/server";
+import { SensitiveHumanTaskEvidenceError } from "@visepanda/domain";
 import { z } from "zod";
 import {
   applyOpsCookies,
@@ -52,14 +53,23 @@ export async function handleGapProposal(
     });
     return applyOpsCookies(NextResponse.json({ ok: true, gap }), authorization.cookieResponse);
   } catch (error) {
-    const status = error instanceof z.ZodError || error instanceof SyntaxError ? 400 : 503;
+    const status =
+      error instanceof z.ZodError || error instanceof SyntaxError
+        ? 400
+        : error instanceof SensitiveHumanTaskEvidenceError
+          ? 409
+          : 503;
     return NextResponse.json(
       {
         ok: false,
         error:
           status === 400
             ? "Enter a reusable gap pattern."
-            : "Gap proposal is temporarily unavailable.",
+            : status === 409
+              ? error instanceof Error
+                ? error.message
+                : "Remove personal or sensitive data before proposing this gap."
+              : "Gap proposal is temporarily unavailable.",
       },
       { status },
     );

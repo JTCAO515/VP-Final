@@ -14,8 +14,9 @@ const operator = {
 };
 
 async function fixture() {
+  let now = new Date("2026-07-20T06:00:00.000Z");
   const service = createInMemoryHumanTaskService({
-    now: () => new Date("2026-07-20T06:00:00.000Z"),
+    now: () => now,
   });
   const task = await service.create({
     identity: { kind: "anonymous", anonId: "a".repeat(43) },
@@ -38,6 +39,10 @@ async function fixture() {
     dependencies: {
       authorize: async () => authorization,
       getService: () => service,
+      now: () => now,
+    },
+    setNow(value: Date) {
+      now = value;
     },
   };
 }
@@ -125,6 +130,32 @@ describe("/api/tasks/:taskId", () => {
       dependencies,
     );
     await expect(detail.json()).resolves.toMatchObject({ evidence_writable: true });
+  });
+
+  it("hides expired evidence and disables the evidence action before purge runs", async () => {
+    const setup = await fixture();
+    await setup.service.transition({
+      taskId: setup.task.id,
+      actor: { ...operator, permissions: [...operator.permissions] },
+      toStatus: "cancelled",
+      reason: "The traveler no longer required the requested assistance.",
+    });
+    await setup.service.appendEvidence({
+      taskId: setup.task.id,
+      actor: { ...operator, permissions: [...operator.permissions] },
+      evidence: { kind: "outcome", content: "The request ended without external action." },
+    });
+    setup.setNow(new Date("2026-10-19T06:00:00.000Z"));
+
+    const response = await handleTaskDetailGet(
+      new Request(`https://ops.example.com/api/tasks/${setup.task.id}`),
+      { params: Promise.resolve({ taskId: setup.task.id }) },
+      setup.dependencies,
+    );
+    await expect(response.json()).resolves.toMatchObject({
+      evidence: [],
+      evidence_writable: false,
+    });
   });
 
   it("returns authorization failures before reading task data", async () => {
