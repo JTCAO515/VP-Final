@@ -9,25 +9,26 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 ## Current Handoff Snapshot
 
-- **Updated:** 2026-07-20 by Codex / serialized post-P0-15 control-state reconciliation
+- **Updated:** 2026-07-20 by Codex / serialized post-DEMO-01c-1 control-state reconciliation
 - **Base branch:** `main`
-- **Last fully verified commit:** `9a8bd34 after PR #255 merged; GitHub verify, docs, evals, Database contracts, both Vercel deployments, local Postgres integration, and responsive browser acceptance passed`
+- **Last fully verified commit:** `4026958 after PR #258 merged; GitHub verify, docs, evals, Database contracts, both Vercel deployments, full local gates, responsive WebKit acceptance, and a real Redis 7.4 Lua contract exercise passed`
 - **Current phase:** Phase 0 — production hardening
-- **Maturity:** Real-provider Copilot, durable two-stage Trip completion, truthful product states, and controlled-preview Human Task triage are merged; the public product is not yet information-architecture unified, cost-guarded, billing-ready, or production-release complete.
-- **Last completed control action:** PR #255 completed P0-15 with permission-bounded durable Human Task detail, internal-note persistence plus PII-free atomic audit, controlled-preview transitions, and responsive Ops acceptance. P0-16 is now dependency-ready.
+- **Maturity:** Real-provider Copilot, durable two-stage Trip completion, truthful product states, an atomic anonymous three-turn preview wall, and controlled-preview Human Task triage are merged; the public product is not yet fully rate-limited, information-architecture unified, billing-ready, or production-release complete.
+- **Last completed control action:** PR #258 completed DEMO-01c-1 / #246 with a server-authoritative three-successful-turn anonymous preview, concurrent-bypass protection, honest registration and failure states, and real local Redis Lua verification. Production Upstash verification remains OA-012 rather than a claimed capability.
 
 ### Active Work
 
 | Ref | Work | State | Owner | Next action |
 | --- | --- | --- | --- | --- |
 | Issue #120 / P0-12 | Unify the Web shell and mobile Copilot information architecture | P0-10 and P0-11 are complete, but the acceptance requires Privacy, Terms, and disclosure routes. #75 is still blocked on an accountable operator/legal content baseline, so GitHub metadata is status:blocked and no implementation branch is active. | Operator/legal reviewer for #75; Codex after acceptance | Accept and record #75's entity, privacy, affiliate, Human Help, and emergency wording baseline; implement its routes; then resume P0-12 without inventing legal promises or linking to 404 pages. |
-| Issue #185 / DEMO-01c | Demo cost guard and rate-limit controls | The trusted-IP, Upstash Redis, Postgres audit, and anonymous three-turn interfaces are frozen. PR #250 merged the #248 schema-first contract; runtime persistence is blocked only on the unresolved provider-pricing truth contract. | Codex / architecture for pricing freeze | Do not write fake zero-cost rows. Resume #248 runtime persistence after architecture accepts a route-scoped pricing snapshot and missing-pricing failure policy; then execute #246, #247, and #249 in order. |
+| Issue #185 / DEMO-01c | Demo cost guard and rate-limit controls | PR #258 closed #246 and merged the anonymous three-turn wall. OA-012 still gates production Upstash evidence. #247 trusted-IP rate limiting is now dependency-ready; #248 runtime persistence remains blocked on the unresolved provider-pricing truth contract. | Codex for #247; operator for OA-012; architecture for #248 pricing freeze | Implement #247 from fresh main using only Vercel's trusted x-vercel-forwarded-for and Upstash. Do not write fake zero-cost rows or resume #248 until architecture accepts a route-scoped pricing snapshot and missing-pricing failure policy. |
 | Issue #153 / P0-16 | Capture private Human Task evidence and reviewed knowledge gaps | DOC-P0-03/04, P0-08, and P0-13 through P0-15 are complete. GitHub metadata is status:ready; no implementation branch is active. | Unassigned | Implement the minimum private evidence record and sanitized knowledge-gap draft path. Do not publish facts, expose transcripts, or add a customer-facing support chat. |
 
 ### Immediate Queue
 
 | Priority | Control action | Exit criteria |
 | --- | --- | --- |
+| P0 | Implement #247 trusted-IP sliding-window rate limiting from the merged anonymous-turn baseline. | Only x-vercel-forwarded-for supplies the production IP identity; spoofed x-forwarded-for cannot bypass the limit; Upstash enforces the configured window; excess requests return an honest 429; authenticated and anonymous behavior is covered by tests. |
 | P0 | Resolve #75's D3 operator/legal content decision before resuming P0-12. | The accountable entity/controller/contact, effective date, privacy categories/processors/retention, affiliate disclosure, Human Help limits, and emergency wording are accepted and versioned without payment promises. |
 | P0 | Obtain architecture acceptance for #248 provider pricing snapshots and missing-pricing behavior. | Pricing provenance, units, effective dates, fallback attribution, and fail-honest behavior are frozen without treating unknown price as USD 0. |
 | P0 | Implement P0-16 private task evidence and sanitized knowledge-gap drafts while keeping payment and trigger-gated work blocked. | Authorized Ops can append retention-bound private evidence and propose a sanitized gap draft; travelers and public surfaces cannot read evidence, and no fact is auto-published. |
@@ -36,6 +37,7 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 - P0-12 is D2-blocked by #75: the required Privacy, Terms, affiliate, Human Help, and emergency routes do not exist, and their accountable operator/legal wording is not accepted. Do not invent legal copy or add dead links.
 - #248 runtime writer is D2-blocked until provider pricing snapshot provenance and missing-pricing behavior are accepted; the current router reports USD 0 when prices are absent, which is not auditable cost truth.
+- #246 code is merged, but production anonymous-turn-wall evidence awaits OA-012 Upstash configuration. Until then anonymous production requests fail honestly with 503; do not claim the three-turn wall is production-verified.
 - P0-03 and P0-04 code are merged, but real Supabase production evidence still awaits OA-001 through OA-004 before full production readiness can be claimed.
 - Ops RBAC code is merged; real first-admin and deployed role evidence awaits OA-010.
 - P0-17 remains blocked by the accepted payment/legal decision gates and OA-006; no real paid service is claimed.
@@ -43,6 +45,7 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 ### Last Verification Evidence
 
+- PR #258 merged at 4026958 after verify, docs, evals, Database contracts, and both Vercel deployments passed. Full local typecheck, lint, build, test, evals, and documentation gates passed. WebKit verified three successful anonymous turns, a fourth-request 403 before model execution, a usable registration path, and no 375px overflow. Redis 7.4 exercised the production Lua reserve/complete/release contract, including concurrent capacity, idempotent completion, completed-limit behavior, hashed-key fields, and a 30-day TTL; this is local protocol evidence only, not production Upstash evidence.
 - PR #255 merged at 9a8bd34 after verify, docs, evals, Database contracts, and both Vercel deployments passed. The CI database suite passed 17/17 after removing an invalid cross-test audit-table ordering assumption. Local Postgres verified six Human Task integration cases; browser acceptance verified queue-to-detail, note persistence, requested-to-triaged history, zero console errors, and no 375px overflow.
 - PR #253 merged at c036239 after verify, docs, evals, Database contracts, both Vercel deployments, and local typecheck/lint/test/build/docs/evals passed. Browser acceptance at 375/768/1280 found no horizontal overflow; the editable example-question path and honest local 503 retry state were verified.
 - PR #251 merged at ba3401d after verify, docs, evals, Database contracts, and Vercel Preview Comments passed. It completed owner-scoped P0-10 Web resume without creating a second assistant bubble.
