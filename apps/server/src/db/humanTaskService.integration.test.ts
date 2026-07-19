@@ -24,7 +24,7 @@ describeDatabase("database HumanTaskService", () => {
   const db = drizzle(sql, { schema });
 
   beforeEach(async () => {
-    await sql`delete from public.ops_audit_events where actor_id = ${operatorId} and action = 'human_task.note.updated'`;
+    await sql`delete from public.ops_audit_events where actor_id = ${operatorId} and action in ('human_task.note.updated', 'human_task.evidence.appended')`;
     await sql`delete from public.human_tasks where anon_id in (${anonA}, ${anonB}, ${anonCapacity}) or user_id = ${userId}`;
     await sql`delete from public.users where id = ${userId}`;
     await sql`delete from auth.users where id = ${userId}`;
@@ -41,7 +41,7 @@ describeDatabase("database HumanTaskService", () => {
   });
 
   afterAll(async () => {
-    await sql`delete from public.ops_audit_events where actor_id = ${operatorId} and action = 'human_task.note.updated'`;
+    await sql`delete from public.ops_audit_events where actor_id = ${operatorId} and action in ('human_task.note.updated', 'human_task.evidence.appended')`;
     await sql`delete from public.human_tasks where anon_id in (${anonA}, ${anonB}, ${anonCapacity}) or user_id = ${userId}`;
     await sql`delete from public.users where id = ${userId}`;
     await sql`delete from auth.users where id = ${userId}`;
@@ -208,6 +208,64 @@ describeDatabase("database HumanTaskService", () => {
     });
     expect(JSON.stringify(audit)).not.toContain(updated.operator_note);
     expect(JSON.stringify(audit)).not.toContain(request.contact);
+  });
+
+  it("persists redacted terminal evidence with private access and PII-free audit", async () => {
+    const service = createDbHumanTaskService(db, {
+      now: () => new Date("2099-01-06T04:00:00.000Z"),
+    });
+    const created = await service.create({
+      identity: { kind: "anonymous", anonId: anonA },
+      idempotencyKey: crypto.randomUUID(),
+      request,
+    });
+    const actor = {
+      userId: operatorId,
+      role: "operator" as const,
+      permissions: ["task.read", "task.contact.read", "task.write"] as const,
+    };
+    await service.transition({
+      taskId: created.id,
+      actor: { ...actor, permissions: [...actor.permissions] },
+      toStatus: "cancelled",
+      reason: "The traveler no longer required the requested assistance.",
+    });
+
+    const evidence = await service.appendEvidence({
+      taskId: created.id,
+      actor: { ...actor, permissions: [...actor.permissions] },
+      evidence: {
+        kind: "outcome",
+        content:
+          "Traveler traveler@example.com confirmed by +86 138 0013 8000 that help was no longer needed.",
+      },
+    });
+    expect(evidence.content).toContain("[redacted email]");
+    expect(evidence.content).toContain("[redacted phone]");
+    expect(JSON.stringify(evidence)).not.toContain("traveler@example.com");
+    await expect(
+      service.listEvidence(created.id, { ...actor, permissions: [...actor.permissions] }),
+    ).resolves.toEqual([evidence]);
+    await expect(
+      service.listEvidence(created.id, {
+        userId: operatorId,
+        role: "editor",
+        permissions: ["knowledge.read", "knowledge.write"],
+      }),
+    ).rejects.toMatchObject({ code: "HUMAN_TASK_TRANSITION_FORBIDDEN" });
+
+    const [audit] = await sql`
+      select metadata_jsonb from public.ops_audit_events
+      where target_id = ${evidence.id} and action = 'human_task.evidence.appended'
+    `;
+    expect(audit?.metadata_jsonb).toEqual({ taskId: created.id, kind: "outcome" });
+    expect(JSON.stringify(audit)).not.toContain("traveler@example.com");
+
+    await sql`delete from public.human_tasks where id = ${created.id}`;
+    const [remaining] = await sql`
+      select count(*)::int as value from public.human_task_evidence where id = ${evidence.id}
+    `;
+    expect(remaining?.value).toBe(0);
   });
 
   it("leaves status and audit unchanged when policy or transition validation rejects", async () => {

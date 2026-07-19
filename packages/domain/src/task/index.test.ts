@@ -7,6 +7,9 @@ import {
   createHumanTask,
   transitionHumanTask,
   updateHumanTask,
+  canAppendHumanTaskEvidence,
+  sanitizeHumanTaskEvidence,
+  SensitiveHumanTaskEvidenceError,
 } from "./index.js";
 
 describe("human task domain", () => {
@@ -125,5 +128,44 @@ describe("human task domain", () => {
     expect(() => transitionHumanTask(cancelled, "requested")).toThrow(
       InvalidHumanTaskTransitionError,
     );
+  });
+});
+
+describe("Human Task evidence", () => {
+  it("allows evidence only after a terminal outcome", () => {
+    expect(canAppendHumanTaskEvidence("done")).toBe(true);
+    expect(canAppendHumanTaskEvidence("cancelled")).toBe(true);
+    expect(canAppendHumanTaskEvidence("fulfilling")).toBe(false);
+    expect(canAppendHumanTaskEvidence("triaged")).toBe(false);
+  });
+
+  it("redacts contact data before persistence", () => {
+    expect(
+      sanitizeHumanTaskEvidence({
+        kind: "transcript_excerpt",
+        content:
+          "Traveler a@example.com confirmed by phone +86 138 0013 8000 that the venue was closed.",
+      }),
+    ).toEqual({
+      content:
+        "Traveler [redacted email] confirmed by phone [redacted phone] that the venue was closed.",
+      redactionClasses: ["email", "phone"],
+    });
+  });
+
+  it("rejects credential and document-number evidence", () => {
+    expect(() =>
+      sanitizeHumanTaskEvidence({
+        kind: "outcome",
+        content: "The traveler shared an OTP that must never be retained here.",
+      }),
+    ).toThrow(SensitiveHumanTaskEvidenceError);
+
+    expect(() =>
+      sanitizeHumanTaskEvidence({
+        kind: "outcome",
+        content: "The traveler pasted 4111 1111 1111 1111 into the transcript.",
+      }),
+    ).toThrow(SensitiveHumanTaskEvidenceError);
   });
 });

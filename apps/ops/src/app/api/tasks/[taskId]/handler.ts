@@ -1,5 +1,15 @@
-import { HumanTaskNotFoundError, HumanTaskTransitionForbiddenError } from "@visepanda/app-server";
-import { HumanTaskUpdateSchema, type HumanTaskStatus } from "@visepanda/domain";
+import {
+  HumanTaskEvidencePolicyError,
+  HumanTaskNotFoundError,
+  HumanTaskTransitionForbiddenError,
+} from "@visepanda/app-server";
+import {
+  HumanTaskEvidenceInputSchema,
+  HumanTaskUpdateSchema,
+  SensitiveHumanTaskEvidenceError,
+  canAppendHumanTaskEvidence,
+  type HumanTaskStatus,
+} from "@visepanda/domain";
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 import {
@@ -35,21 +45,45 @@ export async function handleTaskDetailGet(
   try {
     const { taskId } = await context.params;
     const service = dependencies.getService();
-    const [task, transitions] = await Promise.all([
+    const [task, transitions, evidence] = await Promise.all([
       service.getForOps(taskId, authorization.access),
       service.listTransitions(taskId, authorization.access),
+      service.listEvidence(taskId, authorization.access),
     ]);
     return applyOpsCookies(
       NextResponse.json({
         ok: true,
         task,
         transitions,
+        evidence,
+        evidence_writable: canAppendHumanTaskEvidence(task.status),
         allowed_transitions: previewTransitions(task.status),
       }),
       authorization.cookieResponse,
     );
   } catch (error) {
     return taskErrorResponse(error, authorization.cookieResponse, "detail");
+  }
+}
+
+export async function handleTaskEvidencePost(
+  request: Request,
+  context: RouteContext,
+  dependencies: Dependencies = defaultDependencies,
+) {
+  const authorization = await dependencies.authorize(request, "task.write");
+  if (!isAuthorizedOpsRequest(authorization)) return authorization;
+
+  try {
+    const { taskId } = await context.params;
+    const evidence = await dependencies.getService().appendEvidence({
+      taskId,
+      actor: authorization.access,
+      evidence: HumanTaskEvidenceInputSchema.parse(await request.json()),
+    });
+    return applyOpsCookies(NextResponse.json({ ok: true, evidence }), authorization.cookieResponse);
+  } catch (error) {
+    return taskErrorResponse(error, authorization.cookieResponse, "evidence");
   }
 }
 
@@ -90,7 +124,11 @@ function previewTransitions(status: HumanTaskStatus): HumanTaskStatus[] {
   return [];
 }
 
-function taskErrorResponse(error: unknown, cookies: NextResponse, operation: "detail" | "note") {
+function taskErrorResponse(
+  error: unknown,
+  cookies: NextResponse,
+  operation: "detail" | "note" | "evidence",
+) {
   const status =
     error instanceof ZodError || error instanceof SyntaxError
       ? 400
@@ -98,7 +136,10 @@ function taskErrorResponse(error: unknown, cookies: NextResponse, operation: "de
         ? 403
         : error instanceof HumanTaskNotFoundError
           ? 404
-          : 503;
+          : error instanceof HumanTaskEvidencePolicyError ||
+              error instanceof SensitiveHumanTaskEvidenceError
+            ? 409
+            : 503;
   const message =
     status === 503
       ? `Human Task ${operation} is temporarily unavailable.`

@@ -90,7 +90,9 @@ receipt or expose a public status mutation. Web test fixtures inject the complet
 an unavailable durable adapter still returns the existing honest intake failure rather than fabricating
 a transition or payment state. P0-15's task-detail and operator-note methods remain Ops-only: the Web
 Human Help route invokes only `create` and cannot read contact details, write internal notes, or perform
-lifecycle transitions.
+lifecycle transitions. P0-16 extends the injected service interface with private evidence methods for
+Ops consumers, but the public Web route neither calls those methods nor exposes evidence in its
+receipt or failure response.
 
 Copilot writes a best-effort private Agent Trace after a validated result or failure. A trace write
 failure cannot alter the public response or Trip state. Trace records follow

@@ -33,7 +33,9 @@ export const opsAuditEvents = pgTable(
   "ops_audit_events",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    actorId: uuid("actor_id").notNull(),
+    actorId: uuid("actor_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "restrict" }),
     action: text("action").notNull(),
     targetType: text("target_type").notNull(),
     targetId: text("target_id"),
@@ -708,6 +710,36 @@ export const humanTaskTransitions = pgTable(
   }),
 );
 
+export const humanTaskEvidence = pgTable(
+  "human_task_evidence",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    taskId: uuid("task_id")
+      .notNull()
+      .references(() => humanTasks.id, { onDelete: "cascade" }),
+    kind: text("kind").notNull(),
+    content: text("content").notNull(),
+    redactionClassesJsonb: jsonb("redaction_classes_jsonb").notNull().default([]),
+    actorId: uuid("actor_id").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    taskCreatedIdx: index("human_task_evidence_task_created_idx").on(table.taskId, table.createdAt),
+    kindCheck: check(
+      "human_task_evidence_kind_check",
+      sql`${table.kind} in ('outcome', 'transcript_excerpt')`,
+    ),
+    contentLengthCheck: check(
+      "human_task_evidence_content_length_check",
+      sql`char_length(btrim(${table.content})) between 10 and 4000`,
+    ),
+    redactionClassesCheck: check(
+      "human_task_evidence_redaction_classes_check",
+      sql`jsonb_typeof(${table.redactionClassesJsonb}) = 'array'`,
+    ),
+  }),
+);
+
 export const usersRelations = relations(users, ({ many }) => ({
   trips: many(trips),
   agentRuns: many(agentRuns),
@@ -801,11 +833,19 @@ export const humanTasksRelations = relations(humanTasks, ({ one, many }) => ({
     references: [users.id],
   }),
   transitions: many(humanTaskTransitions),
+  evidence: many(humanTaskEvidence),
 }));
 
 export const humanTaskTransitionsRelations = relations(humanTaskTransitions, ({ one }) => ({
   task: one(humanTasks, {
     fields: [humanTaskTransitions.taskId],
+    references: [humanTasks.id],
+  }),
+}));
+
+export const humanTaskEvidenceRelations = relations(humanTaskEvidence, ({ one }) => ({
+  task: one(humanTasks, {
+    fields: [humanTaskEvidence.taskId],
     references: [humanTasks.id],
   }),
 }));

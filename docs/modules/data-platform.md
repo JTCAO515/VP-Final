@@ -17,7 +17,7 @@ commercial evidence, Human Tasks, and telemetry. Repository migrations are the s
 | Knowledge         | `pois`, `poi_facts`, `poi_fact_editorial_audit`, `knowledge_gaps`, `poi_commercial_links` |
 | Commerce          | `partners`, `outbound_clicks`                                                             |
 | Telemetry         | `events`, `trust_funnel_daily` materialized aggregate                                     |
-| Human operations  | `human_tasks`, `human_task_transitions`                                                   |
+| Human operations  | `human_tasks`, `human_task_transitions`, `human_task_evidence`                            |
 | Ops authorization | `ops_memberships`, `ops_audit_events`                                                     |
 
 ## Migration Rules
@@ -58,6 +58,10 @@ commercial evidence, Human Tasks, and telemetry. Repository migrations are the s
 - P0-15 uses the existing private `operator_note` column. Each note write and a minimized
   `human_task.note.updated` Ops audit event commit in one transaction; the audit records actor, task
   id, timestamp, and note-presence only, never note or contact content.
+- P0-16 stores pre-sanitized, append-only `human_task_evidence` only for unexpired `done` or
+  `cancelled` tasks. Direct traveler roles have no privilege. Evidence is deleted with its task by
+  the 90-day purge/account cascade; actor deletion is restricted while evidence remains. Audit rows
+  contain ids/kind only, never evidence content.
 - Ops users access data through protected server routes, not broad direct table grants.
 - Ops membership and audit tables are server-only with RLS enabled and no `anon` or `authenticated`
   Data API grants. Supabase Auth proves identity; `ops_memberships` independently grants authority.

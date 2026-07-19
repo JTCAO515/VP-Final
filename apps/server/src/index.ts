@@ -37,6 +37,7 @@ export {
   HumanTaskPreviewScopeError,
   HumanTaskTransitionForbiddenError,
   HumanTaskTransitionPolicyError,
+  HumanTaskEvidencePolicyError,
   createInMemoryHumanTaskService,
 } from "./modules/task/service.js";
 export { createInMemoryAgentTraceService, normalizeAgentFailure } from "./modules/trace/service.js";
@@ -99,6 +100,7 @@ export type {
   HumanTaskTransitionResult,
   TransitionHumanTaskCommand,
   UpdateHumanTaskNoteCommand,
+  AppendHumanTaskEvidenceCommand,
 } from "./modules/task/service.js";
 export type {
   AgentAttemptTrace,

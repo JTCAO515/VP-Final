@@ -5,6 +5,7 @@ import {
   HumanTaskPreviewScopeError,
   HumanTaskTransitionForbiddenError,
   HumanTaskTransitionPolicyError,
+  HumanTaskEvidencePolicyError,
   createInMemoryHumanTaskService,
 } from "./service.js";
 
@@ -142,6 +143,46 @@ describe("human task service", () => {
     await expect(
       service.getForOps(task.id, { ...operator, permissions: [...operator.permissions] }),
     ).resolves.toEqual(updated);
+  });
+
+  it("stores only sanitized private evidence for a terminal task", async () => {
+    const service = createInMemoryHumanTaskService({
+      now: () => new Date("2026-07-20T02:00:00.000Z"),
+    });
+    const task = await service.create({
+      identity: anonA,
+      idempotencyKey: "00000000-0000-4000-8000-000000000116",
+      request,
+    });
+
+    await expect(
+      service.appendEvidence({
+        taskId: task.id,
+        actor: { ...operator, permissions: [...operator.permissions] },
+        evidence: { kind: "outcome", content: "Called traveler@example.com before cancellation." },
+      }),
+    ).rejects.toBeInstanceOf(HumanTaskEvidencePolicyError);
+
+    await service.transition({
+      taskId: task.id,
+      actor: { ...operator, permissions: [...operator.permissions] },
+      toStatus: "cancelled",
+      reason: "The requested venue was outside the controlled preview scope.",
+    });
+    const evidence = await service.appendEvidence({
+      taskId: task.id,
+      actor: { ...operator, permissions: [...operator.permissions] },
+      evidence: {
+        kind: "outcome",
+        content: "Called traveler@example.com and confirmed +86 138 0013 8000 was not retained.",
+      },
+    });
+
+    expect(evidence.content).not.toContain("traveler@example.com");
+    expect(evidence.redaction_classes).toEqual(["email", "phone"]);
+    await expect(
+      service.listEvidence(task.id, { ...operator, permissions: [...operator.permissions] }),
+    ).resolves.toEqual([evidence]);
   });
 
   it("rejects unauthorized, illegal, and policy-gated transitions", async () => {

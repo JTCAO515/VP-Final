@@ -67,6 +67,10 @@ describe("POST /api/human-help", () => {
       updateOperatorNote: async () => {
         throw new Error("database offline");
       },
+      appendEvidence: async () => {
+        throw new Error("database offline");
+      },
+      listEvidence: async () => [],
       transition: async () => {
         throw new Error("database offline");
       },

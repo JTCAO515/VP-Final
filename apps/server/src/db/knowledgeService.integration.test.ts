@@ -15,6 +15,7 @@ describeDatabase("database KnowledgeService", () => {
 
   beforeEach(async () => {
     await sql`delete from public.ops_audit_events where actor_id = ${reviewerId}`;
+    await sql`delete from public.knowledge_gaps where city = 'Evidence City'`;
     await sql`delete from public.pois where id = ${poiId}`;
     await sql`delete from public.ops_memberships where user_id = ${reviewerId}`;
     await sql`delete from auth.users where id = ${reviewerId}`;
@@ -33,6 +34,7 @@ describeDatabase("database KnowledgeService", () => {
 
   afterAll(async () => {
     await sql`delete from public.ops_audit_events where actor_id = ${reviewerId}`;
+    await sql`delete from public.knowledge_gaps where city = 'Evidence City'`;
     await sql`delete from public.pois where id = ${poiId}`;
     await sql`delete from public.ops_memberships where user_id = ${reviewerId}`;
     await sql`delete from auth.users where id = ${reviewerId}`;
@@ -106,5 +108,33 @@ describeDatabase("database KnowledgeService", () => {
     await expect(service.listPois({ city: "Integration City" })).resolves.toMatchObject([
       { id: poiId, facts: [] },
     ]);
+  });
+
+  it("atomically creates a sanitized evidence gap and PII-free audit", async () => {
+    const gap = await service.recordEvidenceGap({
+      question: "Can traveler@example.com find an accessible station entrance?",
+      city: "Evidence City",
+      actorId: reviewerId,
+      taskId: "30000000-0000-4000-8000-000000000021",
+      evidenceId: "30000000-0000-4000-8000-000000000022",
+    });
+
+    expect(gap).toMatchObject({
+      questionPattern: "can private email find an accessible station entrance",
+      city: "Evidence City",
+      status: "open",
+    });
+    const [audit] = await sql`
+      select action, target_id, metadata_jsonb from public.ops_audit_events
+      where actor_id = ${reviewerId} and action = 'human_task.evidence.gap.proposed'
+    `;
+    expect(audit).toMatchObject({
+      target_id: gap.id,
+      metadata_jsonb: {
+        taskId: "30000000-0000-4000-8000-000000000021",
+        evidenceId: "30000000-0000-4000-8000-000000000022",
+      },
+    });
+    expect(JSON.stringify(audit)).not.toContain("traveler@example.com");
   });
 });

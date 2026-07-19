@@ -5,7 +5,7 @@ import {
 import { NextResponse } from "next/server";
 import { describe, expect, it } from "vitest";
 import type { AuthorizedOpsRequest } from "../../../../lib/opsAccess";
-import { handleTaskDetailGet, handleTaskNotePatch } from "./handler";
+import { handleTaskDetailGet, handleTaskEvidencePost, handleTaskNotePatch } from "./handler";
 
 const operator = {
   userId: "00000000-0000-4000-8000-000000000100",
@@ -81,6 +81,50 @@ describe("/api/tasks/:taskId", () => {
     await expect(
       service.getForOps(task.id, { ...operator, permissions: [...operator.permissions] }),
     ).resolves.toMatchObject({ operator_note: "Scope confirmed with the traveler." });
+  });
+
+  it("rejects non-terminal evidence and redacts contact data before returning it", async () => {
+    const { service, task, dependencies } = await fixture();
+    const early = await handleTaskEvidencePost(
+      new Request(`https://ops.example.com/api/tasks/${task.id}`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ kind: "outcome", content: "Evidence before a terminal outcome." }),
+      }),
+      { params: Promise.resolve({ taskId: task.id }) },
+      dependencies,
+    );
+    expect(early.status).toBe(409);
+
+    await service.transition({
+      taskId: task.id,
+      actor: { ...operator, permissions: [...operator.permissions] },
+      toStatus: "cancelled",
+      reason: "The traveler no longer required the requested assistance.",
+    });
+    const response = await handleTaskEvidencePost(
+      new Request(`https://ops.example.com/api/tasks/${task.id}`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          kind: "outcome",
+          content: "Traveler traveler@example.com confirmed +86 138 0013 8000 was not needed.",
+        }),
+      }),
+      { params: Promise.resolve({ taskId: task.id }) },
+      dependencies,
+    );
+    const payload = await response.json();
+    expect(response.status).toBe(200);
+    expect(payload.evidence.content).toContain("[redacted email]");
+    expect(JSON.stringify(payload)).not.toContain("traveler@example.com");
+
+    const detail = await handleTaskDetailGet(
+      new Request(`https://ops.example.com/api/tasks/${task.id}`),
+      { params: Promise.resolve({ taskId: task.id }) },
+      dependencies,
+    );
+    await expect(detail.json()).resolves.toMatchObject({ evidence_writable: true });
   });
 
   it("returns authorization failures before reading task data", async () => {

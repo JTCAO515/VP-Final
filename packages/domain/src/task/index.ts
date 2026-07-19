@@ -75,6 +75,22 @@ export const HumanTaskTransitionCommandSchema = z.object({
   reason: HumanTaskTransitionReasonSchema,
 });
 
+export const HumanTaskEvidenceKindSchema = z.enum(["outcome", "transcript_excerpt"]);
+export const HumanTaskEvidenceRedactionClassSchema = z.enum(["email", "phone"]);
+export const HumanTaskEvidenceInputSchema = z.object({
+  kind: HumanTaskEvidenceKindSchema,
+  content: z.string().trim().min(10).max(4000),
+});
+export const HumanTaskEvidenceSchema = z.object({
+  id: z.string().uuid(),
+  task_id: z.string().min(1),
+  kind: HumanTaskEvidenceKindSchema,
+  content: z.string().trim().min(10).max(4000),
+  redaction_classes: z.array(HumanTaskEvidenceRedactionClassSchema).default([]),
+  actor_id: z.string().uuid(),
+  created_at: z.string().datetime(),
+});
+
 export const HUMAN_TASK_TRANSITIONS: Readonly<Record<HumanTaskStatus, readonly HumanTaskStatus[]>> =
   {
     requested: ["triaged", "cancelled"],
@@ -129,6 +145,46 @@ export function transitionHumanTask(
   });
 }
 
+export function canAppendHumanTaskEvidence(status: HumanTaskStatus): boolean {
+  return status === "done" || status === "cancelled";
+}
+
+export function sanitizeHumanTaskEvidence(input: HumanTaskEvidenceInput): {
+  content: string;
+  redactionClasses: HumanTaskEvidenceRedactionClass[];
+} {
+  const parsed = HumanTaskEvidenceInputSchema.parse(input);
+  if (
+    /\b(password|passcode|otp|one[- ]time code|cvv|card number|passport)\b/i.test(parsed.content) ||
+    /\b(?:\d{4}[ -]){3}\d{4}\b/.test(parsed.content) ||
+    /\b\d{16}\b/.test(parsed.content)
+  ) {
+    throw new SensitiveHumanTaskEvidenceError();
+  }
+  const redactionClasses = new Set<HumanTaskEvidenceRedactionClass>();
+  const content = parsed.content
+    .replace(/[\w.+-]+@[\w.-]+\.[a-z]{2,}/gi, () => {
+      redactionClasses.add("email");
+      return "[redacted email]";
+    })
+    .replace(/\+?\d[\d\s()-]{6,}\d/g, () => {
+      redactionClasses.add("phone");
+      return "[redacted phone]";
+    });
+  return { content, redactionClasses: [...redactionClasses] };
+}
+
+export class SensitiveHumanTaskEvidenceError extends Error {
+  readonly code = "SENSITIVE_HUMAN_TASK_EVIDENCE";
+
+  constructor() {
+    super(
+      "Remove credentials, payment details, or travel-document numbers before saving evidence.",
+    );
+    this.name = "SensitiveHumanTaskEvidenceError";
+  }
+}
+
 export class InvalidHumanTaskTransitionError extends Error {
   readonly code = "INVALID_HUMAN_TASK_TRANSITION";
 
@@ -150,3 +206,7 @@ export type HumanTaskReceipt = z.infer<typeof HumanTaskReceiptSchema>;
 export type HumanTaskUpdate = z.infer<typeof HumanTaskUpdateSchema>;
 export type HumanTaskTransition = z.infer<typeof HumanTaskTransitionSchema>;
 export type HumanTaskTransitionCommand = z.infer<typeof HumanTaskTransitionCommandSchema>;
+export type HumanTaskEvidenceKind = z.infer<typeof HumanTaskEvidenceKindSchema>;
+export type HumanTaskEvidenceRedactionClass = z.infer<typeof HumanTaskEvidenceRedactionClassSchema>;
+export type HumanTaskEvidenceInput = z.infer<typeof HumanTaskEvidenceInputSchema>;
+export type HumanTaskEvidence = z.infer<typeof HumanTaskEvidenceSchema>;
