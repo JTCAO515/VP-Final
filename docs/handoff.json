@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
   "updatedAt": "2026-07-20",
-  "updatedBy": "Codex / serialized post-DEMO-01c-2 control-state reconciliation",
+  "updatedBy": "Codex / serialized post-DEMO-01c-2 and missed P0-16 reconciliation",
   "baseBranch": "main",
   "lastVerifiedCommit": "8e07982 after PR #260 merged; GitHub verify, docs, evals, Database contracts, Vercel Preview Comments, full local gates, responsive WebKit acceptance, and a real Redis 7.4 sliding-window Lua exercise passed",
   "currentPhase": "Phase 0 — production hardening",
-  "maturity": "Real-provider Copilot, durable two-stage Trip completion, truthful product states, an atomic anonymous three-turn preview wall, a trusted-IP sliding-window guard, and controlled-preview Human Task triage are merged; the public product is not yet production-Redis verified, information-architecture unified, billing-ready, or production-release complete.",
+  "maturity": "Real-provider Copilot, durable two-stage Trip completion, truthful product states, an atomic anonymous three-turn preview wall, a trusted-IP sliding-window guard, controlled-preview Human Task triage, and private evidence-to-gap review are merged; the public product is not yet production-Redis verified, information-architecture unified, billing-ready, or production-release complete.",
   "lastCompleted": "PR #260 completed DEMO-01c-2 / #247 with a Vercel-trusted client boundary, HMAC-only Upstash keys, atomic minute/hour sliding windows, honest 429/503 states, and responsive failure UX. Real local Redis protocol evidence passed; deployed Upstash/Vercel verification remains OA-013 rather than a claimed capability.",
   "activeWork": [
     {
@@ -21,21 +21,9 @@
       "state": "PRs #258 and #260 closed #246 and #247, so the anonymous-turn and trusted-IP code guards are merged. OA-012/OA-013 still gate deployed Redis evidence. #248 runtime persistence remains blocked on the unresolved provider-pricing truth contract; #249 has its IP prerequisite but still depends on #248.",
       "owner": "Operator for OA-012/OA-013; architecture for #248 pricing freeze; Codex after acceptance",
       "next": "Verify both Redis guards in Vercel without exposing secrets, and freeze #248 route-scoped pricing snapshots plus missing-pricing behavior. Do not write fake zero-cost rows or start #249's Ops summary before #248 runtime persistence exists."
-    },
-    {
-      "ref": "Issue #153 / P0-16",
-      "title": "Capture private Human Task evidence and reviewed knowledge gaps",
-      "state": "DOC-P0-03/04, P0-08, and P0-13 through P0-15 are complete. GitHub metadata is status:ready; no implementation branch is active.",
-      "owner": "Unassigned",
-      "next": "Implement the minimum private evidence record and sanitized knowledge-gap draft path. Do not publish facts, expose transcripts, or add a customer-facing support chat."
     }
   ],
   "nextActions": [
-    {
-      "priority": "P0",
-      "action": "Implement P0-16 private task evidence and sanitized knowledge-gap drafts while keeping payment and trigger-gated work blocked.",
-      "exitCriteria": "Authorized Ops can append retention-bound private evidence and propose a sanitized gap draft; travelers and public surfaces cannot read evidence, and no fact is auto-published."
-    },
     {
       "priority": "P0",
       "action": "Resolve #75's D3 operator/legal content decision before resuming P0-12.",
@@ -65,6 +53,7 @@
   "verification": [
     "PR #260 merged at 8e07982 after verify, docs, evals, Database contracts, and Vercel Preview Comments passed. Full local typecheck, lint, build, test, evals, and documentation gates passed. Route tests proved spoofed x-forwarded-for cannot bypass Vercel's trusted-header identity and missing trust/config fails before model work. Redis 7.4 exercised the production sliding-window Lua contract through the tenth allowed request, eleventh-request 60-second block, post-window recovery, HMAC-only sorted-set key shape, and one-hour TTL; this is local protocol evidence only, not production Upstash evidence. WebKit at 375/768/1280 verified the honest 429 state and mobile scroll correction with no horizontal overflow; the HTTP response was visually intercepted and is not backend evidence.",
     "PR #258 merged at 4026958 after verify, docs, evals, Database contracts, and both Vercel deployments passed. Full local typecheck, lint, build, test, evals, and documentation gates passed. WebKit verified three successful anonymous turns, a fourth-request 403 before model execution, a usable registration path, and no 375px overflow. Redis 7.4 exercised the production Lua reserve/complete/release contract, including concurrent capacity, idempotent completion, completed-limit behavior, hashed-key fields, and a 30-day TTL; this is local protocol evidence only, not production Upstash evidence.",
+    "PR #257 merged at a7373d4 after verify, docs, evals, Database contracts, and Vercel Preview Comments passed. It completed P0-16 with permission-bound append-only terminal-task evidence, email/phone redaction, inherited task retention/deletion, identifier-only audit, and sanitized open-gap proposals that cannot auto-publish facts. Local Postgres integration passed 10 tests; 11 pgTAP files passed 140 tests; browser evidence verified redaction, open-gap review state, no 375px overflow, and no console errors. The earlier serialized snapshot missed this already-merged PR; this reconciliation corrects that D2 observation rather than reimplementing the feature.",
     "PR #255 merged at 9a8bd34 after verify, docs, evals, Database contracts, and both Vercel deployments passed. The CI database suite passed 17/17 after removing an invalid cross-test audit-table ordering assumption. Local Postgres verified six Human Task integration cases; browser acceptance verified queue-to-detail, note persistence, requested-to-triaged history, zero console errors, and no 375px overflow.",
     "PR #253 merged at c036239 after verify, docs, evals, Database contracts, both Vercel deployments, and local typecheck/lint/test/build/docs/evals passed. Browser acceptance at 375/768/1280 found no horizontal overflow; the editable example-question path and honest local 503 retry state were verified.",
     "PR #251 merged at ba3401d after verify, docs, evals, Database contracts, and Vercel Preview Comments passed. It completed owner-scoped P0-10 Web resume without creating a second assistant bubble.",
@@ -73,7 +62,7 @@
     "PRs #229, #240, and #251 completed the durable P0-10 provenance, queue/callback/retry, and Web resume sequence; parent Issue #118 is closed.",
     "PRs #232 and #241 completed P0-13 durable Human Task intake and P0-14 transition enforcement, which PR #255 now consumes for authorized controlled-preview triage.",
     "P0-07b production smoke previously returned typed real-provider Copilot responses. #248 remains responsible for the expanded auditable conversation, product-event, and per-attempt cost records.",
-    "GitHub metadata reconciliation on 2026-07-20 removed status:in-progress from closed #152, kept #120 status:blocked after confirming #75's legal routes are absent, and changed #153 from status:blocked to status:ready after all named dependencies closed."
+    "GitHub metadata reconciliation on 2026-07-20 keeps #120 status:blocked after confirming #75's legal routes are absent and removes stale status:in-progress labels from closed #152, #153, and #247. No open Issue currently carries status:ready."
   ],
   "readingOrder": [
     {
