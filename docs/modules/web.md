@@ -57,10 +57,11 @@ minimum evidence needed to diagnose the real-provider gate without widening publ
 
 DEMO-01b keeps the Web surface deliberately narrow: it renders only the validated assistant
 headline/body/highlights envelope, a static read-only preview of up to three returned Trip days,
-and visible waiting, failure, and retry states. The preview contains no editing or action control;
-it is evidence of the response shape rather than a Trip Canvas. The previous fixture Trip Canvas,
-booking/share controls, Human Help CTA, commercial actions, tool cards, and citations are absent
-from this surface until their owning Phase 0 Issues are accepted.
+and visible request, failure, and retry states. Request labels describe observed lifecycle state; they
+do not claim that a provider is online or that the product is generally ready. The preview contains
+no editing or action control; it is evidence of the response shape rather than a Trip Canvas. The
+previous fixture Trip Canvas, booking/share controls, Human Help CTA, commercial actions, tool cards,
+and citations are absent from this surface until their owning Phase 0 Issues are accepted.
 
 Trip and Copilot routes resolve a server-issued anonymous session cookie or verified Supabase SSR
 identity under [ADR-0004](../adr/ADR-0004-identity-trip-ownership-security.md). The browser stores only
@@ -113,8 +114,11 @@ and truthful; retries are offered only for retryable jobs within the server-owne
 - Home-page capability content is grouped by traveler scenario (before flying, on the move, and
   when plans change). Ecosystem surfaces appear in a separate section so one viewport has one
   primary job.
-- The home product preview is illustrative only. It must not claim that bookings, payments, or
-  Human Help have occurred, and it must not introduce inert controls.
+- The home product preview is illustrative only. It is labelled as not-live data, uses no live-status
+  indicator, must not claim that bookings, payments, or Human Help have occurred, and must not
+  introduce inert controls.
+- A new visitor begins with no active request and no generated Trip. The prompt submit action remains
+  disabled until the traveler enters or chooses a question.
 - The canonical visual source is the Red Gold Design System.
 - Public product routes share one navigation and footer rhythm. Floating navigation may use a
   translucent material, but content hierarchy and legibility take priority over decoration.

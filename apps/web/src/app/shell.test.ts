@@ -1,5 +1,7 @@
+import * as React from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { attachTripToLatestAssistant, previewTripDays } from "./shell";
+import { attachTripToLatestAssistant, CopilotShell, previewTripDays, progressLabel } from "./shell";
 
 const completedTrip = {
   id: "a0a00000-0000-4000-8000-000000000001",
@@ -56,4 +58,38 @@ describe("previewTripDays", () => {
     expect(updated[0]).toBe(messages[0]);
     expect(updated[1]).toMatchObject({ body: envelope.message.body, trip: completedTrip });
   });
+
+  it("renders an honest new-visitor state without live-preview claims or an actionable blank submit", () => {
+    const runtimeGlobal = globalThis as typeof globalThis & { React?: typeof React };
+    runtimeGlobal.React = React;
+    const html = renderToStaticMarkup(React.createElement(CopilotShell));
+    delete runtimeGlobal.React;
+
+    expect(html).toContain("Illustrative arrival example");
+    expect(html).toContain("Not live trip data");
+    expect(html).toContain("No request yet");
+    expect(html).toContain('aria-label="Trip prompt"');
+    expect(html).toContain('<button disabled="" type="submit">Ask Copilot</button>');
+    expect(html).not.toContain("productLiveDot");
+    expect(html).not.toContain(">Ready<");
+  });
+
+  it("describes request evidence rather than provider health", () => {
+    expect(progressLabel(progress("idle"), false)).toBe("No request yet");
+    expect(progressLabel(progress("skeleton"), false)).toBe("Request in progress");
+    expect(progressLabel(progress("completing"), false)).toBe("Trip details in progress");
+    expect(progressLabel(progress("completed"), false)).toBe("Answer received");
+    expect(progressLabel(progress("failed"), false)).toBe("Request failed");
+    expect(progressLabel(progress("failed"), true)).toBe("Details need attention");
+  });
 });
+
+function progress(status: "idle" | "skeleton" | "completing" | "completed" | "failed") {
+  return {
+    status,
+    completedDays: 0,
+    totalDays: 0,
+    attempts: 0,
+    error: status === "failed" ? "Unavailable" : null,
+  };
+}

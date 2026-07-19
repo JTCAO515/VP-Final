@@ -316,13 +316,6 @@ button:disabled {
   margin-left: auto;
 }
 
-.productLiveDot {
-  background: var(--jade);
-  border-radius: 50%;
-  height: 8px;
-  width: 8px;
-}
-
 .productFrameBody {
   display: grid;
   grid-template-columns: minmax(0, 1.18fr) minmax(210px, 0.82fr);
@@ -716,6 +709,11 @@ button:disabled {
   font-size: 13px;
   font-weight: 800;
   padding: 8px 12px;
+}
+
+.conversationStatus.idle {
+  background: var(--surface-warm);
+  color: var(--muted);
 }
 
 .conversationStatus.skeleton,
