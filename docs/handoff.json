@@ -1,19 +1,19 @@
 {
   "schemaVersion": 1,
   "updatedAt": "2026-07-20",
-  "updatedBy": "Codex / serialized Phase 0 control-state reconciliation",
+  "updatedBy": "Codex / serialized post-P0-15 control-state reconciliation",
   "baseBranch": "main",
-  "lastVerifiedCommit": "c036239 after PR #253 merged; GitHub verify, docs, evals, Database contracts, both Vercel deployments, and local browser acceptance passed",
+  "lastVerifiedCommit": "9a8bd34 after PR #255 merged; GitHub verify, docs, evals, Database contracts, both Vercel deployments, local Postgres integration, and responsive browser acceptance passed",
   "currentPhase": "Phase 0 — production hardening",
-  "maturity": "Real-provider Copilot, durable two-stage Trip completion, and the P0-11 truth-UI audit are merged; the public product is not yet information-architecture unified, cost-guarded, billing-ready, or production-release complete.",
-  "lastCompleted": "PR #253 completed P0-11 by removing fabricated live/readiness states, making retained preview data explicit, and verifying honest failure behavior at 375/768/1280. P0-12 is now dependency-ready.",
+  "maturity": "Real-provider Copilot, durable two-stage Trip completion, truthful product states, and controlled-preview Human Task triage are merged; the public product is not yet information-architecture unified, cost-guarded, billing-ready, or production-release complete.",
+  "lastCompleted": "PR #255 completed P0-15 with permission-bounded durable Human Task detail, internal-note persistence plus PII-free atomic audit, controlled-preview transitions, and responsive Ops acceptance. P0-16 is now dependency-ready.",
   "activeWork": [
     {
       "ref": "Issue #120 / P0-12",
       "title": "Unify the Web shell and mobile Copilot information architecture",
-      "state": "P0-10 and P0-11 are complete. GitHub metadata is status:ready; no implementation branch is active yet.",
-      "owner": "Codex",
-      "next": "Read the Issue boundary from current main, unify the public shell and mobile information architecture without restoring removed fake capabilities, and attach responsive browser evidence."
+      "state": "P0-10 and P0-11 are complete, but the acceptance requires Privacy, Terms, and disclosure routes. #75 is still blocked on an accountable operator/legal content baseline, so GitHub metadata is status:blocked and no implementation branch is active.",
+      "owner": "Operator/legal reviewer for #75; Codex after acceptance",
+      "next": "Accept and record #75's entity, privacy, affiliate, Human Help, and emergency wording baseline; implement its routes; then resume P0-12 without inventing legal promises or linking to 404 pages."
     },
     {
       "ref": "Issue #185 / DEMO-01c",
@@ -23,18 +23,18 @@
       "next": "Do not write fake zero-cost rows. Resume #248 runtime persistence after architecture accepts a route-scoped pricing snapshot and missing-pricing failure policy; then execute #246, #247, and #249 in order."
     },
     {
-      "ref": "Issue #152 / P0-15",
-      "title": "Build authorized Ops Human Task triage",
-      "state": "P0-13 and P0-14 are merged, so the issue is dependency-ready, but remains sequenced after the current P0-12 control action.",
+      "ref": "Issue #153 / P0-16",
+      "title": "Capture private Human Task evidence and reviewed knowledge gaps",
+      "state": "DOC-P0-03/04, P0-08, and P0-13 through P0-15 are complete. GitHub metadata is status:ready; no implementation branch is active.",
       "owner": "Unassigned",
-      "next": "Start from current main only after the active P0-12 boundary settles; preserve DOC-P0-04 controlled-preview and least-privilege RBAC constraints."
+      "next": "Implement the minimum private evidence record and sanitized knowledge-gap draft path. Do not publish facts, expose transcripts, or add a customer-facing support chat."
     }
   ],
   "nextActions": [
     {
       "priority": "P0",
-      "action": "Implement P0-12 Web shell and mobile Copilot information-architecture unification from the refreshed main baseline.",
-      "exitCriteria": "Public navigation, responsive hierarchy, and mobile Copilot flow are coherent at accepted viewports without reintroducing fabricated state or unsupported controls."
+      "action": "Resolve #75's D3 operator/legal content decision before resuming P0-12.",
+      "exitCriteria": "The accountable entity/controller/contact, effective date, privacy categories/processors/retention, affiliate disclosure, Human Help limits, and emergency wording are accepted and versioned without payment promises."
     },
     {
       "priority": "P0",
@@ -43,11 +43,12 @@
     },
     {
       "priority": "P0",
-      "action": "Continue P0-15 after P0-11, while keeping payment and trigger-gated work blocked.",
-      "exitCriteria": "Authorized Ops users can perform only accepted Human Task transitions; no paid fulfilment, SLA, or emergency-service claim is introduced."
+      "action": "Implement P0-16 private task evidence and sanitized knowledge-gap drafts while keeping payment and trigger-gated work blocked.",
+      "exitCriteria": "Authorized Ops can append retention-bound private evidence and propose a sanitized gap draft; travelers and public surfaces cannot read evidence, and no fact is auto-published."
     }
   ],
   "blockers": [
+    "P0-12 is D2-blocked by #75: the required Privacy, Terms, affiliate, Human Help, and emergency routes do not exist, and their accountable operator/legal wording is not accepted. Do not invent legal copy or add dead links.",
     "#248 runtime writer is D2-blocked until provider pricing snapshot provenance and missing-pricing behavior are accepted; the current router reports USD 0 when prices are absent, which is not auditable cost truth.",
     "P0-03 and P0-04 code are merged, but real Supabase production evidence still awaits OA-001 through OA-004 before full production readiness can be claimed.",
     "Ops RBAC code is merged; real first-admin and deployed role evidence awaits OA-010.",
@@ -55,14 +56,15 @@
     "Phase 1/2/3 functional rollout remains trigger-gated even where tooling or schema preparation has merged."
   ],
   "verification": [
+    "PR #255 merged at 9a8bd34 after verify, docs, evals, Database contracts, and both Vercel deployments passed. The CI database suite passed 17/17 after removing an invalid cross-test audit-table ordering assumption. Local Postgres verified six Human Task integration cases; browser acceptance verified queue-to-detail, note persistence, requested-to-triaged history, zero console errors, and no 375px overflow.",
     "PR #253 merged at c036239 after verify, docs, evals, Database contracts, both Vercel deployments, and local typecheck/lint/test/build/docs/evals passed. Browser acceptance at 375/768/1280 found no horizontal overflow; the editable example-question path and honest local 503 retry state were verified.",
     "PR #251 merged at ba3401d after verify, docs, evals, Database contracts, and Vercel Preview Comments passed. It completed owner-scoped P0-10 Web resume without creating a second assistant bubble.",
     "PR #242 merged at 7fc8e07 after verify, docs, evals, Database contracts, and Vercel Preview Comments passed. V2-75 is closed; this tooling merge does not waive Phase 1 rollout triggers.",
     "PR #250 merged at a688c7b after verify, docs, evals, Database contracts, and Vercel Preview Comments passed. It freezes #248 schemas only; no runtime persistence or complete cost evidence is claimed.",
     "PRs #229, #240, and #251 completed the durable P0-10 provenance, queue/callback/retry, and Web resume sequence; parent Issue #118 is closed.",
-    "PRs #232 and #241 completed P0-13 durable Human Task intake and P0-14 transition enforcement; P0-15 is now dependency-ready.",
+    "PRs #232 and #241 completed P0-13 durable Human Task intake and P0-14 transition enforcement, which PR #255 now consumes for authorized controlled-preview triage.",
     "P0-07b production smoke previously returned typed real-provider Copilot responses. #248 remains responsible for the expanded auditable conversation, product-event, and per-attempt cost records.",
-    "GitHub metadata reconciliation on 2026-07-20 removed status:in-progress from closed #119 and changed #120 from status:blocked to status:ready after P0-11 merged."
+    "GitHub metadata reconciliation on 2026-07-20 removed status:in-progress from closed #152, kept #120 status:blocked after confirming #75's legal routes are absent, and changed #153 from status:blocked to status:ready after all named dependencies closed."
   ],
   "readingOrder": [
     {
