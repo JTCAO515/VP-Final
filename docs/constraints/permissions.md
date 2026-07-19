@@ -27,6 +27,9 @@ Status: active
 - Human Task status mutation MUST require `task.write`; the actor MUST come from the verified Ops
   session, never request JSON. Every accepted change MUST atomically persist from/to status, actor,
   bounded reason, and timestamp. Generic task updates MUST NOT accept status.
+- Human Task detail requires `task.contact.read`; internal-note mutation requires `task.write` and
+  MUST atomically append a server-derived Ops audit event. Audit metadata MUST NOT copy the note,
+  description, contact, cookie, credential, or other task PII.
 - A Trip MUST have exactly one effective owner. Anonymous-to-authenticated claim MUST require both the
   current verified user and the current signed anonymous session, be idempotent, and never transfer an
   already authenticated Trip.

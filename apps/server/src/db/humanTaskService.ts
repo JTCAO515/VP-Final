@@ -1,12 +1,13 @@
 import {
   HumanTaskSchema,
   HumanTaskTransitionSchema,
+  HumanTaskUpdateSchema,
   type HumanTask,
   type HumanTaskTransition,
 } from "@visepanda/domain";
 import { and, asc, count, desc, eq, gte, isNull, lt, sql } from "drizzle-orm";
 import type { Db } from "./client.js";
-import { humanTaskTransitions, humanTasks, users } from "./schema.js";
+import { humanTaskTransitions, humanTasks, opsAuditEvents, users } from "./schema.js";
 import {
   HUMAN_TASK_DAILY_CAPACITY,
   HumanTaskCapacityError,
@@ -89,6 +90,41 @@ export function createDbHumanTaskService(db: Db, options?: { now?: () => Date })
     async listForOps() {
       const rows = await db.select().from(humanTasks).orderBy(desc(humanTasks.createdAt));
       return rows.map(taskFromRow);
+    },
+
+    async getForOps(taskId, actor) {
+      if (!actor.permissions.includes("task.contact.read")) {
+        throw new HumanTaskTransitionForbiddenError();
+      }
+      const [row] = await db.select().from(humanTasks).where(eq(humanTasks.id, taskId)).limit(1);
+      if (!row) throw new HumanTaskNotFoundError();
+      return taskFromRow(row);
+    },
+
+    async updateOperatorNote(input) {
+      if (!input.actor.permissions.includes("task.write")) {
+        throw new HumanTaskTransitionForbiddenError();
+      }
+      const update = HumanTaskUpdateSchema.parse({
+        id: input.taskId,
+        operator_note: input.note,
+      });
+      return db.transaction(async (tx) => {
+        const [row] = await tx
+          .update(humanTasks)
+          .set({ operatorNote: update.operator_note, updatedAt: now() })
+          .where(eq(humanTasks.id, input.taskId))
+          .returning();
+        if (!row) throw new HumanTaskNotFoundError();
+        await tx.insert(opsAuditEvents).values({
+          actorId: input.actor.userId,
+          action: "human_task.note.updated",
+          targetType: "human_task",
+          targetId: input.taskId,
+          metadataJsonb: { notePresent: update.operator_note !== null },
+        });
+        return taskFromRow(row);
+      });
     },
 
     async transition(input) {

@@ -3,6 +3,7 @@ import {
   HumanTaskSchema,
   HumanTaskTransitionCommandSchema,
   HumanTaskTransitionSchema,
+  HumanTaskUpdateSchema,
   createHumanTask,
   transitionHumanTask,
   type HumanTask,
@@ -32,6 +33,12 @@ export type TransitionHumanTaskCommand = {
   reason: string;
 };
 
+export type UpdateHumanTaskNoteCommand = {
+  taskId: string;
+  actor: OpsAccess;
+  note: string | null;
+};
+
 export type HumanTaskTransitionResult = {
   task: HumanTask;
   transition: HumanTaskTransition;
@@ -41,6 +48,8 @@ export type HumanTaskService = {
   create(input: CreateHumanTaskCommand): Promise<HumanTask>;
   listForOwner(identity: HumanTaskIdentity): Promise<HumanTask[]>;
   listForOps(): Promise<HumanTask[]>;
+  getForOps(taskId: string, actor: OpsAccess): Promise<HumanTask>;
+  updateOperatorNote(input: UpdateHumanTaskNoteCommand): Promise<HumanTask>;
   transition(input: TransitionHumanTaskCommand): Promise<HumanTaskTransitionResult>;
   listTransitions(taskId: string, actor: OpsAccess): Promise<HumanTaskTransition[]>;
 };
@@ -144,6 +153,29 @@ export function createInMemoryHumanTaskService(options?: { now?: () => Date }): 
     async listForOps() {
       return records.map((record) => record.task);
     },
+    async getForOps(taskId, actor) {
+      assertTaskPermission(actor, "task.contact.read");
+      const record = records.find((entry) => entry.task.id === taskId);
+      if (!record) throw new HumanTaskNotFoundError();
+      return record.task;
+    },
+    async updateOperatorNote(input) {
+      assertTaskPermission(input.actor, "task.write");
+      const index = records.findIndex((record) => record.task.id === input.taskId);
+      if (index < 0) throw new HumanTaskNotFoundError();
+      const update = HumanTaskUpdateSchema.parse({
+        id: input.taskId,
+        operator_note: input.note,
+      });
+      const record = records[index]!;
+      const task = HumanTaskSchema.parse({
+        ...record.task,
+        operator_note: update.operator_note,
+        updated_at: now().toISOString(),
+      });
+      records[index] = { ...record, task };
+      return task;
+    },
     async transition(input) {
       const index = records.findIndex((record) => record.task.id === input.taskId);
       if (index < 0) throw new HumanTaskNotFoundError();
@@ -208,7 +240,10 @@ function isPreviewTransitionEnabled(from: HumanTaskStatus, to: HumanTaskStatus):
   );
 }
 
-function assertTaskPermission(actor: OpsAccess, permission: "task.read" | "task.write"): void {
+function assertTaskPermission(
+  actor: OpsAccess,
+  permission: "task.read" | "task.contact.read" | "task.write",
+): void {
   if (!actor.permissions.includes(permission)) throw new HumanTaskTransitionForbiddenError();
 }
 

@@ -112,6 +112,10 @@ medical records, or unnecessary location history.
 
 - Only the requester and authorized Ops roles may access a task. Authorization must use the accepted
   server-side RBAC path, never email allowlists or client metadata.
+- P0-15 task detail requires the explicit `task.contact.read` permission. Internal operator-note
+  writes require `task.write`; the server stores the note on the private task and atomically appends
+  an audit event containing only actor, task id, timestamp, and whether a note exists. The audit event
+  must not duplicate the note, request description, contact details, cookie, signature, or credential.
 - Routine telemetry must contain event metadata only, not task descriptions, contacts, transcripts, or
   payment evidence.
 - Durable task data carries a 90-day retention deadline only after `done` or `cancelled`; a restricted
@@ -154,5 +158,8 @@ owner, and a new review date.
 - 2026-07-14: initial conservative controlled-preview baseline established under the operator's
   delegated OA-007 instruction.
 - 2026-07-16: P0-13 durable owner/idempotency/capacity intake boundary implemented for review.
+- 2026-07-20: P0-15 authorized task detail, minimized internal-note persistence, PII-free note audit,
+  and controlled-preview triage UI implemented for review. Quote, payment, assignment, and paid
+  fulfilment controls remain unavailable.
 - Required before a public paid launch: payment/entity/legal decision, verified provider integration,
   durable task controls, public-copy implementation, and a fresh policy review.

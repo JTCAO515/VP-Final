@@ -67,6 +67,8 @@ describe("PATCH /api/tasks/:taskId/status", () => {
     expect(response.status).toBe(200);
     expect(payload.task.status).toBe("triaged");
     expect(payload.transition.actor_id).toBe(operator.userId);
+    expect(payload.task).not.toHaveProperty("description");
+    expect(JSON.stringify(payload)).not.toContain("traveler@example.com");
   });
 
   it("maps invalid and preview-blocked transitions to conflict", async () => {

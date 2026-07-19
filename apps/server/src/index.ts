@@ -98,6 +98,7 @@ export type {
   HumanTaskService,
   HumanTaskTransitionResult,
   TransitionHumanTaskCommand,
+  UpdateHumanTaskNoteCommand,
 } from "./modules/task/service.js";
 export type {
   AgentAttemptTrace,

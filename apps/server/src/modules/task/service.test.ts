@@ -114,6 +114,36 @@ describe("human task service", () => {
     ).resolves.toHaveLength(2);
   });
 
+  it("restricts task detail and persists an internal operator note", async () => {
+    const now = new Date("2026-07-16T04:00:00.000Z");
+    const service = createInMemoryHumanTaskService({ now: () => now });
+    const task = await service.create({
+      identity: anonA,
+      idempotencyKey: "00000000-0000-4000-8000-000000000115",
+      request,
+    });
+
+    await expect(
+      service.getForOps(task.id, {
+        userId: "00000000-0000-4000-8000-000000000200",
+        role: "editor",
+        permissions: ["knowledge.read", "knowledge.write"],
+      }),
+    ).rejects.toBeInstanceOf(HumanTaskTransitionForbiddenError);
+
+    const updated = await service.updateOperatorNote({
+      taskId: task.id,
+      actor: { ...operator, permissions: [...operator.permissions] },
+      note: "Traveler confirmed the hotel name and preferred reply channel.",
+    });
+    expect(updated.operator_note).toBe(
+      "Traveler confirmed the hotel name and preferred reply channel.",
+    );
+    await expect(
+      service.getForOps(task.id, { ...operator, permissions: [...operator.permissions] }),
+    ).resolves.toEqual(updated);
+  });
+
   it("rejects unauthorized, illegal, and policy-gated transitions", async () => {
     const service = createInMemoryHumanTaskService();
     const task = await service.create({
