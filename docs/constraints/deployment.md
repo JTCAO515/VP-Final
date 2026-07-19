@@ -34,6 +34,15 @@ Status: active
   unavailable and MUST NOT select a process-local counter outside tests or explicit `local-demo`.
   Reservations and idempotent completion markers MUST share the same 30-day key TTL; an in-flight
   capacity response MUST remain distinct from a completed-limit registration wall.
+- Copilot IP rate limiting MUST use the same approved Upstash Redis service plus a distinct server-only
+  `VISEPANDA_IP_HASH_SALT` of at least 32 characters. Optional
+  `VISEPANDA_COPILOT_IP_RATE_LIMIT_MINUTE` and `VISEPANDA_COPILOT_IP_RATE_LIMIT_HOUR` default to `10`
+  and `60`; invalid values fail closed. Only Vercel's `x-vercel-forwarded-for` is trusted, and raw IP,
+  salt, cookie, signature, or spoofable `x-forwarded-for` values MUST NOT be stored or logged. Missing
+  Vercel trust evidence/configuration keeps all deployed Copilot requests unavailable; only tests and
+  explicit `local-demo` may use the fixed local limiter identity.
+  The Vercel system marker `VERCEL` is part of the Turborepo env contract; it is platform evidence,
+  not a substitute for the explicit `VISEPANDA_RUNTIME_MODE` runtime selection.
 - The completion callback and QStash delivery use a five-minute request budget. The ten-minute job
   claim lease MUST remain longer than that budget so a still-running callback cannot be reclaimed by
   an overlapping delivery.

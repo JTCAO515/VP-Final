@@ -118,10 +118,16 @@ export function CopilotShell() {
   const [registrationGate, setRegistrationGate] = useState(false);
   const monitorGeneration = useRef(0);
   const promptInput = useRef<HTMLInputElement>(null);
+  const preflightFailureNotice = useRef<HTMLDivElement>(null);
 
   const isWorking = progress.status === "skeleton" || progress.status === "completing";
   const detailPassFailed = isDetailPassFailure(progress, trip);
   const registrationNotice = anonymousTurnNotice(anonymousUsage, registrationGate);
+  const shouldRevealPreflightFailure =
+    progress.status === "failed" &&
+    progress.attempts === 0 &&
+    !detailPassFailed &&
+    !registrationGate;
 
   useEffect(() => {
     const generation = ++monitorGeneration.current;
@@ -137,6 +143,14 @@ export function CopilotShell() {
       monitorGeneration.current += 1;
     };
   }, []);
+
+  useEffect(() => {
+    if (!shouldRevealPreflightFailure) return;
+    const frame = window.requestAnimationFrame(() => {
+      preflightFailureNotice.current?.scrollIntoView({ block: "center" });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [progress.error, shouldRevealPreflightFailure]);
 
   async function loadTrip(
     tripId: string,
@@ -306,6 +320,20 @@ export function CopilotShell() {
         if (!data.ok && data.code === "ANONYMOUS_TURN_LIMIT_REACHED") {
           setAnonymousUsage(parseAnonymousTurnUsage(data.anonymousUsage));
           setRegistrationGate(true);
+          setProgress({
+            status: "failed",
+            completedDays: 0,
+            totalDays: 0,
+            attempts: 0,
+            error: data.error,
+          });
+          return;
+        }
+        if (
+          !data.ok &&
+          (data.code === "COPILOT_IP_RATE_LIMITED" ||
+            data.code === "COPILOT_IP_RATE_LIMIT_UNAVAILABLE")
+        ) {
           setProgress({
             status: "failed",
             completedDays: 0,
@@ -543,7 +571,7 @@ export function CopilotShell() {
               ))}
             </div>
             {progress.status === "failed" && !detailPassFailed && !registrationGate ? (
-              <div className="copilotFailure" role="alert">
+              <div className="copilotFailure" ref={preflightFailureNotice} role="alert">
                 <strong>Copilot could not respond.</strong>
                 <span>{progress.error ?? "Please check your connection and try again."}</span>
                 <button onClick={() => void submitPrompt({ retry: true })} type="button">

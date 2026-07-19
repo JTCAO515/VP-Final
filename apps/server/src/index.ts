@@ -53,6 +53,15 @@ export {
   resolveUpstashAnonymousTurnCounterConfig,
 } from "./modules/copilot/anonymousTurnCounter.js";
 export {
+  COPILOT_IP_RATE_LIMIT_TTL_SECONDS,
+  DEFAULT_COPILOT_IP_HOUR_LIMIT,
+  DEFAULT_COPILOT_IP_MINUTE_LIMIT,
+  CopilotIpRateLimitUnavailableError,
+  createInMemoryCopilotIpRateLimiter,
+  createUpstashCopilotIpRateLimiter,
+  resolveUpstashCopilotIpRateLimiterConfig,
+} from "./modules/copilot/ipRateLimiter.js";
+export {
   CompletionDeliverySchema,
   CompletionQueueUnavailableError,
   createQStashCompletionQueue,
@@ -91,6 +100,11 @@ export type {
   AnonymousTurnReservation,
   UpstashAnonymousTurnCounterConfig,
 } from "./modules/copilot/anonymousTurnCounter.js";
+export type {
+  CopilotIpRateLimitAdmission,
+  CopilotIpRateLimiter,
+  UpstashCopilotIpRateLimiterConfig,
+} from "./modules/copilot/ipRateLimiter.js";
 export type {
   ClaimedCompletionJob,
   CompletionJobService,

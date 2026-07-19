@@ -1,6 +1,7 @@
 import {
   createInMemoryAgentTraceService,
   createInMemoryAnonymousTurnCounter,
+  createInMemoryCopilotIpRateLimiter,
   createInMemoryHumanTaskService,
   createInMemoryKnowledgeService,
   createVersionedInMemoryTripService,
@@ -15,6 +16,7 @@ const originalEnvironment = {
   anonSecret: process.env.VISEPANDA_ANON_SESSION_SECRET,
   supabaseUrl: process.env.SUPABASE_URL,
   supabaseAnonKey: process.env.SUPABASE_ANON_KEY,
+  vercel: process.env.VERCEL,
 };
 
 beforeEach(() => {
@@ -22,6 +24,7 @@ beforeEach(() => {
   process.env.VISEPANDA_ANON_SESSION_SECRET = "test-secret";
   delete process.env.SUPABASE_URL;
   delete process.env.SUPABASE_ANON_KEY;
+  process.env.VERCEL = "1";
 });
 
 afterEach(() => {
@@ -30,12 +33,14 @@ afterEach(() => {
   restoreEnv("VISEPANDA_ANON_SESSION_SECRET", originalEnvironment.anonSecret);
   restoreEnv("SUPABASE_URL", originalEnvironment.supabaseUrl);
   restoreEnv("SUPABASE_ANON_KEY", originalEnvironment.supabaseAnonKey);
+  restoreEnv("VERCEL", originalEnvironment.vercel);
 });
 
 describe("POST /api/copilot anonymous turn wall", () => {
   it("returns usage after three successful turns and blocks the fourth", async () => {
     setTestWebServerServices({
       anonymousTurnCounter: createInMemoryAnonymousTurnCounter({ limit: 3 }),
+      copilotIpRateLimiter: createInMemoryCopilotIpRateLimiter(),
       humanTaskService: createInMemoryHumanTaskService(),
       knowledgeService: createInMemoryKnowledgeService(),
       traceService: createInMemoryAgentTraceService(),
@@ -63,6 +68,7 @@ describe("POST /api/copilot anonymous turn wall", () => {
 
   it("fails honestly when the deployed counter is unavailable", async () => {
     setTestWebServerServices({
+      copilotIpRateLimiter: createInMemoryCopilotIpRateLimiter(),
       humanTaskService: createInMemoryHumanTaskService(),
       knowledgeService: createInMemoryKnowledgeService(),
       traceService: createInMemoryAgentTraceService(),
@@ -89,6 +95,7 @@ describe("POST /api/copilot anonymous turn wall", () => {
           };
         },
       },
+      copilotIpRateLimiter: createInMemoryCopilotIpRateLimiter(),
       humanTaskService: createInMemoryHumanTaskService(),
       knowledgeService: createInMemoryKnowledgeService(),
       traceService: createInMemoryAgentTraceService(),
@@ -104,9 +111,67 @@ describe("POST /api/copilot anonymous turn wall", () => {
       anonymousUsage: { completedTurns: 1, limit: 3, remaining: 2 },
     });
   });
+
+  it("cannot be bypassed by changing spoofable x-forwarded-for", async () => {
+    setTestWebServerServices({
+      anonymousTurnCounter: createInMemoryAnonymousTurnCounter({ limit: 3 }),
+      copilotIpRateLimiter: createInMemoryCopilotIpRateLimiter({
+        minuteLimit: 1,
+        hourLimit: 2,
+      }),
+      humanTaskService: createInMemoryHumanTaskService(),
+      knowledgeService: createInMemoryKnowledgeService(),
+      traceService: createInMemoryAgentTraceService(),
+      tripService: createVersionedInMemoryTripService(),
+    });
+
+    expect((await POST(request("Allowed", "192.0.2.1"))).status).toBe(200);
+    const blocked = await POST(request("Blocked", "198.51.100.99"));
+
+    expect(blocked.status).toBe(429);
+    expect(blocked.headers.get("retry-after")).toBe("60");
+    await expect(blocked.json()).resolves.toEqual({
+      ok: false,
+      code: "COPILOT_IP_RATE_LIMITED",
+      error: "This network has sent too many Copilot requests. Try again in 60 seconds.",
+      retryAfterSeconds: 60,
+    });
+
+    const differentTrustedNetwork = await POST(
+      request("Allowed elsewhere", undefined, true, "198.51.100.7"),
+    );
+    expect(differentTrustedNetwork.status).toBe(200);
+    await expect(differentTrustedNetwork.json()).resolves.toMatchObject({
+      anonymousUsage: { completedTurns: 2, limit: 3, remaining: 1 },
+    });
+  });
+
+  it("fails closed when Vercel does not supply a trusted client address", async () => {
+    setTestWebServerServices({
+      anonymousTurnCounter: createInMemoryAnonymousTurnCounter({ limit: 3 }),
+      copilotIpRateLimiter: createInMemoryCopilotIpRateLimiter(),
+      humanTaskService: createInMemoryHumanTaskService(),
+      knowledgeService: createInMemoryKnowledgeService(),
+      traceService: createInMemoryAgentTraceService(),
+      tripService: createVersionedInMemoryTripService(),
+    });
+
+    const response = await POST(request("No trusted address", undefined, false));
+    expect(response.status).toBe(503);
+    await expect(response.json()).resolves.toEqual({
+      ok: false,
+      code: "COPILOT_IP_RATE_LIMIT_UNAVAILABLE",
+      error: "Copilot request protection is temporarily unavailable. Try again later.",
+    });
+  });
 });
 
-function request(message: string): Request {
+function request(
+  message: string,
+  spoofedAddress?: string,
+  includeTrustedAddress = true,
+  trustedAddress = "203.0.113.42",
+): Request {
   const anonId = "a".repeat(43);
   const cookie = createAnonymousSessionValue("test-secret", anonId);
   return new Request("https://example.test/api/copilot", {
@@ -114,6 +179,8 @@ function request(message: string): Request {
     headers: {
       cookie: `vp_anon_session=${cookie}`,
       "content-type": "application/json",
+      ...(includeTrustedAddress ? { "x-vercel-forwarded-for": trustedAddress } : {}),
+      ...(spoofedAddress ? { "x-forwarded-for": spoofedAddress } : {}),
     },
     body: JSON.stringify({ message }),
   });

@@ -46,6 +46,14 @@ Every interface baseline documents:
   `ANONYMOUS_TURN_CONTROL_UNAVAILABLE`. Clients may present these states but cannot submit a count.
   Successful completion is idempotent per reservation so one bounded retry after an ambiguous Redis
   response cannot double-count the turn.
+- Before that turn contract or any model call, every valid `POST /api/copilot` request passes the
+  server-owned IP sliding-window guard. The Web trust boundary uses only the first valid Vercel
+  `x-vercel-forwarded-for` address and ignores `x-forwarded-for`; the server sends only an HMAC-derived
+  Redis key. Exceeding the minute or hour window returns HTTP 429 `COPILOT_IP_RATE_LIMITED`, a positive
+  integer `retryAfterSeconds`, and the same `Retry-After` header. Missing trusted address, hash salt,
+  Redis configuration, Redis availability, or a valid atomic response returns HTTP 503
+  `COPILOT_IP_RATE_LIMIT_UNAVAILABLE`. Neither response invokes the model or exposes the address,
+  key, salt, configured thresholds, Redis detail, cookie, or signature.
 
 ## Trip Contract
 
