@@ -11,24 +11,24 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 - **Updated:** 2026-07-20 by Codex / serialized Phase 0 control-state reconciliation
 - **Base branch:** `main`
-- **Last fully verified commit:** `ba3401d after PR #251 merged; PRs #242, #250, and #251 each passed GitHub verify, docs, evals, Database contracts, and Vercel Preview Comments`
+- **Last fully verified commit:** `c036239 after PR #253 merged; GitHub verify, docs, evals, Database contracts, both Vercel deployments, and local browser acceptance passed`
 - **Current phase:** Phase 0 — production hardening
-- **Maturity:** Real-provider Copilot and durable two-stage Trip completion are merged; the public product is not yet truth-UI audited, cost-guarded, billing-ready, or production-release complete.
-- **Last completed control action:** PR #251 completed P0-10 by adding owner-scoped completion polling and in-place Web resume. PR #242 merged bulk knowledge-fact import, and PR #250 froze the privacy-safe conversation, cost, and event persistence schema for #248.
+- **Maturity:** Real-provider Copilot, durable two-stage Trip completion, and the P0-11 truth-UI audit are merged; the public product is not yet information-architecture unified, cost-guarded, billing-ready, or production-release complete.
+- **Last completed control action:** PR #253 completed P0-11 by removing fabricated live/readiness states, making retained preview data explicit, and verifying honest failure behavior at 375/768/1280. P0-12 is now dependency-ready.
 
 ### Active Work
 
 | Ref | Work | State | Owner | Next action |
 | --- | --- | --- | --- | --- |
-| Issue #119 / P0-11 | Remove fabricated product states and dead controls | P0-10 is complete, so the truth-UI audit is now independently executable. GitHub metadata is status:ready. | Codex | Audit the current Web Copilot at 375/768/1280, replace unlabeled previews and fixed states, remove dead controls, and preserve honest retry behavior. |
+| Issue #120 / P0-12 | Unify the Web shell and mobile Copilot information architecture | P0-10 and P0-11 are complete. GitHub metadata is status:ready; no implementation branch is active yet. | Codex | Read the Issue boundary from current main, unify the public shell and mobile information architecture without restoring removed fake capabilities, and attach responsive browser evidence. |
 | Issue #185 / DEMO-01c | Demo cost guard and rate-limit controls | The trusted-IP, Upstash Redis, Postgres audit, and anonymous three-turn interfaces are frozen. PR #250 merged the #248 schema-first contract; runtime persistence is blocked only on the unresolved provider-pricing truth contract. | Codex / architecture for pricing freeze | Do not write fake zero-cost rows. Resume #248 runtime persistence after architecture accepts a route-scoped pricing snapshot and missing-pricing failure policy; then execute #246, #247, and #249 in order. |
-| Issue #152 / P0-15 | Build authorized Ops Human Task triage | P0-13 and P0-14 are merged, so the issue is dependency-ready, but remains sequenced after the current P0-11 control action. | Unassigned | Start from current main only after the active P0-11 boundary settles; preserve DOC-P0-04 controlled-preview and least-privilege RBAC constraints. |
+| Issue #152 / P0-15 | Build authorized Ops Human Task triage | P0-13 and P0-14 are merged, so the issue is dependency-ready, but remains sequenced after the current P0-12 control action. | Unassigned | Start from current main only after the active P0-12 boundary settles; preserve DOC-P0-04 controlled-preview and least-privilege RBAC constraints. |
 
 ### Immediate Queue
 
 | Priority | Control action | Exit criteria |
 | --- | --- | --- |
-| P0 | Implement P0-11 truth-UI cleanup from the refreshed main baseline. | New visitors see an honest onboarding state; previews are explicit; fixed online/readiness claims and dead controls are absent; failure remains visible and retryable; desktop/mobile interaction evidence passes. |
+| P0 | Implement P0-12 Web shell and mobile Copilot information-architecture unification from the refreshed main baseline. | Public navigation, responsive hierarchy, and mobile Copilot flow are coherent at accepted viewports without reintroducing fabricated state or unsupported controls. |
 | P0 | Obtain architecture acceptance for #248 provider pricing snapshots and missing-pricing behavior. | Pricing provenance, units, effective dates, fallback attribution, and fail-honest behavior are frozen without treating unknown price as USD 0. |
 | P0 | Continue P0-15 after P0-11, while keeping payment and trigger-gated work blocked. | Authorized Ops users can perform only accepted Human Task transitions; no paid fulfilment, SLA, or emergency-service claim is introduced. |
 
@@ -42,13 +42,14 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 ### Last Verification Evidence
 
+- PR #253 merged at c036239 after verify, docs, evals, Database contracts, both Vercel deployments, and local typecheck/lint/test/build/docs/evals passed. Browser acceptance at 375/768/1280 found no horizontal overflow; the editable example-question path and honest local 503 retry state were verified.
 - PR #251 merged at ba3401d after verify, docs, evals, Database contracts, and Vercel Preview Comments passed. It completed owner-scoped P0-10 Web resume without creating a second assistant bubble.
 - PR #242 merged at 7fc8e07 after verify, docs, evals, Database contracts, and Vercel Preview Comments passed. V2-75 is closed; this tooling merge does not waive Phase 1 rollout triggers.
 - PR #250 merged at a688c7b after verify, docs, evals, Database contracts, and Vercel Preview Comments passed. It freezes #248 schemas only; no runtime persistence or complete cost evidence is claimed.
 - PRs #229, #240, and #251 completed the durable P0-10 provenance, queue/callback/retry, and Web resume sequence; parent Issue #118 is closed.
 - PRs #232 and #241 completed P0-13 durable Human Task intake and P0-14 transition enforcement; P0-15 is now dependency-ready.
 - P0-07b production smoke previously returned typed real-provider Copilot responses. #248 remains responsible for the expanded auditable conversation, product-event, and per-attempt cost records.
-- GitHub metadata reconciliation on 2026-07-20 changed #119 and #152 from status:blocked to status:ready, changed #185 to status:in-progress, and removed stale status:in-progress labels from completed #82, #150, #151, #226, #227, and #228.
+- GitHub metadata reconciliation on 2026-07-20 removed status:in-progress from closed #119 and changed #120 from status:blocked to status:ready after P0-11 merged.
 
 ## Mandatory Markdown Reading Order
 
