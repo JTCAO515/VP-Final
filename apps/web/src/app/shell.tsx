@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import {
+  AnonymousTurnUsageSchema,
   CompletionJobSchema,
   CopilotEnvelopeSchema,
   GenerationProgressSchema,
@@ -9,6 +10,7 @@ import {
   type CopilotEnvelope,
   type CompletionJob,
   type GenerationProgress,
+  type AnonymousTurnUsage,
   type TripDay,
   type TripState,
 } from "@visepanda/domain";
@@ -35,14 +37,14 @@ type ChatMessage = {
 
 type CopilotSuccessResponse = {
   ok: true;
+  anonymousUsage: unknown;
   envelope: unknown;
   progress: unknown;
   trip: unknown;
   version: unknown;
 };
 
-type ErrorResponse = { ok: false; error: string };
-
+type ErrorResponse = { ok: false; error: string; code?: string; anonymousUsage?: unknown };
 const LAST_TRIP_ID_KEY = "visepanda.lastTripId";
 const EXAMPLE_PROMPTS = [
   "How do I prepare payment before arriving in China?",
@@ -112,11 +114,14 @@ export function CopilotShell() {
   const [tripVersion, setTripVersion] = useState<number | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [completionJob, setCompletionJob] = useState<CompletionJob | null>(null);
+  const [anonymousUsage, setAnonymousUsage] = useState<AnonymousTurnUsage | null>(null);
+  const [registrationGate, setRegistrationGate] = useState(false);
   const monitorGeneration = useRef(0);
   const promptInput = useRef<HTMLInputElement>(null);
 
   const isWorking = progress.status === "skeleton" || progress.status === "completing";
   const detailPassFailed = isDetailPassFailure(progress, trip);
+  const registrationNotice = anonymousTurnNotice(anonymousUsage, registrationGate);
 
   useEffect(() => {
     const generation = ++monitorGeneration.current;
@@ -293,10 +298,29 @@ export function CopilotShell() {
       });
       const data = (await response.json()) as CopilotSuccessResponse | ErrorResponse;
       if (!response.ok || !data.ok) {
+        if (!data.ok && data.code === "ANONYMOUS_TURN_IN_PROGRESS") {
+          setAnonymousUsage(parseAnonymousTurnUsage(data.anonymousUsage));
+          setRegistrationGate(false);
+          throw new Error(data.error);
+        }
+        if (!data.ok && data.code === "ANONYMOUS_TURN_LIMIT_REACHED") {
+          setAnonymousUsage(parseAnonymousTurnUsage(data.anonymousUsage));
+          setRegistrationGate(true);
+          setProgress({
+            status: "failed",
+            completedDays: 0,
+            totalDays: 0,
+            attempts: 0,
+            error: data.error,
+          });
+          return;
+        }
         throw new Error(data.ok ? "Copilot request failed." : data.error);
       }
 
       const envelope = CopilotEnvelopeSchema.parse(data.envelope);
+      setAnonymousUsage(parseAnonymousTurnUsage(data.anonymousUsage));
+      setRegistrationGate(false);
       const nextTrip = TripStateSchema.nullable().parse(data.trip);
       const nextVersion = zeroOrPositiveInteger(data.version);
       setMessages((current) => [
@@ -333,6 +357,7 @@ export function CopilotShell() {
   }
 
   function chooseQuestion(question: string): void {
+    if (registrationGate) return;
     setInput(question);
     window.requestAnimationFrame(() => {
       promptInput.current?.scrollIntoView({ block: "center" });
@@ -451,8 +476,10 @@ export function CopilotShell() {
                 <h1>Conversation</h1>
                 <span>Practical China travel guidance</span>
               </div>
-              <span className={`conversationStatus ${progress.status}`}>
-                {progressLabel(progress, detailPassFailed)}
+              <span
+                className={`conversationStatus ${registrationGate ? "accessRequired" : progress.status}`}
+              >
+                {registrationGate ? "Sign in required" : progressLabel(progress, detailPassFailed)}
               </span>
             </div>
             <p className="scopeNote">
@@ -505,18 +532,35 @@ export function CopilotShell() {
             </div>
             <div className="quickReplies" aria-label="Example questions">
               {EXAMPLE_PROMPTS.map((prompt) => (
-                <button key={prompt} onClick={() => chooseQuestion(prompt)} type="button">
+                <button
+                  disabled={registrationGate}
+                  key={prompt}
+                  onClick={() => chooseQuestion(prompt)}
+                  type="button"
+                >
                   {prompt}
                 </button>
               ))}
             </div>
-            {progress.status === "failed" && !detailPassFailed ? (
+            {progress.status === "failed" && !detailPassFailed && !registrationGate ? (
               <div className="copilotFailure" role="alert">
                 <strong>Copilot could not respond.</strong>
                 <span>{progress.error ?? "Please check your connection and try again."}</span>
                 <button onClick={() => void submitPrompt({ retry: true })} type="button">
                   Try again
                 </button>
+              </div>
+            ) : null}
+            {registrationNotice ? (
+              <div
+                className={`registrationNotice ${registrationGate ? "blocked" : "warning"}`}
+                role={registrationGate ? "alert" : "status"}
+              >
+                <div>
+                  <strong>{registrationNotice.title}</strong>
+                  <span>{registrationNotice.detail}</span>
+                </div>
+                <a href="/account">Create account or sign in</a>
               </div>
             ) : null}
             <form
@@ -528,12 +572,13 @@ export function CopilotShell() {
             >
               <input
                 aria-label="Trip prompt"
+                disabled={registrationGate}
                 onChange={(event) => setInput(event.target.value)}
                 placeholder="Ask about payments, transport, language, or travel basics"
                 ref={promptInput}
                 value={input}
               />
-              <button disabled={!input.trim() || isWorking} type="submit">
+              <button disabled={!input.trim() || isWorking || registrationGate} type="submit">
                 {isWorking ? "Thinking" : "Ask Copilot"}
               </button>
             </form>
@@ -751,4 +796,32 @@ export function progressLabel(progress: GenerationProgress, detailPassFailed: bo
   if (progress.status === "completed") return "Answer received";
   if (detailPassFailed) return "Details need attention";
   return "Request failed";
+}
+
+export function anonymousTurnNotice(
+  usage: AnonymousTurnUsage | null,
+  blocked: boolean,
+): { title: string; detail: string } | null {
+  if (blocked && !usage) {
+    return {
+      title: "Sign in to continue.",
+      detail: "This anonymous question was blocked before it reached a model.",
+    };
+  }
+  if (!usage || usage.remaining > 0) return null;
+  return blocked
+    ? {
+        title: "Your anonymous preview is complete.",
+        detail:
+          "Create an account or sign in before asking another question. Your blocked question was not sent to a model.",
+      }
+    : {
+        title: "Your next question needs an account.",
+        detail: `You have used all ${usage.limit} anonymous Copilot turns. Create an account or sign in before you continue.`,
+      };
+}
+
+function parseAnonymousTurnUsage(value: unknown): AnonymousTurnUsage | null {
+  const parsed = AnonymousTurnUsageSchema.safeParse(value);
+  return parsed.success ? parsed.data : null;
 }

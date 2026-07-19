@@ -5,13 +5,16 @@ import { useEffect, useState, type FormEvent } from "react";
 type SessionResponse =
   | { ok: true; authenticated: boolean; user: { email: string | null } | null }
   | { ok: false; error: string };
+type AuthMode = "login" | "register";
 
 export function AccountPanel() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [sessionEmail, setSessionEmail] = useState<string | null>(null);
+  const [authMode, setAuthMode] = useState<AuthMode>("login");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
     void refreshSession();
@@ -32,19 +35,34 @@ export function AccountPanel() {
     }
   }
 
-  async function login(event: FormEvent) {
+  async function authenticate(event: FormEvent) {
     event.preventDefault();
     setLoading(true);
     setError(null);
+    setNotice(null);
     try {
-      const response = await fetch("/api/auth/login", {
+      const response = await fetch(`/api/auth/${authMode === "register" ? "register" : "login"}`, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-      const data = (await response.json()) as { ok: boolean; error?: string };
-      if (!response.ok || !data.ok) throw new Error(data.error ?? "Login failed.");
+      const data = (await response.json()) as {
+        ok: boolean;
+        confirmationRequired?: boolean;
+        error?: string;
+      };
+      if (!response.ok || !data.ok) {
+        throw new Error(
+          data.error ?? (authMode === "register" ? "Registration failed." : "Login failed."),
+        );
+      }
       setPassword("");
+      if (authMode === "register" && data.confirmationRequired) {
+        setAuthMode("login");
+        setNotice("Check your email to confirm the account, then sign in here.");
+        setLoading(false);
+        return;
+      }
       await refreshSession();
       const claimResponse = await fetch("/api/trips/claim", { method: "POST" });
       const claim = (await claimResponse.json()) as { ok: boolean; error?: string };
@@ -54,9 +72,15 @@ export function AccountPanel() {
         );
       }
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Login failed.");
+      setError(cause instanceof Error ? cause.message : "Authentication failed.");
       setLoading(false);
     }
+  }
+
+  function chooseAuthMode(nextMode: AuthMode) {
+    setAuthMode(nextMode);
+    setError(null);
+    setNotice(null);
   }
 
   async function logout() {
@@ -81,8 +105,8 @@ export function AccountPanel() {
           {sessionEmail ? "Your session is active" : "Keep your trip close."}
         </h1>
         <p>
-          Sign in to keep your travel plans with you. You can still ask the Copilot without an
-          account.
+          Create an account or sign in to keep your travel plans with you. A limited Copilot preview
+          is available without an account.
         </p>
         {loading ? (
           <div className="accountLoading" role="status">
@@ -98,7 +122,23 @@ export function AccountPanel() {
             </button>
           </div>
         ) : (
-          <form className="accountForm" onSubmit={(event) => void login(event)}>
+          <form className="accountForm" onSubmit={(event) => void authenticate(event)}>
+            <div className="accountMode" aria-label="Account action">
+              <button
+                aria-pressed={authMode === "login"}
+                onClick={() => chooseAuthMode("login")}
+                type="button"
+              >
+                Sign in
+              </button>
+              <button
+                aria-pressed={authMode === "register"}
+                onClick={() => chooseAuthMode("register")}
+                type="button"
+              >
+                Create account
+              </button>
+            </div>
             <label>
               Email
               <input
@@ -113,7 +153,7 @@ export function AccountPanel() {
             <label>
               Password
               <input
-                autoComplete="current-password"
+                autoComplete={authMode === "register" ? "new-password" : "current-password"}
                 minLength={8}
                 onChange={(event) => setPassword(event.target.value)}
                 placeholder="At least 8 characters"
@@ -123,10 +163,15 @@ export function AccountPanel() {
               />
             </label>
             <button disabled={loading} type="submit">
-              Sign in
+              {authMode === "register" ? "Create account" : "Sign in"}
             </button>
           </form>
         )}
+        {notice ? (
+          <p className="accountNotice" role="status">
+            {notice}
+          </p>
+        ) : null}
         {error ? (
           <p className="accountError" role="alert">
             {error}

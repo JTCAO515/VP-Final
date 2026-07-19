@@ -727,6 +727,11 @@ button:disabled {
   color: var(--red);
 }
 
+.conversationStatus.accessRequired {
+  background: var(--gold-soft);
+  color: var(--gold-dark);
+}
+
 .scopeNote {
   border-bottom: 1px solid var(--line);
   color: var(--ink-soft);
@@ -1343,6 +1348,47 @@ button:disabled {
   width: fit-content;
 }
 
+.registrationNotice {
+  align-items: center;
+  background: var(--gold-soft);
+  border-top: 1px solid color-mix(in srgb, var(--gold), white 62%);
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  padding: 16px 22px;
+}
+
+.registrationNotice.blocked {
+  background: var(--red-soft);
+  border-top-color: color-mix(in srgb, var(--red), white 72%);
+}
+
+.registrationNotice div {
+  display: grid;
+  gap: 5px;
+}
+
+.registrationNotice strong {
+  color: var(--ink);
+}
+
+.registrationNotice span {
+  color: var(--ink-soft);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.registrationNotice a {
+  background: var(--ink);
+  border-radius: 10px;
+  color: var(--surface);
+  flex: 0 0 auto;
+  font-size: 14px;
+  font-weight: 800;
+  min-height: 44px;
+  padding: 12px 15px;
+}
+
 .railComposer {
   border-top: 1px solid var(--line);
   display: grid;
@@ -1359,6 +1405,13 @@ button:disabled {
   min-height: 54px;
   min-width: 0;
   padding: 0 16px;
+}
+
+.quickReplies button:disabled,
+.railComposer input:disabled,
+.railComposer button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
 }
 
 .railComposer button,
@@ -1922,9 +1975,20 @@ button:disabled {
   .railHeader,
   .quickReplies,
   .railComposer,
-  .copilotFailure {
+  .copilotFailure,
+  .registrationNotice {
     padding-left: 18px;
     padding-right: 18px;
+  }
+
+  .registrationNotice {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .registrationNotice a {
+    justify-content: center;
+    text-align: center;
   }
 }
 
@@ -2372,6 +2436,28 @@ summary:active {
   padding: 0 14px;
 }
 
+.accountMode {
+  background: var(--surface-warm);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 4px;
+  grid-template-columns: 1fr 1fr;
+  padding: 4px;
+}
+
+.accountForm .accountMode button {
+  background: transparent;
+  color: var(--ink-soft);
+  min-height: 40px;
+}
+
+.accountForm .accountMode button[aria-pressed="true"] {
+  background: var(--surface);
+  box-shadow: 0 1px 5px rgba(33, 23, 20, 0.12);
+  color: var(--ink);
+}
+
 .accountForm button,
 .accountSession button {
   border: 0;
@@ -2386,6 +2472,16 @@ summary:active {
   font-size: 14px;
   gap: 10px;
   margin-top: 28px;
+}
+
+.accountNotice {
+  background: var(--jade-soft);
+  border-radius: 8px;
+  color: var(--jade);
+  font-size: 14px;
+  line-height: 1.5;
+  margin-top: 16px;
+  padding: 12px 14px;
 }
 
 .accountLoading span {

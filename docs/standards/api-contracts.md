@@ -36,6 +36,16 @@ Every interface baseline documents:
 - Web Trip/Copilot routes map missing deployed runtime/database composition to HTTP 503 with
   `code: RUNTIME_UNAVAILABLE`; they do not expose the missing setting name, connection value, or
   provider detail in the public response.
+- A successful anonymous `POST /api/copilot` response adds
+  `anonymousUsage: { completedTurns, limit, remaining }`, parsed by the domain-owned
+  `AnonymousTurnUsageSchema`; authenticated responses use `null`.
+  The fourth anonymous turn returns HTTP 403 `ANONYMOUS_TURN_LIMIT_REACHED` with the same minimized
+  usage object and never invokes the model. Capacity held only by in-flight reservations returns
+  HTTP 409 `ANONYMOUS_TURN_IN_PROGRESS`, does not claim the quota is complete, and never invokes an
+  additional model call. Missing counter configuration returns HTTP 503
+  `ANONYMOUS_TURN_CONTROL_UNAVAILABLE`. Clients may present these states but cannot submit a count.
+  Successful completion is idempotent per reservation so one bounded retry after an ambiguous Redis
+  response cannot double-count the turn.
 
 ## Trip Contract
 

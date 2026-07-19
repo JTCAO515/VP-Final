@@ -6,6 +6,7 @@ import type { AgentTraceService } from "./modules/trace/service.js";
 import type { CopilotPipelineDependencies } from "./modules/copilot/service.js";
 import type { CompletionJobService } from "./modules/copilot/completionJobService.js";
 import type { CompletionQueue } from "./modules/copilot/completionQueue.js";
+import type { AnonymousTurnCounter } from "./modules/copilot/anonymousTurnCounter.js";
 
 export type RequestIdentity =
   | { kind: "anonymous"; anonId: string }
@@ -21,6 +22,7 @@ export type ServerContext = {
   copilotModelDependencies?: Pick<CopilotPipelineDependencies, "routeIntent" | "generateEnvelope">;
   completionJobService?: CompletionJobService;
   completionQueue?: CompletionQueue;
+  anonymousTurnCounter?: AnonymousTurnCounter;
   demoDialogueOnly?: boolean;
   tripService: VersionedTripService;
 };

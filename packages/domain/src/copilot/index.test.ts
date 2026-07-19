@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  AnonymousTurnUsageSchema,
   CompletionJobSchema,
   CopilotEnvelopeSchema,
   GenerationProgressSchema,
@@ -65,6 +66,27 @@ describe("GenerationProgressSchema", () => {
       attempts: 0,
       error: null,
     });
+  });
+});
+
+describe("AnonymousTurnUsageSchema", () => {
+  it("accepts internally consistent anonymous quota usage", () => {
+    expect(AnonymousTurnUsageSchema.parse({ completedTurns: 2, limit: 3, remaining: 1 })).toEqual({
+      completedTurns: 2,
+      limit: 3,
+      remaining: 1,
+    });
+  });
+
+  it("rejects impossible or contradictory quota usage", () => {
+    expect(AnonymousTurnUsageSchema.parse({ completedTurns: 4, limit: 3, remaining: 0 })).toEqual({
+      completedTurns: 4,
+      limit: 3,
+      remaining: 0,
+    });
+    expect(() =>
+      AnonymousTurnUsageSchema.parse({ completedTurns: 2, limit: 3, remaining: 0 }),
+    ).toThrow("remaining must equal limit minus completedTurns");
   });
 });
 

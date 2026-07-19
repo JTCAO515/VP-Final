@@ -10,23 +10,23 @@ the outbound gateway.
 
 ## Routes
 
-| Route                            | Purpose                                                     |
-| -------------------------------- | ----------------------------------------------------------- |
-| `/`                              | Copilot workspace and Trip Canvas                           |
-| `/explore`                       | Execution-fact discovery                                    |
-| `/guides/[slug]`                 | Editorial execution guides                                  |
-| `/[city]/[poi]`                  | Programmatic POI page                                       |
-| `/human-help`                    | Human Task request surface                                  |
-| `/account`                       | Server-verified traveler session and email/password sign-in |
-| `/share/trips/[token]`           | Public read-only Trip share                                 |
-| `/outbound`                      | Validated partner redirect gateway                          |
-| `/api/copilot`                   | First-pass Copilot request                                  |
-| `/api/copilot/complete`          | Silent second-pass completion                               |
-| `/api/copilot/complete/callback` | Signed QStash completion delivery callback                  |
-| `/api/auth/login`                | Supabase email/password sign-in and SSR cookie issuance     |
-| `/api/auth/logout`               | Supabase sign-out and SSR cookie clearing                   |
-| `/api/auth/session`              | Verified display-safe session status and cookie refresh     |
-| `/api/trips/*`                   | Trip read, claim, and share handlers                        |
+| Route                            | Purpose                                                                  |
+| -------------------------------- | ------------------------------------------------------------------------ |
+| `/`                              | Copilot workspace and Trip Canvas                                        |
+| `/explore`                       | Execution-fact discovery                                                 |
+| `/guides/[slug]`                 | Editorial execution guides                                               |
+| `/[city]/[poi]`                  | Programmatic POI page                                                    |
+| `/human-help`                    | Human Task request surface                                               |
+| `/account`                       | Server-verified traveler session and email/password registration/sign-in |
+| `/share/trips/[token]`           | Public read-only Trip share                                              |
+| `/outbound`                      | Validated partner redirect gateway                                       |
+| `/api/copilot`                   | First-pass Copilot request                                               |
+| `/api/copilot/complete`          | Silent second-pass completion                                            |
+| `/api/copilot/complete/callback` | Signed QStash completion delivery callback                               |
+| `/api/auth/login`                | Supabase email/password sign-in and SSR cookie issuance                  |
+| `/api/auth/logout`               | Supabase sign-out and SSR cookie clearing                                |
+| `/api/auth/session`              | Verified display-safe session status and cookie refresh                  |
+| `/api/trips/*`                   | Trip read, claim, and share handlers                                     |
 
 ## Data Access
 
@@ -69,14 +69,27 @@ the last Trip id as a convenience; it does not store or submit owner identity or
 `currentTrip` snapshot.
 
 P0-03 resolves identity at the Copilot API boundary and ignores body-provided owner fields there. It
-also implements the Supabase SSR login/logout/session routes and a signed, server-expiring anonymous
-cookie with one-key rotation. The adapter is implemented and unit-tested; real external Auth evidence
+also implements the Supabase SSR registration/login/logout/session routes and a signed,
+server-expiring anonymous cookie with one-key rotation. Registration either establishes a server
+session or honestly asks the traveler to confirm the Supabase email before signing in. The adapter is
+implemented and unit-tested; real external Auth evidence
 remains blocked on OA-001 through OA-003 in the
 [operator action register](../governance/operator-action-register.md). Trip read/claim/share
 authorization is implemented by P0-04. Existing writes carry `expectedVersion`; stale writes return
 409 and leave the current Canvas unchanged. Claim uses the verified account together with the current
 signed anonymous cookie, and owner-created public shares can be revoked. Real Supabase release evidence
 still depends on OA-001 through OA-003.
+
+P0-20's first demo guard limits a signed anonymous identity to three successfully completed Copilot
+turns. The third response carries server-derived usage metadata and the Web surface warns that the
+next question requires account access. A fourth attempt returns HTTP 403
+`ANONYMOUS_TURN_LIMIT_REACHED`, is not sent to a model, disables further anonymous composition, and
+links to the `/account` registration/sign-in form. If concurrent in-flight requests only reserve the
+remaining capacity, the API instead returns HTTP 409 `ANONYMOUS_TURN_IN_PROGRESS` and the UI asks the
+traveler to retry without claiming the quota is complete. User-facing quota copy derives the
+configured limit from the domain-validated response. Missing Upstash configuration returns HTTP 503
+`ANONYMOUS_TURN_CONTROL_UNAVAILABLE`; no browser value can raise or reset the server count. Verified
+authenticated users bypass this anonymous-only wall.
 
 Human Help now writes through the durable P0-13 adapter. `/api/human-help` derives owner identity from
 the verified session or signed anonymous cookie, requires an idempotency key, and returns only the

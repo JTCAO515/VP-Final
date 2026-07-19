@@ -7,6 +7,7 @@ import {
   createDbKnowledgeService,
   createDbVersionedTripService,
   createDemoCopilotModelDependencies,
+  createInMemoryAnonymousTurnCounter,
   createInMemoryCompletionJobService,
   createInMemoryKnowledgeService,
   createInMemoryHumanTaskService,
@@ -14,10 +15,13 @@ import {
   createVersionedInMemoryTripService,
   createModelCompleteDay,
   createQStashCompletionQueue,
+  createUpstashAnonymousTurnCounter,
   resolveQStashCompletionQueueConfig,
+  resolveUpstashAnonymousTurnCounterConfig,
   resolveDatabaseAdapter,
   resolveRuntimeMode,
   type AgentTraceService,
+  type AnonymousTurnCounter,
   type CompleteDay,
   type CompletionJobService,
   type CompletionQueue,
@@ -36,6 +40,7 @@ type WebServerServices = {
   completionJobService?: CompletionJobService;
   completionQueue?: CompletionQueue;
   completionDay?: CompleteDay;
+  anonymousTurnCounter?: AnonymousTurnCounter;
 };
 
 const store = globalThis as typeof globalThis & {
@@ -93,6 +98,7 @@ export function createWebServerServices(environment: Environment): WebServerServ
       traceService: createInMemoryAgentTraceService(),
       tripService,
       completionJobService: createInMemoryCompletionJobService(tripService),
+      anonymousTurnCounter: createInMemoryAnonymousTurnCounter(),
     };
   }
 
@@ -101,6 +107,7 @@ export function createWebServerServices(environment: Environment): WebServerServ
   const db = createDb(databaseUrl);
   const traceService = createDbAgentTraceService(db);
   const completionQueue = resolveCompletionQueue(environment);
+  const anonymousTurnCounter = resolveAnonymousTurnCounter(environment);
   return {
     humanTaskService: createDbHumanTaskService(db),
     knowledgeService: createDbKnowledgeService(db),
@@ -108,8 +115,17 @@ export function createWebServerServices(environment: Environment): WebServerServ
     tripService: createDbVersionedTripService(db),
     completionJobService: createDbCompletionJobService(db),
     ...(completionQueue ? { completionQueue } : {}),
+    ...(anonymousTurnCounter ? { anonymousTurnCounter } : {}),
     completionDay: createModelCompleteDay({ environment, traceService }),
   };
+}
+
+function resolveAnonymousTurnCounter(environment: Environment): AnonymousTurnCounter | undefined {
+  try {
+    return createUpstashAnonymousTurnCounter(resolveUpstashAnonymousTurnCounterConfig(environment));
+  } catch {
+    return undefined;
+  }
 }
 
 function resolveCompletionQueue(environment: Environment): CompletionQueue | undefined {
