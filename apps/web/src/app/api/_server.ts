@@ -2,17 +2,25 @@ import {
   appRouter,
   createDb,
   createDbAgentTraceService,
+  createDbCompletionJobService,
   createDbHumanTaskService,
   createDbKnowledgeService,
   createDbVersionedTripService,
   createDemoCopilotModelDependencies,
+  createInMemoryCompletionJobService,
   createInMemoryKnowledgeService,
   createInMemoryHumanTaskService,
   createInMemoryAgentTraceService,
   createVersionedInMemoryTripService,
+  createModelCompleteDay,
+  createQStashCompletionQueue,
+  resolveQStashCompletionQueueConfig,
   resolveDatabaseAdapter,
   resolveRuntimeMode,
   type AgentTraceService,
+  type CompleteDay,
+  type CompletionJobService,
+  type CompletionQueue,
   type HumanTaskService,
   type KnowledgeService,
   type RequestIdentity,
@@ -25,6 +33,9 @@ type WebServerServices = {
   knowledgeService: KnowledgeService;
   traceService: AgentTraceService;
   tripService: VersionedTripService;
+  completionJobService?: CompletionJobService;
+  completionQueue?: CompletionQueue;
+  completionDay?: CompleteDay;
 };
 
 const store = globalThis as typeof globalThis & {
@@ -75,23 +86,38 @@ export function createWebServerServices(environment: Environment): WebServerServ
   }
 
   if (availability.adapter === "memory-demo") {
+    const tripService = createVersionedInMemoryTripService();
     return {
       humanTaskService: createInMemoryHumanTaskService(),
       knowledgeService: createInMemoryKnowledgeService(),
       traceService: createInMemoryAgentTraceService(),
-      tripService: createVersionedInMemoryTripService(),
+      tripService,
+      completionJobService: createInMemoryCompletionJobService(tripService),
     };
   }
 
   const databaseUrl = environment.DATABASE_URL;
   if (!databaseUrl) throw new WebRuntimeUnavailableError("database_url_missing");
   const db = createDb(databaseUrl);
+  const traceService = createDbAgentTraceService(db);
+  const completionQueue = resolveCompletionQueue(environment);
   return {
     humanTaskService: createDbHumanTaskService(db),
     knowledgeService: createDbKnowledgeService(db),
-    traceService: createDbAgentTraceService(db),
+    traceService,
     tripService: createDbVersionedTripService(db),
+    completionJobService: createDbCompletionJobService(db),
+    ...(completionQueue ? { completionQueue } : {}),
+    completionDay: createModelCompleteDay({ environment, traceService }),
   };
+}
+
+function resolveCompletionQueue(environment: Environment): CompletionQueue | undefined {
+  try {
+    return createQStashCompletionQueue(resolveQStashCompletionQueueConfig(environment));
+  } catch {
+    return undefined;
+  }
 }
 
 function getWebServerServices(environment: Environment): WebServerServices {
@@ -110,4 +136,17 @@ function getWebServerServices(environment: Environment): WebServerServices {
 export function setTestWebServerServices(services: WebServerServices | null): void {
   if (services) store.__visepandaTestServices = services;
   else delete store.__visepandaTestServices;
+}
+
+export function getCompletionCallbackRuntime() {
+  const services = getWebServerServices(process.env);
+  if (!services.completionJobService || !services.completionQueue || !services.completionDay) {
+    throw new WebRuntimeUnavailableError("completion_runtime_unavailable");
+  }
+  return {
+    ...services,
+    completionJobService: services.completionJobService,
+    completionQueue: services.completionQueue,
+    completionDay: services.completionDay,
+  };
 }

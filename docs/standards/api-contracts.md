@@ -62,6 +62,14 @@ append `completion_job_id` plus a positive `completion_attempt` to its Trip even
 provided and the source is `ai_copilot`. The pair is unique. Normal Trip writes leave both null, and a
 callback cannot use these fields to bypass owner or expected-version checks.
 
+`POST /api/copilot/complete` accepts only owner-scoped `tripId` and `expectedVersion`, creates or
+replays the unique job for that Trip/base version, publishes a minimized QStash delivery, and returns
+the typed `CompletionJob`. The signed callback payload is exactly `{ jobId, idempotencyKey }`; it
+contains no owner, prompt, Trip snapshot, or provider credential. Signature verification precedes
+JSON parsing and state mutation. Owner-scoped status and retry interfaces return no job to a
+non-owner, and retry cannot exceed `maxAttempts`. Missing queue configuration is a non-2xx
+unavailable result, never process-local delivery.
+
 Anonymous-to-authenticated claim consumes only a verified authenticated identity that also carries
 the current signed anonymous id. Share capabilities are opaque, owner-created, read-only, and
 owner-revocable. P0-04b and P0-04c implement the database and HTTP mappings respectively.

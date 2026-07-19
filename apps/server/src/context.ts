@@ -4,6 +4,8 @@ import type { TelemetryService } from "./modules/telemetry/service.js";
 import type { HumanTaskService } from "./modules/task/service.js";
 import type { AgentTraceService } from "./modules/trace/service.js";
 import type { CopilotPipelineDependencies } from "./modules/copilot/service.js";
+import type { CompletionJobService } from "./modules/copilot/completionJobService.js";
+import type { CompletionQueue } from "./modules/copilot/completionQueue.js";
 
 export type RequestIdentity =
   | { kind: "anonymous"; anonId: string }
@@ -17,6 +19,8 @@ export type ServerContext = {
   telemetryService?: TelemetryService;
   traceService?: AgentTraceService;
   copilotModelDependencies?: Pick<CopilotPipelineDependencies, "routeIntent" | "generateEnvelope">;
+  completionJobService?: CompletionJobService;
+  completionQueue?: CompletionQueue;
   demoDialogueOnly?: boolean;
   tripService: VersionedTripService;
 };

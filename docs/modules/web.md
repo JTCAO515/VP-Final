@@ -10,22 +10,23 @@ the outbound gateway.
 
 ## Routes
 
-| Route                   | Purpose                                                     |
-| ----------------------- | ----------------------------------------------------------- |
-| `/`                     | Copilot workspace and Trip Canvas                           |
-| `/explore`              | Execution-fact discovery                                    |
-| `/guides/[slug]`        | Editorial execution guides                                  |
-| `/[city]/[poi]`         | Programmatic POI page                                       |
-| `/human-help`           | Human Task request surface                                  |
-| `/account`              | Server-verified traveler session and email/password sign-in |
-| `/share/trips/[token]`  | Public read-only Trip share                                 |
-| `/outbound`             | Validated partner redirect gateway                          |
-| `/api/copilot`          | First-pass Copilot request                                  |
-| `/api/copilot/complete` | Silent second-pass completion                               |
-| `/api/auth/login`       | Supabase email/password sign-in and SSR cookie issuance     |
-| `/api/auth/logout`      | Supabase sign-out and SSR cookie clearing                   |
-| `/api/auth/session`     | Verified display-safe session status and cookie refresh     |
-| `/api/trips/*`          | Trip read, claim, and share handlers                        |
+| Route                            | Purpose                                                     |
+| -------------------------------- | ----------------------------------------------------------- |
+| `/`                              | Copilot workspace and Trip Canvas                           |
+| `/explore`                       | Execution-fact discovery                                    |
+| `/guides/[slug]`                 | Editorial execution guides                                  |
+| `/[city]/[poi]`                  | Programmatic POI page                                       |
+| `/human-help`                    | Human Task request surface                                  |
+| `/account`                       | Server-verified traveler session and email/password sign-in |
+| `/share/trips/[token]`           | Public read-only Trip share                                 |
+| `/outbound`                      | Validated partner redirect gateway                          |
+| `/api/copilot`                   | First-pass Copilot request                                  |
+| `/api/copilot/complete`          | Silent second-pass completion                               |
+| `/api/copilot/complete/callback` | Signed QStash completion delivery callback                  |
+| `/api/auth/login`                | Supabase email/password sign-in and SSR cookie issuance     |
+| `/api/auth/logout`               | Supabase sign-out and SSR cookie clearing                   |
+| `/api/auth/session`              | Verified display-safe session status and cookie refresh     |
+| `/api/trips/*`                   | Trip read, claim, and share handlers                        |
 
 ## Data Access
 
@@ -87,6 +88,11 @@ Copilot writes a best-effort private Agent Trace after a validated result or fai
 failure cannot alter the public response or Trip state. Trace records follow
 [ADR-0007](../adr/ADR-0007-agent-trace-privacy-retention.md) and never contain raw prompts, envelope
 payloads, cookies, credentials, or narrative errors.
+
+`POST /api/copilot/complete` now queues a durable owner-scoped job and returns the typed job receipt;
+it does not wait for or pretend to return completed Trip details. The callback reads the raw request,
+verifies the `Upstash-Signature` against the configured callback URL, then validates the minimized
+payload before invoking the completion processor. Polling and traveler recovery UI remain P0-10c.
 
 ## UI Rules
 
