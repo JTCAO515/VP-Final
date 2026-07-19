@@ -100,7 +100,7 @@ const SCENARIO_GROUPS = [
 ] as const;
 
 export function CopilotShell() {
-  const [input, setInput] = useState(EXAMPLE_PROMPTS[0] ?? "");
+  const [input, setInput] = useState("");
   const [progress, setProgress] = useState<GenerationProgress>({
     status: "idle",
     completedDays: 0,
@@ -113,6 +113,7 @@ export function CopilotShell() {
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [completionJob, setCompletionJob] = useState<CompletionJob | null>(null);
   const monitorGeneration = useRef(0);
+  const promptInput = useRef<HTMLInputElement>(null);
 
   const isWorking = progress.status === "skeleton" || progress.status === "completing";
   const detailPassFailed = isDetailPassFailure(progress, trip);
@@ -331,6 +332,14 @@ export function CopilotShell() {
     }
   }
 
+  function chooseQuestion(question: string): void {
+    setInput(question);
+    window.requestAnimationFrame(() => {
+      promptInput.current?.scrollIntoView({ block: "center" });
+      promptInput.current?.focus();
+    });
+  }
+
   return (
     <main className="shell copilotShell">
       <SiteHeader active="copilot" />
@@ -363,11 +372,13 @@ export function CopilotShell() {
           </dl>
         </div>
 
-        <div className="productFrame" aria-label="VisePanda Copilot product preview">
+        <div
+          className="productFrame"
+          aria-label="Illustrative VisePanda Copilot preview, not live trip data"
+        >
           <div className="productFrameBar">
-            <span className="productLiveDot" aria-hidden="true" />
-            <span>Shanghai arrival brief</span>
-            <small>Product preview</small>
+            <span>Illustrative arrival example</span>
+            <small>Not live trip data</small>
           </div>
           <div className="productFrameBody">
             <section className="previewPlan">
@@ -409,7 +420,7 @@ export function CopilotShell() {
               </div>
               <button
                 type="button"
-                onClick={() => setInput("How do I get from Pudong Airport to my hotel?")}
+                onClick={() => chooseQuestion("How do I get from Pudong Airport to my hotel?")}
               >
                 Use this question
               </button>
@@ -445,8 +456,8 @@ export function CopilotShell() {
               </span>
             </div>
             <p className="scopeNote">
-              This financing demo answers travel questions. It does not save or edit itineraries,
-              book services, or connect you to a human agent.
+              This preview answers travel questions and can draft a read-only Trip preview. It does
+              not edit itineraries, book services, or connect you to a human agent.
             </p>
             <div className="railMessages">
               {messages.map((message, index) => (
@@ -494,7 +505,7 @@ export function CopilotShell() {
             </div>
             <div className="quickReplies" aria-label="Example questions">
               {EXAMPLE_PROMPTS.map((prompt) => (
-                <button key={prompt} onClick={() => setInput(prompt)} type="button">
+                <button key={prompt} onClick={() => chooseQuestion(prompt)} type="button">
                   {prompt}
                 </button>
               ))}
@@ -519,9 +530,10 @@ export function CopilotShell() {
                 aria-label="Trip prompt"
                 onChange={(event) => setInput(event.target.value)}
                 placeholder="Ask about payments, transport, language, or travel basics"
+                ref={promptInput}
                 value={input}
               />
-              <button disabled={isWorking} type="submit">
+              <button disabled={!input.trim() || isWorking} type="submit">
                 {isWorking ? "Thinking" : "Ask Copilot"}
               </button>
             </form>
@@ -732,11 +744,11 @@ function isDetailPassFailure(progress: GenerationProgress, trip: TripState | nul
   return progress.status === "failed" && trip !== null && progress.totalDays > 0;
 }
 
-function progressLabel(progress: GenerationProgress, detailPassFailed: boolean): string {
-  if (progress.status === "idle") return "Ready";
-  if (progress.status === "skeleton") return "Thinking";
-  if (progress.status === "completing") return "Filling trip details";
-  if (progress.status === "completed") return "Ready";
+export function progressLabel(progress: GenerationProgress, detailPassFailed: boolean): string {
+  if (progress.status === "idle") return "No request yet";
+  if (progress.status === "skeleton") return "Request in progress";
+  if (progress.status === "completing") return "Trip details in progress";
+  if (progress.status === "completed") return "Answer received";
   if (detailPassFailed) return "Details need attention";
-  return "Connection issue";
+  return "Request failed";
 }
