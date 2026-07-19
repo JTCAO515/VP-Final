@@ -1,12 +1,20 @@
-import { HumanTaskSchema, type HumanTask } from "@visepanda/domain";
-import { and, count, desc, eq, gte, isNull, lt, sql } from "drizzle-orm";
+import {
+  HumanTaskSchema,
+  HumanTaskTransitionSchema,
+  type HumanTask,
+  type HumanTaskTransition,
+} from "@visepanda/domain";
+import { and, asc, count, desc, eq, gte, isNull, lt, sql } from "drizzle-orm";
 import type { Db } from "./client.js";
-import { humanTasks, users } from "./schema.js";
+import { humanTaskTransitions, humanTasks, users } from "./schema.js";
 import {
   HUMAN_TASK_DAILY_CAPACITY,
   HumanTaskCapacityError,
   HumanTaskIdempotencyConflictError,
+  HumanTaskNotFoundError,
+  HumanTaskTransitionForbiddenError,
   chinaDayKey,
+  prepareHumanTaskTransition,
   validateHumanTaskPreviewRequest,
   type HumanTaskIdentity,
   type HumanTaskService,
@@ -82,6 +90,59 @@ export function createDbHumanTaskService(db: Db, options?: { now?: () => Date })
       const rows = await db.select().from(humanTasks).orderBy(desc(humanTasks.createdAt));
       return rows.map(taskFromRow);
     },
+
+    async transition(input) {
+      return db.transaction(async (tx) => {
+        const [row] = await tx
+          .select()
+          .from(humanTasks)
+          .where(eq(humanTasks.id, input.taskId))
+          .for("update")
+          .limit(1);
+        if (!row) throw new HumanTaskNotFoundError();
+
+        const prepared = prepareHumanTaskTransition(taskFromRow(row), input, now());
+        const [updated] = await tx
+          .update(humanTasks)
+          .set({
+            status: prepared.task.status,
+            retentionExpiresAt: prepared.task.retention_expires_at
+              ? new Date(prepared.task.retention_expires_at)
+              : null,
+            updatedAt: new Date(prepared.task.updated_at),
+          })
+          .where(eq(humanTasks.id, input.taskId))
+          .returning();
+        if (!updated) throw new HumanTaskNotFoundError();
+
+        const [transition] = await tx
+          .insert(humanTaskTransitions)
+          .values({
+            id: prepared.transition.id,
+            taskId: input.taskId,
+            fromStatus: prepared.transition.from_status,
+            toStatus: prepared.transition.to_status,
+            actorId: prepared.transition.actor_id,
+            reason: prepared.transition.reason,
+            createdAt: new Date(prepared.transition.created_at),
+          })
+          .returning();
+        if (!transition) throw new Error("Human Task transition insert returned no record");
+        return { task: taskFromRow(updated), transition: transitionFromRow(transition) };
+      });
+    },
+
+    async listTransitions(taskId, actor) {
+      if (!actor.permissions.includes("task.read")) {
+        throw new HumanTaskTransitionForbiddenError();
+      }
+      const rows = await db
+        .select()
+        .from(humanTaskTransitions)
+        .where(eq(humanTaskTransitions.taskId, taskId))
+        .orderBy(asc(humanTaskTransitions.createdAt));
+      return rows.map(transitionFromRow);
+    },
   };
 }
 
@@ -146,5 +207,17 @@ function taskFromRow(row: typeof humanTasks.$inferSelect): HumanTask {
     retention_expires_at: row.retentionExpiresAt?.toISOString() ?? null,
     created_at: row.createdAt.toISOString(),
     updated_at: row.updatedAt.toISOString(),
+  });
+}
+
+function transitionFromRow(row: typeof humanTaskTransitions.$inferSelect): HumanTaskTransition {
+  return HumanTaskTransitionSchema.parse({
+    id: row.id,
+    task_id: row.taskId,
+    from_status: row.fromStatus,
+    to_status: row.toStatus,
+    actor_id: row.actorId,
+    reason: row.reason,
+    created_at: row.createdAt.toISOString(),
   });
 }

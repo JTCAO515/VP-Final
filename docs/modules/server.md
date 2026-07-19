@@ -15,7 +15,7 @@ Next.js runtimes rather than deployed as an independent service.
 - `copilot`: route, retrieve, generate, validate, apply Trip actions, and two-pass completion.
 - `trip`: owner-scoped create/read/Patch/claim/share/revoke operations through the versioned Trip service.
 - `knowledge`: POI/fact/gap reads and operations workflow.
-- `task`: owner-scoped Human Task intake and traveler reads. State transitions are not active yet.
+- `task`: owner-scoped Human Task intake/reads plus authorized, audited lifecycle transitions.
 - `telemetry`: event validation and ingestion interface.
 - `trace`: private agent-run and tool-call metadata recording.
 
@@ -51,7 +51,10 @@ modules yet.
 - Human Task creation accepts only a trusted authenticated or signed-anonymous identity, a UUID
   idempotency key, and the minimized controlled-preview request. The Postgres adapter serializes the
   daily Shanghai capacity check, stores exactly one owner, and replays a successful retry without a
-  duplicate row. P0-13 exposes no state-transition, quote, payment, assignment, or fulfilment method.
+  duplicate row. P0-14 adds one transition service used by memory and Postgres adapters: it derives the
+  actor from trusted Ops access, validates the domain edge, enforces the controlled-preview policy,
+  and writes status plus append-only actor/reason evidence in one transaction. The preview permits
+  triage and pre-payment cancellation only; quote/payment/fulfilment states remain policy-gated.
 - The runtime resolver and router injection boundary are implemented and tested, but Web/Ops
   composition migration remains in P0-06c and P0-06d. Therefore no deployed durable-path claim is
   made yet.

@@ -16,7 +16,7 @@ commercial evidence, Human Tasks, and telemetry. Repository migrations are the s
 | Knowledge         | `pois`, `poi_facts`, `knowledge_gaps`, `poi_commercial_links` |
 | Commerce          | `partners`, `outbound_clicks`                                 |
 | Telemetry         | `events`, `trust_funnel_daily` materialized aggregate         |
-| Human operations  | `human_tasks`                                                 |
+| Human operations  | `human_tasks`, `human_task_transitions`                       |
 | Ops authorization | `ops_memberships`, `ops_audit_events`                         |
 
 ## Migration Rules
@@ -44,10 +44,12 @@ commercial evidence, Human Tasks, and telemetry. Repository migrations are the s
 - Partner config, outbound clicks, telemetry, Human Tasks, and internal aggregates are server-only.
 - A Human Task has exactly one authenticated or signed-anonymous owner and a globally unique UUID
   idempotency key. Direct `anon` and `authenticated` Data API reads are revoked. The initial status is
-  `requested`; P0-13 does not expose mutation paths for later states. A restricted
+  `requested`. Status updates follow the database-guarded canonical edge map and the server writes an
+  append-only `human_task_transitions` row containing authenticated Ops actor, from/to state, reason,
+  and timestamp in the same transaction. Both relations deny direct Data API access. A restricted
   `internal.purge_expired_human_tasks()` routine removes terminal rows after their explicit retention
-  deadline. Production scheduling and terminal-deadline assignment remain later operational work and
-  are not claimed as active.
+  deadline; P0-14 assigns the 90-day deadline on an enabled terminal transition. Production purge
+  scheduling remains an operator action and is not claimed as active.
 - Ops users access data through protected server routes, not broad direct table grants.
 - Ops membership and audit tables are server-only with RLS enabled and no `anon` or `authenticated`
   Data API grants. Supabase Auth proves identity; `ops_memberships` independently grants authority.
@@ -75,6 +77,11 @@ security advisors.
 P0-13 migration `20260716110000_durable_human_task_ownership.sql` deliberately aborts if an environment
 contains ownerless pre-P0-13 rows. Such rows require an operator-approved ownership/removal decision;
 the migration never deletes them or invents an owner. Empty and verified environments migrate normally.
+
+P0-14 migration `20260716170000_human_task_transitions.sql` adds private append-only transition
+evidence and a database trigger that rejects non-canonical status edges even for privileged server
+writes. The actor references verified `auth.users`; deletion is restricted while evidence remains,
+while task deletion cascades its transition history to honor task retention/account deletion.
 
 P0-05 adds a non-hierarchical `operator` / `editor` / `admin` membership table and append-only Ops
 audit evidence. The migration references verified `auth.users` ids, denies direct client access, and

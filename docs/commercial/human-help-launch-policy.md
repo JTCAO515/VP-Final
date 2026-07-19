@@ -114,10 +114,10 @@ medical records, or unnecessary location history.
   server-side RBAC path, never email allowlists or client metadata.
 - Routine telemetry must contain event metadata only, not task descriptions, contacts, transcripts, or
   payment evidence.
-- Durable task data carries a retention deadline only after `done` or `cancelled`; a restricted purge
-  routine enforces deletion once that deadline arrives. P0-13 does not yet expose terminal transitions
-  or production scheduling, so the intended 90-day target is not claimed as operational until those
-  later controls are verified.
+- Durable task data carries a 90-day retention deadline only after `done` or `cancelled`; a restricted
+  purge routine enforces deletion once that deadline arrives. P0-14 assigns the deadline for enabled
+  terminal transitions. Production purge scheduling remains unverified, so automated deletion is not
+  claimed operational until the registered operator action is complete.
 
 ### Escalation
 

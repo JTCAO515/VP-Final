@@ -12,9 +12,10 @@ the public Web application and protected by server-side role checks.
 
 - `/facts`: list, create, update, renew, and deprecate execution facts.
 - `/gaps`: inspect and resolve knowledge gaps.
-- `/tasks`: inspect the durable Human Task intake queue (read-only in P0-13).
+- `/tasks`: inspect the durable Human Task intake queue.
 - `/api/knowledge/*`: server-side knowledge operations.
 - `/api/tasks`: permission-protected task list endpoint.
+- `/api/tasks/:taskId/status`: `task.write`-protected transition endpoint; actor is session-derived.
 - `/login`: verified Supabase Ops sign-in.
 - `/roles` and `/api/roles`: Admin-only membership management.
 
@@ -29,8 +30,9 @@ the public Web application and protected by server-side role checks.
 - `ops_memberships` is the sole role authority; client metadata, user metadata, email addresses, and
   navigation visibility are never authorization inputs.
 - Role changes write membership and audit evidence atomically. Knowledge and Human Task reads use
-  durable server adapters. Task transitions, notes, quotes, and payment controls are intentionally
-  absent until P0-14, P0-15, and P0-17 provide their governed workflows.
+  durable server adapters. P0-14 exposes only the canonical status transition API: every change
+  records actor, reason, and timestamp; arbitrary status writes and terminal recovery are rejected.
+  Notes UI, quote/payment activation, and payment controls remain absent until P0-15/P0-17.
 - Partner and payment operations are not yet available.
 
 Production use still requires OA-001, OA-004, and OA-010 verification. Missing Auth or database

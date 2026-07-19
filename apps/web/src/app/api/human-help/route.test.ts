@@ -61,6 +61,10 @@ describe("POST /api/human-help", () => {
       },
       listForOwner: async () => [],
       listForOps: async () => [],
+      transition: async () => {
+        throw new Error("database offline");
+      },
+      listTransitions: async () => [],
     });
 
     const response = await POST(postRequest(requestBody));

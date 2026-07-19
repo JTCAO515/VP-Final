@@ -479,6 +479,47 @@ export const humanTasks = pgTable(
   }),
 );
 
+export const humanTaskTransitions = pgTable(
+  "human_task_transitions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    taskId: uuid("task_id")
+      .notNull()
+      .references(() => humanTasks.id, { onDelete: "cascade" }),
+    fromStatus: text("from_status").notNull(),
+    toStatus: text("to_status").notNull(),
+    actorId: uuid("actor_id").notNull(),
+    reason: text("reason").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    taskCreatedIdx: index("human_task_transitions_task_created_idx").on(
+      table.taskId,
+      table.createdAt,
+    ),
+    actorCreatedIdx: index("human_task_transitions_actor_created_idx").on(
+      table.actorId,
+      table.createdAt,
+    ),
+    fromStatusCheck: check(
+      "human_task_transitions_from_status_check",
+      sql`${table.fromStatus} in ('requested', 'triaged', 'quoted', 'payment_pending', 'paid', 'fulfilling', 'done', 'cancelled')`,
+    ),
+    toStatusCheck: check(
+      "human_task_transitions_to_status_check",
+      sql`${table.toStatus} in ('requested', 'triaged', 'quoted', 'payment_pending', 'paid', 'fulfilling', 'done', 'cancelled')`,
+    ),
+    statusChangeCheck: check(
+      "human_task_transitions_status_change_check",
+      sql`${table.fromStatus} <> ${table.toStatus}`,
+    ),
+    reasonLengthCheck: check(
+      "human_task_transitions_reason_length_check",
+      sql`char_length(btrim(${table.reason})) between 10 and 500`,
+    ),
+  }),
+);
+
 export const usersRelations = relations(users, ({ many }) => ({
   trips: many(trips),
   agentRuns: many(agentRuns),
@@ -566,9 +607,17 @@ export const telemetryEventsRelations = relations(telemetryEvents, ({ one }) => 
   }),
 }));
 
-export const humanTasksRelations = relations(humanTasks, ({ one }) => ({
+export const humanTasksRelations = relations(humanTasks, ({ one, many }) => ({
   user: one(users, {
     fields: [humanTasks.userId],
     references: [users.id],
+  }),
+  transitions: many(humanTaskTransitions),
+}));
+
+export const humanTaskTransitionsRelations = relations(humanTaskTransitions, ({ one }) => ({
+  task: one(humanTasks, {
+    fields: [humanTaskTransitions.taskId],
+    references: [humanTasks.id],
   }),
 }));

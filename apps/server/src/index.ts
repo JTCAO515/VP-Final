@@ -26,9 +26,13 @@ export { createInMemoryKnowledgeService } from "./modules/knowledge/service.js";
 export {
   HUMAN_TASK_DAILY_CAPACITY,
   HUMAN_TASK_PREVIEW_CITY,
+  HUMAN_TASK_TERMINAL_RETENTION_DAYS,
   HumanTaskCapacityError,
   HumanTaskIdempotencyConflictError,
+  HumanTaskNotFoundError,
   HumanTaskPreviewScopeError,
+  HumanTaskTransitionForbiddenError,
+  HumanTaskTransitionPolicyError,
   createInMemoryHumanTaskService,
 } from "./modules/task/service.js";
 export { createInMemoryAgentTraceService, normalizeAgentFailure } from "./modules/trace/service.js";
@@ -84,6 +88,8 @@ export type {
   CreateHumanTaskCommand,
   HumanTaskIdentity,
   HumanTaskService,
+  HumanTaskTransitionResult,
+  TransitionHumanTaskCommand,
 } from "./modules/task/service.js";
 export type {
   AgentAttemptTrace,

@@ -8,9 +8,10 @@ Use its city, language, hours, capacity, exclusions, and target wording before h
 
 ## Current Maturity
 
-The repository currently contains an in-memory/manual Human Task path. It is not production-durable
-and must not be advertised as a guaranteed service until database persistence, Ops authorization,
-payment evidence, contact handling, and operational capacity are verified.
+The repository contains durable owner-scoped intake and an authorized, audited transition API.
+Controlled-preview triage and cancellation are implemented, but paid fulfilment must not be
+advertised until payment evidence, contact handling, capacity, and remaining operator actions are
+verified.
 
 ## Purpose and Trigger
 
@@ -21,10 +22,13 @@ Use after a real Human Task enters the durable Ops queue in an approved deployme
 1. Confirm the request is within the policy's Shanghai/English/window/capacity envelope before collecting more information.
 2. Confirm task id, requester identity/contact consent, city, requested outcome, urgency, and scope.
 3. Reject emergencies and regulated/legal/medical actions; direct the user to official services.
-4. Triage feasibility, operator capacity, price, response target, and cancellation boundary. State that targets are not guarantees.
+4. Triage feasibility, operator capacity, response target, and cancellation boundary. Record a
+   10-500 character reason when moving `requested -> triaged`; state that targets are not guarantees.
 5. During controlled preview, do not send a payment link or accept paid fulfilment. A future approved payment flow is required before using `quoted` or later payment states.
 6. After verified payment exists in a future approved flow, move through the legal state transitions and record operator notes/evidence.
-7. Complete or cancel honestly; never claim an external action was taken without evidence.
+7. During preview, cancel only through the governed endpoint and record why work did not proceed.
+   Cancelled tasks cannot be reopened; a genuine new request requires a new task. Complete future
+   paid work honestly and never claim an external action was taken without evidence.
 8. Redact the transcript and propose reusable knowledge gaps/facts without exposing personal data.
 
 ## Verification
