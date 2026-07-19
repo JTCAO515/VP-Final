@@ -721,6 +721,20 @@
       "summary": "Drafts the non-implementation boundary and required legal/entity decisions before Phase 3 take rate or settlement work.",
       "sourcePrefixes": []
     },
+    {
+      "path": "docs/adr/ADR-0009-copilot-conversation-cost-retention.md",
+      "title": "ADR-0009: Copilot Conversation and Cost Retention",
+      "category": "decisions",
+      "type": "decision",
+      "status": "accepted",
+      "owner": "security / data platform",
+      "summary": "Separates redacted Copilot turns, per-attempt costs, and product events under a 30-day server-only retention boundary.",
+      "sourcePrefixes": [
+        "packages/domain/src/observability/",
+        "apps/server/src/db/schema.ts",
+        "infra/supabase/migrations/20260719100000_copilot_observability_records.sql"
+      ]
+    },
 
     {
       "path": "docs/runbooks/README.md",

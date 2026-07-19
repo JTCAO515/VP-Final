@@ -119,6 +119,9 @@ distinguish its own previous partial effect from a later unrelated Trip edit.
   owner, share, claim, and optimistic-concurrency contract for P0-03/P0-04.
 - [ADR-0007](../adr/ADR-0007-agent-trace-privacy-retention.md) freezes trace minimization, restricted
   retention, and non-blocking trace persistence. Real provider attempt production data remains P0-07.
+- [ADR-0009](../adr/ADR-0009-copilot-conversation-cost-retention.md) freezes separate redacted turn,
+  per-attempt cost, and product-event records. This schema-first change does not yet connect runtime
+  writers; consumer wiring must remain non-blocking and use the configured 30-day deadline.
 - OA-011 remains the release gate for QStash token, signing keys, callback URL, and one sanitized
   signed-delivery observation. Until then deployed completion returns an honest unavailable state.
 
