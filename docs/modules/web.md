@@ -94,10 +94,16 @@ failure cannot alter the public response or Trip state. Trace records follow
 [ADR-0007](../adr/ADR-0007-agent-trace-privacy-retention.md) and never contain raw prompts, envelope
 payloads, cookies, credentials, or narrative errors.
 
-`POST /api/copilot/complete` now queues a durable owner-scoped job and returns the typed job receipt;
-it does not wait for or pretend to return completed Trip details. The callback reads the raw request,
+`POST /api/copilot/complete` queues a durable owner-scoped job and returns the typed job receipt; it
+does not wait for or pretend to return completed Trip details. The callback reads the raw request,
 verifies the `Upstash-Signature` against the configured callback URL, then validates the minimized
-payload before invoking the completion processor. Polling and traveler recovery UI remain P0-10c.
+payload before invoking the completion processor.
+
+The browser persists only the completion job id, idempotency key, and Trip id. It polls the
+owner-scoped status route with a bounded loop, resumes that loop after refresh, and reloads the
+authoritative Trip snapshot at a terminal state. The detail pass never creates a second chat bubble:
+the latest assistant preview is updated in place. `partial`, `failed`, and `conflicted` remain visible
+and truthful; retries are offered only for retryable jobs within the server-owned attempt limit.
 
 ## UI Rules
 
