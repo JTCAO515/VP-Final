@@ -5,6 +5,7 @@ import {
   PoiFactEvidenceSchema,
   PoiFactSchema,
   PoiSchema,
+  resolvePoiFactReview,
   type KnowledgeGap,
   type Poi,
   type PoiCategory,
@@ -12,7 +13,7 @@ import {
 } from "@visepanda/domain";
 import { and, eq } from "drizzle-orm";
 import type { Db } from "./client.js";
-import { knowledgeGaps, poiCommercialLinks, poiFacts, pois } from "./schema.js";
+import { knowledgeGaps, opsAuditEvents, poiCommercialLinks, poiFacts, pois } from "./schema.js";
 import type { KnowledgeService } from "../modules/knowledge/service.js";
 
 export function createDbKnowledgeService(db: Db): KnowledgeService {
@@ -34,6 +35,8 @@ export function createDbKnowledgeService(db: Db): KnowledgeService {
           sourceLocator: evidence.sourceLocator,
           evidenceSummary: evidence.evidenceSummary,
           verifiedAt: null,
+          reviewPolicy: null,
+          reviewedBy: null,
           expiresAt: input.expiresAt ? new Date(input.expiresAt) : null,
           status: "draft",
         })
@@ -59,6 +62,8 @@ export function createDbKnowledgeService(db: Db): KnowledgeService {
           sourceLocator: evidence.sourceLocator,
           evidenceSummary: evidence.evidenceSummary,
           verifiedAt: null,
+          reviewPolicy: null,
+          reviewedBy: null,
           expiresAt:
             input.expiresAt === undefined
               ? existing.expiresAt
@@ -95,16 +100,35 @@ export function createDbKnowledgeService(db: Db): KnowledgeService {
       if (!hasReviewablePoiFactEvidence(existing)) {
         throw new Error("Fact requires independently reviewable evidence before review");
       }
-      const [row] = await db
-        .update(poiFacts)
-        .set({
-          expiresAt: input.expiresAt ? new Date(input.expiresAt) : null,
-          status: "reviewed",
-          verifiedAt: new Date(),
-          version: existing.version + 1,
-        })
-        .where(eq(poiFacts.id, input.factId))
-        .returning();
+      const verifiedAt = new Date();
+      const review = resolvePoiFactReview({
+        factType: existing.factType,
+        verifiedAt,
+        ...(input.expiresAt !== undefined ? { requestedExpiresAt: input.expiresAt } : {}),
+      });
+      const row = await db.transaction(async (transaction) => {
+        const [reviewed] = await transaction
+          .update(poiFacts)
+          .set({
+            expiresAt: new Date(review.expiresAt),
+            reviewPolicy: review.reviewPolicy,
+            reviewedBy: input.reviewedBy,
+            status: "reviewed",
+            verifiedAt,
+            version: existing.version + 1,
+          })
+          .where(eq(poiFacts.id, input.factId))
+          .returning();
+        if (!reviewed) return null;
+        await transaction.insert(opsAuditEvents).values({
+          actorId: input.reviewedBy,
+          action: "knowledge.fact.review.completed",
+          targetType: "poi_fact",
+          targetId: input.factId,
+          metadataJsonb: { reviewPolicy: review.reviewPolicy, version: reviewed.version },
+        });
+        return reviewed;
+      });
       return row ? rowToFact(row) : null;
     },
     async deprecateFact(input) {
@@ -240,6 +264,7 @@ function rowToFact(row: typeof poiFacts.$inferSelect): PoiFact {
     ingestedAt: row.createdAt.toISOString(),
     verifiedAt: row.verifiedAt?.toISOString() ?? null,
     expiresAt: row.expiresAt?.toISOString() ?? null,
+    reviewPolicy: row.reviewPolicy,
     version: row.version,
     status: row.status,
   });

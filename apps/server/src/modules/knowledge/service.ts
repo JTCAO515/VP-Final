@@ -6,6 +6,7 @@ import {
   KnowledgeGapSchema,
   PoiFactEvidenceSchema,
   PoiSchema,
+  resolvePoiFactReview,
   updatePoiFact,
   type KnowledgeGap,
   type Poi,
@@ -42,7 +43,11 @@ export type KnowledgeService = {
     expiresAt?: string | null;
   }): Promise<Poi[]>;
   listExpiredFacts(input?: { now?: Date }): Promise<PoiFact[]>;
-  renewFact(input: { factId: string; expiresAt?: string | null }): Promise<PoiFact | null>;
+  renewFact(input: {
+    factId: string;
+    reviewedBy: string;
+    expiresAt?: string | null;
+  }): Promise<PoiFact | null>;
   deprecateFact(input: { factId: string }): Promise<PoiFact | null>;
   recordGap(input: { question: string; city?: string }): Promise<KnowledgeGap>;
   listGaps(input?: { status?: KnowledgeGap["status"] }): Promise<KnowledgeGap[]>;
@@ -95,6 +100,7 @@ export function createInMemoryKnowledgeService(
         ingestedAt,
         verifiedAt: null,
         expiresAt: input.expiresAt ?? null,
+        reviewPolicy: null,
         version: 1,
         status: "draft",
       };
@@ -125,6 +131,7 @@ export function createInMemoryKnowledgeService(
         ...(input.expiresAt !== undefined ? { expiresAt: input.expiresAt } : {}),
         status: "draft",
         verifiedAt: null,
+        reviewPolicy: null,
       });
       return this.listPois({ includeDrafts: true, includeExpired: true, includeDeprecated: true });
     },
@@ -145,10 +152,17 @@ export function createInMemoryKnowledgeService(
       if (!hasReviewablePoiFactEvidence(existing)) {
         throw new Error("Fact requires independently reviewable evidence before review");
       }
+      const verifiedAt = new Date();
+      const review = resolvePoiFactReview({
+        factType: existing.factType,
+        verifiedAt,
+        ...(input.expiresAt !== undefined ? { requestedExpiresAt: input.expiresAt } : {}),
+      });
       pois = updatePoiFact(pois, input.factId, existing.value, {
-        expiresAt: input.expiresAt ?? null,
+        expiresAt: review.expiresAt,
+        reviewPolicy: review.reviewPolicy,
         status: "reviewed",
-        verifiedAt: new Date().toISOString(),
+        verifiedAt: verifiedAt.toISOString(),
       });
       return findFact(pois, input.factId);
     },

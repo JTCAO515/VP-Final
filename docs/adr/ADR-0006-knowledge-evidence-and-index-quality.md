@@ -25,6 +25,14 @@ is nullable for drafts and is written only by the explicit review/renew transiti
 content or evidence returns the fact to `draft` and clears `verifiedAt`. The pre-contract `source`
 column remains a compatibility projection only and cannot satisfy eligibility by itself.
 
+Every review also records a private, authenticated Ops reviewer reference and a public-safe,
+versioned `reviewPolicy`. The v1 cadence is deterministic: volatile booking, hours, payment,
+reservation, and ticket-availability facts use `volatile-30d-v1`; `rainy_fit` uses
+`stable-180d-v1`; all other and unknown fact types use the conservative `execution-90d-v1` default.
+Review derives the maximum expiry from that policy. An editor may choose an earlier expiry but cannot
+extend it. Reviewer identity is never serialized to public consumers. Facts without a reviewer,
+policy, bounded expiry, or atomic completion audit remain draft/hidden.
+
 | Source                                              | Eligibility after review                      |
 | --------------------------------------------------- | --------------------------------------------- |
 | Official first-party/government source              | eligible while current                        |

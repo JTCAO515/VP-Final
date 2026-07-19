@@ -5,6 +5,8 @@ import {
   derivePoiSceneTags,
   isEligiblePoiFact,
   isCurrentPoiFact,
+  resolvePoiFactReview,
+  reviewPolicyForFactType,
   updatePoiFact,
   type Poi,
   type PoiFact,
@@ -23,7 +25,8 @@ const fact: PoiFact = {
   evidenceSummary: "The source confirms nearby metro access.",
   ingestedAt: "2026-06-30T00:00:00.000Z",
   verifiedAt: "2026-07-01T00:00:00.000Z",
-  expiresAt: null,
+  expiresAt: "2026-09-29T00:00:00.000Z",
+  reviewPolicy: "execution-90d-v1",
   version: 1,
   status: "reviewed",
 };
@@ -61,6 +64,10 @@ describe("isCurrentPoiFact", () => {
     expect(isEligiblePoiFact({ ...fact, sourceLocator: null })).toBe(false);
     expect(isEligiblePoiFact({ ...fact, sourceClass: "user_report" })).toBe(false);
     expect(isEligiblePoiFact({ ...fact, verifiedAt: null })).toBe(false);
+    expect(isEligiblePoiFact({ ...fact, expiresAt: null })).toBe(false);
+    expect(isEligiblePoiFact({ ...fact, reviewPolicy: null })).toBe(false);
+    expect(isEligiblePoiFact({ ...fact, reviewPolicy: "stable-180d-v1" })).toBe(false);
+    expect(isEligiblePoiFact({ ...fact, expiresAt: "2027-01-01T00:00:00.000Z" })).toBe(false);
     expect(
       isEligiblePoiFact(
         { ...fact, verifiedAt: "2026-07-10T00:00:00.000Z" },
@@ -93,6 +100,44 @@ describe("isCurrentPoiFact", () => {
       PoiFactEvidenceSummarySchema.safeParse("Email editor@example.com for proof").success,
     ).toBe(false);
     expect(PoiFactEvidenceSummarySchema.safeParse("Call +86 138 0013 8000").success).toBe(false);
+  });
+});
+
+describe("POI fact review policy", () => {
+  it("assigns volatile, stable, and conservative default policies", () => {
+    expect(reviewPolicyForFactType("payment_acceptance")).toBe("volatile-30d-v1");
+    expect(reviewPolicyForFactType("rainy_fit")).toBe("stable-180d-v1");
+    expect(reviewPolicyForFactType("new_unclassified_fact")).toBe("execution-90d-v1");
+  });
+
+  it("derives the maximum expiry when none is requested", () => {
+    expect(
+      resolvePoiFactReview({
+        factType: "payment_acceptance",
+        verifiedAt: new Date("2026-07-01T00:00:00.000Z"),
+      }),
+    ).toEqual({
+      reviewPolicy: "volatile-30d-v1",
+      expiresAt: "2026-07-31T00:00:00.000Z",
+    });
+  });
+
+  it("accepts an earlier expiry and rejects policy extensions", () => {
+    const verifiedAt = new Date("2026-07-01T00:00:00.000Z");
+    expect(
+      resolvePoiFactReview({
+        factType: "metro_access",
+        verifiedAt,
+        requestedExpiresAt: "2026-08-01T00:00:00.000Z",
+      }).expiresAt,
+    ).toBe("2026-08-01T00:00:00.000Z");
+    expect(() =>
+      resolvePoiFactReview({
+        factType: "metro_access",
+        verifiedAt,
+        requestedExpiresAt: "2027-01-01T00:00:00.000Z",
+      }),
+    ).toThrow("execution-90d-v1");
   });
 });
 

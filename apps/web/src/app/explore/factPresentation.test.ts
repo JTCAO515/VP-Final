@@ -1,14 +1,19 @@
 import { describe, expect, it } from "vitest";
-import { PoiFactSchema, type Poi, type PoiFact } from "@visepanda/domain";
+import { PoiFactSchema, resolvePoiFactReview, type Poi, type PoiFact } from "@visepanda/domain";
 import { deriveExploreFacts } from "./factPresentation";
 
 const NOW = new Date("2026-07-16T00:00:00.000Z");
 
 function fact(overrides: Partial<PoiFact> = {}): PoiFact {
+  const factType = overrides.factType ?? "metro_access";
+  const review = resolvePoiFactReview({
+    factType,
+    verifiedAt: new Date("2026-07-15T00:00:00.000Z"),
+  });
   return PoiFactSchema.parse({
     id: "fact-1",
     poiId: "poi-1",
-    factType: "metro_access",
+    factType,
     value: { label: "Easy by metro" },
     confidence: 0.9,
     source: "official",
@@ -17,7 +22,8 @@ function fact(overrides: Partial<PoiFact> = {}): PoiFact {
     evidenceSummary: "Official visitor information reviewed by operations.",
     ingestedAt: "2026-07-14T00:00:00.000Z",
     verifiedAt: "2026-07-15T00:00:00.000Z",
-    expiresAt: null,
+    expiresAt: review.expiresAt,
+    reviewPolicy: review.reviewPolicy,
     version: 1,
     status: "reviewed",
     ...overrides,

@@ -82,6 +82,9 @@ database insertion time. Editing content or evidence is a material change and re
 draft. Only the explicit review/renew action may set `verifiedAt` and `reviewed`, and it rejects source
 classes that have not been independently corroborated. Public consumers never treat the legacy
 `source` compatibility field as evidence.
+Review is Ops-only: reviewer identity comes from authenticated server context, not request JSON.
+Public output may expose `reviewPolicy`, `verifiedAt`, and `expiresAt`, but never private `reviewedBy`.
+Null review policy or expiry is valid for drafts and always ineligible for public reads.
 
 ## Ops Authorization Contract
 

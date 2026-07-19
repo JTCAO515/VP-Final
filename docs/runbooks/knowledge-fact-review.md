@@ -18,7 +18,9 @@ Explore, and SEO, so provenance and freshness are release-critical.
    supports, confidence, and `expiresAt`. Do not include email, phone, prompts, or private transcripts.
    The system records `ingestedAt`; do not copy that value into `verifiedAt`.
 4. Save the fact as `draft`. Inspect the saved value and evidence, then use the separate review action.
-   That action records the real `verifiedAt`. User reports, model output, and uncorroborated scrapes
+   That action records the real `verifiedAt`, authenticated Ops reviewer privately, versioned cadence,
+   bounded expiry, and append-only completion audit in one transaction. User reports, model output,
+   and uncorroborated scrapes
    must first be independently checked and reclassified; changing status alone is forbidden.
 5. Renew unchanged reviewed facts, save changed facts as a new draft version for re-review, or
    deprecate/reject unsupported facts. Never treat a legacy `source` or `active` label as evidence.
@@ -34,6 +36,9 @@ Explore, and SEO, so provenance and freshness are release-critical.
 - No expired/deprecated fact is exposed as current truth.
 - Missing evidence results in omission/unknown, not a guessed value.
 - Review creates an auditable version/status change.
+- Review expiry does not exceed the policy maximum: 30 days for volatile execution facts, 180 days
+  for `rainy_fit`, and 90 days for all other or unknown fact types.
+- Public responses may expose `reviewPolicy` and freshness dates, but never reviewer identity.
 
 ## Escalation
 

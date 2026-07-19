@@ -98,6 +98,7 @@ export async function PATCH(request: Request) {
     if (body.action === "renew") {
       const result = await service.renewFact({
         factId: body.factId,
+        reviewedBy: authorization.access.userId,
         ...(typeof body.expiresAt === "string" || body.expiresAt === null
           ? { expiresAt: body.expiresAt }
           : {}),
