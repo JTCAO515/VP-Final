@@ -1,119 +1,67 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-07-14",
-  "updatedBy": "Codex / serialized handoff after merge-queue cleanup",
+  "updatedAt": "2026-07-20",
+  "updatedBy": "Codex / serialized Phase 0 control-state reconciliation",
   "baseBranch": "main",
-  "lastVerifiedCommit": "b4b85fd after DOC-P0-04 merged; GitHub verify/docs/evals/Database contracts passed, Vercel Ops preview was externally rate-limited",
+  "lastVerifiedCommit": "ba3401d after PR #251 merged; PRs #242, #250, and #251 each passed GitHub verify, docs, evals, Database contracts, and Vercel Preview Comments",
   "currentPhase": "Phase 0 — production hardening",
-  "maturity": "Trusted demo skeleton with real-provider Copilot smoke evidence; not yet production-safe, billing-ready, or cost-guarded.",
-  "lastCompleted": "PR #214 merged DOC-P0-04 Human Help controlled-preview policy at b4b85fd. Stale PR #203 was closed as superseded, and Issue #197 was closed because the v3 pipeline implementation is on main. #188 has real public 200 Copilot responses, but direct production trace/cost row verification remains blocked by database/MCP read permission.",
+  "maturity": "Real-provider Copilot and durable two-stage Trip completion are merged; the public product is not yet truth-UI audited, cost-guarded, billing-ready, or production-release complete.",
+  "lastCompleted": "PR #251 completed P0-10 by adding owner-scoped completion polling and in-place Web resume. PR #242 merged bulk knowledge-fact import, and PR #250 froze the privacy-safe conversation, cost, and event persistence schema for #248.",
   "activeWork": [
     {
-      "ref": "Issue #188 / P0-07b",
-      "title": "Complete real-provider Copilot external evidence",
-      "state": "Public production requests to https://www.go2china.space/api/copilot returned real HTTP 200 CopilotEnvelope responses after #219/#220/#221. Safe trace summary is present, but direct production agent_runs attempts/cost row verification is blocked by Supabase/MCP database permission.",
-      "owner": "Codex / operator database access",
-      "next": "Obtain read-only access to the production project trace table or an approved sanitized export, then verify attempts_jsonb/cost_usd without exposing secrets or PII."
-    },
-    {
-      "ref": "Issue #183 / DEMO-01",
-      "title": "Deliver the truthful real-LLM Copilot dialogue milestone",
-      "state": "Dialogue UI, route executor, provider compatibility, bounded repair, and production real-provider smoke are on main. Public demo remains not cost-guarded because #185 is D2-blocked.",
+      "ref": "Issue #119 / P0-11",
+      "title": "Remove fabricated product states and dead controls",
+      "state": "P0-10 is complete, so the truth-UI audit is now independently executable. GitHub metadata is status:ready.",
       "owner": "Codex",
-      "next": "Keep demo exposure controlled until #185 has frozen trusted-IP, durable rate-limit, and telemetry interfaces."
+      "next": "Audit the current Web Copilot at 375/768/1280, replace unlabeled previews and fixed states, remove dead controls, and preserve honest retry behavior."
     },
     {
       "ref": "Issue #185 / DEMO-01c",
       "title": "Demo cost guard and rate-limit controls",
-      "state": "Still D2-blocked. Current system lacks trusted request-IP extraction, durable rate-limit adapter/configuration, and durable telemetry injection path. In-memory guards are not acceptable production evidence.",
-      "owner": "Architecture / Codex after interface freeze",
-      "next": "Freeze the three interfaces before implementation; do not add fixture or process-local guards as completion."
+      "state": "The trusted-IP, Upstash Redis, Postgres audit, and anonymous three-turn interfaces are frozen. PR #250 merged the #248 schema-first contract; runtime persistence is blocked only on the unresolved provider-pricing truth contract.",
+      "owner": "Codex / architecture for pricing freeze",
+      "next": "Do not write fake zero-cost rows. Resume #248 runtime persistence after architecture accepts a route-scoped pricing snapshot and missing-pricing failure policy; then execute #246, #247, and #249 in order."
     },
     {
-      "ref": "Issue #139 / governance delta",
-      "title": "Phase 2/3 dependency graph and owner-lane follow-up",
-      "state": "Original GOV-P0 work is complete. Stale PR #203 was closed because it deleted the canonical Phase 0/1 graph and edited handoff. A narrow successor may still add Phase 2/3/lane coverage without replacing the canonical graph.",
-      "owner": "Overall design / future narrow PR",
-      "next": "If still desired, open a fresh main-based docs PR that preserves phase-0-1-dependency-graph.md and does not edit handoff."
+      "ref": "Issue #152 / P0-15",
+      "title": "Build authorized Ops Human Task triage",
+      "state": "P0-13 and P0-14 are merged, so the issue is dependency-ready, but remains sequenced after the current P0-11 control action.",
+      "owner": "Unassigned",
+      "next": "Start from current main only after the active P0-11 boundary settles; preserve DOC-P0-04 controlled-preview and least-privilege RBAC constraints."
     }
   ],
   "nextActions": [
     {
       "priority": "P0",
-      "action": "Finish #188 by verifying production trace/cost persistence through an approved read-only database path.",
-      "exitCriteria": "A sanitized observation confirms agent_runs attempts/cost rows for real provider calls, or the issue records a durable operator-action blocker. No secret, prompt, or PII is exposed."
+      "action": "Implement P0-11 truth-UI cleanup from the refreshed main baseline.",
+      "exitCriteria": "New visitors see an honest onboarding state; previews are explicit; fixed online/readiness claims and dead controls are absent; failure remains visible and retryable; desktop/mobile interaction evidence passes."
     },
     {
       "priority": "P0",
-      "action": "Keep #185 blocked until trusted request-IP, durable rate-limit store, and telemetry injection interfaces are frozen.",
-      "exitCriteria": "The interface owner, privacy/retention rules, storage adapter, and limit_exceeded event path are accepted before any cost-guard code PR."
+      "action": "Obtain architecture acceptance for #248 provider pricing snapshots and missing-pricing behavior.",
+      "exitCriteria": "Pricing provenance, units, effective dates, fallback attribution, and fail-honest behavior are frozen without treating unknown price as USD 0."
     },
     {
       "priority": "P0",
-      "action": "Treat #214 as the accepted Human Help controlled-preview baseline for P0-13 through P0-16; keep P0-17 payment deferred while OA-006 is deferred.",
-      "exitCriteria": "Human Task implementation consumes the policy without claiming paid fulfilment, emergency response, or guaranteed SLA."
-    },
-    {
-      "priority": "P1",
-      "action": "Replace stale #203 only with a narrow Phase 2/3 owner-lane graph delta if still needed.",
-      "exitCriteria": "The successor preserves the canonical Phase 0/1 graph, avoids handoff edits, and passes docs governance."
+      "action": "Continue P0-15 after P0-11, while keeping payment and trigger-gated work blocked.",
+      "exitCriteria": "Authorized Ops users can perform only accepted Human Task transitions; no paid fulfilment, SLA, or emergency-service claim is introduced."
     }
   ],
   "blockers": [
-    "Direct production trace/cost row verification for #188 is blocked by Supabase/MCP database read permission; public responses prove real Copilot success but not direct DB row evidence.",
-    "Vercel Ops preview deployment for PR #214 was externally build-rate-limited; local apps/ops build and GitHub verify/docs/evals/Database contracts passed before merge.",
+    "#248 runtime writer is D2-blocked until provider pricing snapshot provenance and missing-pricing behavior are accepted; the current router reports USD 0 when prices are absent, which is not auditable cost truth.",
     "P0-03 and P0-04 code are merged, but real Supabase production evidence still awaits OA-001 through OA-004 before full production readiness can be claimed.",
     "Ops RBAC code is merged; real first-admin and deployed role evidence awaits OA-010.",
-    "DEMO-01c #185 remains D2-blocked because no trusted request-IP contract, durable rate-limit adapter/configuration, or durable telemetry injection path is frozen.",
-    "Human Task, outbound click, telemetry runtime persistence, real payment evidence, observability, legal pages, and production smoke gates remain incomplete or gated."
+    "P0-17 remains blocked by the accepted payment/legal decision gates and OA-006; no real paid service is claimed.",
+    "Phase 1/2/3 functional rollout remains trigger-gated even where tooling or schema preparation has merged."
   ],
   "verification": [
-    "Merge queue cleanup: PR #214 was rebased onto main, removed docs/handoff.json edits, passed local docs:check, docs:impact, typecheck, lint, build, test, and evals; GitHub verify/docs/evals/Database contracts passed; merged at b4b85fd. Vercel Ops preview was externally rate-limited, while local apps/ops build passed.",
-    "Stale governance PR #203 was closed as superseded because it deleted docs/governance/phase-0-1-dependency-graph.md, edited docs/handoff.json, and would have replaced the current canonical graph instead of applying a narrow delta.",
-    "Issue #197 was closed as implemented because v3 route executor and Copilot pipeline/repair/trace composition are on main through PRs #205/#210 plus production fixes #219/#220/#221.",
-    "P0-07b #188 production smoke evidence: public POST to https://www.go2china.space/api/copilot returned HTTP 200 with a typed CopilotEnvelope for Shanghai payment/metro guidance in 24.643s; a second smoke returned safe trace summary keys. Direct production agent_runs attempts/cost row verification remains blocked by database permission.",
-    "P0-21 merged in PR #212 at 40e77f1 after Verify, Evals, Documentation Governance, Database contracts, and both Vercel previews passed. The fail-closed runner executed nonzero pgTAP cases and the Security Advisor reported no mutable set_updated_at search_path warning.",
-    "DEMO-01b merge evidence: PR #213 productized the dialogue UI and merged before the current queue cleanup; subsequent real-provider production smoke is recorded under #188.",
-    "PR #106 merged at c7f3faa after verify, evals, and both Vercel previews passed.",
-    "PR #107 merged at 2fca99c after verify, evals, database contracts, and both Vercel previews passed.",
-    "PR #109 merged at 87744ed after documentation governance, verify, evals, database contracts, and both Vercel previews passed.",
-    "PR #136 merged the Karpathy integration into the composite 钱学森 workflow.",
-    "Upstream karpathy-guidelines SKILL.md was compared with the installed global Skill at commit 2c606141936f1eeef17fa3043a72095b4765b9c2; SHA-256 matched.",
-    "Issue #135 local verification passed: both Skills validated, 66 controlled documents passed docs checks/impact, and pnpm typecheck, lint, test, build, and evals passed.",
-    "GOV-P0a metadata verification: #73 is the canonical P0-09 owner; open blocked-by references to completed baseline Issues were replaced with active canonical dependencies; closed duplicate #125 points to #124 and #130 points to #129.",
-    "GOV-P0b metadata verification: canonical P0-13 through P0-20 are #150 through #157; V2-42 through V2-50 and V2-52 through V2-58 retain historical bodies with status:superseded and a top link to their sole canonical owner.",
-    "GOV-P0c verification: docs/governance/phase-0-1-dependency-graph.md is registered as the dependency source of truth; #102 now links canonical owners, retained standalone V2 work, hard Stripe/Rescue gates, and the manual API validation procedure.",
-    "GOV-P0 merge evidence: PRs #149, #160, and #161 passed repository checks and merged to main; DOC-P0-01 is now the active documentation-first control action.",
-    "DOC-P0-01 merge evidence: PR #140 passed database contracts, verify, docs, evals, and Vercel previews before merging; ADR-0004 is accepted and Issue #131 is closed.",
-    "DOC-P0-02 and DOC-P0-03 merge evidence: PRs #162 and #163 accepted ADR-0005 and ADR-0006 after repository checks passed.",
-    "DOC-P0-05 merge evidence: PR #165 passed verify, docs, evals, database contracts, and Vercel previews; nine known external actions and the Chinese tutorial workflow are now indexed and mandatory.",
-    "P0-03 merge evidence: PR #164 passed lint, typecheck, tests, build, evals, docs, database contracts, and Vercel previews; mocked tests cover anonymous expiry/rotation, verified-user spoof resistance, login rejection/success, and logout. Live Supabase behavior is not claimed.",
-    "P0-04a merge evidence: PR #169 passed verify, docs, evals, database contracts, and both Vercel previews; its eight tests lock owner isolation, stale-version, no-op Patch, idempotent claim, authenticated non-transfer, and share/revoke semantics.",
-    "P0-04b local limitation: Supabase CLI 2.109.1 is installed, but local reset/pgTAP/integration was not run because Docker Desktop is absent. CI Database contracts is the required external observation; no local database pass is claimed.",
-    "P0-04b first CI observation: Database contracts exited 127 before database work because the job lacked pnpm/Node setup; the workflow now provisions both.",
-    "P0-04b second CI observation: Supabase reset and pgTAP passed, then adapter integration could not resolve the unbuilt workspace domain package; the job now builds @visepanda/domain first.",
-    "P0-04b final CI evidence on PR #170: Database contracts passed in 2m53s, covering empty reset, six pgTAP ownership/security assertions, real concurrent version/claim adapter tests, and security advisors. Verify, docs, evals, and both Vercel previews also passed.",
-    "P0-04c initial full-gate observation: API client compile-time assertions still described owner/currentTrip inputs and naked Trip outputs. They were corrected to trusted-context inputs and versioned snapshots, after which the full gate passed.",
-    "P0-04c local evidence: lint, typecheck, all tests, build, five AI eval cases, docs check, and docs impact passed. Server tests cover 41 cases plus two database-only skips; Web route tests cover forged owner/currentTrip stripping, server-generated Trip ids, signed-cookie owner isolation, claim 401, stale 409 safe version, and share/revoke.",
-    "P0-04c merge evidence: PR #171 passed Verify, Database contracts in 2m30s, docs, evals, and both Vercel previews before merging at 40d70b7. Issue #168 is closed; parent #113 remains blocked only by external release evidence.",
-    "P0-05 first full-gate deviation: parallel Web rebuilding of the Server root bundle exposed an unrelated partial-root import to Ops. Ops authorization now uses narrow package subpaths, reducing coupling without changing the Web build system.",
-    "P0-05 local evidence: lint, typecheck, all tests, build, five AI eval cases, docs check, and docs impact pass. Server has 45 passing tests plus three DB-only skips; Ops has six authorization/store tests; every Ops page builds as request-time dynamic. Real pgTAP and adapter integration await Database contracts CI.",
-    "P0-05 first Database contracts observation on PR #172: migrations, pgTAP, Trip integration, and implementation behavior reached the Ops adapter assertion; the test expected only two admin permissions while the accepted matrix correctly returned four. The assertion now verifies the complete exact admin permission set before rerun.",
-    "P0-05 merge evidence: PR #172 passed Verify in 1m42s, Database contracts in 2m35s, docs, evals, and both Vercel previews before merging at 410ffab. Production remains blocked by OA-001, OA-004, and OA-010.",
-    "P0-06 decomposition: parent #115 is split into runtime resolver/inventory #174, explicit router dependencies #173, Web durable composition #176, and Ops Knowledge convergence/quarantine #175. The split preserves P0-09/P0-13/P0-18/P0-19 as sole owners of their later workflows.",
-    "P0-06a local evidence: lint, typecheck, all tests, build, five AI eval cases, docs check, and docs impact pass. Twelve runtime tests cover all five explicit modes, missing/invalid mode, deployed database failure, labelled demo memory, explicit test injection, inventory completeness, root-cause diagnostics, and secret-safe output.",
-    "P0-06a merge evidence: PR #177 passed Verify in 1m35s, Database contracts in 3m17s, docs, evals, and both Vercel previews before merging at 0a07035. OA-004/OA-005 remain external release gates.",
-    "P0-06b focused evidence: 12 tests pass across the common service guard and Knowledge, Human Task, and Telemetry routers. Omitted services return SERVICE_UNAVAILABLE; explicit memory injection remains test-only.",
-    "P0-06b merge evidence: PR #178 passed Verify in 1m34s, Database contracts in 2m30s, docs, evals, and both Vercel previews before merging at dc8edee.",
-    "P0-06c focused evidence: seven local Web tests pass for missing-mode/database fail-closed behavior, explicit test injection, local-demo selection, typed route 503, and owner/version/share behavior. Real two-instance Postgres durability is added to Database contracts CI and is not claimed locally because Docker is absent.",
-    "P0-06c merge evidence: PR #179 passed Verify in 1m44s, Database contracts in 2m39s including two independent Web composition instances, docs, evals, and both Vercel previews before merging at 98ba3f0.",
-    "P0-06d focused evidence: Ops Knowledge explicit test injection and pending capability quarantine tests pass. Human Help, Outbound, and Ops Task fixture ledgers return 503 outside explicit test/local-demo; real Ops Knowledge two-instance persistence awaits Database contracts CI.",
-    "P0-06d merge evidence: PR #180 passed Verify, Database contracts in 2m47s, docs, evals, and both Vercel previews before merging at 184b64d.",
-    "P0-09 local evidence: Server typecheck/build and 64 unit tests pass; Web typecheck and 20 tests pass. New unit tests cover anonymous safe metadata, validation failure normalization, and non-blocking trace failure. Database integration/pgTAP tests are present but skipped without DATABASE_URL.",
-    "P0-09 local database limitation: Supabase CLI 2.109.1 is installed, but `supabase db reset --local --no-seed --workdir infra` cannot run because Docker daemon is unavailable. No local migration, pgTAP, adapter, advisor, or production-retention pass is claimed; CI Database contracts is required.",
-    "P0-09 first Database contracts CI observation on PR #182: migration reset and prior checks reached the new adapter suite, which failed because its authenticated fixture inserted public.users before the required auth.users row. The fixture now mirrors the existing trusted auth seed order; the production adapter/migration is unchanged and CI rerun remains required.",
-    "P0-09 corrected CI evidence on PR #182: Verify, Docs, Evals, Database contracts, and Vercel Preview Comments all passed. Database contracts replayed the migration, ran pgTAP security checks, ran the authenticated/anonymous/no-identity adapter plus Copilot integration tests, and ran security advisors. Production OA-004 purge scheduling remains unverified and is not claimed.",
-    "P0-09 merge evidence: PR #182 merged at 216602e and Issue #73 was explicitly closed after GitHub did not apply the PR closing keyword automatically. P0-07 #116 and P0-08 #117 were reconciled to status:ready; P0-08 dependencies now match the canonical Phase 0/1 graph."
+    "PR #251 merged at ba3401d after verify, docs, evals, Database contracts, and Vercel Preview Comments passed. It completed owner-scoped P0-10 Web resume without creating a second assistant bubble.",
+    "PR #242 merged at 7fc8e07 after verify, docs, evals, Database contracts, and Vercel Preview Comments passed. V2-75 is closed; this tooling merge does not waive Phase 1 rollout triggers.",
+    "PR #250 merged at a688c7b after verify, docs, evals, Database contracts, and Vercel Preview Comments passed. It freezes #248 schemas only; no runtime persistence or complete cost evidence is claimed.",
+    "PRs #229, #240, and #251 completed the durable P0-10 provenance, queue/callback/retry, and Web resume sequence; parent Issue #118 is closed.",
+    "PRs #232 and #241 completed P0-13 durable Human Task intake and P0-14 transition enforcement; P0-15 is now dependency-ready.",
+    "P0-07b production smoke previously returned typed real-provider Copilot responses. #248 remains responsible for the expanded auditable conversation, product-event, and per-attempt cost records.",
+    "GitHub metadata reconciliation on 2026-07-20 changed #119 and #152 from status:blocked to status:ready, changed #185 to status:in-progress, and removed stale status:in-progress labels from completed #82, #150, #151, #226, #227, and #228."
   ],
   "readingOrder": [
     {
