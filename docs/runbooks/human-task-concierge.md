@@ -22,14 +22,16 @@ Use after a real Human Task enters the durable Ops queue in an approved deployme
 1. Confirm the request is within the policy's Shanghai/English/window/capacity envelope before collecting more information.
 2. Confirm task id, requester identity/contact consent, city, requested outcome, urgency, and scope.
 3. Reject emergencies and regulated/legal/medical actions; direct the user to official services.
-4. Triage feasibility, operator capacity, response target, and cancellation boundary. Record a
+4. Open the protected Ops task detail. Record only the minimum internal note needed for triage; do
+   not copy credentials, payment data, passport data, or unrelated personal information.
+5. Triage feasibility, operator capacity, response target, and cancellation boundary. Record a
    10-500 character reason when moving `requested -> triaged`; state that targets are not guarantees.
-5. During controlled preview, do not send a payment link or accept paid fulfilment. A future approved payment flow is required before using `quoted` or later payment states.
-6. After verified payment exists in a future approved flow, move through the legal state transitions and record operator notes/evidence.
-7. During preview, cancel only through the governed endpoint and record why work did not proceed.
+6. During controlled preview, do not send a payment link or accept paid fulfilment. A future approved payment flow is required before using `quoted` or later payment states.
+7. After verified payment exists in a future approved flow, move through the legal state transitions and record operator notes/evidence.
+8. During preview, cancel only through the governed endpoint and record why work did not proceed.
    Cancelled tasks cannot be reopened; a genuine new request requires a new task. Complete future
    paid work honestly and never claim an external action was taken without evidence.
-8. Redact the transcript and propose reusable knowledge gaps/facts without exposing personal data.
+9. Redact the transcript and propose reusable knowledge gaps/facts without exposing personal data.
 
 ## Verification
 

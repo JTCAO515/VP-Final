@@ -55,6 +55,9 @@ commercial evidence, Human Tasks, and telemetry. Repository migrations are the s
   `internal.purge_expired_human_tasks()` routine removes terminal rows after their explicit retention
   deadline; P0-14 assigns the 90-day deadline on an enabled terminal transition. Production purge
   scheduling remains an operator action and is not claimed as active.
+- P0-15 uses the existing private `operator_note` column. Each note write and a minimized
+  `human_task.note.updated` Ops audit event commit in one transaction; the audit records actor, task
+  id, timestamp, and note-presence only, never note or contact content.
 - Ops users access data through protected server routes, not broad direct table grants.
 - Ops membership and audit tables are server-only with RLS enabled and no `anon` or `authenticated`
   Data API grants. Supabase Auth proves identity; `ops_memberships` independently grants authority.

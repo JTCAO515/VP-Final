@@ -59,6 +59,11 @@ modules yet.
   actor from trusted Ops access, validates the domain edge, enforces the controlled-preview policy,
   and writes status plus append-only actor/reason evidence in one transaction. The preview permits
   triage and pre-payment cancellation only; quote/payment/fulfilment states remain policy-gated.
+- P0-15 extends the same Human Task service with Ops-only detail reads and operator-note updates.
+  Detail reads require `task.contact.read`; note writes require `task.write`. The Postgres adapter
+  commits the note update and a PII-free `human_task.note.updated` audit event in one transaction.
+  The audit metadata records only whether a note is present, never the note, request description,
+  contact details, cookie, signature, or credential.
 - The runtime resolver and router injection boundary are implemented and tested, but Web/Ops
   composition migration remains in P0-06c and P0-06d. Therefore no deployed durable-path claim is
   made yet.

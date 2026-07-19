@@ -13,11 +13,16 @@ the public Web application and protected by server-side role checks.
 - `/facts`: list, create, update, renew, and deprecate execution facts.
 - `/gaps`: inspect and resolve knowledge gaps.
 - `/tasks`: inspect the durable Human Task intake queue.
+- `/tasks/:taskId`: inspect one authorized task, save a minimized internal note, review transition
+  history, and apply only the controlled-preview transitions returned by the server.
 - `/api/knowledge/*`: server-side knowledge operations.
 - `/api/knowledge/import`: Editor-authorized CSV `dry-run` and atomic `commit` endpoint; no public
   upload surface exists.
 - `/api/tasks`: permission-protected task list endpoint.
+- `/api/tasks/:taskId`: `task.contact.read`-protected detail and `task.write`-protected internal-note
+  endpoint. Note writes atomically append an Ops audit event without copying note/contact content.
 - `/api/tasks/:taskId/status`: `task.write`-protected transition endpoint; actor is session-derived.
+  Mutation responses contain status/audit evidence only and never echo contact or description.
 - `/login`: verified Supabase Ops sign-in.
 - `/roles` and `/api/roles`: Admin-only membership management.
 
@@ -34,7 +39,10 @@ the public Web application and protected by server-side role checks.
 - Role changes write membership and audit evidence atomically. Knowledge and Human Task reads use
   durable server adapters. P0-14 exposes only the canonical status transition API: every change
   records actor, reason, and timestamp; arbitrary status writes and terminal recovery are rejected.
-  Notes UI, quote/payment activation, and payment controls remain absent until P0-15/P0-17.
+  P0-15 adds an authorized task-detail and notes workflow. The server remains authoritative for the
+  available transition list; controlled preview exposes only `requested -> triaged/cancelled` and
+  `triaged -> cancelled`. Quote/payment activation, assignment, and fulfilment controls remain absent
+  until their separately accepted boundaries.
 - Partner and payment operations are not yet available.
 
 Production use still requires OA-001, OA-004, and OA-010 verification. Missing Auth or database

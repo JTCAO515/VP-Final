@@ -29,7 +29,8 @@ body {
 
 button,
 input,
-select {
+select,
+textarea {
   font: inherit;
 }
 
@@ -225,4 +226,131 @@ button:disabled {
 
 .taskQuote input {
   min-width: 220px;
+}
+
+.taskLink,
+.backLink {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.backLink {
+  display: inline-block;
+  margin-bottom: 20px;
+}
+
+.taskDetail {
+  display: grid;
+  gap: 20px;
+}
+
+.taskHeading {
+  align-items: flex-start;
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+}
+
+.taskHeading .eyebrow,
+.taskHeading .muted {
+  margin: 0 0 8px;
+}
+
+.taskDetailGrid {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.75fr);
+}
+
+.taskRequest,
+.taskPolicy,
+.taskForm,
+.taskHistory {
+  padding: 22px;
+}
+
+.taskRequest h2,
+.taskPolicy h2,
+.taskForm h2,
+.taskHistory h2 {
+  margin: 0 0 16px;
+}
+
+.taskRequest dl {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0 0 20px;
+}
+
+.taskRequest dl div {
+  display: grid;
+  gap: 4px;
+}
+
+.taskRequest dt,
+.taskForm label {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.taskRequest dd,
+.taskRequest > p,
+.taskPolicy p {
+  line-height: 1.55;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.taskForm {
+  align-content: start;
+  display: grid;
+  gap: 12px;
+}
+
+.taskForm textarea {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  min-height: 130px;
+  padding: 10px;
+  resize: vertical;
+}
+
+.taskHistory ol {
+  display: grid;
+  gap: 14px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.taskHistory li {
+  border-left: 3px solid var(--accent);
+  display: grid;
+  gap: 6px;
+  padding-left: 12px;
+}
+
+.taskHistory span,
+.taskHistory small {
+  color: var(--muted);
+}
+
+.taskError {
+  background: var(--vp-danger-soft);
+  border: 1px solid var(--accent);
+  margin: 0;
+  padding: 12px 14px;
+}
+
+@media (max-width: 760px) {
+  .taskDetailGrid,
+  .taskRequest dl {
+    grid-template-columns: 1fr;
+  }
+
+  .taskHeading {
+    gap: 14px;
+  }
 }

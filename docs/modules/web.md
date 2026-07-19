@@ -88,7 +88,9 @@ until P0-18 implements its durable owner.
 P0-14 adds the Human Task lifecycle contract behind that intake path, but does not change the public
 receipt or expose a public status mutation. Web test fixtures inject the complete service interface so
 an unavailable durable adapter still returns the existing honest intake failure rather than fabricating
-a transition or payment state.
+a transition or payment state. P0-15's task-detail and operator-note methods remain Ops-only: the Web
+Human Help route invokes only `create` and cannot read contact details, write internal notes, or perform
+lifecycle transitions.
 
 Copilot writes a best-effort private Agent Trace after a validated result or failure. A trace write
 failure cannot alter the public response or Trip state. Trace records follow

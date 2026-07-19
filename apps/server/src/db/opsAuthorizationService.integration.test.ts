@@ -54,8 +54,14 @@ describeDatabase("database OpsAuthorizationService", () => {
       role: "operator",
       permissions: ["task.read", "task.contact.read", "task.write"],
     });
-    await expect(service.listAudit(admin!)).resolves.toMatchObject([
-      { actorId: adminId, action: "membership.set", targetId: operatorId },
-    ]);
+    await expect(service.listAudit(admin!)).resolves.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          actorId: adminId,
+          action: "membership.set",
+          targetId: operatorId,
+        }),
+      ]),
+    );
   });
 });

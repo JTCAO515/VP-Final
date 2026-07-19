@@ -24,6 +24,7 @@ describeDatabase("database HumanTaskService", () => {
   const db = drizzle(sql, { schema });
 
   beforeEach(async () => {
+    await sql`delete from public.ops_audit_events where actor_id = ${operatorId} and action = 'human_task.note.updated'`;
     await sql`delete from public.human_tasks where anon_id in (${anonA}, ${anonB}, ${anonCapacity}) or user_id = ${userId}`;
     await sql`delete from public.users where id = ${userId}`;
     await sql`delete from auth.users where id = ${userId}`;
@@ -40,6 +41,7 @@ describeDatabase("database HumanTaskService", () => {
   });
 
   afterAll(async () => {
+    await sql`delete from public.ops_audit_events where actor_id = ${operatorId} and action = 'human_task.note.updated'`;
     await sql`delete from public.human_tasks where anon_id in (${anonA}, ${anonB}, ${anonCapacity}) or user_id = ${userId}`;
     await sql`delete from public.users where id = ${userId}`;
     await sql`delete from auth.users where id = ${userId}`;
@@ -155,6 +157,57 @@ describeDatabase("database HumanTaskService", () => {
       to_status: "triaged",
       reason: "Scope, safety, capacity, and required information were reviewed.",
     });
+  });
+
+  it("persists an internal operator note and protects detail reads", async () => {
+    const service = createDbHumanTaskService(db, {
+      now: () => new Date("2099-01-04T04:00:00.000Z"),
+    });
+    const created = await service.create({
+      identity: { kind: "anonymous", anonId: anonA },
+      idempotencyKey: crypto.randomUUID(),
+      request,
+    });
+    const operator = {
+      userId: operatorId,
+      role: "operator" as const,
+      permissions: ["task.read", "task.contact.read", "task.write"] as const,
+    };
+
+    await expect(
+      service.getForOps(created.id, {
+        userId: operatorId,
+        role: "editor",
+        permissions: ["knowledge.read", "knowledge.write"],
+      }),
+    ).rejects.toMatchObject({ code: "HUMAN_TASK_TRANSITION_FORBIDDEN" });
+
+    const updated = await service.updateOperatorNote({
+      taskId: created.id,
+      actor: { ...operator, permissions: [...operator.permissions] },
+      note: "Scope confirmed; waiting for the traveler to confirm the restaurant name.",
+    });
+    expect(updated.operator_note).toBe(
+      "Scope confirmed; waiting for the traveler to confirm the restaurant name.",
+    );
+
+    const fresh = createDbHumanTaskService(db);
+    await expect(
+      fresh.getForOps(created.id, { ...operator, permissions: [...operator.permissions] }),
+    ).resolves.toMatchObject({ operator_note: updated.operator_note });
+    const [audit] = await sql`
+      select action, target_type, target_id, metadata_jsonb
+      from public.ops_audit_events
+      where target_id = ${created.id}
+    `;
+    expect(audit).toMatchObject({
+      action: "human_task.note.updated",
+      target_type: "human_task",
+      target_id: created.id,
+      metadata_jsonb: { notePresent: true },
+    });
+    expect(JSON.stringify(audit)).not.toContain(updated.operator_note);
+    expect(JSON.stringify(audit)).not.toContain(request.contact);
   });
 
   it("leaves status and audit unchanged when policy or transition validation rejects", async () => {

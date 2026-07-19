@@ -46,7 +46,16 @@ export async function handleTaskStatusPatch(
       reason: command.reason,
     });
     return applyOpsCookies(
-      NextResponse.json({ ok: true, ...result }),
+      NextResponse.json({
+        ok: true,
+        task: {
+          id: result.task.id,
+          status: result.task.status,
+          updated_at: result.task.updated_at,
+          retention_expires_at: result.task.retention_expires_at,
+        },
+        transition: result.transition,
+      }),
       authorization.cookieResponse,
     );
   } catch (error) {

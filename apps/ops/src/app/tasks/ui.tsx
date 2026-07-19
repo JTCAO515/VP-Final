@@ -39,6 +39,7 @@ export function HumanTaskQueue() {
             <th>Contact</th>
             <th>Status</th>
             <th>Submitted</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody>
@@ -53,6 +54,11 @@ export function HumanTaskQueue() {
               <td>{task.contact}</td>
               <td>{task.status}</td>
               <td>{new Date(task.created_at).toLocaleString()}</td>
+              <td>
+                <a className="taskLink" href={`/tasks/${encodeURIComponent(task.id)}`}>
+                  Open task
+                </a>
+              </td>
             </tr>
           ))}
         </tbody>
