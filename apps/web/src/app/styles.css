@@ -1164,6 +1164,89 @@ button:disabled {
   padding-left: 18px;
 }
 
+.completionStatusCard {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--gold);
+  border-radius: 12px;
+  display: grid;
+  gap: 10px;
+  padding: 18px;
+}
+
+.completionStatusCard.completed {
+  border-left-color: var(--jade);
+}
+
+.completionStatusCard.partial,
+.completionStatusCard.failed,
+.completionStatusCard.conflicted {
+  border-left-color: var(--red);
+}
+
+.completionStatusHeading {
+  align-items: flex-start;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+}
+
+.completionStatusHeading span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.completionStatusHeading h3 {
+  font-size: 17px;
+  margin: 4px 0 0;
+}
+
+.completionStatusHeading b {
+  background: var(--gold-soft);
+  border-radius: 999px;
+  color: var(--gold-dark);
+  font-size: 12px;
+  padding: 6px 9px;
+  text-transform: capitalize;
+}
+
+.completionStatusCard.completed .completionStatusHeading b {
+  background: var(--jade-soft);
+  color: var(--jade);
+}
+
+.completionStatusCard.partial .completionStatusHeading b,
+.completionStatusCard.failed .completionStatusHeading b,
+.completionStatusCard.conflicted .completionStatusHeading b {
+  background: var(--red-soft);
+  color: var(--red);
+}
+
+.completionStatusCard > p,
+.completionStatusCard > small {
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.completionStatusCard > button {
+  background: var(--ink);
+  border: 0;
+  border-radius: 10px;
+  color: var(--vp-on-primary);
+  cursor: pointer;
+  font-weight: 800;
+  justify-self: start;
+  min-height: 44px;
+  padding: 0 16px;
+}
+
+.completionStatusCard > button:active {
+  transform: scale(0.98);
+}
+
 .typing p span {
   color: var(--red);
   letter-spacing: 5px;
@@ -1831,6 +1914,11 @@ button:disabled {
   .quickReplies {
     display: grid;
     grid-template-columns: 1fr;
+  }
+
+  .completionStatusHeading {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .railHeader,

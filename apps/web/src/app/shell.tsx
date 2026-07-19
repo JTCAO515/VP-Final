@@ -1,15 +1,29 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
+  CompletionJobSchema,
   CopilotEnvelopeSchema,
   GenerationProgressSchema,
   TripStateSchema,
   type CopilotEnvelope,
+  type CompletionJob,
   type GenerationProgress,
   type TripDay,
   type TripState,
 } from "@visepanda/domain";
+import {
+  COMPLETION_MAX_POLLS,
+  COMPLETION_POLL_INTERVAL_MS,
+  canRetryCompletion,
+  clearCompletionReference,
+  completionProgress,
+  completionReference,
+  completionStateCopy,
+  readCompletionReference,
+  writeCompletionReference,
+  type CompletionReference,
+} from "./completion-client";
 import { SiteFooter, SiteHeader } from "./site-chrome";
 
 type ChatMessage = {
@@ -97,23 +111,157 @@ export function CopilotShell() {
   const [trip, setTrip] = useState<TripState | null>(null);
   const [tripVersion, setTripVersion] = useState<number | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
+  const [completionJob, setCompletionJob] = useState<CompletionJob | null>(null);
+  const monitorGeneration = useRef(0);
 
   const isWorking = progress.status === "skeleton" || progress.status === "completing";
+  const detailPassFailed = isDetailPassFailure(progress, trip);
 
   useEffect(() => {
-    const tripId = window.localStorage.getItem(LAST_TRIP_ID_KEY);
-    if (tripId) void loadTrip(tripId);
+    const generation = ++monitorGeneration.current;
+    const reference = readCompletionReference(window.localStorage);
+    const tripId = reference?.tripId ?? window.localStorage.getItem(LAST_TRIP_ID_KEY);
+    void (async () => {
+      const snapshot = tripId ? await loadTrip(tripId, false, generation) : null;
+      if (reference) {
+        await monitorCompletion(reference, generation, snapshot?.trip ?? null);
+      }
+    })();
+    return () => {
+      monitorGeneration.current += 1;
+    };
   }, []);
 
-  async function loadTrip(tripId: string) {
+  async function loadTrip(
+    tripId: string,
+    updateConversation = false,
+    generation?: number,
+  ): Promise<{ trip: TripState; version: number } | null> {
     try {
       const response = await fetch(`/api/trips/${tripId}`);
       const data = (await response.json()) as { ok: boolean; trip?: unknown; version?: unknown };
-      if (!response.ok || !data.ok) return;
-      setTrip(TripStateSchema.parse(data.trip));
-      setTripVersion(zeroOrPositiveInteger(data.version));
+      if (!response.ok || !data.ok) return null;
+      const loadedTrip = TripStateSchema.parse(data.trip);
+      const loadedVersion = zeroOrPositiveInteger(data.version);
+      if (loadedVersion === null) return null;
+      if (generation !== undefined && monitorGeneration.current !== generation) return null;
+      setTrip(loadedTrip);
+      setTripVersion(loadedVersion);
+      if (updateConversation) {
+        setMessages((current) => attachTripToLatestAssistant(current, loadedTrip));
+      }
+      return { trip: loadedTrip, version: loadedVersion };
     } catch {
       // A remembered anonymous Trip is optional context for a later product phase.
+      return null;
+    }
+  }
+
+  async function monitorCompletion(
+    reference: CompletionReference,
+    generation: number,
+    initialTrip: TripState | null,
+  ): Promise<void> {
+    let latestTrip = initialTrip;
+    try {
+      for (let poll = 0; poll < COMPLETION_MAX_POLLS; poll += 1) {
+        if (monitorGeneration.current !== generation) return;
+        const response = await fetch(`/api/copilot/complete?id=${reference.id}`, {
+          cache: "no-store",
+        });
+        const data = (await response.json()) as
+          { ok: true; job: unknown } | { ok: false; error: string };
+        if (monitorGeneration.current !== generation) return;
+        if (!response.ok || !data.ok) {
+          if (response.status === 404) clearCompletionReference(window.localStorage);
+          throw new Error(data.ok ? "Completion status is unavailable." : data.error);
+        }
+        const job = CompletionJobSchema.parse(data.job);
+        if (job.tripId !== reference.tripId || job.idempotencyKey !== reference.idempotencyKey) {
+          clearCompletionReference(window.localStorage);
+          throw new Error("Saved completion reference did not match the owner-scoped job.");
+        }
+        setCompletionJob(job);
+        setProgress(completionProgress(job, latestTrip));
+
+        if (job.state !== "queued" && job.state !== "running") {
+          const snapshot = await loadTrip(reference.tripId, true, generation);
+          latestTrip = snapshot?.trip ?? latestTrip;
+          setProgress(completionProgress(job, latestTrip));
+          if (job.state === "completed") clearCompletionReference(window.localStorage);
+          return;
+        }
+        await delay(COMPLETION_POLL_INTERVAL_MS);
+      }
+      setProgress((current) => ({
+        ...current,
+        status: "completing",
+        error: "Trip details are still processing. Refresh this page to resume checking.",
+      }));
+    } catch (error) {
+      if (monitorGeneration.current !== generation) return;
+      setProgress((current) => ({
+        ...current,
+        status: "failed",
+        error:
+          error instanceof Error ? error.message : "Completion status is temporarily unavailable.",
+      }));
+    }
+  }
+
+  async function startCompletion(nextTrip: TripState, nextVersion: number): Promise<void> {
+    try {
+      const response = await fetch("/api/copilot/complete", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ tripId: nextTrip.id, expectedVersion: nextVersion }),
+      });
+      const data = (await response.json()) as
+        { ok: true; job: unknown } | { ok: false; error: string };
+      if (!response.ok || !data.ok) {
+        throw new Error(data.ok ? "Trip completion could not be queued." : data.error);
+      }
+      const job = CompletionJobSchema.parse(data.job);
+      const reference = completionReference(job);
+      writeCompletionReference(window.localStorage, reference);
+      setCompletionJob(job);
+      setProgress(completionProgress(job, nextTrip));
+      const generation = ++monitorGeneration.current;
+      await monitorCompletion(reference, generation, nextTrip);
+    } catch (error) {
+      setProgress((current) => ({
+        ...current,
+        status: "failed",
+        error: error instanceof Error ? error.message : "Trip completion could not be queued.",
+      }));
+    }
+  }
+
+  async function retryCompletion(): Promise<void> {
+    const reference = readCompletionReference(window.localStorage);
+    if (!reference || !completionJob || !canRetryCompletion(completionJob)) return;
+    try {
+      const response = await fetch("/api/copilot/complete", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ id: reference.id, idempotencyKey: reference.idempotencyKey }),
+      });
+      const data = (await response.json()) as
+        { ok: true; job: unknown } | { ok: false; error: string };
+      if (!response.ok || !data.ok) {
+        throw new Error(data.ok ? "Completion cannot be retried." : data.error);
+      }
+      const job = CompletionJobSchema.parse(data.job);
+      setCompletionJob(job);
+      setProgress(completionProgress(job, trip));
+      const generation = ++monitorGeneration.current;
+      await monitorCompletion(reference, generation, trip);
+    } catch (error) {
+      setProgress((current) => ({
+        ...current,
+        status: "failed",
+        error: error instanceof Error ? error.message : "Completion retry is unavailable.",
+      }));
     }
   }
 
@@ -154,10 +302,24 @@ export function CopilotShell() {
         ...current,
         { role: "assistant", body: envelope.message.body, envelope, trip: nextTrip },
       ]);
+      monitorGeneration.current += 1;
+      clearCompletionReference(window.localStorage);
+      setCompletionJob(null);
       setTrip(nextTrip);
       setTripVersion(nextVersion);
-      setProgress(GenerationProgressSchema.parse(data.progress));
+      const nextProgress = GenerationProgressSchema.parse(data.progress);
+      setProgress(nextProgress);
       if (nextTrip) window.localStorage.setItem(LAST_TRIP_ID_KEY, nextTrip.id);
+      if (nextProgress.status === "skeleton") {
+        if (nextTrip && nextVersion !== null) void startCompletion(nextTrip, nextVersion);
+        else {
+          setProgress({
+            ...nextProgress,
+            status: "failed",
+            error: "The trip skeleton could not be linked to durable completion.",
+          });
+        }
+      }
     } catch (error) {
       setProgress({
         status: "failed",
@@ -279,7 +441,7 @@ export function CopilotShell() {
                 <span>Practical China travel guidance</span>
               </div>
               <span className={`conversationStatus ${progress.status}`}>
-                {progressLabel(progress)}
+                {progressLabel(progress, detailPassFailed)}
               </span>
             </div>
             <p className="scopeNote">
@@ -297,13 +459,27 @@ export function CopilotShell() {
                   )}
                 </article>
               ))}
-              {isWorking ? (
+              {progress.status === "skeleton" ? (
                 <article className="railMessage assistant typing" aria-live="polite">
                   <b>VisePanda Copilot</b>
                   <p>
                     <span aria-hidden="true">● ● ●</span> Thinking through your travel question
                   </p>
                 </article>
+              ) : null}
+              {completionJob || trip ? (
+                <CompletionStatusCard
+                  job={completionJob}
+                  progress={progress}
+                  retry={
+                    completionJob && canRetryCompletion(completionJob)
+                      ? () => void retryCompletion()
+                      : null
+                  }
+                  trip={
+                    trip && !messages.some((message) => message.trip?.id === trip.id) ? trip : null
+                  }
+                />
               ) : null}
             </div>
           </section>
@@ -323,7 +499,7 @@ export function CopilotShell() {
                 </button>
               ))}
             </div>
-            {progress.status === "failed" ? (
+            {progress.status === "failed" && !detailPassFailed ? (
               <div className="copilotFailure" role="alert">
                 <strong>Copilot could not respond.</strong>
                 <span>{progress.error ?? "Please check your connection and try again."}</span>
@@ -426,6 +602,50 @@ export function CopilotShell() {
   );
 }
 
+function CompletionStatusCard({
+  job,
+  progress,
+  retry,
+  trip,
+}: {
+  job: CompletionJob | null;
+  progress: GenerationProgress;
+  retry: (() => void) | null;
+  trip: TripState | null;
+}) {
+  const copy = job
+    ? completionStateCopy(job)
+    : progress.status === "failed"
+      ? {
+          title: "Trip details unavailable",
+          detail: "Your trip skeleton is safe, but the detail pass could not start.",
+        }
+      : { title: "Saved trip", detail: "Your latest owner-scoped trip is available below." };
+  return (
+    <section className={`completionStatusCard ${job?.state ?? "saved"}`} aria-live="polite">
+      <div className="completionStatusHeading">
+        <div>
+          <span>Trip detail status</span>
+          <h3>{copy.title}</h3>
+        </div>
+        {job ? <b>{job.state}</b> : null}
+      </div>
+      <p>{progress.error ?? copy.detail}</p>
+      {job ? (
+        <small>
+          Attempt {job.attempt} of {job.maxAttempts}
+        </small>
+      ) : null}
+      {retry ? (
+        <button onClick={retry} type="button">
+          Retry detail pass
+        </button>
+      ) : null}
+      {trip ? <TripPreview trip={trip} /> : null}
+    </section>
+  );
+}
+
 function EnvelopeMessage({
   envelope,
   trip,
@@ -486,14 +706,37 @@ export function previewTripDays(trip: TripState): TripDay[] {
   return trip.days.slice(0, 3);
 }
 
+export function attachTripToLatestAssistant(
+  messages: ChatMessage[],
+  nextTrip: TripState,
+): ChatMessage[] {
+  for (let index = messages.length - 1; index >= 0; index -= 1) {
+    const message = messages[index];
+    if (message?.role !== "assistant" || !message.envelope) continue;
+    return messages.map((item, itemIndex) =>
+      itemIndex === index ? { ...item, trip: nextTrip } : item,
+    );
+  }
+  return messages;
+}
+
+function delay(milliseconds: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
+
 function zeroOrPositiveInteger(value: unknown): number | null {
   return typeof value === "number" && Number.isInteger(value) && value >= 0 ? value : null;
 }
 
-function progressLabel(progress: GenerationProgress): string {
+function isDetailPassFailure(progress: GenerationProgress, trip: TripState | null): boolean {
+  return progress.status === "failed" && trip !== null && progress.totalDays > 0;
+}
+
+function progressLabel(progress: GenerationProgress, detailPassFailed: boolean): string {
   if (progress.status === "idle") return "Ready";
   if (progress.status === "skeleton") return "Thinking";
-  if (progress.status === "completing") return "Preparing response";
+  if (progress.status === "completing") return "Filling trip details";
   if (progress.status === "completed") return "Ready";
+  if (detailPassFailed) return "Details need attention";
   return "Connection issue";
 }
