@@ -12,7 +12,8 @@ commercial evidence, Human Tasks, and telemetry. Repository migrations are the s
 | Area              | Relations                                                     |
 | ----------------- | ------------------------------------------------------------- |
 | Identity and Trip | `users`, `trips`, `trip_events`, `copilot_completion_jobs`    |
-| AI trace          | `agent_runs`, `tool_calls`                                    |
+| AI trace          | `agent_runs`, `tool_calls`, `llm_call_costs`                  |
+| Copilot dialogue  | `copilot_conversation_turns`                                  |
 | Knowledge         | `pois`, `poi_facts`, `knowledge_gaps`, `poi_commercial_links` |
 | Commerce          | `partners`, `outbound_clicks`                                 |
 | Telemetry         | `events`, `trust_funnel_daily` materialized aggregate         |
@@ -61,6 +62,16 @@ stores only tool metadata and digests. Both relations are server-only, redact le
 columns during migration, and are retained for 30 days under [ADR-0007](../adr/ADR-0007-agent-trace-privacy-retention.md).
 The `internal.purge_expired_agent_traces()` routine is restricted from Data API roles; daily production
 scheduling remains part of OA-004 verification and is not yet claimed as deployed evidence.
+
+DEMO-01c adds server-only `copilot_conversation_turns` and normalized `llm_call_costs`. Both require
+exactly one trusted identity and an explicit future retention deadline; direct Data API access is
+revoked. Conversations contain only pre-redacted text and a validated pre-redacted envelope. Cost rows
+snapshot prices and tokens per provider attempt, while internal views expose only aggregate cost,
+volume, and fallback metrics. The seven Copilot product-event actions require an explicit event expiry.
+Events accept an authenticated identity without requiring a fabricated anonymous id, while still
+rejecting rows with no trusted identity.
+All three record classes use the restricted `internal.purge_expired_copilot_observability()` routine
+under [ADR-0009](../adr/ADR-0009-copilot-conversation-cost-retention.md).
 
 P0-04b migration `20260711001932_exclusive_trip_owner.sql` converts any legacy dual-owner row to its
 authenticated owner, then replaces the previous at-least-one check with

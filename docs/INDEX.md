@@ -225,6 +225,7 @@ Append-only records of accepted and superseded binding decisions.
 | [ADR-0006: Knowledge Evidence and Index Quality](adr/ADR-0006-knowledge-evidence-and-index-quality.md) | decision | accepted | knowledge / architecture | Freezes evidence eligibility, citations, gap minimization, and quality-gated SEO indexing. |
 | [ADR-0007: Agent Trace Privacy and Retention](adr/ADR-0007-agent-trace-privacy-retention.md) | decision | accepted | security / platform | Freezes minimized server-only AI trace metadata, 30-day retention, purge responsibility, and no-raw-payload rules. |
 | [ADR-0008: Platform Settlement and Legal-Entity Boundary](adr/ADR-0008-platform-settlement-and-legal-entity.md) | decision | draft | operator / commercial architecture | Drafts the non-implementation boundary and required legal/entity decisions before Phase 3 take rate or settlement work. |
+| [ADR-0009: Copilot Conversation and Cost Retention](adr/ADR-0009-copilot-conversation-cost-retention.md) | decision | accepted | security / data platform | Separates redacted Copilot turns, per-attempt costs, and product events under a 30-day server-only retention boundary. |
 
 ## Runbooks
 

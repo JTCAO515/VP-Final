@@ -245,6 +245,133 @@ export const toolCalls = pgTable(
   }),
 );
 
+export const copilotConversationTurns = pgTable(
+  "copilot_conversation_turns",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    sessionId: uuid("session_id").notNull(),
+    agentRunId: uuid("agent_run_id").references(() => agentRuns.id, { onDelete: "set null" }),
+    userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }),
+    anonId: text("anon_id"),
+    status: text("status").notNull(),
+    userMessage: text("user_message").notNull(),
+    assistantEnvelopeJsonb: jsonb("assistant_envelope_jsonb"),
+    cityIntent: text("city_intent"),
+    redactionClassesJsonb: jsonb("redaction_classes_jsonb").notNull().default([]),
+    failureClass: text("failure_class"),
+    retentionExpiresAt: timestamp("retention_expires_at", { withTimezone: true }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    userCreatedIdx: index("copilot_conversation_turns_user_created_idx").on(
+      table.userId,
+      table.createdAt,
+    ),
+    anonCreatedIdx: index("copilot_conversation_turns_anon_created_idx").on(
+      table.anonId,
+      table.createdAt,
+    ),
+    sessionCreatedIdx: index("copilot_conversation_turns_session_created_idx").on(
+      table.sessionId,
+      table.createdAt,
+    ),
+    agentRunUnique: uniqueIndex("copilot_conversation_turns_agent_run_unique")
+      .on(table.agentRunId)
+      .where(sql`${table.agentRunId} is not null`),
+    identityCheck: check(
+      "copilot_conversation_turns_exactly_one_identity_check",
+      sql`num_nonnulls(${table.userId}, ${table.anonId}) = 1`,
+    ),
+    statusCheck: check(
+      "copilot_conversation_turns_status_check",
+      sql`${table.status} in ('succeeded', 'failed')`,
+    ),
+    resultCheck: check(
+      "copilot_conversation_turns_result_check",
+      sql`(${table.status} = 'succeeded' and ${table.assistantEnvelopeJsonb} is not null and ${table.failureClass} is null) or (${table.status} = 'failed' and ${table.assistantEnvelopeJsonb} is null and ${table.failureClass} is not null)`,
+    ),
+    redactionClassesCheck: check(
+      "copilot_conversation_turns_redaction_classes_check",
+      sql`jsonb_typeof(${table.redactionClassesJsonb}) = 'array'`,
+    ),
+    retentionCheck: check(
+      "copilot_conversation_turns_retention_check",
+      sql`${table.retentionExpiresAt} > ${table.createdAt}`,
+    ),
+  }),
+);
+
+export const llmCallCosts = pgTable(
+  "llm_call_costs",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    agentRunId: uuid("agent_run_id")
+      .notNull()
+      .references(() => agentRuns.id, { onDelete: "cascade" }),
+    userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }),
+    anonId: text("anon_id"),
+    attemptIndex: integer("attempt_index").notNull(),
+    provider: text("provider").notNull(),
+    model: text("model").notNull(),
+    effort: text("effort").notNull(),
+    status: text("status").notNull(),
+    inputTokens: integer("input_tokens").notNull(),
+    outputTokens: integer("output_tokens").notNull(),
+    inputPricePerMillionUsd: numeric("input_price_per_million_usd", {
+      precision: 14,
+      scale: 8,
+    }).notNull(),
+    outputPricePerMillionUsd: numeric("output_price_per_million_usd", {
+      precision: 14,
+      scale: 8,
+    }).notNull(),
+    costUsd: numeric("cost_usd", { precision: 14, scale: 8 }).notNull(),
+    fallbackTriggered: boolean("fallback_triggered").notNull().default(false),
+    latencyMs: integer("latency_ms").notNull(),
+    failureClass: text("failure_class"),
+    retentionExpiresAt: timestamp("retention_expires_at", { withTimezone: true }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    agentAttemptUnique: uniqueIndex("llm_call_costs_agent_attempt_unique").on(
+      table.agentRunId,
+      table.attemptIndex,
+    ),
+    userCreatedIdx: index("llm_call_costs_user_created_idx").on(table.userId, table.createdAt),
+    anonCreatedIdx: index("llm_call_costs_anon_created_idx").on(table.anonId, table.createdAt),
+    modelCreatedIdx: index("llm_call_costs_model_created_idx").on(
+      table.provider,
+      table.model,
+      table.createdAt,
+    ),
+    identityCheck: check(
+      "llm_call_costs_exactly_one_identity_check",
+      sql`num_nonnulls(${table.userId}, ${table.anonId}) = 1`,
+    ),
+    attemptCheck: check("llm_call_costs_attempt_index_check", sql`${table.attemptIndex} > 0`),
+    effortCheck: check(
+      "llm_call_costs_effort_check",
+      sql`${table.effort} in ('low', 'medium', 'high')`,
+    ),
+    statusCheck: check(
+      "llm_call_costs_status_check",
+      sql`${table.status} in ('succeeded', 'failed')`,
+    ),
+    failureCheck: check(
+      "llm_call_costs_failure_check",
+      sql`(${table.status} = 'succeeded' and ${table.failureClass} is null) or (${table.status} = 'failed' and ${table.failureClass} is not null)`,
+    ),
+    nonnegativeCheck: check(
+      "llm_call_costs_nonnegative_check",
+      sql`${table.inputTokens} >= 0 and ${table.outputTokens} >= 0 and ${table.inputPricePerMillionUsd} >= 0 and ${table.outputPricePerMillionUsd} >= 0 and ${table.costUsd} >= 0 and ${table.latencyMs} >= 0`,
+    ),
+    retentionCheck: check(
+      "llm_call_costs_retention_check",
+      sql`${table.retentionExpiresAt} > ${table.createdAt}`,
+    ),
+  }),
+);
+
 export const pois = pgTable(
   "pois",
   {
@@ -416,7 +543,7 @@ export const telemetryEvents = pgTable(
   {
     id: uuid("id").primaryKey().defaultRandom(),
     userId: uuid("user_id").references(() => users.id, { onDelete: "set null" }),
-    anonId: text("anon_id").notNull(),
+    anonId: text("anon_id"),
     surface: text("surface").notNull(),
     action: text("action").notNull(),
     entityType: text("entity_type").notNull(),
@@ -425,6 +552,7 @@ export const telemetryEvents = pgTable(
     partner: text("partner"),
     clickId: uuid("click_id"),
     propsJsonb: jsonb("props_jsonb").notNull().default({}),
+    retentionExpiresAt: timestamp("retention_expires_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
@@ -433,6 +561,14 @@ export const telemetryEvents = pgTable(
     surfaceCheck: check(
       "events_surface_check",
       sql`${table.surface} in ('web', 'mobile', 'server', 'ops')`,
+    ),
+    copilotRetentionCheck: check(
+      "events_copilot_retention_check",
+      sql`${table.action} not in ('session_started', 'turn_completed', 'anon_limit_hit', 'rate_limited', 'register_prompt_shown', 'fallback_triggered', 'model_failure') or (${table.retentionExpiresAt} is not null and ${table.retentionExpiresAt} > ${table.createdAt})`,
+    ),
+    identityCheck: check(
+      "events_at_least_one_identity_check",
+      sql`num_nonnulls(${table.userId}, ${table.anonId}) >= 1`,
     ),
   }),
 );

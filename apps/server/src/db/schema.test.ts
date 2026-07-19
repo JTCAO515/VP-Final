@@ -3,9 +3,11 @@ import { getTableConfig } from "drizzle-orm/pg-core";
 import {
   agentRuns,
   copilotCompletionJobs,
+  copilotConversationTurns,
   humanTaskTransitions,
   humanTasks,
   knowledgeGaps,
+  llmCallCosts,
   outboundClicks,
   opsAuditEvents,
   opsMemberships,
@@ -55,6 +57,20 @@ describe("database schema", () => {
     expect(toolCalls.inputDigest.name).toBe("input_digest");
   });
 
+  it("maps private Copilot conversation and per-attempt cost records", () => {
+    expect(copilotConversationTurns.userMessage.name).toBe("user_message");
+    expect(copilotConversationTurns.assistantEnvelopeJsonb.name).toBe("assistant_envelope_jsonb");
+    expect(copilotConversationTurns.retentionExpiresAt.name).toBe("retention_expires_at");
+    expect(
+      getTableConfig(copilotConversationTurns).checks.map((constraint) => constraint.name),
+    ).toContain("copilot_conversation_turns_exactly_one_identity_check");
+    expect(llmCallCosts.inputPricePerMillionUsd.name).toBe("input_price_per_million_usd");
+    expect(llmCallCosts.fallbackTriggered.name).toBe("fallback_triggered");
+    expect(getTableConfig(llmCallCosts).indexes.map((index) => index.config.name)).toContain(
+      "llm_call_costs_agent_attempt_unique",
+    );
+  });
+
   it("maps server-only completion job records", () => {
     expect(copilotCompletionJobs.tripId.name).toBe("trip_id");
     expect(copilotCompletionJobs.baseVersion.name).toBe("base_version");
@@ -100,6 +116,13 @@ describe("database schema", () => {
   it("maps the telemetry events table", () => {
     expect(telemetryEvents.anonId.name).toBe("anon_id");
     expect(telemetryEvents.propsJsonb.name).toBe("props_jsonb");
+    expect(telemetryEvents.retentionExpiresAt.name).toBe("retention_expires_at");
+    expect(getTableConfig(telemetryEvents).checks.map((constraint) => constraint.name)).toContain(
+      "events_copilot_retention_check",
+    );
+    expect(getTableConfig(telemetryEvents).checks.map((constraint) => constraint.name)).toContain(
+      "events_at_least_one_identity_check",
+    );
   });
 
   it("maps the private Human Task ownership and lifecycle fields", () => {

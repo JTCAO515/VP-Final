@@ -13,6 +13,7 @@ New ADRs are append-only and use the next numeric prefix.
 | [ADR-0006](ADR-0006-knowledge-evidence-and-index-quality.md) | Accepted | Only reviewed/current evidence may power public facts, Copilot citations, or indexable guidance. |
 | [ADR-0007](ADR-0007-agent-trace-privacy-retention.md) | Accepted | Server-only AI trace metadata is minimized, redacted, retained for 30 days, and purged through a restricted routine. |
 | [ADR-0008](ADR-0008-platform-settlement-and-legal-entity.md) | Draft | Freezes the no-implementation boundary and required legal/entity, take-rate, settlement, tax, KYC, and dispute decisions before Phase 3. |
+| [ADR-0009](ADR-0009-copilot-conversation-cost-retention.md) | Accepted | Separates redacted Copilot turns, per-attempt costs, and product events under a 30-day server-only retention boundary. |
 
 ## When to Add an ADR
 
