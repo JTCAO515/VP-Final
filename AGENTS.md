@@ -49,8 +49,16 @@ pack. The frozen product baseline is `docs/planning/visepanda-v2-final-architect
 - One PR may change one module boundary, one contract, or one UI flow. Do not bundle unrelated cleanup.
 - Fill every PR template section: contracts, tests, evals, commercial tracking, rollback.
 - Update at least one mapped non-generated document for every source/config change.
-- An implementation Agent MUST NOT approve or merge its own PR. After all required checks are green,
-  request architecture review and stop; D2/D3 changes require an explicit invariant review.
+- Merge authority is risk-tiered. When the architect is unavailable, an implementation Agent MAY
+  self-merge a Tier A PR only after all required checks are green and the four self-merge checks in
+  `docs/governance/issue-pr-workflow.md` pass. Tier A is limited to pure documentation or draft ADRs,
+  manifest registration, visual-only UI changes with no data-flow or clickable-behavior change,
+  test-only/type-fix/dependency-alignment changes, and serialized handoff refreshes for merged work.
+- Tier B PRs MUST receive independent architecture review and MUST NOT be self-merged, regardless of
+  architect availability or urgency. Tier B includes identity/auth/permissions/RLS, payment/billing/
+  ledger/cost paths, conversation/PII/retention/redaction, external service or safety promises,
+  domain schemas or database migrations, AI pipeline invariants, and every D2/D3 Issue. See the
+  governance workflow for the complete classification and post-recovery audit rule.
 - Do not update `docs/handoff.json` or generated `docs/INDEX.md` in an ordinary feature PR. Record the
   expected handoff delta in the PR, then refresh the snapshot in a serialized post-merge documentation
   action. A PR whose purpose is that refresh updates both files and runs the generator.
