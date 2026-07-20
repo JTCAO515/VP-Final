@@ -1,4 +1,5 @@
-import { isEligiblePoiFact, type Poi, type PoiFact } from "@visepanda/domain";
+import type { Poi } from "@visepanda/domain";
+import { toPublicPoiFact, type PublicPoiFactProvenance } from "../publicPoiFactPresentation";
 
 const FACT_LABELS = {
   payment_acceptance: "Payment",
@@ -13,19 +14,15 @@ export type ExploreFact = {
   id: string;
   kind: (typeof FACT_LABELS)[keyof typeof FACT_LABELS];
   label: string;
+  provenance: PublicPoiFactProvenance;
 };
 
 export function deriveExploreFacts(poi: Poi, now = new Date()): ExploreFact[] {
   return poi.facts.flatMap((fact) => {
-    if (!isEligiblePoiFact(fact, now)) return [];
+    const presentation = toPublicPoiFact(fact, now);
+    if (presentation === null) return [];
 
-    const kind = FACT_LABELS[fact.factType as keyof typeof FACT_LABELS];
-    const label = factLabel(fact);
-    return kind && label ? [{ id: fact.id, kind, label }] : [];
+    const kind = FACT_LABELS[presentation.factType as keyof typeof FACT_LABELS];
+    return kind ? [{ ...presentation, kind }] : [];
   });
-}
-
-function factLabel(fact: PoiFact): string | null {
-  const label = fact.value.label;
-  return typeof label === "string" && label.trim().length > 0 ? label.trim() : null;
 }

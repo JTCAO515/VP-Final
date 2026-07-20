@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { derivePoiSceneTags } from "@visepanda/domain";
 import { findPoiEntry, poiDescription, poiEntries } from "../../poiSeo";
+import { toPublicPoiFact } from "../../publicPoiFactPresentation";
 import { SiteFooter, SiteHeader } from "../../site-chrome";
 
 export const revalidate = 86400;
@@ -39,6 +40,10 @@ export default async function PoiPage({ params }: Props) {
   if (!entry) notFound();
 
   const tags = derivePoiSceneTags(entry.poi);
+  const facts = entry.poi.facts.flatMap((fact) => {
+    const presentation = toPublicPoiFact(fact);
+    return presentation === null ? [] : [presentation];
+  });
 
   return (
     <main className="shell guidePage">
@@ -72,18 +77,25 @@ export default async function PoiPage({ params }: Props) {
 
         <section>
           <h2>Known facts</h2>
-          {entry.poi.facts.map((fact) => (
-            <p key={fact.id}>
-              <strong>{fact.factType}:</strong> {factValue(fact.value)}
-            </p>
-          ))}
+          {facts.length > 0 ? (
+            <div className="publicFactList">
+              {facts.map((fact) => (
+                <div className="publicFact" key={fact.id}>
+                  <p>
+                    <strong>{fact.factType}:</strong> {fact.label}
+                  </p>
+                  <small>
+                    {fact.provenance.sourceLabel} · Verified {fact.provenance.verifiedDateLabel}
+                  </small>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p>No current reviewed facts yet.</p>
+          )}
         </section>
       </article>
       <SiteFooter />
     </main>
   );
-}
-
-function factValue(value: Record<string, unknown>): string {
-  return typeof value.label === "string" ? value.label : JSON.stringify(value);
 }

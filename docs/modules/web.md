@@ -165,6 +165,13 @@ unreviewed, deprecated, or unlabeled facts stay hidden; load failure produces an
 state rather than fixture content. Explore tests construct facts through the authoritative domain
 schema and include the evidence metadata required by the reviewed-fact eligibility boundary.
 
+Explore and public POI pages share one pure public-fact projection. It runs the domain eligibility
+check before returning a fact label, public source-class label, and UTC-formatted last-verified date.
+The projection never returns source locators, evidence summaries, reviewer identity, or internal
+authorization state. Unsupported source classes and incomplete facts fail closed together with their
+receipt. Editorial guide pages do not currently render POI facts, so they do not fabricate a
+provenance surface before that data relationship exists.
+
 ## Verification
 
 ```bash
