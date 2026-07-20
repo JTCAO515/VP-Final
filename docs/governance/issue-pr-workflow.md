@@ -54,12 +54,57 @@ A PR may merge only when:
 - permissions, commercial tracking, evals, migrations, and runbooks are addressed where relevant;
 - no known unclassified deviation remains.
 
-Only an architect or operator may approve and merge an implementation PR. The PR author and any
-implementation Agent MUST NOT approve or merge their own PR, even when all checks are green. The
-independent reviewer MUST inspect the checks, Issue acceptance, diff scope, and these invariants before
-merging: AI does not directly write user data; commercial links require explicit commerce intent and the
-outbound gateway; money-adjacent changes have ledger/telemetry evidence; identity is server-trusted;
-and deployed modes never present mock success as production truth.
+Merge authority is assigned by risk tier. This classification changes who may merge; it does not lower
+any CI, documentation, review, rebase, evidence, or interface gate above.
+
+### Tier A: bounded self-merge when the architect is unavailable
+
+An implementation Agent MAY self-merge a Tier A PR only when the architect is unavailable, every
+required gate is green, and all four self-merge checks below pass. Tier A is limited to:
+
+- pure documentation, draft ADRs that do not establish an accepted contract, and document-manifest
+  registration;
+- visual-only UI changes that do not change data flow or add clickable behavior;
+- test-only additions, type fixes that preserve runtime behavior, and dependency-version alignment;
+- a serialized `docs/handoff.json` and generated `docs/INDEX.md` refresh that records already-merged
+  work.
+
+If a PR contains any Tier B concern, the whole PR is Tier B. Splitting a high-risk change into a Tier A
+wrapper does not change its classification.
+
+### Tier B: independent architecture review required
+
+The PR author and any implementation Agent MUST NOT approve or merge a Tier B PR, regardless of
+architect availability, elapsed wait, or claimed urgency. Tier B includes:
+
+- identity, authentication, authorization, permissions, RLS, Ops RBAC, and owner scoping;
+- payments, billing, ledgers, provider pricing, metering, and cost-consumption or cost-accounting paths;
+- user conversation content, PII, retention, redaction, deletion, and privacy boundaries;
+- external promises or policy wording, including SLA, service boundaries, Human Help commitments, and
+  emergency or medical statements;
+- domain-schema changes and database migrations;
+- AI pipeline invariants, including envelope validation, Patch application, `commerce_intent` gates,
+  and provider routing;
+- every Issue or observed change classified D2 or D3.
+
+The independent reviewer MUST inspect the real checks, Issue acceptance, diff scope, and these
+invariants before merging: AI does not directly write user data; commercial links require explicit
+commerce intent and the outbound gateway; money-adjacent changes have ledger/telemetry evidence;
+identity is server-trusted; and deployed modes never present mock success as production truth.
+
+### Mandatory Tier A self-merge checks
+
+Before a permitted Tier A self-merge, the Agent MUST:
+
+1. verify the PR base is `main`; stacked PR bases remain forbidden;
+2. inspect the provider's actual check-run conclusions and not rely on claims in the PR description;
+3. rebase onto the latest `main`, then verify the checked head commit is still current;
+4. state in the PR body: `Tier A self-merge; architect unavailable`, with the exact Tier A basis.
+
+After the architect returns, they review a sample of Tier A PRs merged during the unavailable period.
+If an audit finds that a self-merged PR was actually Tier B, record a D2 deviation and complete the
+missing independent review and corrective action. A Tier B PR cannot use the emergency-fix process as
+a self-merge exception.
 
 ## Multi-Agent Rules
 
@@ -72,4 +117,5 @@ and deployed modes never present mock success as production truth.
 ## Emergency Fix
 
 Use the emergency exception only for an active production outage or integrity incident. Restore the
-smallest safe behavior, then complete the missing artifacts within 24 hours under QSE-020.
+smallest safe behavior, then complete the missing artifacts within 24 hours under QSE-020. This path
+does not authorize an implementation Agent to self-merge a Tier B PR.
