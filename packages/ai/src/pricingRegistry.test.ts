@@ -22,6 +22,7 @@ describe("model pricing registry", () => {
       inputMissPerMillionUsd: "0.95000000",
       inputHitPerMillionUsd: "0.16000000",
       outputPerMillionUsd: "4.00000000",
+      sourceUrl: "https://platform.kimi.ai/docs/pricing/chat-k26",
     });
     expect(resolveModelPricing("deepseek", "deepseek-v4-pro")).toMatchObject({
       inputMissPerMillionUsd: "0.43500000",

@@ -25,7 +25,7 @@ export const MODEL_PRICING_REGISTRY: readonly ModelPricingRegistryEntry[] = Obje
     outputPerMillionUsd: "4.00000000",
     currency: "USD",
     effectiveFrom: RETRIEVED_AT,
-    sourceUrl: "https://platform.moonshot.ai/docs/pricing/chat-k26",
+    sourceUrl: "https://platform.kimi.ai/docs/pricing/chat-k26",
     retrievedAt: RETRIEVED_AT,
   }),
   Object.freeze({
