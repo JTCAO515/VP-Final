@@ -113,6 +113,7 @@ describe("POST /api/copilot anonymous turn wall", () => {
   });
 
   it("cannot be bypassed by changing spoofable x-forwarded-for", async () => {
+    const observability = createInMemoryAgentTraceService();
     setTestWebServerServices({
       anonymousTurnCounter: createInMemoryAnonymousTurnCounter({ limit: 3 }),
       copilotIpRateLimiter: createInMemoryCopilotIpRateLimiter({
@@ -121,7 +122,8 @@ describe("POST /api/copilot anonymous turn wall", () => {
       }),
       humanTaskService: createInMemoryHumanTaskService(),
       knowledgeService: createInMemoryKnowledgeService(),
-      traceService: createInMemoryAgentTraceService(),
+      traceService: observability,
+      productEventService: observability,
       tripService: createVersionedInMemoryTripService(),
     });
 
@@ -144,6 +146,17 @@ describe("POST /api/copilot anonymous turn wall", () => {
     await expect(differentTrustedNetwork.json()).resolves.toMatchObject({
       anonymousUsage: { completedTurns: 2, limit: 3, remaining: 1 },
     });
+    expect(observability.listProductEvents()).toMatchObject([
+      {
+        action: "rate_limited",
+        entityType: "copilot_session",
+        props: { retryAfterSeconds: 60 },
+      },
+    ]);
+    const persistedEvent = JSON.stringify(observability.listProductEvents());
+    expect(persistedEvent).not.toContain("192.0.2.1");
+    expect(persistedEvent).not.toContain("198.51.100.99");
+    expect(persistedEvent).not.toContain("203.0.113.42");
   });
 
   it("fails closed when Vercel does not supply a trusted client address", async () => {

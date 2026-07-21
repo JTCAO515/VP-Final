@@ -197,3 +197,4 @@ export const CopilotProductEventSchema = TelemetryEventBaseSchema.extend({
 export type CopilotConversationTurn = z.infer<typeof CopilotConversationTurnSchema>;
 export type LlmCallCostRecord = z.infer<typeof LlmCallCostRecordSchema>;
 export type CopilotProductEventAction = z.infer<typeof CopilotProductEventActionSchema>;
+export type ConversationRedactionClass = z.infer<typeof ConversationRedactionClassSchema>;

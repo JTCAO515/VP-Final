@@ -26,6 +26,7 @@ import {
   type AgentTraceService,
   type AnonymousTurnCounter,
   type CopilotIpRateLimiter,
+  type CopilotProductEventService,
   type CompleteDay,
   type CompletionJobService,
   type CompletionQueue,
@@ -40,6 +41,7 @@ type WebServerServices = {
   humanTaskService: HumanTaskService;
   knowledgeService: KnowledgeService;
   traceService: AgentTraceService;
+  productEventService?: CopilotProductEventService;
   tripService: VersionedTripService;
   completionJobService?: CompletionJobService;
   completionQueue?: CompletionQueue;
@@ -97,10 +99,12 @@ export function createWebServerServices(environment: Environment): WebServerServ
 
   if (availability.adapter === "memory-demo") {
     const tripService = createVersionedInMemoryTripService();
+    const traceService = createInMemoryAgentTraceService();
     return {
       humanTaskService: createInMemoryHumanTaskService(),
       knowledgeService: createInMemoryKnowledgeService(),
-      traceService: createInMemoryAgentTraceService(),
+      traceService,
+      productEventService: traceService,
       tripService,
       completionJobService: createInMemoryCompletionJobService(tripService),
       anonymousTurnCounter: createInMemoryAnonymousTurnCounter(),
@@ -119,6 +123,7 @@ export function createWebServerServices(environment: Environment): WebServerServ
     humanTaskService: createDbHumanTaskService(db),
     knowledgeService: createDbKnowledgeService(db),
     traceService,
+    productEventService: traceService,
     tripService: createDbVersionedTripService(db),
     completionJobService: createDbCompletionJobService(db),
     ...(completionQueue ? { completionQueue } : {}),
@@ -172,6 +177,10 @@ export function setTestWebServerServices(services: WebServerServices | null): vo
 
 export function getCopilotIpRateLimiter(): CopilotIpRateLimiter | undefined {
   return getWebServerServices(process.env).copilotIpRateLimiter;
+}
+
+export function getCopilotProductEventService(): CopilotProductEventService | undefined {
+  return getWebServerServices(process.env).productEventService;
 }
 
 export function getCompletionCallbackRuntime() {

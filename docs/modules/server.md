@@ -83,10 +83,19 @@ modules yet.
   contact data before persistence, rejects high-risk secrets/documents, and atomically appends a
   content-free audit event. A separate KnowledgeService transaction creates only a normalized open
   gap plus audit; it cannot create, review, or publish a POI fact.
-- The `llm_call_costs` Drizzle contract maps the additive cache-pricing ledger columns: total input
-  tokens remain unchanged, cached input is a bounded subset, and cache-hit pricing is a separate
-  immutable snapshot. This schema-first boundary does not wire runtime persistence or claim that an
-  unregistered model has a nonzero price.
+- The Copilot runtime writer commits the private Agent Run, one pre-redacted conversation turn, and
+  every model-attempt cost row in one transaction. Cost rows copy the immutable provider/model,
+  runtime effort, reported tokens, cache subset, three prices, fixed-point USD result, fallback flag,
+  latency, and normalized failure from the attempt snapshot; the writer never estimates missing
+  usage or recalculates model output. Missing pricing remains zero and emits
+  `cost_pricing_missing`. Session start, turn completion/failure, fallback, anonymous-wall, and IP
+  limit events contain only allowlisted operational properties. A session id is an opaque stable
+  digest-derived UUID from trusted request identity, never a client-provided id or raw cookie.
+- Conversation, cost, and event deadlines default to 180, 400, and 180 days and may be changed only
+  through `VISEPANDA_CONV_RETENTION_DAYS`, `VISEPANDA_COST_RETENTION_DAYS`, and
+  `VISEPANDA_EVENT_RETENTION_DAYS`. Invalid or non-positive values fail persistence preparation.
+  Database-write failure emits a content-free operational warning and cannot alter the validated
+  Copilot answer or Trip result.
 - The runtime resolver and router injection boundary are implemented and tested, but Web/Ops
   composition migration remains in P0-06c and P0-06d. Therefore no deployed durable-path claim is
   made yet.
@@ -162,15 +171,14 @@ distinguish its own previous partial effect from a later unrelated Trip edit.
 - [ADR-0007](../adr/ADR-0007-agent-trace-privacy-retention.md) freezes trace minimization, restricted
   retention, and non-blocking trace persistence. Real provider attempt production data remains P0-07.
 - [ADR-0009](../adr/ADR-0009-copilot-conversation-cost-retention.md) freezes separate redacted turn,
-  per-attempt cost, and product-event records. This schema-first change does not yet connect runtime
-  writers. The additive #248 cache-pricing contract preserves total input tokens, adds a bounded
-  cached-input subset and separate hit-price snapshot, and retains `cost_pricing_missing` events;
-  consumer wiring remains a later independently reviewed change.
+  per-attempt cost, and product-event records. The additive #248 cache-pricing contract preserves
+  total input tokens, adds a bounded cached-input subset and separate hit-price snapshot, and retains
+  `cost_pricing_missing` events. The runtime writer now consumes those frozen contracts; aggregate
+  reconciliation view extensions and ADR-0010 archival remain the separate #248d boundary.
 - The Copilot runtime preserves the provider route separately from the actual pricing provider and
   carries the cache-aware, fixed-point attempt cost snapshot into the allowlisted trace object.
-  Existing trace persistence still stores only its legacy aggregate fields; writing the new
-  conversation, cost, and product-event records remains the separately reviewed #248 runtime-writer
-  boundary.
+  The exact snapshot is now written per attempt; the legacy Agent Run total remains a bounded summary,
+  not the source of truth for financial reconciliation.
 - OA-011 remains the release gate for QStash token, signing keys, callback URL, and one sanitized
   signed-delivery observation. Until then deployed completion returns an honest unavailable state.
 - OA-012 remains the release gate for the Upstash Redis REST endpoint/token and one sanitized

@@ -39,6 +39,8 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
   normalized success/failure fields, and pre-persistence redaction. Domain validation rejects direct
   email/phone patterns, credential tokens, authorization values, cookies, signatures, and secret-like
   object keys; runtime redaction remains responsible for replacing detected content before parsing.
+  `ConversationRedactionClass` is exported from this single contract so server preparation and durable
+  persistence cannot drift into separate local label sets.
 - Per-attempt cost records preserve provider-reported total input tokens plus a cached-input subset;
   cached tokens cannot exceed total input tokens. Cache-miss and cache-hit input prices are separate
   immutable snapshots. `cost_pricing_missing` is a retained product event, not permission to invent
