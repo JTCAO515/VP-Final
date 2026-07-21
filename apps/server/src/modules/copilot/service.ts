@@ -63,6 +63,13 @@ export type GeneratedEnvelope = {
   attempts?: AgentAttemptTrace[];
 };
 
+class CopilotEnvelopeValidationError extends Error {
+  constructor(readonly attempts: AgentAttemptTrace[]) {
+    super("Copilot envelope validation failed.");
+    this.name = "CopilotEnvelopeValidationError";
+  }
+}
+
 type GenerateEnvelope =
   | ((request: CopilotGenerationRequest) => Promise<unknown | GeneratedEnvelope>)
   | ((request: CopilotGenerationRequest) => unknown | GeneratedEnvelope);
@@ -279,7 +286,6 @@ function parseGeneratedEnvelope(value: unknown): {
 } {
   const generated = isGeneratedEnvelope(value) ? value : { candidate: value };
   const candidates = repairCandidates(generated.candidate);
-  let lastError: unknown;
   for (const [index, candidate] of candidates.entries()) {
     try {
       return {
@@ -287,11 +293,9 @@ function parseGeneratedEnvelope(value: unknown): {
         attempts: generated.attempts ?? [],
         repairCount: index,
       };
-    } catch (error) {
-      lastError = error;
-    }
+    } catch {}
   }
-  throw lastError ?? new Error("Copilot envelope validation failed.");
+  throw new CopilotEnvelopeValidationError(generated.attempts ?? []);
 }
 
 function repairCandidates(value: unknown): unknown[] {

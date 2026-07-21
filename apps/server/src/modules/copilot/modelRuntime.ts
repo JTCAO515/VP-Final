@@ -38,6 +38,15 @@ export class DemoModelExecutionError extends Error {
   }
 }
 
+export class DemoModelResponseError extends Error {
+  readonly code = "MODEL_RESPONSE_INVALID";
+
+  constructor(readonly attempts: ModelAttempt[]) {
+    super("The Copilot model returned an invalid structured response.");
+    this.name = "DemoModelResponseError";
+  }
+}
+
 const CHAINS: Record<DemoModelChain, readonly DemoModelRoute[]> = {
   router: ["router_primary", "router_fallback"],
   concierge: ["concierge_primary", "concierge_fallback", "concierge_tertiary"],
@@ -100,7 +109,11 @@ export function createDemoCopilotModelDependencies(environment: Environment): {
         maxTokens: 80,
         prompt: `Classify this China travel message. Return only JSON: {"intent":"chat_only|trip_create|trip_edit|question|commerce_intent|human_help"}. Message: ${request.message}`,
       });
-      return { intent: parseIntent(result.content), attempts: toTraceAttempts(result.attempts) };
+      try {
+        return { intent: parseIntent(result.content), attempts: toTraceAttempts(result.attempts) };
+      } catch {
+        throw new DemoModelResponseError(result.attempts);
+      }
     },
     async generateEnvelope(request) {
       const chain = isPlanningIntent(request.intent) ? "planning" : "concierge";

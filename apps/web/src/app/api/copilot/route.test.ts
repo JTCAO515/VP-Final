@@ -84,6 +84,30 @@ describe("POST /api/copilot anonymous turn wall", () => {
     });
   });
 
+  it("does not wait for observability persistence before returning a valid answer", async () => {
+    setTestWebServerServices({
+      anonymousTurnCounter: createInMemoryAnonymousTurnCounter({ limit: 3 }),
+      copilotIpRateLimiter: createInMemoryCopilotIpRateLimiter(),
+      humanTaskService: createInMemoryHumanTaskService(),
+      knowledgeService: createInMemoryKnowledgeService(),
+      traceService: {
+        recordRun() {
+          return new Promise<void>(() => undefined);
+        },
+      },
+      tripService: createVersionedInMemoryTripService(),
+    });
+
+    const response = await Promise.race([
+      POST(request("Hello")),
+      new Promise<"timed-out">((resolve) => setTimeout(() => resolve("timed-out"), 1_000)),
+    ]);
+
+    expect(response).not.toBe("timed-out");
+    expect(response).toBeInstanceOf(Response);
+    expect((response as Response).status).toBe(200);
+  });
+
   it("reports an in-flight capacity reservation without claiming the preview is complete", async () => {
     setTestWebServerServices({
       anonymousTurnCounter: {

@@ -201,22 +201,24 @@ export function createModelRouter({
             attempts,
           };
         } catch (error) {
+          const failedUsage = providerFailureUsage(error) ?? zeroUsage();
+          const failedModel = providerFailureModel(error) ?? provider.model;
           const costSnapshot = createAttemptCostSnapshot({
             provider: providerName,
-            model: provider.model,
+            model: failedModel,
             effort,
-            usage: zeroUsage(),
+            usage: failedUsage,
             fallbackTriggered,
           });
           attempts.push({
             route: provider.id,
             provider: providerName,
-            model: provider.model,
+            model: failedModel,
             ok: false,
             latencyMs: Date.now() - attemptStartedAt,
-            inputTokens: 0,
-            outputTokens: 0,
-            costUsd: 0,
+            inputTokens: failedUsage.inputTokens,
+            outputTokens: failedUsage.outputTokens,
+            costUsd: Number(costSnapshot.costUsd),
             costSnapshot,
             failureClass: normalizeFailureClass(error),
           });
@@ -235,10 +237,20 @@ function normalizeFailureClass(
   return "network_error";
 }
 
-function isProviderFailure(
-  error: unknown,
-): error is { failureClass: import("./openaiCompatible.js").ProviderFailureClass } {
+function isProviderFailure(error: unknown): error is {
+  failureClass: import("./openaiCompatible.js").ProviderFailureClass;
+  usage?: TokenUsage;
+  model?: string;
+} {
   return typeof error === "object" && error !== null && "failureClass" in error;
+}
+
+function providerFailureUsage(error: unknown): TokenUsage | undefined {
+  return isProviderFailure(error) ? error.usage : undefined;
+}
+
+function providerFailureModel(error: unknown): string | undefined {
+  return isProviderFailure(error) ? error.model : undefined;
 }
 
 export function createInMemoryCostLedger(seed: ModelRunLedgerEntry[] = []): CostLedger {

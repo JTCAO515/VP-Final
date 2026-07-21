@@ -124,6 +124,9 @@ events use the same injected event service; IP events never contain the trusted 
 Any observability failure emits only `persistence_error` and cannot alter the public response or Trip
 state. The legacy Agent Trace remains digest/metadata-only under
 [ADR-0007](../adr/ADR-0007-agent-trace-privacy-retention.md).
+The Copilot route schedules these writes with Next.js `after()` so a validated answer, registration
+wall, or rate-limit response does not wait for Postgres. If scheduling itself is unavailable, the
+same safe best-effort write starts without awaiting it and retains the fixed sanitized failure log.
 
 Safe model-failure diagnostics identify the actual provider and model attempted, while omitting the
 internal route name, prompt, upstream body, cache usage, prices, exact cost snapshot, and credentials.

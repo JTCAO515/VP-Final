@@ -315,7 +315,7 @@ describe("createCopilotPipeline", () => {
             "Email [redacted email], [redacted travel document], [redacted cookie], [redacted signature]",
           assistantEnvelope: {
             message: {
-              body: "We will not repeat [redacted cookie]",
+              body: "We will not repeat [redacted cookie] or [redacted email].",
             },
           },
           redactionClasses: ["cookie", "email", "signature", "travel_document"],
@@ -400,6 +400,45 @@ describe("createCopilotPipeline", () => {
         attempts: [
           { provider: "router_primary", status: "succeeded" },
           { provider: "concierge_primary", status: "succeeded", costUsd: 0.01 },
+        ],
+      },
+    ]);
+  });
+
+  it("records billed attempts when every envelope repair candidate is invalid", async () => {
+    const traceService = createInMemoryAgentTraceService();
+    const pipeline = createCopilotPipeline({
+      tripService: createVersionedInMemoryTripService(),
+      traceService,
+      generateEnvelope: () => ({
+        candidate: "not a Copilot envelope",
+        attempts: [
+          {
+            provider: "concierge_primary",
+            model: "concierge-model",
+            status: "succeeded",
+            inputTokens: 10,
+            outputTokens: 20,
+            costUsd: 0.01,
+            latencyMs: 123,
+          },
+        ],
+      }),
+    });
+
+    await expect(pipeline.run({ message: "Help me" }, identity)).rejects.toThrow(
+      "Copilot envelope validation failed",
+    );
+    expect(traceService.listRuns()).toMatchObject([
+      {
+        status: "failed",
+        failureClass: "validation_error",
+        attempts: [
+          {
+            provider: "concierge_primary",
+            inputTokens: 10,
+            outputTokens: 20,
+          },
         ],
       },
     ]);

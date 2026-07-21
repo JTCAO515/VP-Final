@@ -37,8 +37,9 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
 - A completion job carries only a Trip reference, base version, idempotency key, bounded attempt state, and safe error code. Its pure state-transition rule permits idempotent reads, `queued -> running`, a running terminal result, and `partial`/`failed -> queued` retry only. It never carries a prompt, model credential, or replacement Trip snapshot.
 - Copilot observability records require exactly one trusted identity, a future retention deadline,
   normalized success/failure fields, and pre-persistence redaction. Domain validation rejects direct
-  email/phone patterns, credential tokens, authorization values, cookies, signatures, and secret-like
-  object keys; runtime redaction remains responsible for replacing detected content before parsing.
+  email/phone patterns, registered provider-key shapes, authorization values, natural-language
+  cookie/signature assignments, travel documents, and secret-like object keys; runtime redaction
+  remains responsible for replacing detected content before parsing.
   `ConversationRedactionClass` is exported from this single contract so server preparation and durable
   persistence cannot drift into separate local label sets.
 - Per-attempt cost records preserve provider-reported total input tokens plus a cached-input subset;

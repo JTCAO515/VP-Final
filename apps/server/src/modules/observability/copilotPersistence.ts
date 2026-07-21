@@ -143,6 +143,7 @@ function redactText(input: string, classes: Set<ConversationRedactionClass>): st
   let output = input;
   output = replace(output, /\bBearer\s+[A-Za-z0-9._~+/=-]{12,}\b/gi, "credential", classes);
   output = replace(output, /\b(?:sk[-_]|sb_secret_)[A-Za-z0-9._-]{12,}\b/gi, "credential", classes);
+  output = replace(output, /\b[a-f0-9]{32}\.[A-Za-z0-9_-]{12,}\b/gi, "credential", classes);
   output = replace(
     output,
     /\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b/g,
@@ -155,11 +156,21 @@ function redactText(input: string, classes: Set<ConversationRedactionClass>): st
     "credential",
     classes,
   );
-  output = replace(output, /\b(?:set-)?cookie\b\s*[:=]\s*[^\r\n,]+/gi, "cookie", classes);
-  output = replace(output, /\bsignature\b\s*[:=]\s*[^\s,;]+/gi, "signature", classes);
   output = replace(
     output,
-    /\b(?:passport|visa|travel document)(?:\s+(?:number|no\.?))?\s*[:#-]?\s*[A-Z0-9]{6,12}\b/gi,
+    /\b(?:set-)?cookie\b(?:\s+(?:value\s+)?is|\s*[:=])\s*[^\s,;]+/gi,
+    "cookie",
+    classes,
+  );
+  output = replace(
+    output,
+    /\bsignature\b(?:\s+(?:value\s+)?is|\s*[:=])\s*[^\s,;]+/gi,
+    "signature",
+    classes,
+  );
+  output = replace(
+    output,
+    /\b(?:passport|visa|travel document)(?:\s+(?:number|no\.?))?(?:\s+is\s+|\s*[:#-]\s*|\s+)(?=[A-Z0-9]{6,12}\b)(?=[A-Z0-9]*\d)[A-Z0-9]+\b/gi,
     "travel_document",
     classes,
   );

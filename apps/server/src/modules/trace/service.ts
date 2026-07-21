@@ -96,6 +96,12 @@ export function createInMemoryAgentTraceService() {
 export function normalizeAgentFailure(error: unknown): string {
   if (error instanceof SyntaxError) return "parse_error";
   if (error instanceof Error && error.name === "ZodError") return "validation_error";
+  if (
+    error instanceof Error &&
+    (error.name === "CopilotEnvelopeValidationError" || error.name === "DemoModelResponseError")
+  ) {
+    return "validation_error";
+  }
   if (error instanceof Error && /timeout/i.test(error.message)) return "timeout";
   return "internal_error";
 }

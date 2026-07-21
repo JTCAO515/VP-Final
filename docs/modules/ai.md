@@ -22,7 +22,9 @@ Copilot-specific provider composition belong in their owning runtime module.
 - In-memory cost ledger for tests.
 - Static provider for deterministic tests.
 - OpenAI-compatible adapter contract: bounded JSON-object request, per-attempt timeout cap,
-  abortable timeout, safe response parsing, and no upstream-body leakage.
+  abortable timeout, safe response parsing, and no upstream-body leakage. A failed HTTP or malformed
+  content response retains normalized provider-reported usage and model id when present, so a billed
+  failed attempt is not silently rewritten to zero tokens.
 - Cache-hit usage normalization: DeepSeek reads `usage.prompt_cache_hit_tokens`; DashScope,
   Moonshot, and Zhipu read `usage.prompt_tokens_details.cached_tokens`. Missing, malformed,
   negative, non-integer, or greater-than-total values become zero so accounting conservatively
@@ -71,8 +73,8 @@ Copilot-specific provider composition belong in their owning runtime module.
 - The router snapshots the registry's three prices and the provider-reported total/cached/output
   token counts for every attempt, then calls the fixed-point three-part calculator. The legacy
   numeric cost remains compatibility metadata only; durable accounting must consume the exact
-  eight-decimal string in the snapshot. A failed attempt without provider usage records zero rather
-  than estimating tokens.
+  eight-decimal string in the snapshot. A failed attempt with provider-reported usage prices those
+  exact tokens; one without usage records zero rather than estimating tokens.
 - The four cache-field mappings are covered by contract fixtures, not retained sanitized production
   responses. They remain **unobserved in production; conservative zero applies** when the expected
   field is absent or invalid. Live-provider evidence must be reported separately and must not contain

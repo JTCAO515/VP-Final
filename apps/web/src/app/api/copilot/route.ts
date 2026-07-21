@@ -8,7 +8,7 @@ import {
   TripVersionConflictError,
   type TripIdentity,
 } from "@visepanda/app-server";
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { z } from "zod";
 import {
   getCopilotIpRateLimiter,
@@ -64,7 +64,7 @@ export async function POST(request: Request) {
         cookieResponse,
       );
     }
-    const result = await getServerCaller(identity).copilot.run(parsed.data);
+    const result = await getServerCaller(identity, after).copilot.run(parsed.data);
     const envelope = CopilotEnvelopeSchema.parse(result.envelope);
     const emptyDays = result.trip?.days.filter((day) => day.blocks.length === 0).length ?? 0;
 
@@ -196,7 +196,7 @@ async function recordRateLimitEventSafely(
   retryAfterSeconds: number,
 ): Promise<void> {
   try {
-    const service = getCopilotProductEventService();
+    const service = getCopilotProductEventService(after);
     if (!service) return;
     await service.recordProductEvent({
       identity,

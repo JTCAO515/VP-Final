@@ -58,7 +58,7 @@ describe("Copilot persistence preparation", () => {
 
   it("redacts restricted material recursively before domain validation", () => {
     const redacted = redactCopilotConversation(
-      "Call +1 415 555 0123; cookie=session-secret; signature=abc123def456; sk-secretvalue12345",
+      "Call +1 415 555 0123; my cookie is session-secret; signature is abc123def456; passport number is E12345678; aabbccddeeff00112233445566778899.tokenvalue123456; sk-secretvalue12345",
       envelope,
     );
     const serialized = JSON.stringify(redacted);
@@ -68,11 +68,13 @@ describe("Copilot persistence preparation", () => {
       "credential",
       "email",
       "phone",
+      "signature",
       "travel_document",
     ]);
     expect(serialized).not.toContain("415 555 0123");
     expect(serialized).not.toContain("session-secret");
     expect(serialized).not.toContain("abc123def456");
+    expect(serialized).not.toContain("tokenvalue123456");
     expect(serialized).not.toContain("sk-secretvalue12345");
     expect(serialized).not.toContain("alex@example.com");
     expect(serialized).not.toContain("E12345678");

@@ -91,11 +91,17 @@ modules yet.
   `cost_pricing_missing`. Session start, turn completion/failure, fallback, anonymous-wall, and IP
   limit events contain only allowlisted operational properties. A session id is an opaque stable
   digest-derived UUID from trusted request identity, never a client-provided id or raw cookie.
+- Provider errors retain only normalized failure class, model id, and provider-reported usage when
+  the response supplies it. Invalid structured output carries its completed attempts into the failed
+  run, so validation failure cannot erase a billed call; absent usage stays zero and is never estimated.
 - Conversation, cost, and event deadlines default to 180, 400, and 180 days and may be changed only
   through `VISEPANDA_CONV_RETENTION_DAYS`, `VISEPANDA_COST_RETENTION_DAYS`, and
   `VISEPANDA_EVENT_RETENTION_DAYS`. Invalid or non-positive values fail persistence preparation.
   Database-write failure emits a content-free operational warning and cannot alter the validated
   Copilot answer or Trip result.
+  The intended 400-day cost deadline is not yet an effective lifecycle guarantee: the accepted cost
+  table still cascades from the 30-day Agent Run parent. #248 requires an architecture amendment
+  before merge; neither FK semantics nor ADR-0007 retention may be changed implicitly.
 - The runtime resolver and router injection boundary are implemented and tested, but Web/Ops
   composition migration remains in P0-06c and P0-06d. Therefore no deployed durable-path claim is
   made yet.

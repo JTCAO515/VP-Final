@@ -186,6 +186,41 @@ describe("createModelRouter", () => {
     ]);
   });
 
+  it("prices provider-reported usage for a failed attempt", async () => {
+    const router = createModelRouter({
+      providers: [
+        {
+          id: "planning_primary",
+          pricingProvider: "deepseek",
+          model: "deepseek-v4-pro",
+          async generate() {
+            throw new ModelProviderError(
+              "malformed_response",
+              { inputTokens: 1_000, cachedInputTokens: 200, outputTokens: 100 },
+              "deepseek-v4-pro",
+            );
+          },
+        },
+      ],
+    });
+
+    await expect(
+      router.generate({ task: "trip_writer", prompt: "Plan", effort: "high" }),
+    ).rejects.toMatchObject({
+      attempts: [
+        {
+          ok: false,
+          inputTokens: 1_000,
+          outputTokens: 100,
+          costSnapshot: {
+            cachedInputTokens: 200,
+            costUsd: "0.00043573",
+          },
+        },
+      ],
+    });
+  });
+
   it("emits an auditable zero snapshot when model pricing is not registered", async () => {
     const router = createModelRouter({
       providers: [
