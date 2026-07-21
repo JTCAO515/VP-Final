@@ -68,7 +68,17 @@ describe("database schema", () => {
       getTableConfig(copilotConversationTurns).checks.map((constraint) => constraint.name),
     ).toContain("copilot_conversation_turns_exactly_one_identity_check");
     expect(llmCallCosts.inputPricePerMillionUsd.name).toBe("input_price_per_million_usd");
+    expect(llmCallCosts.cachedInputTokens.name).toBe("cached_input_tokens");
+    expect(llmCallCosts.cachedInputPricePerMillionUsd.name).toBe(
+      "cached_input_price_per_million_usd",
+    );
     expect(llmCallCosts.fallbackTriggered.name).toBe("fallback_triggered");
+    expect(getTableConfig(llmCallCosts).checks.map((constraint) => constraint.name)).toContain(
+      "llm_call_costs_cached_input_tokens_check",
+    );
+    expect(getTableConfig(llmCallCosts).checks.map((constraint) => constraint.name)).toContain(
+      "llm_call_costs_cached_input_price_per_million_usd_check",
+    );
     expect(getTableConfig(llmCallCosts).indexes.map((index) => index.config.name)).toContain(
       "llm_call_costs_agent_attempt_unique",
     );

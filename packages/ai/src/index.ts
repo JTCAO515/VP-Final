@@ -255,3 +255,11 @@ export type {
   DemoModelRouteConfig,
   ProviderReadiness,
 } from "./providerInventory.js";
+export { assertUsdPerMillion, calculateLlmCostUsd } from "./costAccounting.js";
+export type { LlmCostCalculation, LlmCostCalculationInput } from "./costAccounting.js";
+export {
+  MODEL_PRICING_REGISTRY,
+  resolveModelPricing,
+  validateModelPricingRegistry,
+} from "./pricingRegistry.js";
+export type { ModelPricingProvider, ModelPricingRegistryEntry } from "./pricingRegistry.js";
