@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
   ModelRoutingError,
-  calculateCostUsd,
   createInMemoryCostLedger,
   createModelRouter,
   createStaticProvider,
@@ -46,12 +45,26 @@ describe("createModelRouter", () => {
     expect(result.content).toBe("fallback");
     expect(result.attempts).toEqual([
       expect.objectContaining({
+        route: "primary",
         provider: "primary",
         model: "primary-model",
         ok: false,
         failureClass: "network_error",
+        costSnapshot: expect.objectContaining({
+          fallbackTriggered: false,
+          inputTokens: 0,
+          cachedInputTokens: 0,
+          outputTokens: 0,
+          costUsd: "0.00000000",
+        }),
       }),
-      expect.objectContaining({ provider: "secondary", model: "secondary-model", ok: true }),
+      expect.objectContaining({
+        route: "secondary",
+        provider: "secondary",
+        model: "secondary-model",
+        ok: true,
+        costSnapshot: expect.objectContaining({ fallbackTriggered: true }),
+      }),
     ]);
   });
 
@@ -61,26 +74,42 @@ describe("createModelRouter", () => {
       ledger,
       providers: [
         createStaticProvider({
-          id: "primary",
-          model: "costed-model",
-          usage: { inputTokens: 1_000, outputTokens: 2_000 },
-          pricing: { inputUsdPerMillionTokens: 0.5, outputUsdPerMillionTokens: 1.5 },
+          id: "planning_primary",
+          pricingProvider: "deepseek",
+          model: "deepseek-v4-pro",
+          usage: { inputTokens: 1_000, cachedInputTokens: 200, outputTokens: 2_000 },
         }),
       ],
     });
 
     const result = await router.generate({ task: "knowledge_qa", prompt: "Answer this" });
 
-    expect(result.costUsd).toBeCloseTo(0.0035);
+    expect(result.costSnapshot).toEqual({
+      provider: "deepseek",
+      model: "deepseek-v4-pro",
+      effort: "medium",
+      inputTokens: 1_000,
+      cachedInputTokens: 200,
+      outputTokens: 2_000,
+      inputPricePerMillionUsd: "0.43500000",
+      cachedInputPricePerMillionUsd: "0.00362500",
+      outputPricePerMillionUsd: "0.87000000",
+      costUsd: "0.00208873",
+      pricingMissing: false,
+      fallbackTriggered: false,
+    });
     expect(ledger.entries()).toEqual([
       {
         task: "knowledge_qa",
-        provider: "primary",
-        model: "costed-model",
+        route: "planning_primary",
+        provider: "deepseek",
+        model: "deepseek-v4-pro",
         effort: "medium",
         inputTokens: 1_000,
+        cachedInputTokens: 200,
         outputTokens: 2_000,
         costUsd: result.costUsd,
+        costSnapshot: result.costSnapshot,
       },
     ]);
   });
@@ -125,7 +154,7 @@ describe("createModelRouter", () => {
         createStaticProvider({
           id: "fallback",
           model: "fallback-model",
-          usage: { inputTokens: 5, outputTokens: 7 },
+          usage: { inputTokens: 5, cachedInputTokens: 0, outputTokens: 7 },
         }),
       ],
     });
@@ -134,19 +163,57 @@ describe("createModelRouter", () => {
 
     expect(result.attempts).toEqual([
       expect.objectContaining({
+        route: "primary",
         provider: "primary",
         model: "primary-model",
         ok: false,
         failureClass: "timeout",
       }),
       expect.objectContaining({
+        route: "fallback",
         provider: "fallback",
         model: "fallback-model",
         ok: true,
         inputTokens: 5,
         outputTokens: 7,
+        costSnapshot: expect.objectContaining({
+          inputTokens: 5,
+          cachedInputTokens: 0,
+          outputTokens: 7,
+          fallbackTriggered: true,
+        }),
       }),
     ]);
+  });
+
+  it("emits an auditable zero snapshot when model pricing is not registered", async () => {
+    const router = createModelRouter({
+      providers: [
+        createStaticProvider({
+          id: "router_primary",
+          pricingProvider: "dashscope",
+          model: "unregistered-qwen",
+          usage: { inputTokens: 10, cachedInputTokens: 3, outputTokens: 5 },
+        }),
+      ],
+    });
+
+    await expect(
+      router.generate({ task: "router", prompt: "Classify", effort: "low" }),
+    ).resolves.toMatchObject({
+      costSnapshot: {
+        provider: "dashscope",
+        model: "unregistered-qwen",
+        inputTokens: 10,
+        cachedInputTokens: 3,
+        outputTokens: 5,
+        inputPricePerMillionUsd: "0",
+        cachedInputPricePerMillionUsd: "0",
+        outputPricePerMillionUsd: "0",
+        costUsd: "0.00000000",
+        pricingMissing: true,
+      },
+    });
   });
 
   it("stops before provider invocation when the total budget is exhausted", async () => {
@@ -163,11 +230,5 @@ describe("createModelRouter", () => {
         }),
       ],
     });
-  });
-});
-
-describe("calculateCostUsd", () => {
-  it("returns zero when pricing is not configured", () => {
-    expect(calculateCostUsd({ inputTokens: 10, outputTokens: 20 })).toBe(0);
   });
 });

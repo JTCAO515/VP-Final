@@ -1,8 +1,9 @@
 import type {
-  ModelPricing,
   ModelProvider,
   ModelProviderResult,
+  ModelPricingProvider,
   RoutedModelRequest,
+  TokenUsage,
 } from "./index.js";
 
 export type ProviderFailureClass =
@@ -28,7 +29,7 @@ export type OpenAiCompatibleProviderConfig = {
   timeoutMs: number;
   maxTokens: number;
   extraBody?: Record<string, unknown>;
-  pricing?: ModelPricing;
+  pricingProvider?: ModelPricingProvider;
   fetchImpl?: typeof fetch;
 };
 
@@ -94,7 +95,7 @@ export function createOpenAiCompatibleProvider(
         );
         if (!response.ok) throw new ModelProviderError("http_error");
         const parsed = await parseJson(response);
-        const result = parseResponse(parsed);
+        const result = parseResponse(parsed, config.pricingProvider);
         return {
           content: result.content,
           ...(result.model ? { model: result.model } : {}),
@@ -111,14 +112,17 @@ export function createOpenAiCompatibleProvider(
       }
     },
   };
-  if (config.pricing) provider.pricing = config.pricing;
+  if (config.pricingProvider) provider.pricingProvider = config.pricingProvider;
   return provider;
 }
 
-function parseResponse(value: unknown): {
+function parseResponse(
+  value: unknown,
+  provider: ModelPricingProvider | undefined,
+): {
   content: string;
   model?: string;
-  usage?: { inputTokens: number; outputTokens: number };
+  usage?: TokenUsage;
 } {
   if (!isRecord(value)) throw new ModelProviderError("malformed_response");
   const choices = value.choices;
@@ -128,17 +132,53 @@ function parseResponse(value: unknown): {
   if (typeof content !== "string" || content.trim().length === 0) {
     throw new ModelProviderError("malformed_response");
   }
-  const usage = isRecord(value.usage)
-    ? {
-        inputTokens: numberOrZero(value.usage.prompt_tokens),
-        outputTokens: numberOrZero(value.usage.completion_tokens),
-      }
-    : undefined;
+  const usage = isRecord(value.usage) ? normalizeUsage(value.usage, provider) : undefined;
   return {
     content,
     ...(typeof value.model === "string" ? { model: value.model } : {}),
     ...(usage ? { usage } : {}),
   };
+}
+
+function normalizeUsage(
+  usage: Record<string, unknown>,
+  provider: ModelPricingProvider | undefined,
+): TokenUsage {
+  const inputTokens = tokenCountOrZero(usage.prompt_tokens);
+  const candidate = cachedInputCandidate(usage, provider);
+  const cachedInputTokens = candidate <= inputTokens ? candidate : 0;
+  return {
+    inputTokens,
+    cachedInputTokens,
+    outputTokens: tokenCountOrZero(usage.completion_tokens),
+  };
+}
+
+function cachedInputCandidate(
+  usage: Record<string, unknown>,
+  provider: ModelPricingProvider | undefined,
+): number {
+  if (provider === "deepseek") {
+    // Field shape is contract-frozen but no sanitized production sample is retained: 未实测，保守取 0.
+    return tokenCountOrZero(usage.prompt_cache_hit_tokens);
+  }
+  if (provider === "dashscope") {
+    // Field shape is contract-frozen but no sanitized production sample is retained: 未实测，保守取 0.
+    return tokenCountOrZero(promptTokenDetails(usage)?.cached_tokens);
+  }
+  if (provider === "moonshot") {
+    // Field shape is contract-frozen but no sanitized production sample is retained: 未实测，保守取 0.
+    return tokenCountOrZero(promptTokenDetails(usage)?.cached_tokens);
+  }
+  if (provider === "zhipu") {
+    // Field shape is contract-frozen but no sanitized production sample is retained: 未实测，保守取 0.
+    return tokenCountOrZero(promptTokenDetails(usage)?.cached_tokens);
+  }
+  return 0;
+}
+
+function promptTokenDetails(usage: Record<string, unknown>): Record<string, unknown> | undefined {
+  return isRecord(usage.prompt_tokens_details) ? usage.prompt_tokens_details : undefined;
 }
 
 async function parseJson(response: Response): Promise<unknown> {
@@ -154,8 +194,8 @@ function positiveInteger(value: string | undefined, fallback: number): number {
   return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
 }
 
-function numberOrZero(value: unknown): number {
-  return typeof value === "number" && Number.isFinite(value) && value >= 0 ? value : 0;
+function tokenCountOrZero(value: unknown): number {
+  return typeof value === "number" && Number.isSafeInteger(value) && value >= 0 ? value : 0;
 }
 
 function withoutTrailingSlash(value: string): string {

@@ -18,13 +18,28 @@ describe("completion day model boundary", () => {
       content: '{"type":"restaurant","title":"Local lunch"}',
       attempts: [
         {
-          provider: "planning_primary",
+          route: "planning_primary",
+          provider: "deepseek",
           model: "configured-model",
           ok: true,
           latencyMs: 10,
           inputTokens: 20,
           outputTokens: 10,
-          costUsd: 0.001,
+          costUsd: 0,
+          costSnapshot: {
+            provider: "deepseek",
+            model: "configured-model",
+            effort: "high" as const,
+            inputTokens: 20,
+            cachedInputTokens: 0,
+            outputTokens: 10,
+            inputPricePerMillionUsd: "0",
+            cachedInputPricePerMillionUsd: "0",
+            outputPricePerMillionUsd: "0",
+            costUsd: "0.00000000",
+            pricingMissing: true,
+            fallbackTriggered: false,
+          },
         },
       ],
     }));
@@ -48,7 +63,13 @@ describe("completion day model boundary", () => {
     expect(traceService.listRuns()).toEqual([
       expect.objectContaining({
         status: "succeeded",
-        attempts: [expect.objectContaining({ costUsd: 0.001 })],
+        attempts: [
+          expect.objectContaining({
+            provider: "deepseek",
+            costUsd: 0,
+            costSnapshot: expect.objectContaining({ pricingMissing: true }),
+          }),
+        ],
       }),
     ]);
   });

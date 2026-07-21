@@ -63,6 +63,7 @@ export function createDemoModelRuntime(environment: Environment) {
           if (!configuration) throw new Error("unreachable");
           return createOpenAiCompatibleProvider({
             id: configuration.route,
+            pricingProvider: configuration.provider,
             baseUrl: configuration.baseUrl,
             apiKey: configuration.apiKey,
             model: configuration.model,
@@ -139,12 +140,14 @@ function isPlanningIntent(intent: CopilotIntent): boolean {
 
 function toTraceAttempts(attempts: ModelAttempt[]): AgentAttemptTrace[] {
   return attempts.map((attempt) => ({
+    route: attempt.route,
     provider: attempt.provider,
     model: attempt.model,
     status: attempt.ok ? "succeeded" : "failed",
     inputTokens: attempt.inputTokens ?? 0,
     outputTokens: attempt.outputTokens ?? 0,
     costUsd: attempt.costUsd ?? 0,
+    costSnapshot: attempt.costSnapshot,
     latencyMs: attempt.latencyMs,
     ...(attempt.failureClass ? { failureClass: attempt.failureClass } : {}),
   }));

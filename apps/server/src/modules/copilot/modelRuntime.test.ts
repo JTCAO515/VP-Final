@@ -38,9 +38,66 @@ describe("demo model runtime", () => {
       name: DemoModelExecutionError.name,
       code: "MODEL_REQUEST_FAILED",
       attempts: [
-        { provider: "router_primary", failureClass: "http_error" },
-        { provider: "router_fallback", failureClass: "http_error" },
+        { route: "router_primary", provider: "dashscope", failureClass: "http_error" },
+        { route: "router_fallback", provider: "deepseek", failureClass: "http_error" },
       ],
     });
+  });
+
+  it("returns the exact cache-aware cost snapshot for a successful attempt", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn<typeof fetch>().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            model: "kimi-k2.6",
+            choices: [{ message: { content: '{"intent":"chat_only"}' } }],
+            usage: {
+              prompt_tokens: 1_000,
+              completion_tokens: 500,
+              prompt_tokens_details: { cached_tokens: 250 },
+            },
+          }),
+          { status: 200 },
+        ),
+      ),
+    );
+    const runtime = createDemoModelRuntime({
+      MOONSHOT_API_KEY: "test-moonshot-key",
+      ZHIPU_API_KEY: "test-zhipu-key",
+      DEEPSEEK_API_KEY: "test-deepseek-key",
+      VISEPANDA_MODEL_CONCIERGE_PRIMARY: "kimi-k2.6",
+      VISEPANDA_MODEL_CONCIERGE_FALLBACK: "glm-5.2",
+      VISEPANDA_MODEL_CONCIERGE_TERTIARY: "deepseek-v4-pro",
+    });
+
+    const result = await runtime.generate("concierge", {
+      task: "knowledge_qa",
+      prompt: "Answer",
+      effort: "medium",
+    });
+
+    expect(result).toMatchObject({
+      attempts: [
+        {
+          route: "concierge_primary",
+          provider: "moonshot",
+          model: "kimi-k2.6",
+          costSnapshot: {
+            inputTokens: 1_000,
+            cachedInputTokens: 250,
+            outputTokens: 500,
+            inputPricePerMillionUsd: "0.95000000",
+            cachedInputPricePerMillionUsd: "0.16000000",
+            outputPricePerMillionUsd: "4.00000000",
+            costUsd: "0.00275250",
+            pricingMissing: false,
+          },
+        },
+      ],
+    });
+    expect(JSON.stringify(result)).not.toMatch(
+      /test-moonshot-key|test-zhipu-key|test-deepseek-key|cookie|signature/i,
+    );
   });
 });

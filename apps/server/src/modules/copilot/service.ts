@@ -318,12 +318,14 @@ function toAgentAttemptTrace(value: unknown): AgentAttemptTrace[] {
     : isModelAttempt(value)
       ? [
           {
+            route: value.route,
             provider: value.provider,
             model: value.model,
             status: value.ok ? "succeeded" : "failed",
             inputTokens: value.inputTokens ?? 0,
             outputTokens: value.outputTokens ?? 0,
             costUsd: value.costUsd ?? 0,
+            costSnapshot: value.costSnapshot,
             latencyMs: value.latencyMs,
             ...(value.failureClass ? { failureClass: value.failureClass } : {}),
           },
@@ -332,12 +334,14 @@ function toAgentAttemptTrace(value: unknown): AgentAttemptTrace[] {
 }
 
 function isModelAttempt(value: unknown): value is {
+  route: string;
   provider: string;
   model: string;
   ok: boolean;
   inputTokens?: number;
   outputTokens?: number;
   costUsd?: number;
+  costSnapshot: import("@visepanda/ai").ModelAttemptCostSnapshot;
   latencyMs: number;
   failureClass?: string;
 } {
@@ -345,9 +349,11 @@ function isModelAttempt(value: unknown): value is {
     typeof value === "object" &&
     value !== null &&
     "provider" in value &&
+    "route" in value &&
     "model" in value &&
     "ok" in value &&
-    "latencyMs" in value
+    "latencyMs" in value &&
+    "costSnapshot" in value
   );
 }
 

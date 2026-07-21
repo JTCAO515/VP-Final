@@ -13,7 +13,8 @@ Copilot-specific provider composition belong in their owning runtime module.
 - Task classes: router, Trip writer, knowledge QA, and commerce/human handoff.
 - Effort levels: low, medium, and high.
 - Ordered provider fallback.
-- Per-attempt safe success/failure metadata, including bounded latency and normalized failure class.
+- Per-attempt safe success/failure metadata, including route, actual provider, bounded latency,
+  normalized failure class, runtime effort, fallback attribution, and an exact cost snapshot.
 - Token and cost calculation from provider pricing.
 - A versioned `(provider, model)` USD pricing registry and BigInt fixed-point three-part cost
   calculation for cache-miss input, cache-hit input, and output tokens. The result is rounded HALF_UP
@@ -22,6 +23,10 @@ Copilot-specific provider composition belong in their owning runtime module.
 - Static provider for deterministic tests.
 - OpenAI-compatible adapter contract: bounded JSON-object request, per-attempt timeout cap,
   abortable timeout, safe response parsing, and no upstream-body leakage.
+- Cache-hit usage normalization: DeepSeek reads `usage.prompt_cache_hit_tokens`; DashScope,
+  Moonshot, and Zhipu read `usage.prompt_tokens_details.cached_tokens`. Missing, malformed,
+  negative, non-integer, or greater-than-total values become zero so accounting conservatively
+  treats all input as cache misses.
 - Environment resolver for intentionally configured primary/fallback provider slots. It reports an
   incomplete slot as unavailable and does not choose a vendor or make a network call by itself.
 - DEMO-01 v3 provider inventory for DashScope, DeepSeek, Moonshot, and Zhipu. Route model names
@@ -63,6 +68,15 @@ Copilot-specific provider composition belong in their owning runtime module.
   snapshots for operator verification during review; DashScope and Zhipu remain intentionally
   unregistered until an approved USD snapshot exists, so a later writer must emit
   `cost_pricing_missing` rather than invent an FX conversion.
+- The router snapshots the registry's three prices and the provider-reported total/cached/output
+  token counts for every attempt, then calls the fixed-point three-part calculator. The legacy
+  numeric cost remains compatibility metadata only; durable accounting must consume the exact
+  eight-decimal string in the snapshot. A failed attempt without provider usage records zero rather
+  than estimating tokens.
+- The four cache-field mappings are covered by contract fixtures, not retained sanitized production
+  responses. They remain **unobserved in production; conservative zero applies** when the expected
+  field is absent or invalid. Live-provider evidence must be reported separately and must not contain
+  prompts, responses, or credentials.
 - Trace storage follows [ADR-0007](../adr/ADR-0007-agent-trace-privacy-retention.md): it stores only
   allowlisted metadata and digests, never raw model/tool payloads, and has a 30-day retention deadline.
 - Retrieval context contains only currently eligible reviewed POI facts. Model citations are validated

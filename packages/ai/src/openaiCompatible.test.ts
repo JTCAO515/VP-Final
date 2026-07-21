@@ -19,6 +19,7 @@ describe("OpenAI-compatible provider", () => {
     );
     const provider = createOpenAiCompatibleProvider({
       id: "primary",
+      pricingProvider: "deepseek",
       baseUrl: "https://provider.example/v1/",
       apiKey: "test-key",
       model: "configured-model",
@@ -32,7 +33,7 @@ describe("OpenAI-compatible provider", () => {
     ).resolves.toEqual({
       content: '{"intent":"chat_only"}',
       model: "response-model",
-      usage: { inputTokens: 12, outputTokens: 34 },
+      usage: { inputTokens: 12, cachedInputTokens: 0, outputTokens: 34 },
     });
     expect(fetchImpl).toHaveBeenCalledWith(
       "https://provider.example/v1/chat/completions",
@@ -47,6 +48,133 @@ describe("OpenAI-compatible provider", () => {
         }),
       }),
     );
+  });
+
+  it.each([
+    {
+      provider: "deepseek" as const,
+      expectedCachedInputTokens: 40,
+      usage: {
+        prompt_tokens: 100,
+        completion_tokens: 20,
+        prompt_cache_hit_tokens: 40,
+        prompt_cache_miss_tokens: 60,
+      },
+      source: "DeepSeek contract field usage.prompt_cache_hit_tokens",
+    },
+    {
+      provider: "dashscope" as const,
+      expectedCachedInputTokens: 30,
+      usage: {
+        prompt_tokens: 100,
+        completion_tokens: 20,
+        prompt_tokens_details: { cached_tokens: 30 },
+      },
+      source: "DashScope contract field usage.prompt_tokens_details.cached_tokens",
+    },
+    {
+      provider: "moonshot" as const,
+      expectedCachedInputTokens: 25,
+      usage: {
+        prompt_tokens: 100,
+        completion_tokens: 20,
+        prompt_tokens_details: { cached_tokens: 25 },
+      },
+      source: "Moonshot contract field usage.prompt_tokens_details.cached_tokens",
+    },
+    {
+      provider: "zhipu" as const,
+      expectedCachedInputTokens: 15,
+      usage: {
+        prompt_tokens: 100,
+        completion_tokens: 20,
+        prompt_tokens_details: { cached_tokens: 15 },
+      },
+      source: "Zhipu contract field usage.prompt_tokens_details.cached_tokens",
+    },
+  ])(
+    "normalizes $provider cached usage from $source",
+    async ({ provider, expectedCachedInputTokens, usage }) => {
+      const adapter = createOpenAiCompatibleProvider({
+        id: `${provider}-route`,
+        pricingProvider: provider,
+        baseUrl: "https://provider.example/v1",
+        apiKey: "test-key",
+        model: "configured-model",
+        timeoutMs: 1_000,
+        maxTokens: 100,
+        fetchImpl: vi.fn<typeof fetch>().mockResolvedValue(
+          new Response(
+            JSON.stringify({
+              choices: [{ message: { content: '{"intent":"chat_only"}' } }],
+              usage,
+            }),
+            { status: 200 },
+          ),
+        ),
+      });
+
+      await expect(
+        adapter.generate({ task: "router", prompt: "Classify", effort: "low" }),
+      ).resolves.toMatchObject({
+        usage: {
+          inputTokens: 100,
+          cachedInputTokens: expectedCachedInputTokens,
+          outputTokens: 20,
+        },
+      });
+    },
+  );
+
+  it("uses conservative zero when cached usage is absent or invalid", async () => {
+    const responses = [
+      { prompt_tokens: 100, completion_tokens: 20 },
+      {
+        prompt_tokens: 100,
+        completion_tokens: 20,
+        prompt_tokens_details: { cached_tokens: 101 },
+      },
+      {
+        prompt_tokens: 100,
+        completion_tokens: 20,
+        prompt_tokens_details: { cached_tokens: -1 },
+      },
+      {
+        prompt_tokens: 100,
+        completion_tokens: 20,
+        prompt_tokens_details: { cached_tokens: "25" },
+      },
+    ];
+    const fetchImpl = vi.fn<typeof fetch>();
+    for (const usage of responses) {
+      fetchImpl.mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            choices: [{ message: { content: '{"intent":"chat_only"}' } }],
+            usage,
+          }),
+          { status: 200 },
+        ),
+      );
+    }
+    const adapter = createOpenAiCompatibleProvider({
+      id: "dashscope-route",
+      pricingProvider: "dashscope",
+      baseUrl: "https://provider.example/v1",
+      apiKey: "test-key",
+      model: "configured-model",
+      timeoutMs: 1_000,
+      maxTokens: 100,
+      fetchImpl,
+    });
+
+    for (const expected of responses) {
+      await expect(
+        adapter.generate({ task: "router", prompt: "Classify", effort: "low" }),
+      ).resolves.toMatchObject({
+        usage: { inputTokens: expected.prompt_tokens, cachedInputTokens: 0, outputTokens: 20 },
+      });
+    }
   });
 
   it("merges provider-specific body fields without overriding the core request", async () => {
