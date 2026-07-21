@@ -120,6 +120,9 @@ failure cannot alter the public response or Trip state. Trace records follow
 [ADR-0007](../adr/ADR-0007-agent-trace-privacy-retention.md) and never contain raw prompts, envelope
 payloads, cookies, credentials, or narrative errors.
 
+Safe model-failure diagnostics identify the actual provider and model attempted, while omitting the
+internal route name, prompt, upstream body, cache usage, prices, exact cost snapshot, and credentials.
+
 `POST /api/copilot/complete` queues a durable owner-scoped job and returns the typed job receipt; it
 does not wait for or pretend to return completed Trip details. The callback reads the raw request,
 verifies the `Upstash-Signature` against the configured callback URL, then validates the minimized

@@ -166,6 +166,11 @@ distinguish its own previous partial effect from a later unrelated Trip edit.
   writers. The additive #248 cache-pricing contract preserves total input tokens, adds a bounded
   cached-input subset and separate hit-price snapshot, and retains `cost_pricing_missing` events;
   consumer wiring remains a later independently reviewed change.
+- The Copilot runtime preserves the provider route separately from the actual pricing provider and
+  carries the cache-aware, fixed-point attempt cost snapshot into the allowlisted trace object.
+  Existing trace persistence still stores only its legacy aggregate fields; writing the new
+  conversation, cost, and product-event records remains the separately reviewed #248 runtime-writer
+  boundary.
 - OA-011 remains the release gate for QStash token, signing keys, callback URL, and one sanitized
   signed-delivery observation. Until then deployed completion returns an honest unavailable state.
 - OA-012 remains the release gate for the Upstash Redis REST endpoint/token and one sanitized

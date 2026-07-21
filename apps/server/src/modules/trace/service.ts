@@ -1,12 +1,15 @@
+import type { ModelAttemptCostSnapshot } from "@visepanda/ai";
 import type { TripIdentity } from "../trip/versionedService.js";
 
 export type AgentAttemptTrace = {
+  route?: string;
   provider: string;
   model: string;
   status: "succeeded" | "failed";
   inputTokens: number;
   outputTokens: number;
   costUsd: number;
+  costSnapshot?: ModelAttemptCostSnapshot;
   latencyMs: number;
   failureClass?: string;
 };

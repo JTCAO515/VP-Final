@@ -1,14 +1,13 @@
+import { calculateLlmCostUsd } from "./costAccounting.js";
+import { resolveModelPricing, type ModelPricingProvider } from "./pricingRegistry.js";
+
 export type AiTask = "router" | "trip_writer" | "knowledge_qa" | "commerce_human_handoff";
 export type ModelEffort = "low" | "medium" | "high";
 
 export type TokenUsage = {
   inputTokens: number;
+  cachedInputTokens: number;
   outputTokens: number;
-};
-
-export type ModelPricing = {
-  inputUsdPerMillionTokens: number;
-  outputUsdPerMillionTokens: number;
 };
 
 export type ModelRequest = {
@@ -33,11 +32,27 @@ export type ModelProviderResult = {
 export type ModelProvider = {
   id: string;
   model: string;
-  pricing?: ModelPricing;
+  pricingProvider?: ModelPricingProvider;
   generate(request: RoutedModelRequest): Promise<ModelProviderResult>;
 };
 
+export type ModelAttemptCostSnapshot = {
+  provider: string;
+  model: string;
+  effort: ModelEffort;
+  inputTokens: number;
+  cachedInputTokens: number;
+  outputTokens: number;
+  inputPricePerMillionUsd: string;
+  cachedInputPricePerMillionUsd: string;
+  outputPricePerMillionUsd: string;
+  costUsd: string;
+  pricingMissing: boolean;
+  fallbackTriggered: boolean;
+};
+
 export type ModelAttempt = {
+  route: string;
   provider: string;
   model: string;
   ok: boolean;
@@ -45,26 +60,32 @@ export type ModelAttempt = {
   inputTokens?: number;
   outputTokens?: number;
   costUsd?: number;
+  costSnapshot: ModelAttemptCostSnapshot;
   failureClass?: import("./openaiCompatible.js").ProviderFailureClass;
 };
 
 export type ModelRunLedgerEntry = {
   task: AiTask;
+  route: string;
   provider: string;
   model: string;
   effort: ModelEffort;
   inputTokens: number;
+  cachedInputTokens: number;
   outputTokens: number;
   costUsd: number;
+  costSnapshot: ModelAttemptCostSnapshot;
 };
 
 export type ModelRouterResponse = {
+  route: string;
   provider: string;
   model: string;
   content: string;
   effort: ModelEffort;
   usage: TokenUsage;
   costUsd: number;
+  costSnapshot: ModelAttemptCostSnapshot;
   attempts: ModelAttempt[];
 };
 
@@ -103,14 +124,28 @@ export function createModelRouter({
       const routedRequest: RoutedModelRequest = { ...request, effort };
       const attempts: ModelAttempt[] = [];
 
-      for (const provider of providers) {
+      for (const [attemptIndex, provider] of providers.entries()) {
+        const providerName = provider.pricingProvider ?? provider.id;
+        const fallbackTriggered = attemptIndex > 0;
         const remainingMs = totalTimeoutMs - (Date.now() - startedAt);
         if (remainingMs <= 0) {
+          const costSnapshot = createAttemptCostSnapshot({
+            provider: providerName,
+            model: provider.model,
+            effort,
+            usage: zeroUsage(),
+            fallbackTriggered,
+          });
           attempts.push({
-            provider: provider.id,
+            route: provider.id,
+            provider: providerName,
             model: provider.model,
             ok: false,
             latencyMs: 0,
+            inputTokens: 0,
+            outputTokens: 0,
+            costUsd: 0,
+            costSnapshot,
             failureClass: "total_timeout",
           });
           break;
@@ -118,45 +153,71 @@ export function createModelRouter({
         const attemptStartedAt = Date.now();
         try {
           const result = await provider.generate({ ...routedRequest, timeoutMs: remainingMs });
-          const usage = result.usage ?? { inputTokens: 0, outputTokens: 0 };
+          const usage = result.usage ?? zeroUsage();
           const model = result.model ?? provider.model;
-          const costUsd = calculateCostUsd(usage, provider.pricing);
+          const costSnapshot = createAttemptCostSnapshot({
+            provider: providerName,
+            model,
+            effort,
+            usage,
+            fallbackTriggered,
+          });
+          const costUsd = Number(costSnapshot.costUsd);
           const entry = {
             task: request.task,
-            provider: provider.id,
+            route: provider.id,
+            provider: providerName,
             model,
             effort,
             inputTokens: usage.inputTokens,
+            cachedInputTokens: usage.cachedInputTokens,
             outputTokens: usage.outputTokens,
             costUsd,
+            costSnapshot,
           };
 
           attempts.push({
-            provider: provider.id,
+            route: provider.id,
+            provider: providerName,
             model,
             ok: true,
             latencyMs: Date.now() - attemptStartedAt,
             inputTokens: usage.inputTokens,
             outputTokens: usage.outputTokens,
             costUsd,
+            costSnapshot,
           });
           ledger.record(entry);
 
           return {
-            provider: provider.id,
+            route: provider.id,
+            provider: providerName,
             model,
             content: result.content,
             effort,
             usage,
             costUsd,
+            costSnapshot,
             attempts,
           };
         } catch (error) {
+          const costSnapshot = createAttemptCostSnapshot({
+            provider: providerName,
+            model: provider.model,
+            effort,
+            usage: zeroUsage(),
+            fallbackTriggered,
+          });
           attempts.push({
-            provider: provider.id,
+            route: provider.id,
+            provider: providerName,
             model: provider.model,
             ok: false,
             latencyMs: Date.now() - attemptStartedAt,
+            inputTokens: 0,
+            outputTokens: 0,
+            costUsd: 0,
+            costSnapshot,
             failureClass: normalizeFailureClass(error),
           });
         }
@@ -193,21 +254,12 @@ export function createInMemoryCostLedger(seed: ModelRunLedgerEntry[] = []): Cost
   };
 }
 
-export function calculateCostUsd(usage: TokenUsage, pricing?: ModelPricing): number {
-  if (!pricing) return 0;
-
-  return (
-    (usage.inputTokens / 1_000_000) * pricing.inputUsdPerMillionTokens +
-    (usage.outputTokens / 1_000_000) * pricing.outputUsdPerMillionTokens
-  );
-}
-
 export function createStaticProvider(options: {
   id: string;
+  pricingProvider?: ModelPricingProvider;
   model: string;
   content?: string;
   usage?: TokenUsage;
-  pricing?: ModelPricing;
   failWith?: string;
   onGenerate?: (request: RoutedModelRequest) => void;
 }): ModelProvider {
@@ -229,9 +281,49 @@ export function createStaticProvider(options: {
       return result;
     },
   };
-  if (options.pricing) provider.pricing = options.pricing;
+  if (options.pricingProvider) provider.pricingProvider = options.pricingProvider;
 
   return provider;
+}
+
+function createAttemptCostSnapshot(input: {
+  provider: string;
+  model: string;
+  effort: ModelEffort;
+  usage: TokenUsage;
+  fallbackTriggered: boolean;
+}): ModelAttemptCostSnapshot {
+  const pricing = resolveModelPricing(input.provider, input.model);
+  const inputPricePerMillionUsd = pricing?.inputMissPerMillionUsd ?? "0";
+  const cachedInputPricePerMillionUsd = pricing?.inputHitPerMillionUsd ?? "0";
+  const outputPricePerMillionUsd = pricing?.outputPerMillionUsd ?? "0";
+  const calculation = calculateLlmCostUsd({
+    inputTokens: input.usage.inputTokens,
+    cachedInputTokens: input.usage.cachedInputTokens,
+    outputTokens: input.usage.outputTokens,
+    inputMissPerMillionUsd: inputPricePerMillionUsd,
+    inputHitPerMillionUsd: cachedInputPricePerMillionUsd,
+    outputPerMillionUsd: outputPricePerMillionUsd,
+  });
+
+  return {
+    provider: input.provider,
+    model: input.model,
+    effort: input.effort,
+    inputTokens: input.usage.inputTokens,
+    cachedInputTokens: input.usage.cachedInputTokens,
+    outputTokens: input.usage.outputTokens,
+    inputPricePerMillionUsd,
+    cachedInputPricePerMillionUsd,
+    outputPricePerMillionUsd,
+    costUsd: calculation.costUsd,
+    pricingMissing: pricing === null,
+    fallbackTriggered: input.fallbackTriggered,
+  };
+}
+
+function zeroUsage(): TokenUsage {
+  return { inputTokens: 0, cachedInputTokens: 0, outputTokens: 0 };
 }
 
 export {

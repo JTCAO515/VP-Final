@@ -7,11 +7,26 @@ describe("summarizeModelFailure", () => {
     const diagnostic = summarizeModelFailure(
       new DemoModelExecutionError([
         {
-          provider: "concierge_primary",
+          route: "concierge_primary",
+          provider: "moonshot",
           model: "kimi-k2.6",
           ok: false,
           latencyMs: 1_250,
           failureClass: "http_error",
+          costSnapshot: {
+            provider: "moonshot",
+            model: "kimi-k2.6",
+            effort: "medium",
+            inputTokens: 0,
+            cachedInputTokens: 0,
+            outputTokens: 0,
+            inputPricePerMillionUsd: "0.95000000",
+            cachedInputPricePerMillionUsd: "0.16000000",
+            outputPricePerMillionUsd: "4.00000000",
+            costUsd: "0.00000000",
+            pricingMissing: false,
+            fallbackTriggered: false,
+          },
         },
       ]),
     );
@@ -20,7 +35,7 @@ describe("summarizeModelFailure", () => {
       code: "MODEL_REQUEST_FAILED",
       attempts: [
         {
-          provider: "concierge_primary",
+          provider: "moonshot",
           model: "kimi-k2.6",
           failureClass: "http_error",
           latencyMs: 1_250,

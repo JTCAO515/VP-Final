@@ -117,12 +117,14 @@ export function parseGeneratedBlock(
 
 function toTraceAttempt(attempt: ModelAttempt): AgentAttemptTrace {
   return {
+    route: attempt.route,
     provider: attempt.provider,
     model: attempt.model,
     status: attempt.ok ? "succeeded" : "failed",
     inputTokens: attempt.inputTokens ?? 0,
     outputTokens: attempt.outputTokens ?? 0,
     costUsd: attempt.costUsd ?? 0,
+    costSnapshot: attempt.costSnapshot,
     latencyMs: attempt.latencyMs,
     ...(attempt.failureClass ? { failureClass: attempt.failureClass } : {}),
   };
