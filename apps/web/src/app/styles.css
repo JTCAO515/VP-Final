@@ -1592,7 +1592,7 @@ button:disabled {
 }
 
 .poiFacts li {
-  align-items: baseline;
+  align-items: start;
   color: var(--ink-soft);
   display: grid;
   font-size: 14px;
@@ -1601,12 +1601,43 @@ button:disabled {
   line-height: 1.4;
 }
 
-.poiFacts li span {
+.poiFacts li .factKind {
   background: var(--jade-soft);
   color: var(--jade);
   font-size: 11px;
   padding: 4px 7px;
   text-align: center;
+}
+
+.poiFacts li div,
+.publicFact {
+  display: grid;
+  gap: 4px;
+}
+
+.poiFacts li b {
+  font-weight: 700;
+}
+
+.poiFacts li small,
+.publicFact small {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.publicFactList {
+  display: grid;
+  gap: 16px;
+}
+
+.publicFact + .publicFact {
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+}
+
+.publicFact p {
+  margin: 0;
 }
 
 .exploreEmpty {

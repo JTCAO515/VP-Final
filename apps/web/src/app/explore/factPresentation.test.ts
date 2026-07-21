@@ -62,10 +62,24 @@ describe("deriveExploreFacts", () => {
         NOW,
       ),
     ).toEqual([
-      { id: "fact-1", kind: "Metro", label: "Easy by metro" },
-      { id: "fact-2", kind: "Payment", label: "Foreign cards accepted" },
-      { id: "fact-3", kind: "Booking", label: "Passport booking required" },
+      expect.objectContaining({ id: "fact-1", kind: "Metro", label: "Easy by metro" }),
+      expect.objectContaining({
+        id: "fact-2",
+        kind: "Payment",
+        label: "Foreign cards accepted",
+      }),
+      expect.objectContaining({
+        id: "fact-3",
+        kind: "Booking",
+        label: "Passport booking required",
+      }),
     ]);
+    expect(deriveExploreFacts(poi([fact()]), NOW)[0]?.provenance).toEqual({
+      sourceClass: "official",
+      sourceLabel: "Official source",
+      verifiedAt: "2026-07-15T00:00:00.000Z",
+      verifiedDateLabel: "Jul 15, 2026",
+    });
   });
 
   it("hides expired, unreviewed, and deprecated facts", () => {

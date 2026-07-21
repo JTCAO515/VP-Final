@@ -29,6 +29,11 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
 - Domain enums are never copied into app-local constants.
 - Optional fields stay optional; consumers do not fabricate values to make a card look complete.
 - Knowledge consumers follow [ADR-0006](../adr/ADR-0006-knowledge-evidence-and-index-quality.md): model output cannot invent facts or citations. Facts retain typed source class/locator, a bounded PII-free evidence summary, ingestion time, nullable independent verification time, and a versioned review policy. Public eligibility additionally requires a private authenticated reviewer and bounded expiry. Retrieval accepts only `isEligiblePoiFact` results, citation ids are request-allowlisted, and no-match answers are explicit.
+- Public fact provenance is derived only after `isEligiblePoiFact` succeeds. The accepted public source
+  classes are `official`, `operator_verified`, and `reputable_editorial`; user reports, model output,
+  uncorroborated scrapes, and raw merchant submissions cannot be upgraded by a presentation consumer.
+  Public receipts may expose a source-class label and last-verified date, but never source locators,
+  evidence summaries, reviewer identity, authorization state, or internal notes.
 - A completion job carries only a Trip reference, base version, idempotency key, bounded attempt state, and safe error code. Its pure state-transition rule permits idempotent reads, `queued -> running`, a running terminal result, and `partial`/`failed -> queued` retry only. It never carries a prompt, model credential, or replacement Trip snapshot.
 - Copilot observability records require exactly one trusted identity, a future retention deadline,
   normalized success/failure fields, and pre-persistence redaction. Domain validation rejects direct

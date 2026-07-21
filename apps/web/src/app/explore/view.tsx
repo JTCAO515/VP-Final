@@ -94,8 +94,14 @@ export function ExploreView({ pois, availability, asOf }: ExploreViewProps) {
                 <ul>
                   {facts.map((fact) => (
                     <li key={fact.id}>
-                      <span>{fact.kind}</span>
-                      {fact.label}
+                      <span className="factKind">{fact.kind}</span>
+                      <div>
+                        <b>{fact.label}</b>
+                        <small>
+                          {fact.provenance.sourceLabel} · Verified{" "}
+                          {fact.provenance.verifiedDateLabel}
+                        </small>
+                      </div>
                     </li>
                   ))}
                 </ul>
