@@ -78,8 +78,11 @@ scheduling remains part of OA-004 verification and is not yet claimed as deploye
 DEMO-01c adds server-only `copilot_conversation_turns` and normalized `llm_call_costs`. Both require
 exactly one trusted identity and an explicit future retention deadline; direct Data API access is
 revoked. Conversations contain only pre-redacted text and a validated pre-redacted envelope. Cost rows
-snapshot prices and tokens per provider attempt, while internal views expose only aggregate cost,
-volume, and fallback metrics. The seven Copilot product-event actions require an explicit event expiry.
+snapshot prices and tokens per provider attempt. The cost ledger preserves total input tokens plus a
+cached-input subset and separate cache-miss/cache-hit price snapshots; cached tokens may never exceed
+total input tokens. A `cost_pricing_missing` event requires the same explicit future retention as
+other Copilot events. Internal views expose only aggregate cost,
+volume, and fallback metrics. The eight Copilot product-event actions require an explicit event expiry.
 Events accept an authenticated identity without requiring a fabricated anonymous id, while still
 rejecting rows with no trusted identity.
 All three record classes use the restricted `internal.purge_expired_copilot_observability()` routine

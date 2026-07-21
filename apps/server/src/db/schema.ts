@@ -326,11 +326,18 @@ export const llmCallCosts = pgTable(
     effort: text("effort").notNull(),
     status: text("status").notNull(),
     inputTokens: integer("input_tokens").notNull(),
+    cachedInputTokens: integer("cached_input_tokens").notNull().default(0),
     outputTokens: integer("output_tokens").notNull(),
     inputPricePerMillionUsd: numeric("input_price_per_million_usd", {
       precision: 14,
       scale: 8,
     }).notNull(),
+    cachedInputPricePerMillionUsd: numeric("cached_input_price_per_million_usd", {
+      precision: 14,
+      scale: 8,
+    })
+      .notNull()
+      .default("0"),
     outputPricePerMillionUsd: numeric("output_price_per_million_usd", {
       precision: 14,
       scale: 8,
@@ -374,6 +381,14 @@ export const llmCallCosts = pgTable(
     nonnegativeCheck: check(
       "llm_call_costs_nonnegative_check",
       sql`${table.inputTokens} >= 0 and ${table.outputTokens} >= 0 and ${table.inputPricePerMillionUsd} >= 0 and ${table.outputPricePerMillionUsd} >= 0 and ${table.costUsd} >= 0 and ${table.latencyMs} >= 0`,
+    ),
+    cachedInputCheck: check(
+      "llm_call_costs_cached_input_tokens_check",
+      sql`${table.cachedInputTokens} >= 0 and ${table.cachedInputTokens} <= ${table.inputTokens}`,
+    ),
+    cachedInputPriceCheck: check(
+      "llm_call_costs_cached_input_price_per_million_usd_check",
+      sql`${table.cachedInputPricePerMillionUsd} >= 0`,
     ),
     retentionCheck: check(
       "llm_call_costs_retention_check",

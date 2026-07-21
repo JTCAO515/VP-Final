@@ -10,6 +10,7 @@ export const CopilotProductEventActionSchema = z.enum([
   "register_prompt_shown",
   "fallback_triggered",
   "model_failure",
+  "cost_pricing_missing",
 ]);
 
 export const ConversationRedactionClassSchema = z.enum([
@@ -124,8 +125,10 @@ export const LlmCallCostRecordSchema = z
     effort: ModelEffortSchema,
     status: z.enum(["succeeded", "failed"]),
     input_tokens: z.number().int().nonnegative(),
+    cached_input_tokens: z.number().int().nonnegative().default(0),
     output_tokens: z.number().int().nonnegative(),
     input_price_per_million_usd: z.number().nonnegative(),
+    cached_input_price_per_million_usd: z.number().nonnegative().default(0),
     output_price_per_million_usd: z.number().nonnegative(),
     cost_usd: z.number().nonnegative(),
     fallback_triggered: z.boolean(),
@@ -135,6 +138,13 @@ export const LlmCallCostRecordSchema = z
     retention_expires_at: z.string().datetime(),
   })
   .superRefine((record, ctx) => {
+    if (record.cached_input_tokens > record.input_tokens) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["cached_input_tokens"],
+        message: "Cached input tokens must not exceed total input tokens",
+      });
+    }
     if (record.status === "succeeded" && record.failure_class !== null) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,

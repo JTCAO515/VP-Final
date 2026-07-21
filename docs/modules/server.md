@@ -83,6 +83,10 @@ modules yet.
   contact data before persistence, rejects high-risk secrets/documents, and atomically appends a
   content-free audit event. A separate KnowledgeService transaction creates only a normalized open
   gap plus audit; it cannot create, review, or publish a POI fact.
+- The `llm_call_costs` Drizzle contract maps the additive cache-pricing ledger columns: total input
+  tokens remain unchanged, cached input is a bounded subset, and cache-hit pricing is a separate
+  immutable snapshot. This schema-first boundary does not wire runtime persistence or claim that an
+  unregistered model has a nonzero price.
 - The runtime resolver and router injection boundary are implemented and tested, but Web/Ops
   composition migration remains in P0-06c and P0-06d. Therefore no deployed durable-path claim is
   made yet.
@@ -159,7 +163,9 @@ distinguish its own previous partial effect from a later unrelated Trip edit.
   retention, and non-blocking trace persistence. Real provider attempt production data remains P0-07.
 - [ADR-0009](../adr/ADR-0009-copilot-conversation-cost-retention.md) freezes separate redacted turn,
   per-attempt cost, and product-event records. This schema-first change does not yet connect runtime
-  writers; consumer wiring must remain non-blocking and use the configured 30-day deadline.
+  writers. The additive #248 cache-pricing contract preserves total input tokens, adds a bounded
+  cached-input subset and separate hit-price snapshot, and retains `cost_pricing_missing` events;
+  consumer wiring remains a later independently reviewed change.
 - OA-011 remains the release gate for QStash token, signing keys, callback URL, and one sanitized
   signed-delivery observation. Until then deployed completion returns an honest unavailable state.
 - OA-012 remains the release gate for the Upstash Redis REST endpoint/token and one sanitized

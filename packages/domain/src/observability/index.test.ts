@@ -63,10 +63,12 @@ describe("Copilot persistence contracts", () => {
       effort: "medium",
       status: "succeeded",
       input_tokens: 120,
+      cached_input_tokens: 20,
       output_tokens: 80,
       input_price_per_million_usd: 0.2,
+      cached_input_price_per_million_usd: 0.04,
       output_price_per_million_usd: 0.8,
-      cost_usd: 0.000088,
+      cost_usd: 0.0000848,
       fallback_triggered: false,
       latency_ms: 820,
       created_at: createdAt,
@@ -74,6 +76,7 @@ describe("Copilot persistence contracts", () => {
     });
 
     expect(parsed.attempt_index).toBe(1);
+    expect(parsed.cached_input_tokens).toBe(20);
     expect(CopilotProductEventActionSchema.options).toEqual([
       "session_started",
       "turn_completed",
@@ -82,6 +85,7 @@ describe("Copilot persistence contracts", () => {
       "register_prompt_shown",
       "fallback_triggered",
       "model_failure",
+      "cost_pricing_missing",
     ]);
     expect(() =>
       CopilotProductEventSchema.parse({
@@ -91,6 +95,12 @@ describe("Copilot persistence contracts", () => {
         action: "turn_completed",
         entity_type: "copilot_turn",
         created_at: createdAt,
+      }),
+    ).toThrow();
+    expect(() =>
+      LlmCallCostRecordSchema.parse({
+        ...parsed,
+        cached_input_tokens: parsed.input_tokens + 1,
       }),
     ).toThrow();
     expect(() =>

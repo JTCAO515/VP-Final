@@ -39,6 +39,10 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
   normalized success/failure fields, and pre-persistence redaction. Domain validation rejects direct
   email/phone patterns, credential tokens, authorization values, cookies, signatures, and secret-like
   object keys; runtime redaction remains responsible for replacing detected content before parsing.
+- Per-attempt cost records preserve provider-reported total input tokens plus a cached-input subset;
+  cached tokens cannot exceed total input tokens. Cache-miss and cache-hit input prices are separate
+  immutable snapshots. `cost_pricing_missing` is a retained product event, not permission to invent
+  a price or silently treat a zero-price row as reconciled.
 - Human Task status changes use `transitionHumanTask`; the generic update contract cannot carry a
   status. The canonical forward path is `requested -> triaged -> quoted -> payment_pending -> paid ->
 fulfilling -> done`, with explicit cancellation edges and no terminal recovery. A transition reason

@@ -15,6 +15,9 @@ Copilot-specific provider composition belong in their owning runtime module.
 - Ordered provider fallback.
 - Per-attempt safe success/failure metadata, including bounded latency and normalized failure class.
 - Token and cost calculation from provider pricing.
+- A versioned `(provider, model)` USD pricing registry and BigInt fixed-point three-part cost
+  calculation for cache-miss input, cache-hit input, and output tokens. The result is rounded HALF_UP
+  to the ledger's eight-decimal scale.
 - In-memory cost ledger for tests.
 - Static provider for deterministic tests.
 - OpenAI-compatible adapter contract: bounded JSON-object request, per-attempt timeout cap,
@@ -55,6 +58,11 @@ Copilot-specific provider composition belong in their owning runtime module.
 - Prompt, model, routing, parser, or tool changes require relevant evals.
 - Logs and traces must redact secrets and sensitive user content.
 - Cost records are measurements, not billing ledgers.
+- Runtime model ids remain environment-selected. The pricing registry resolves exact catalog ids and
+  never guesses aliases. Moonshot Kimi K2.6 and DeepSeek V4 Flash/Pro carry official-source USD
+  snapshots for operator verification during review; DashScope and Zhipu remain intentionally
+  unregistered until an approved USD snapshot exists, so a later writer must emit
+  `cost_pricing_missing` rather than invent an FX conversion.
 - Trace storage follows [ADR-0007](../adr/ADR-0007-agent-trace-privacy-retention.md): it stores only
   allowlisted metadata and digests, never raw model/tool payloads, and has a 30-day retention deadline.
 - Retrieval context contains only currently eligible reviewed POI facts. Model citations are validated
