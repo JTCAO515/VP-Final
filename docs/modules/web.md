@@ -8,10 +8,6 @@ The public Next.js application owns acquisition and traveler-facing Phase 0 expe
 the Copilot workspace, Trip Canvas, Explore, guides, POI pages, Human Help, public Trip shares, and
 the outbound gateway.
 
-The #275 Preview temporarily emits only allowlisted error names and PostgreSQL codes for an OA-004
-connection diagnosis; the observation commit is removed before review and never logs messages or
-connection metadata.
-
 ## Routes
 
 | Route                            | Purpose                                                                  |
