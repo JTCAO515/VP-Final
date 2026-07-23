@@ -32,7 +32,7 @@ VisePanda is not an OTA, a generic itinerary generator, or a collection of unrel
 | Issue | One independently reviewable unit of work in GitHub Issues | Ticket, backlog item |
 | ADR | Append-only record of a binding architecture or business decision | Planning note |
 | Constraint | A mandatory, testable rule; `MUST`, `MUST NOT`, and `REQUIRED` are normative | Preference |
-| 钱学森 Skills | The permanent VisePanda systems-engineering workflow; repository id `qian-systems-engineering` | A motivational slogan |
+| JTCoding Skills | The permanent VisePanda engineering workflow; the current single entrypoint covering the former Qian systems-engineering, documentation-as-code, and focused coding disciplines | A motivational slogan or three separate skills |
 | Overall design baseline | The current operational translation of product goals into subsystems, interfaces, control measures, and gates | A second product roadmap |
 | Control objective | A desired, measurable product or engineering outcome with an owner and review cadence | General ambition |
 | Observation | Evidence collected from tests, telemetry, operations, users, or reviews | Opinion without evidence |
@@ -57,7 +57,7 @@ VisePanda is not an OTA, a generic itinerary generator, or a collection of unrel
   operational procedures.
 - The [overall design baseline](docs/architecture/top-level-design.md) translates the frozen product
   baseline into controlled subsystems, interfaces, measures, and lifecycle gates.
-- [钱学森 Skills](docs/methodology/qian-systems-engineering.md) governs how observations become
+- [JTCoding Skills](docs/methodology/qian-systems-engineering.md) governs how observations become
   deviations, Issues, verified control actions, and archived knowledge.
 
 ## Truth Hierarchy

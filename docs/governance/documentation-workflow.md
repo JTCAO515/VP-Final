@@ -56,7 +56,9 @@ The registry records:
 - source prefixes whose changes require this document to be considered.
 
 The checker rejects orphan Markdown, missing files, invalid metadata, broken local links, duplicate
-paths, or a stale generated index. `docs/INDEX.md` must never be edited manually.
+paths, or a stale generated index. Local link extraction must remain linear-time and resilient to
+malformed Markdown so documentation checks cannot stall on long generated or copied fragments.
+`docs/INDEX.md` must never be edited manually.
 
 The Index also renders `docs/handoff.json`. Every repository change, including docs-only changes,
 must update this snapshot so a new human or Agent never inherits a stale execution state. See the

@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-07-11",
-  "updatedBy": "Codex / Issue #112",
+  "updatedAt": "2026-07-23",
+  "updatedBy": "Codex / JTCoding Skills consolidation",
   "baseBranch": "main",
   "lastVerifiedCommit": "5946490",
   "currentPhase": "Phase 0 — production hardening",
   "maturity": "Trusted demo skeleton; not yet a production-safe or billing-ready MVP.",
-  "lastCompleted": "Merged PRs through #165 established Node 22, Supabase security, accepted ADR-0004 through ADR-0006, canonical Phase 0/1 governance, and the indexed operator-action/tutorial workflow.",
+  "lastCompleted": "Configured Playwright-managed Chromium automation and consolidated the former Qian/Matt/Karpathy skill guidance under JTCoding Skills as the single current engineering baseline.",
   "activeWork": [
     {
       "ref": "Issue #112 / P0-03",
@@ -54,7 +54,11 @@
     "DOC-P0-01 merge evidence: PR #140 passed database contracts, verify, docs, evals, and Vercel previews before merging; ADR-0004 is accepted and Issue #131 is closed.",
     "DOC-P0-02 and DOC-P0-03 merge evidence: PRs #162 and #163 accepted ADR-0005 and ADR-0006 after repository checks passed.",
     "DOC-P0-05 merge evidence: PR #165 passed verify, docs, evals, database contracts, and Vercel previews; nine known external actions and the Chinese tutorial workflow are now indexed and mandatory.",
-    "P0-03 local and CI implementation evidence at 9eabe54: lint, typecheck, test, build, evals, docs, database contracts, and Vercel previews passed; mocked tests cover anonymous expiry/rotation, verified-user spoof resistance, login rejection/success, and logout. Live Supabase behavior is not claimed."
+    "P0-03 local and CI implementation evidence at 9eabe54: lint, typecheck, test, build, evals, docs, database contracts, and Vercel previews passed; mocked tests cover anonymous expiry/rotation, verified-user spoof resistance, login rejection/success, and logout. Live Supabase behavior is not claimed.",
+    "Browser automation configuration evidence on 2026-07-16: pnpm browser:install completed and pnpm test:browser passed 1 Chromium smoke test in tests/browser/chromium-smoke.spec.ts.",
+    "Browser automation re-verification on 2026-07-23: pnpm test:browser ran Playwright Chromium smoke and passed 1 test in 19.6s.",
+    "JTCoding Skills adoption evidence on 2026-07-23: .jtcoding-skills cloned locally, native Codex skill copied to ~/.codex/skills/jtcoding-skills, and AGENTS.md updated to treat JTCoding as the current name for the former 钱学森 Skills baseline.",
+    "JTCoding consolidation evidence on 2026-07-23: AGENTS.md, CONTEXT.md, README.md, methodology, constraints, governance baseline, manifest, and handoff now state that old Qian/Matt/Karpathy skills are internal/historical layers rather than separate project skills."
   ],
   "readingOrder": [
     {
@@ -67,7 +71,7 @@
     },
     {
       "path": "docs/methodology/qian-systems-engineering.md",
-      "reason": "Understand the composite Qian, Matt-inspired documentation, and Karpathy workflow plus D0-D3 correction model."
+      "reason": "Understand the JTCoding workflow, its internal systems/documentation/focused-coding layers, and the D0-D3 correction model."
     },
     {
       "path": "docs/governance/composite-engineering-baseline.md",
@@ -95,7 +99,7 @@
     },
     {
       "path": "docs/constraints/karpathy-guidelines.md",
-      "reason": "Apply explicit assumptions, minimum sufficient design, surgical diffs, and step-to-check verification during implementation."
+      "reason": "Apply the JTCoding focused implementation rules: explicit assumptions, minimum sufficient design, surgical diffs, and step-to-check verification."
     },
     {
       "path": "docs/adr/README.md",

@@ -10,11 +10,15 @@
     "docs:index": "node scripts/docs/generate-index.mjs",
     "docs:check": "node scripts/docs/check.mjs",
     "docs:impact": "node scripts/docs/check-impact.mjs",
+    "browser:install": "playwright install chromium",
+    "test:browser": "playwright test --project=chromium",
+    "test:browser:headed": "playwright test --project=chromium --headed",
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "prettier": "^3.4.2",
     "turbo": "^2.3.3",
     "typescript": "^5.7.2",

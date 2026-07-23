@@ -1,7 +1,7 @@
-# 钱学森 Skills Constraints
+# JTCoding Skills Constraints
 
 Status: active
-Methodology: [钱学森 Skills](../methodology/qian-systems-engineering.md)
+Methodology: [JTCoding Skills](../methodology/qian-systems-engineering.md)
 
 These rules are normative. Automated rules fail CI; semantic rules are mandatory review gates.
 

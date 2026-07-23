@@ -16,8 +16,8 @@
 | 1 | [`CONTEXT.md`](CONTEXT.md) | 项目统一语言、边界与真理层级 |
 | 2 | [`docs/INDEX.md`](docs/INDEX.md) | 自动生成的当前接手快照、强制阅读顺序和完整知识库索引 |
 | 3 | [`docs/architecture/top-level-design.md`](docs/architecture/top-level-design.md) | 总体设计基线：目标、子系统、接口、观测和生命周期门禁 |
-| 4 | [`docs/methodology/qian-systems-engineering.md`](docs/methodology/qian-systems-engineering.md) | **钱学森 Skills**：项目永久闭环工程工作流 |
-| 5 | [`docs/governance/composite-engineering-baseline.md`](docs/governance/composite-engineering-baseline.md) | 钱学森 + Matt 文档即代码 + Karpathy 编码纪律的统一基线 |
+| 4 | [`docs/methodology/qian-systems-engineering.md`](docs/methodology/qian-systems-engineering.md) | **JTCoding Skills**：项目永久闭环工程工作流 |
+| 5 | [`docs/governance/composite-engineering-baseline.md`](docs/governance/composite-engineering-baseline.md) | JTCoding 单一入口：系统工程、文档即代码、聚焦编码和证据验收 |
 | 6 | [`docs/planning/visepanda-v2-final-architecture.md`](docs/planning/visepanda-v2-final-architecture.md) | **冻结产品基线**：定位、架构、商业与路线图 |
 | 7 | [`docs/adr/`](docs/adr/) | 已接受决策；普通 PR 不重复争论 |
 | 8 | [Issues](https://github.com/JTCAO515/VP-Final/issues) | 可执行控制动作；按依赖和优先级认领 |
@@ -63,9 +63,9 @@ TypeScript 单语言 monorepo（pnpm + turborepo）。Next.js 15（Web/Ops）· 
 5. **提示词改动必带 evals** — `packages/ai` 首个 profile 落地后（V2-09），CI evals gate 转为必过。
 6. **禁止跨模块碰表** — server 模块间只走显式服务接口。
 7. **代码动，文档必动** — 运行 `pnpm docs:check` 和 `pnpm docs:impact -- --base <ref>`。
-8. **钱学森 Skills 闭环** — 每项工作明确目标、子系统、观测、偏差、控制动作和复盘证据。
+8. **JTCoding 闭环** — 每项工作明确目标、子系统、观测、偏差、控制动作和复盘证据。
 9. **接手状态永远同步** — 每次仓库变更更新 `docs/handoff.json` 并重新生成 Index。
-10. **Karpathy 聚焦实现** — 显式假设，选择最小充分方案；每行改动可追溯，每步绑定验证，
+10. **JTCoding 聚焦实现** — 显式假设，选择最小充分方案；每行改动可追溯，每步绑定验证，
    禁止预设功能、过早抽象和顺手重构。
 
 ## 路线图（触发条件驱动，非日历）

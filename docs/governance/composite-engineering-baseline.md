@@ -1,4 +1,4 @@
-# Composite Engineering Baseline
+# JTCoding Engineering Baseline
 
 Status: active
 Owner: overall design
@@ -6,29 +6,34 @@ Applies to: Codex, Claude Code, human contributors, and every VisePanda change
 
 ## Purpose
 
-VisePanda uses one composite engineering baseline rather than three disconnected rule sets:
+VisePanda uses **JTCoding Skills** as one engineering baseline. The previous Qian
+systems-engineering workflow, Matt-inspired documentation-as-code practice, and Karpathy coding
+discipline are now internal layers of JTCoding, not separate skills to invoke for new project work.
 
 | Layer | Responsibility | Failure it prevents |
 | --- | --- | --- |
-| 钱学森 Skills | Objective traceability, subsystem decomposition, interface freeze, lifecycle gates, feedback, deviation correction, and knowledge archival | Local delivery that drifts from product/commercial goals |
-| Matt Pocock-inspired documentation-as-code | Short agent entry points, durable context, document registry, generated Index, handoff snapshot, and code/document synchronization | Stale documentation, repeated exploration, and private-chat dependency |
-| Karpathy coding discipline | Explicit assumptions, minimum sufficient design, surgical diffs, and goal-driven verification | Overengineering, scope creep, hidden guesses, and weak acceptance |
+| Systems engineering | Objective traceability, subsystem decomposition, interface freeze, lifecycle gates, feedback, deviation correction, and knowledge archival | Local delivery that drifts from product/commercial goals |
+| Documentation-as-code | Short agent entry points, durable context, document registry, generated Index, handoff snapshot, and code/document synchronization | Stale documentation, repeated exploration, and private-chat dependency |
+| Focused coding discipline | Explicit assumptions, minimum sufficient design, surgical diffs, and goal-driven verification | Overengineering, scope creep, hidden guesses, and weak acceptance |
 
 The layers have different jobs. Model agreement is not a vote, a document is not runtime evidence, and
 simple code is not permission to bypass security or contracts.
 
 ## Source and Installation Record
 
-- Global Qian Skill: `~/.codex/skills/qian-systems-engineering/`
-- Global Karpathy Skill: `~/.codex/skills/karpathy-guidelines/`
+- Current global JTCoding Skill: `~/.codex/skills/jtcoding-skills/`
+- Current project-local JTCoding toolchain: `.jtcoding-skills/`
+- Legacy global Qian Skill: `~/.codex/skills/qian-systems-engineering/` (historical source only)
+- Legacy global Karpathy Skill: `~/.codex/skills/karpathy-guidelines/` (historical source only)
 - Karpathy upstream: <https://github.com/multica-ai/andrej-karpathy-skills>
 - Verified upstream commit: `2c606141936f1eeef17fa3043a72095b4765b9c2`
 - Karpathy Skill path: `skills/karpathy-guidelines/SKILL.md`
 - Karpathy Skill license declaration: MIT
 - Portable export: `钱学森Skills/` and `钱学森Skills.zip` in the operator workspace
 
-Repository rules remain authoritative for VisePanda. Global Skills supply defaults; they do not
-silently overwrite accepted project architecture.
+Repository rules remain authoritative for VisePanda. JTCoding supplies the current default method; no
+older Qian, Matt-inspired, or Karpathy skill should be invoked separately for this repository unless
+the operator explicitly requests a historical audit.
 
 ## Authority and Precedence
 
@@ -37,8 +42,8 @@ Apply the strictest compatible rule in this order:
 1. security, privacy, authorization, data/payment integrity, production truthfulness, and legal rules;
 2. repository-local `AGENTS.md`, active constraints, accepted ADRs, and frozen product/architecture;
 3. assigned GitHub Issue scope, do-not-touch boundary, and executable acceptance;
-4. 钱学森 lifecycle and documentation controls;
-5. Karpathy simplicity and surgical-change guidance;
+4. JTCoding lifecycle, documentation, and evidence controls;
+5. JTCoding simplicity and surgical-change guidance;
 6. optional style preferences.
 
 Conflicts affecting contracts, permissions, money, data ownership, public promises, or irreversible
@@ -94,7 +99,7 @@ research documents retain status and are not treated as current runtime truth.
 G0 objective + observation + assumptions
   -> G1 subsystem decomposition + interface freeze
   -> G2 executable GitHub Issue
-  -> Karpathy minimum design + success criteria
+  -> JTCoding minimum design + success criteria
   -> G3 focused code + tests + synchronized docs
   -> G4 verification from unit to production observation
   -> G5 D0-D3 deviation classification and correction
@@ -106,7 +111,7 @@ do-not-touch, dependencies, interface/data/permission/commercial impact, accepta
 documentation impact, observation window, risk, rollback, and size. Work above five focused days must
 be split.
 
-## Karpathy Implementation Gate
+## JTCoding Implementation Gate
 
 Before coding:
 

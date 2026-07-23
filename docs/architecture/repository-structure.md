@@ -14,6 +14,7 @@
 | `apps/mobile` | Mobile | Future Expo execute-stage application | Placeholder by roadmap decision |
 | `infra/supabase` | Data platform | Local config and append-only Postgres migrations | Schema exists; security and deployment validation continue |
 | `evals` | AI quality | Golden fixtures and deterministic evaluation runner | Initial Trip generation suite implemented |
+| `tests/browser` | Browser automation | Playwright-managed Chromium smoke and browser acceptance tests | Chromium smoke test implemented |
 | `docs` | Engineering | Architecture, modules, constraints, decisions, runbooks, design, planning | Governed by manifest and CI |
 
 ## Source of Truth by Concern
@@ -28,12 +29,15 @@
 | Binding decisions | Accepted ADRs |
 | Mandatory engineering behavior | `docs/constraints` |
 | Current implementation explanation | `docs/architecture` and `docs/modules` |
+| Browser automation runner | `playwright.config.ts` and `tests/browser` |
 | Live work state | GitHub Issues and PRs |
 | Historical plan or review | Dated files under `docs/planning` |
 
 ## Directory Rules
 
 - Generated output (`dist`, `.next`, `.turbo`) is never a source of truth and must not be committed.
+- Playwright artifacts (`test-results`, `playwright-report`) are generated evidence and must not be
+  committed; rerun `pnpm test:browser` to reproduce Chromium smoke evidence.
 - A module exports its supported interface from its index or declared package export. Consumers must
   not depend on internal file layout without an explicit export.
 - Tests live beside the behavior they protect unless a database or end-to-end runner requires a

@@ -1,8 +1,30 @@
 # VisePanda V2 Agent Rules
 
-This repository is the only development home for VisePanda V2. All work follows the composite
-**钱学森 Skills + Matt Pocock-inspired documentation-as-code + Karpathy coding discipline** baseline
+This repository is the only development home for VisePanda V2. All work follows **JTCoding Skills**,
+the renamed and expanded successor of the original 钱学森 Skills baseline. JTCoding combines
+钱学森 systems engineering, Matt Pocock-inspired documentation-as-code, Karpathy coding discipline,
+token-efficiency rules, and evidence-first acceptance. The canonical project methodology remains
 defined in `docs/methodology/qian-systems-engineering.md`.
+
+## JTCoding Skills
+
+- Use JTCoding Skills for every coding, debugging, review, refactor, architecture, deployment, and
+  planning task in this repository.
+- JTCoding Skills supersedes the previous separate `qian-systems-engineering`,
+  `karpathy-guidelines`, and Matt-inspired documentation skill usage. Do not invoke those older
+  skills separately for this repository; treat them as internal layers of JTCoding.
+- Prefer `$jtcoding-skills` when the native Codex skill is installed. The project-local toolchain is
+  `.jtcoding-skills/`; do not run its `init.js` over this repository unless explicitly asked, because
+  this repository already has mature governance docs that must not be overwritten.
+- Before coding, load only the minimum context pack: `CONTEXT.md`, `docs/handoff.json`,
+  `docs/manifest.json`, the current Issue, and real git status.
+- State the control loop before implementation: objective `r`, observation `y`, reversible action
+  `u`, and the deviation `e` being closed.
+- Run the controllability/observability screen before accepting work. If there is no control lever or
+  no observation, escalate to the operator instead of producing a mock that pretends to solve it.
+- Apply the JTCoding red lines: no fabricated success, no mock presented as production, no
+  `--no-verify`, no `as any`, no swallowed exceptions to turn checks green, and no bypass of
+  security, permissions, payment, or data-integrity constraints.
 
 ## Read First
 
@@ -15,7 +37,7 @@ defined in `docs/methodology/qian-systems-engineering.md`.
 Do not reread every document. Use the generated index to build the minimum authoritative context
 pack. The frozen product baseline is `docs/planning/visepanda-v2-final-architecture.md`.
 
-## 钱学森 Skills Control Loop
+## JTCoding Control Loop
 
 - Trace work to an accepted objective and subsystem.
 - Treat the Issue as a small, reversible control action with explicit observations.
@@ -25,7 +47,7 @@ pack. The frozen product baseline is `docs/planning/visepanda-v2-final-architect
 - Code, docs, tests, rollout/rollback, and learning are one deliverable.
 - Multiple model answers are hypotheses, not votes or factual confirmation.
 
-## Karpathy Coding Discipline
+## JTCoding Implementation Discipline
 
 - Before coding, inspect the authoritative context and state assumptions that can affect behavior.
 - Resolve low-risk ambiguity with an explicit, reversible assumption. Ask the operator when ambiguity

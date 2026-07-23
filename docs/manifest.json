@@ -158,12 +158,12 @@
     },
     {
       "path": "docs/methodology/qian-systems-engineering.md",
-      "title": "钱学森 Skills",
+      "title": "JTCoding Skills Methodology",
       "category": "methodology",
       "type": "methodology",
       "status": "active",
       "owner": "overall design",
-      "summary": "Software adaptation of systems engineering, feedback control, meta-synthesis, and lifecycle governance.",
+      "summary": "Current single-entry JTCoding methodology for systems engineering, documentation-as-code, focused implementation, token efficiency, and evidence-first acceptance.",
       "sourcePrefixes": []
     },
 
@@ -206,6 +206,8 @@
       "owner": "architecture",
       "summary": "Monorepo layout, package ownership, and current maturity.",
       "sourcePrefixes": [
+        "playwright.config.ts",
+        "tests/browser/",
         "package.json",
         "pnpm-lock.yaml",
         "pnpm-workspace.yaml",
@@ -359,6 +361,8 @@
         "package.json",
         "pnpm-lock.yaml",
         "pnpm-workspace.yaml",
+        "playwright.config.ts",
+        "tests/browser/",
         "turbo.json",
         "tsconfig.base.json",
         ".prettierrc.json"
@@ -427,12 +431,12 @@
     },
     {
       "path": "docs/constraints/karpathy-guidelines.md",
-      "title": "Karpathy Coding Discipline",
+      "title": "JTCoding Focused Implementation Discipline",
       "category": "constraints",
       "type": "constraint",
       "status": "active",
       "owner": "engineering",
-      "summary": "Mandatory assumption, simplicity, surgical-change, and goal-driven verification rules.",
+      "summary": "JTCoding implementation rules for assumptions, simplicity, surgical changes, and goal-driven verification.",
       "sourcePrefixes": []
     },
     {
@@ -482,12 +486,12 @@
     },
     {
       "path": "docs/constraints/qian-systems-engineering.md",
-      "title": "钱学森 Skills Constraints",
+      "title": "JTCoding Skills Constraints",
       "category": "constraints",
       "type": "constraint",
       "status": "active",
       "owner": "overall design",
-      "summary": "Thirty-one mandatory systems, documentation, and focused-implementation rules with evidence gates.",
+      "summary": "Mandatory JTCoding systems, documentation, focused-implementation, and evidence gates.",
       "sourcePrefixes": []
     },
 
@@ -518,12 +522,12 @@
     },
     {
       "path": "docs/governance/composite-engineering-baseline.md",
-      "title": "Composite Engineering Baseline",
+      "title": "JTCoding Engineering Baseline",
       "category": "governance",
       "type": "reference",
       "status": "active",
       "owner": "overall design",
-      "summary": "Unified Qian, Matt-inspired documentation-as-code, and Karpathy engineering baseline for humans and Agents.",
+      "summary": "Unified JTCoding baseline for humans and Agents; former Qian, Matt-inspired, and Karpathy layers are internal sources, not separate project skills.",
       "sourcePrefixes": []
     },
     {
@@ -639,12 +643,12 @@
     },
     {
       "path": "docs/adr/ADR-0003-qian-systems-engineering-workflow.md",
-      "title": "ADR-0003: 钱学森 Skills",
+      "title": "ADR-0003: JTCoding / 钱学森 Systems Engineering Workflow",
       "category": "decisions",
       "type": "decision",
       "status": "accepted",
       "owner": "operator / overall design",
-      "summary": "Adopts the closed-loop systems-engineering workflow across all project work.",
+      "summary": "Adopts the closed-loop systems-engineering workflow now governed through JTCoding Skills across all project work.",
       "sourcePrefixes": []
     },
     {

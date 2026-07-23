@@ -34,6 +34,8 @@ reading order; only then follow the task-specific route.
 - [`docs/INDEX.md`](INDEX.md) is generated; run `pnpm docs:index` instead of editing it.
 - `pnpm docs:check` rejects missing registry entries, orphan documents, broken local links, invalid
   metadata, and a stale index.
+- Local link extraction is implemented as a linear scan in `scripts/docs/lib.mjs` so malformed or
+  long Markdown fragments cannot stall documentation checks.
 - `pnpm docs:impact -- --base <git-ref>` rejects source changes that do not update at least one
   mapped document.
 - [ADR-0002](adr/ADR-0002-documentation-as-code.md) makes this workflow a permanent engineering

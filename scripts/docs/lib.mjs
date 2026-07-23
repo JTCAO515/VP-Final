@@ -177,9 +177,22 @@ export function renderIndex(manifest, handoff) {
 
 export function extractLocalLinks(markdown) {
   const links = [];
-  const pattern = /\[[^\]]*\]\(([^)]+)\)/g;
-  for (const match of markdown.matchAll(pattern)) {
-    let target = match[1].trim();
+  let cursor = 0;
+
+  while (cursor < markdown.length) {
+    const labelEnd = markdown.indexOf("](", cursor);
+    if (labelEnd === -1) break;
+
+    const targetStart = labelEnd + 2;
+    const targetEnd = markdown.indexOf(")", targetStart);
+    if (targetEnd === -1) {
+      cursor = targetStart;
+      continue;
+    }
+
+    let target = markdown.slice(targetStart, targetEnd).trim();
+    cursor = targetEnd + 1;
+
     if (target.startsWith("<") && target.endsWith(">")) {
       target = target.slice(1, -1);
     }

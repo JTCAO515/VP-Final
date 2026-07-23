@@ -1,4 +1,4 @@
-# Karpathy Coding Discipline
+# JTCoding Focused Implementation Discipline
 
 Status: active
 Applies to: implementation, debugging, code review, and refactoring
@@ -6,9 +6,10 @@ Upstream: [multica-ai/andrej-karpathy-skills](https://github.com/multica-ai/andr
 Verified commit: `2c606141936f1eeef17fa3043a72095b4765b9c2`
 License declared by upstream Skill: MIT
 
-This document adapts the installed `karpathy-guidelines` Skill into enforceable VisePanda rules. It
-does not replace [钱学森 Skills](qian-systems-engineering.md): Karpathy discipline controls local code
-actions, while 钱学森 Skills controls objectives, interfaces, lifecycle, feedback, and correction.
+This document records the focused implementation layer now governed by
+[JTCoding Skills](qian-systems-engineering.md). It preserves the verified upstream lineage of the
+former `karpathy-guidelines` Skill, but that legacy Skill is no longer invoked separately for this
+repository.
 
 ## Normative Rules
 

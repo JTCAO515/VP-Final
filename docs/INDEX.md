@@ -9,12 +9,12 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 ## Current Handoff Snapshot
 
-- **Updated:** 2026-07-11 by Codex / Issue #112
+- **Updated:** 2026-07-23 by Codex / JTCoding Skills consolidation
 - **Base branch:** `main`
 - **Last fully verified commit:** `5946490`
 - **Current phase:** Phase 0 — production hardening
 - **Maturity:** Trusted demo skeleton; not yet a production-safe or billing-ready MVP.
-- **Last completed control action:** Merged PRs through #165 established Node 22, Supabase security, accepted ADR-0004 through ADR-0006, canonical Phase 0/1 governance, and the indexed operator-action/tutorial workflow.
+- **Last completed control action:** Configured Playwright-managed Chromium automation and consolidated the former Qian/Matt/Karpathy skill guidance under JTCoding Skills as the single current engineering baseline.
 
 ### Active Work
 
@@ -54,6 +54,10 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 - DOC-P0-02 and DOC-P0-03 merge evidence: PRs #162 and #163 accepted ADR-0005 and ADR-0006 after repository checks passed.
 - DOC-P0-05 merge evidence: PR #165 passed verify, docs, evals, database contracts, and Vercel previews; nine known external actions and the Chinese tutorial workflow are now indexed and mandatory.
 - P0-03 local and CI implementation evidence at 9eabe54: lint, typecheck, test, build, evals, docs, database contracts, and Vercel previews passed; mocked tests cover anonymous expiry/rotation, verified-user spoof resistance, login rejection/success, and logout. Live Supabase behavior is not claimed.
+- Browser automation configuration evidence on 2026-07-16: pnpm browser:install completed and pnpm test:browser passed 1 Chromium smoke test in tests/browser/chromium-smoke.spec.ts.
+- Browser automation re-verification on 2026-07-23: pnpm test:browser ran Playwright Chromium smoke and passed 1 test in 19.6s.
+- JTCoding Skills adoption evidence on 2026-07-23: .jtcoding-skills cloned locally, native Codex skill copied to ~/.codex/skills/jtcoding-skills, and AGENTS.md updated to treat JTCoding as the current name for the former 钱学森 Skills baseline.
+- JTCoding consolidation evidence on 2026-07-23: AGENTS.md, CONTEXT.md, README.md, methodology, constraints, governance baseline, manifest, and handoff now state that old Qian/Matt/Karpathy skills are internal/historical layers rather than separate project skills.
 
 ## Mandatory Markdown Reading Order
 
@@ -62,14 +66,14 @@ Issue, current branch/diff, and only the task-specific module/constraint/runbook
 
 1. [Canonical Context and Language](../CONTEXT.md) — Learn the product thesis, canonical language, relationships, and truth hierarchy.
 2. [Overall Design Baseline](architecture/top-level-design.md) — Understand mission, controlled subsystems, interface baselines, observations, and lifecycle gates.
-3. [钱学森 Skills](methodology/qian-systems-engineering.md) — Understand the composite Qian, Matt-inspired documentation, and Karpathy workflow plus D0-D3 correction model.
-4. [Composite Engineering Baseline](governance/composite-engineering-baseline.md) — See authority, precedence, reading order, document classes, implementation gate, verification, and handoff as one portable baseline.
+3. [JTCoding Skills Methodology](methodology/qian-systems-engineering.md) — Understand the JTCoding workflow, its internal systems/documentation/focused-coding layers, and the D0-D3 correction model.
+4. [JTCoding Engineering Baseline](governance/composite-engineering-baseline.md) — See authority, precedence, reading order, document classes, implementation gate, verification, and handoff as one portable baseline.
 5. [VisePanda V2 Frozen Product Baseline](planning/visepanda-v2-final-architecture.md) — Read the frozen product, commercial, architecture, roadmap, and anti-goal baseline.
 6. [VisePanda V2 Project Review — 2026-07-10](planning/visepanda-v2-project-review-2026-07-10.md) — Compare the frozen target with the latest evidence-based implementation audit.
 7. [Phase 0/1 Dependency Graph](governance/phase-0-1-dependency-graph.md) — Resolve the one canonical owner, dependencies, trigger gates, and historical migrations before taking any Issue.
 8. [Module Guide](modules/README.md) — Choose the module document that owns the assigned work and inspect its real maturity.
 9. [Constraint Guide](constraints/README.md) — Load the mandatory architecture, coding, business, permission, deployment, and iteration rules.
-10. [Karpathy Coding Discipline](constraints/karpathy-guidelines.md) — Apply explicit assumptions, minimum sufficient design, surgical diffs, and step-to-check verification during implementation.
+10. [JTCoding Focused Implementation Discipline](constraints/karpathy-guidelines.md) — Apply the JTCoding focused implementation rules: explicit assumptions, minimum sufficient design, surgical diffs, and step-to-check verification.
 11. [ADR Index](adr/README.md) — Check accepted decisions before proposing or implementing a direction change.
 12. [Runbook Index](runbooks/README.md) — Read the relevant operational procedure before deployment, migration, AI, knowledge, or Human Task work.
 13. [Operator Action Register](governance/operator-action-register.md) — Check unresolved third-party, secret, legal, DNS, deployment, and production-verification actions before claiming an external capability is live.
@@ -93,8 +97,8 @@ The reasoning and feedback system governing all VisePanda work.
 
 | Document | Type | Status | Owner | Purpose |
 | --- | --- | --- | --- | --- |
+| [JTCoding Skills Methodology](methodology/qian-systems-engineering.md) | methodology | active | overall design | Current single-entry JTCoding methodology for systems engineering, documentation-as-code, focused implementation, token efficiency, and evidence-first acceptance. |
 | [Methodology Guide](methodology/README.md) | reference | active | overall design | Entry point for the project engineering methodology and controls. |
-| [钱学森 Skills](methodology/qian-systems-engineering.md) | methodology | active | overall design | Software adaptation of systems engineering, feedback control, meta-synthesis, and lifecycle governance. |
 
 ## Architecture
 
@@ -150,9 +154,9 @@ Normative, testable rules that block merge or release when violated.
 | [Constraint Guide](constraints/README.md) | reference | active | overall design | Index and normative interpretation for project constraints. |
 | [Deployment Constraints](constraints/deployment.md) | constraint | active | platform | Environment, migration, health, observability, feature flag, and rollback gates. |
 | [Iteration Constraints](constraints/iteration.md) | constraint | active | overall design | Lifecycle, Issue, PR, documentation, eval, migration, and phase-trigger gates. |
-| [Karpathy Coding Discipline](constraints/karpathy-guidelines.md) | constraint | active | engineering | Mandatory assumption, simplicity, surgical-change, and goal-driven verification rules. |
+| [JTCoding Focused Implementation Discipline](constraints/karpathy-guidelines.md) | constraint | active | engineering | JTCoding implementation rules for assumptions, simplicity, surgical changes, and goal-driven verification. |
+| [JTCoding Skills Constraints](constraints/qian-systems-engineering.md) | constraint | active | overall design | Mandatory JTCoding systems, documentation, focused-implementation, and evidence gates. |
 | [Permission and Data Access Constraints](constraints/permissions.md) | constraint | active | security | Authentication, authorization, RLS, Ops, service-role, privacy, and retention rules. |
-| [钱学森 Skills Constraints](constraints/qian-systems-engineering.md) | constraint | active | overall design | Thirty-one mandatory systems, documentation, and focused-implementation rules with evidence gates. |
 
 ## Governance
 
@@ -162,12 +166,12 @@ How documents, Issues, pull requests, decisions, and lifecycle evidence are mana
 | --- | --- | --- | --- | --- |
 | [Change Classification and Sync Map](governance/change-classification.md) | reference | active | architecture | C0-C4 change classes, D0-D3 mapping, and code-to-document intent. |
 | [Claude Code Engineering Synchronization Prompt](governance/claude-code-sync-prompt.md) | reference | active | overall design | Portable prompt for synchronizing Claude Code with the full project engineering baseline. |
-| [Composite Engineering Baseline](governance/composite-engineering-baseline.md) | reference | active | overall design | Unified Qian, Matt-inspired documentation-as-code, and Karpathy engineering baseline for humans and Agents. |
 | [Documentation Templates](governance/document-templates.md) | reference | active | documentation governance | Templates for explanations, constraints, ADRs, runbooks, reviews, and retrospectives. |
 | [Documentation Workflow](governance/documentation-workflow.md) | constraint | active | documentation governance | Document classes, registry, code-sync loop, freshness, and emergency path. |
 | [Engineering Governance Guide](governance/README.md) | reference | active | documentation governance | Navigation for document and work governance. |
 | [Handoff Snapshot Workflow](governance/handoff-workflow.md) | constraint | active | overall design | Mandatory current-state, reading-order, verification, blocker, and next-action synchronization for every project change. |
 | [Issue and PR Workflow](governance/issue-pr-workflow.md) | constraint | active | overall design | Issue/PR lifecycle, merge gates, multi-Agent rules, and emergency fixes. |
+| [JTCoding Engineering Baseline](governance/composite-engineering-baseline.md) | reference | active | overall design | Unified JTCoding baseline for humans and Agents; former Qian, Matt-inspired, and Karpathy layers are internal sources, not separate project skills. |
 | [Operator Action Register](governance/operator-action-register.md) | constraint | active | operator / overall design | Authoritative status, placeholders, owners, external setup gates, verification, and rollback for operator-only actions. |
 | [Operator Action Tutorial Template](governance/operator-action-tutorial-template.md) | reference | active | operator / delivery agent | Beginner-friendly Chinese template for safely executing and verifying registered external actions without exposing secrets. |
 | [Phase 0/1 Dependency Graph](governance/phase-0-1-dependency-graph.md) | reference | active | overall design | Canonical Phase 0/1 Issue ownership, blockers, migration map, lifecycle gates, and backlog-validation procedure. |
@@ -181,7 +185,7 @@ Append-only records of accepted and superseded binding decisions.
 | [ADR Index](adr/README.md) | reference | active | architecture | Index and creation criteria for architecture decision records. |
 | [ADR-0001: Repository and V1 Disposition](adr/ADR-0001-repo-and-v1-disposition.md) | decision | accepted | operator | Establishes VP-Final as the V2 repository and separates V1 wind-down. |
 | [ADR-0002: Documentation as Code](adr/ADR-0002-documentation-as-code.md) | decision | accepted | overall design | Makes registry, index, link, freshness, and impact checks permanent. |
-| [ADR-0003: 钱学森 Skills](adr/ADR-0003-qian-systems-engineering-workflow.md) | decision | accepted | operator / overall design | Adopts the closed-loop systems-engineering workflow across all project work. |
+| [ADR-0003: JTCoding / 钱学森 Systems Engineering Workflow](adr/ADR-0003-qian-systems-engineering-workflow.md) | decision | accepted | operator / overall design | Adopts the closed-loop systems-engineering workflow now governed through JTCoding Skills across all project work. |
 | [ADR-0004: Identity and Trip Ownership Security](adr/ADR-0004-identity-trip-ownership-security.md) | decision | accepted | security / architecture | Freezes server-verified identity, exclusive Trip ownership, read-only sharing, and optimistic concurrency before public persistence. |
 | [ADR-0005: Runtime Modes and Production Adapter Ownership](adr/ADR-0005-runtime-modes-and-production-adapter-ownership.md) | decision | accepted | architecture / platform | Freezes explicit modes, durable production ownership, truthful health, and the prohibition on silent memory fallback. |
 | [ADR-0006: Knowledge Evidence and Index Quality](adr/ADR-0006-knowledge-evidence-and-index-quality.md) | decision | accepted | knowledge / architecture | Freezes evidence eligibility, citations, gap minimization, and quality-gated SEO indexing. |
