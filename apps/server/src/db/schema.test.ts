@@ -82,6 +82,7 @@ describe("database schema", () => {
     expect(getTableConfig(llmCallCosts).indexes.map((index) => index.config.name)).toContain(
       "llm_call_costs_agent_attempt_unique",
     );
+    expect(getTableConfig(llmCallCosts).foreignKeys).toHaveLength(1);
   });
 
   it("maps server-only completion job records", () => {

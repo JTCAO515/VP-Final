@@ -87,10 +87,12 @@ usage is zero rather than estimated. The default retention windows are conversat
 400 days, and event 180 days, with separate positive-integer server env overrides. Internal views
 expose only aggregate cost, volume, and fallback metrics. The eight Copilot product-event actions
 require an explicit event expiry.
-The cost table currently has a non-null cascading Agent Run foreign key while Agent Runs expire after
-30 days. This conflicts with the intended 400-day cost deadline and remains an explicit #248 D2
-architecture blocker; production must not claim 400-day reconciliation retention until a forward
-contract resolves the parent/child lifecycle without silently weakening ADR-0007 or #250.
+Cost rows keep an immutable, non-null Agent Run UUID, but their lifecycle is independent of the
+30-day trace parent. A database trigger requires the Agent Run to exist when a cost row is inserted
+and rejects later changes to the correlation id. After trace purge, the retained UUID is an expected
+historical dangling reference rather than corruption; the cost row remains until its own deadline.
+This preserves ADR-0007 privacy minimization without shortening the financial reconciliation window.
+See [ADR-0010](../adr/ADR-0010-copilot-cost-accounting-contract.md).
 Events accept an authenticated identity without requiring a fabricated anonymous id, while still
 rejecting rows with no trusted identity.
 All three record classes use the restricted `internal.purge_expired_copilot_observability()` routine
