@@ -163,7 +163,6 @@ export async function POST(request: Request) {
       );
     }
     const conflict = findTripConflict(error);
-    if (!conflict) console.warn("copilot_unhandled_failure_code", summarizeErrorCodes(error));
     return applyIdentityCookies(
       NextResponse.json(
         {
@@ -180,26 +179,6 @@ export async function POST(request: Request) {
       cookieResponse,
     );
   }
-}
-
-function summarizeErrorCodes(error: unknown): Array<Record<string, string>> {
-  const summary: Array<Record<string, string>> = [];
-  let current: unknown = error;
-  while (current && typeof current === "object" && summary.length < 4) {
-    const candidate = current as {
-      cause?: unknown;
-      code?: unknown;
-      name?: unknown;
-      severity?: unknown;
-    };
-    summary.push({
-      ...(typeof candidate.name === "string" ? { name: candidate.name } : {}),
-      ...(typeof candidate.code === "string" ? { code: candidate.code } : {}),
-      ...(typeof candidate.severity === "string" ? { severity: candidate.severity } : {}),
-    });
-    current = candidate.cause;
-  }
-  return summary;
 }
 
 function findError<T extends Error>(
