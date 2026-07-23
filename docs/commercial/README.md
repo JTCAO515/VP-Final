@@ -21,6 +21,13 @@ not authorize payment collection, an SLA guarantee, emergency support, or third-
 Future task, payment, and public-copy work must implement that policy rather than infer a service
 promise from the existing placeholder UI.
 
+## Public Legal and Trust Baseline
+
+The [Phase 0 public legal and trust baseline](phase-0-public-legal-baseline.md) binds the operator
+facts, privacy request process, affiliate disclosure, Human Help limits, emergency boundary, and
+prohibited public claims used by the five public trust pages. Changes to those facts or promises
+require an explicit operator decision and independent review; UI copy cannot widen them on its own.
+
 ## Payment Routing Notes
 
 - Human Task is a real-world service. Stripe external payment is expected once merchant-of-record

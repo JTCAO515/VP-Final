@@ -46,11 +46,20 @@ export function SiteFooter() {
         <b>VisePanda</b>
       </a>
       <p>Practical guidance for confident travel in China.</p>
-      <nav aria-label="Footer navigation">
-        <a href="/guides/payment">Payment guide</a>
-        <a href="/human-help">Human Help</a>
-        <a href="/account">Account</a>
-      </nav>
+      <div className="siteFooterLinks">
+        <nav aria-label="Product links">
+          <a href="/guides/payment">Payment guide</a>
+          <a href="/human-help">Human Help</a>
+          <a href="/account">Account</a>
+        </nav>
+        <nav aria-label="Trust and legal links">
+          <a href="/privacy">Privacy</a>
+          <a href="/terms">Terms</a>
+          <a href="/affiliate-disclosure">Affiliate disclosure</a>
+          <a href="/human-help-disclaimer">Human Help limits</a>
+          <a href="/emergency-disclaimer">Emergency</a>
+        </nav>
+      </div>
     </footer>
   );
 }
