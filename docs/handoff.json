@@ -1,86 +1,85 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-07-21",
-  "updatedBy": "Codex / serialized post-tiered-merge-governance and Phase 0/1 audit",
+  "updatedAt": "2026-07-24",
+  "updatedBy": "Codex / serialized Phase 0 reconciliation after PRs #266, #270, #271, and #272",
   "baseBranch": "main",
-  "lastVerifiedCommit": "3cc9a98 after PR #264 merged; GitHub verify, docs, evals, Database contracts, and Vercel Preview Comments passed, and the rebased documentation control state passed the full local gate",
+  "lastVerifiedCommit": "aca5fb2867ce946afeadfbcb014dfea59c4ae962 after PR #272 merged; GitHub verify, docs, evals, Database contracts, and both Vercel previews passed",
   "currentPhase": "Phase 0 — production hardening",
-  "maturity": "Real-provider Copilot, durable two-stage Trip completion, truthful product states, anonymous-turn and trusted-IP guards, controlled-preview Human Task operations, and private evidence review are merged. Tiered merge governance and a reconciled canonical Phase 0/1 dependency graph are now active. Public fact provenance is review-pending, not merged; the product is not yet production-Redis verified, information-architecture unified, billing-ready, or production-release complete.",
-  "lastCompleted": "PR #265 established risk-tiered merge authority without weakening CI, base-main, no-stacked, or serialized-handoff controls. PR #264 then reconciled the canonical dependency graph to merged Phase 0 evidence and removed stale control states. Both were Tier A governance changes, passed their real GitHub checks, and merged to main.",
+  "maturity": "Privacy-safe public POI provenance, reconciled operator-action evidence, the cache-aware LLM cost contract, and four-provider cache-usage normalization are merged. Real Copilot turn/cost/event persistence and the legal/trust routes are independently review-pending, not mainline capabilities. Supavisor compatibility is implemented in a draft PR, but production database authentication must be re-verified after the operator's new DATABASE_URL deployment. The product is not yet information-architecture unified, billing-ready, or production-release complete.",
+  "lastCompleted": "PR #272 normalized cached-input usage for all four configured providers after PR #271 froze the cache-aware pricing and ledger contract. PR #266 merged privacy-safe public POI provenance, and PR #270 reconciled the operator-action register with observed external configuration. Their reported GitHub checks passed; none of these merges waives outstanding production evidence or phase triggers.",
   "activeWork": [
     {
-      "ref": "PR #266 / Issue #245 / P1-01c",
-      "title": "Expose privacy-safe public POI fact provenance",
-      "state": "The base-main Tier B PR is open, clean, non-draft, and all reported GitHub checks are green. It renders only eligible source class, label, and verification date, with no raw locator, evidence, reviewer, or private metadata. It is not merged and therefore is not mainline capability.",
+      "ref": "PR #273 / Issue #248 / 248c",
+      "title": "Persist real Copilot turns, per-attempt costs, and product events",
+      "state": "The base-main Tier B/D2 PR is open, clean, non-draft, and its reported GitHub verify, docs, evals, Database contracts, and Vercel checks are green. It includes the architecture-frozen cost-ledger lifecycle correction. It is not merged and therefore is not mainline capability.",
       "owner": "Architecture reviewer",
-      "next": "Independently review the privacy/evidence boundary and decide whether reviewed merchant evidence maps to operator_verified or requires a future schema-first source class. Merge or request changes; Codex must not self-merge this D2/Tier B PR."
+      "next": "Independently review the conversation/PII, cost-ledger, retention, redaction, and lifecycle boundaries. Merge or request changes; Codex must not self-merge. Start 248d only after this PR lands on main."
     },
     {
-      "ref": "Issue #120 / P0-12",
-      "title": "Unify the Web shell and mobile Copilot information architecture",
-      "state": "P0-10 and P0-11 are complete, but the acceptance requires Privacy, Terms, and disclosure routes. #75 is still blocked on an accountable operator/legal content baseline, so GitHub metadata is status:blocked and no implementation branch is active.",
-      "owner": "Operator/legal reviewer for #75; Codex after acceptance",
-      "next": "Accept and record #75's entity, privacy, affiliate, Human Help, and emergency wording baseline; implement its routes; then resume P0-12 without inventing legal promises or linking to 404 pages."
+      "ref": "PR #274 / Issue #75 / V2-62",
+      "title": "Publish Phase 0 legal and trust pages",
+      "state": "The operator accepted the dated D3 content baseline. The base-main Tier B/D3 PR is open, clean, non-draft, and its reported GitHub verify, docs, evals, Database contracts, and Vercel checks are green. The routes are not merged and therefore are not public mainline promises.",
+      "owner": "Architecture/legal reviewer",
+      "next": "Review the public entity, privacy, affiliate, Human Help, and emergency language against the accepted baseline. Merge or request changes; after merge, re-evaluate P0-12 without inventing payment or retention promises."
     },
     {
-      "ref": "Issue #185 / DEMO-01c",
-      "title": "Demo cost guard and rate-limit controls",
-      "state": "PRs #258 and #260 closed #246 and #247, so the anonymous-turn and trusted-IP code guards are merged. OA-012/OA-013 still gate deployed Redis evidence. #248 runtime persistence remains D2/Tier B blocked because the frozen schema cannot truthfully represent provider cached-input pricing and the router can collapse missing pricing to USD 0; #249 depends on #248.",
-      "owner": "Operator for OA-012/OA-013; architecture for #248 pricing freeze; Codex after acceptance",
-      "next": "Verify both Redis guards in Vercel without exposing secrets. Architecture must either extend the cost contract with cached-input units, pricing basis, and provenance or explicitly accept a conservative uncached ceiling. Do not write fake zero-cost rows or start #249 before that decision."
+      "ref": "PR #276 / Issue #275 / P0-04d / OA-004",
+      "title": "Make Postgres.js compatible with Supavisor transaction mode",
+      "state": "The base-main Tier B/D2 draft PR is clean and all reported GitHub checks are green. A sanitized temporary Preview probe previously reached the first database query and returned PostgreSQL 28P01 authentication failure; the probe was fully removed. The operator reports that a fresh DATABASE_URL is now configured in both Vercel projects, but no post-update redeploy/runtime result has been accepted yet.",
+      "owner": "Codex for sanitized redeploy smoke; architecture reviewer after evidence",
+      "next": "Build or redeploy a fresh Web Preview from PR #276 and repeat the protected Copilot/database smoke. If authentication passes, record sanitized migration/RLS/runtime evidence, mark the PR ready, and request independent review. If 28P01 persists, keep OA-004 blocked without exposing the URI or password."
+    },
+    {
+      "ref": "Issue #185 / #249 / 248d",
+      "title": "Finish the demo cost guard and read-only operations summary",
+      "state": "Anonymous-turn and trusted-IP guards are merged. OA-012/OA-013 behavior verification and the #248 runtime persistence chain remain incomplete. #249 must not consume unmerged or unaudited cost records.",
+      "owner": "Codex after #273 merge; operator for deployed Redis evidence",
+      "next": "After #273 merges, implement 248d views/ADR/manifest from current main, then reassess #249. Complete OA-012/OA-013 with sanitized deployed evidence rather than configuration-name evidence alone."
     }
   ],
   "nextActions": [
     {
-      "priority": "P1",
-      "action": "Complete independent Tier B review of PR #266 and resolve the merchant-source wording mismatch in #245.",
-      "exitCriteria": "The reviewer accepts or requests changes to the public provenance projection and records whether reviewed merchant evidence maps to operator_verified or needs a separate schema-first contract."
+      "priority": "P0",
+      "action": "Re-run PR #276 against a fresh Vercel deployment after the operator's DATABASE_URL update.",
+      "exitCriteria": "A sanitized protected Preview smoke authenticates to the approved database and reaches the expected application path, or records the exact non-secret database error that remains. OA-004 stays open until migrations, RLS, durability, and retention are also evidenced."
     },
     {
       "priority": "P0",
-      "action": "Resolve #75's D3 operator/legal content decision before resuming P0-12.",
-      "exitCriteria": "The accountable entity/controller/contact, effective date, privacy categories/processors/retention, affiliate disclosure, Human Help limits, and emergency wording are accepted and versioned without payment promises."
+      "action": "Complete independent Tier B review of PR #273.",
+      "exitCriteria": "The reviewer accepts or requests changes to the redaction, retention, write-failure, exact cost, and ledger-lifecycle boundaries; only a merged PR unlocks 248d."
     },
     {
       "priority": "P0",
-      "action": "Obtain architecture acceptance for #248 cached-input pricing, pricing snapshots, and missing-pricing behavior.",
-      "exitCriteria": "Token units, cache-hit price, pricing basis, provenance, effective dates, fallback attribution, and fail-honest behavior are frozen without treating unknown price as USD 0."
+      "action": "Complete independent D3/Tier B review of PR #274.",
+      "exitCriteria": "The reviewer confirms every public route matches the operator-accepted baseline and does not promise payment, guaranteed SLA, emergency response, self-service deletion, or a precise unverified cost-retention period."
     },
     {
       "priority": "P0",
-      "action": "Complete OA-012 and OA-013 deployed Redis verification without weakening either fail-closed guard.",
-      "exitCriteria": "Sanitized Vercel evidence shows three-success/one-registration-wall behavior and a trusted-address 429 with matching Retry-After; Redis contains only hashed identities with the documented TTLs and no secret or raw identifier."
+      "action": "Finish the serialized #248 chain and then implement #249 from current main.",
+      "exitCriteria": "248d is merged after #273, read-only cached-token/cost health views are verified, and #249 consumes audited records without exposing costs to end users or inventing a BI system."
     }
   ],
   "blockers": [
-    "PR #266 / #245 is Tier B review-pending. Its public projection is green but not merged; the Issue's merchant-source example does not exist in the frozen source-class contract, so architecture must accept operator_verified mapping or require a schema-first follow-up.",
-    "P0-12 is D2-blocked by #75: the required Privacy, Terms, affiliate, Human Help, and emergency routes do not exist, and their accountable operator/legal wording is not accepted. Do not invent legal copy or add dead links.",
-    "#248 runtime writer is D2/Tier B blocked until cached-input units, provider pricing snapshot provenance, pricing basis, and missing-pricing behavior are accepted; the current router can report USD 0 when prices are absent, which is not auditable cost truth.",
-    "#246 and #247 code are merged, but production Redis evidence awaits OA-012/OA-013 configuration. Until then deployed Copilot requests fail honestly when either guard is unavailable; do not claim either limit is production-verified.",
-    "#249 has its #247 trusted-IP prerequisite, but remains D2-blocked by #248 because an Ops cost summary and durable rate-limit/product events cannot be truthful before runtime persistence exists.",
-    "V2-38 #59 is D2-blocked until architecture accepts an evidence-eligibility matrix in place of the stale raw 200-page target; downstream SEO Issues #84 through #86 must not generate filler pages.",
-    "V2-59 #72 needs architecture to decide whether PR #195 plus typed 503 satisfies provider self-check or whether degraded public health belongs to P0-20; V2-61 #74 remains blocked until P0-20 freezes safety assertions.",
-    "P0-03 and P0-04 code are merged, but real Supabase production evidence still awaits OA-001 through OA-004 before full production readiness can be claimed.",
-    "Ops RBAC code is merged; real first-admin and deployed role evidence awaits OA-010.",
-    "P0-17 remains blocked by the accepted payment/legal decision gates and OA-006; no real paid service is claimed.",
-    "Phase 1/2/3 functional rollout remains trigger-gated even where tooling or schema preparation has merged."
+    "PR #273 / #248c is Tier B review-pending. Its green checks are implementation evidence, not mainline or production-database evidence; 248d and #249 remain serially blocked until it merges.",
+    "PR #274 / #75 is D3/Tier B review-pending. P0-12 must not assume the legal/trust routes exist until that PR merges.",
+    "OA-004 remains open. The prior fresh Preview failed database authentication with PostgreSQL 28P01. The operator reports a new DATABASE_URL is configured, but a fresh deployment and sanitized runtime smoke are still required before the credential correction is accepted; migration, RLS, durability, backup, and retention evidence follow afterward.",
+    "#246 and #247 code are merged, but production Redis behavior still awaits OA-012/OA-013 acceptance. Setting names or local Redis tests do not prove deployed three-turn and trusted-IP behavior.",
+    "V2-38 #59 remains D2-blocked until architecture accepts an evidence-eligibility matrix instead of a raw page-count target; downstream SEO Issues #84 through #86 must not generate filler pages.",
+    "V2-59 #72 needs architecture to decide the remaining provider-health boundary; V2-61 #74 remains blocked until P0-20 freezes its safety assertions.",
+    "Ops RBAC code is merged, but real first-admin and deployed role evidence awaits OA-010.",
+    "P0-17 remains blocked by the accepted payment/legal decision gates and deferred OA-006; no real paid service is claimed.",
+    "Phase 1/2/3 functional rollout remains trigger-gated even where tooling or schema preparation has merged. No Phase 4 Issue currently exists."
   ],
   "verification": [
-    "PR #264 merged at 3cc9a98 after GitHub verify, docs, evals, Database contracts, and Vercel Preview Comments passed. The rebased documentation-only control change also passed local typecheck, lint, build, test, evals, docs:check, and docs:impact after repairing its formatting failure. It reconciles dependency metadata only and does not claim new runtime behavior.",
-    "PR #265 merged at e6837b2 after GitHub verify, docs, evals, Database contracts, and Vercel Preview Comments passed, with the full local gate green. It permits tightly checked Tier A self-merge only when architecture is unavailable; Tier B remains independently reviewed, CI is unchanged, base must remain main, stacked PRs remain forbidden, and serialized handoff rules remain active.",
-    "PR #266 is open and not merged. On its current base-main head, GitHub verify, docs, evals, Database contracts, and Vercel Preview Comments are green; Supabase Preview is skipped by integration. Local full gates, focused projection tests, and explicit WebKit acceptance at 375/768/1280 passed, with no horizontal overflow or raw source locator/evidence leakage. These are review artifacts, not mainline capability evidence.",
-    "PR #260 merged at 8e07982 after verify, docs, evals, Database contracts, and Vercel Preview Comments passed. Full local typecheck, lint, build, test, evals, and documentation gates passed. Route tests proved spoofed x-forwarded-for cannot bypass Vercel's trusted-header identity and missing trust/config fails before model work. Redis 7.4 exercised the production sliding-window Lua contract through the tenth allowed request, eleventh-request 60-second block, post-window recovery, HMAC-only sorted-set key shape, and one-hour TTL; this is local protocol evidence only, not production Upstash evidence. WebKit at 375/768/1280 verified the honest 429 state and mobile scroll correction with no horizontal overflow; the HTTP response was visually intercepted and is not backend evidence.",
-    "PR #258 merged at 4026958 after verify, docs, evals, Database contracts, and both Vercel deployments passed. Full local typecheck, lint, build, test, evals, and documentation gates passed. WebKit verified three successful anonymous turns, a fourth-request 403 before model execution, a usable registration path, and no 375px overflow. Redis 7.4 exercised the production Lua reserve/complete/release contract, including concurrent capacity, idempotent completion, completed-limit behavior, hashed-key fields, and a 30-day TTL; this is local protocol evidence only, not production Upstash evidence.",
-    "PR #257 merged at a7373d4 after verify, docs, evals, Database contracts, and Vercel Preview Comments passed. It completed P0-16 with permission-bound append-only terminal-task evidence, email/phone redaction, inherited task retention/deletion, identifier-only audit, and sanitized open-gap proposals that cannot auto-publish facts. Local Postgres integration passed 10 tests; 11 pgTAP files passed 140 tests; browser evidence verified redaction, open-gap review state, no 375px overflow, and no console errors. The earlier serialized snapshot missed this already-merged PR; this reconciliation corrects that D2 observation rather than reimplementing the feature.",
-    "PR #255 merged at 9a8bd34 after verify, docs, evals, Database contracts, and both Vercel deployments passed. The CI database suite passed 17/17 after removing an invalid cross-test audit-table ordering assumption. Local Postgres verified six Human Task integration cases; browser acceptance verified queue-to-detail, note persistence, requested-to-triaged history, zero console errors, and no 375px overflow.",
-    "PR #253 merged at c036239 after verify, docs, evals, Database contracts, both Vercel deployments, and local typecheck/lint/test/build/docs/evals passed. Browser acceptance at 375/768/1280 found no horizontal overflow; the editable example-question path and honest local 503 retry state were verified.",
-    "PR #251 merged at ba3401d after verify, docs, evals, Database contracts, and Vercel Preview Comments passed. It completed owner-scoped P0-10 Web resume without creating a second assistant bubble.",
-    "PR #242 merged at 7fc8e07 after verify, docs, evals, Database contracts, and Vercel Preview Comments passed. V2-75 is closed; this tooling merge does not waive Phase 1 rollout triggers.",
-    "PR #250 merged at a688c7b after verify, docs, evals, Database contracts, and Vercel Preview Comments passed. It freezes #248 schemas only; no runtime persistence or complete cost evidence is claimed.",
-    "PRs #229, #240, and #251 completed the durable P0-10 provenance, queue/callback/retry, and Web resume sequence; parent Issue #118 is closed.",
-    "PRs #232 and #241 completed P0-13 durable Human Task intake and P0-14 transition enforcement, which PR #255 now consumes for authorized controlled-preview triage.",
-    "P0-07b production smoke previously returned typed real-provider Copilot responses. #248 remains responsible for the expanded auditable conversation, product-event, and per-attempt cost records.",
-    "GitHub metadata audit on 2026-07-21 found no open Issue carrying status:ready. #120, #248, #249, #59, #72, #74, and their downstream controls remain at explicit blockers; no trigger-gated Phase 2/3 implementation was started."
+    "PR #266 merged at b437f356fe863aec289b84586966f1fb4082babb. GitHub verify, docs, evals, Database contracts, Vercel Preview Comments, and both Vercel deployments reported success; Supabase Preview was skipped. This establishes the reviewed public provenance projection, not broad merchant-source expansion.",
+    "PR #270 merged at 96d19fd6fe0fe203745cd52c0458826567d20a12. GitHub verify, docs, evals, Database contracts, Vercel Preview Comments, and both Vercel deployments reported success; Supabase Preview was skipped. Configuration-name evidence remains distinct from behavioral acceptance.",
+    "PR #271 merged at 05bff5bf9664d347ae4e11d354beae1d7807143c. GitHub verify, docs, evals, Database contracts, Vercel Preview Comments, and both Vercel deployments reported success; Supabase Preview was skipped. It freezes the cache-aware pricing and cost-ledger contract only.",
+    "PR #272 merged at aca5fb2867ce946afeadfbcb014dfea59c4ae962. GitHub verify, docs, evals, Database contracts, Vercel Preview Comments, and both Vercel deployments reported success; Supabase Preview was skipped. Its four provider mappings are contract-fixture evidence; none is represented as retained production-provider output.",
+    "PR #273 is open, clean, non-draft, and unreviewed. On head ed604b326b48c7e6be667efb33d609401d2cf581, GitHub verify, docs, evals, Database contracts, Vercel Preview Comments, and both Vercel deployments report success; Supabase Preview is skipped. These are review artifacts, not mainline or production persistence evidence.",
+    "PR #274 is open, clean, non-draft, and unreviewed. On head 1b6605c143150718d16984e248c46ea72b7084f4, GitHub verify, docs, evals, Database contracts, Vercel Preview Comments, and both Vercel deployments report success; Supabase Preview is skipped. Public legal routes remain unmerged.",
+    "PR #276 is a clean draft on head 8a09e90833f35fe89cdc83f96b1d8082d12e78cc with reported GitHub verify, docs, evals, Database contracts, Vercel Preview Comments, and both Vercel deployments green; Supabase Preview is skipped. The previous protected Preview probe reached PostgreSQL and returned 28P01. The diagnostic was reverted, and no connection string, credential, cookie, signature, key, or PII is retained in the final diff.",
+    "The operator reported on 2026-07-24 that a new DATABASE_URL is configured in Vercel. This is a configuration assertion pending a fresh deployment and sanitized runtime observation; it is not yet OA-004 completion evidence.",
+    "The Phase 2/3/4 trigger audit remains unchanged: no repository or runtime evidence satisfies the WAU, paid Human Task, qualified-request, legal-entity, or matched-order thresholds, so no trigger-gated implementation has started."
   ],
   "readingOrder": [
     {
