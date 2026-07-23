@@ -4,7 +4,7 @@ import * as schema from "./schema.js";
 
 export function createDb(connectionString = process.env.DATABASE_URL) {
   if (!connectionString) throw new Error("DATABASE_URL is required");
-  return drizzle(postgres(connectionString), { schema });
+  return drizzle(postgres(connectionString, { prepare: false }), { schema });
 }
 
 export type Db = ReturnType<typeof createDb>;

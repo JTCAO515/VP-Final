@@ -27,6 +27,8 @@ modules yet.
 - Routers validate transport input and call services.
 - Service interfaces are defined inside their owning module.
 - `src/db` contains Drizzle adapters for implemented durable paths.
+- The shared Postgres.js client disables prepared statements so Vercel serverless traffic remains
+  compatible with the approved Supavisor transaction-mode connection.
 - In-memory services support tests and explicit demos only.
 - Runtime dependencies are injected through `ServerContext` or a caller factory.
 - `@visepanda/app-server/runtime` owns explicit mode parsing, database capability metadata, and the
@@ -144,6 +146,9 @@ distinguish its own previous partial effect from a later unrelated Trip edit.
 - Existing Trip persistence receives only a validated Patch plus trusted identity, expected version,
   and event source; creation receives the initial validated Trip.
 - A module may not import another module's tables.
+- The production database client MUST keep prepared statements disabled while OA-004 uses Supavisor
+  transaction mode; changing pooler mode or this client option requires a new reviewed runtime
+  compatibility decision and deployed evidence.
 - Production configuration may not silently select an in-memory adapter.
 - Routers MUST NOT import a memory service factory or select an adapter. Tests and composition roots
   inject services explicitly; an omitted optional capability fails closed.
