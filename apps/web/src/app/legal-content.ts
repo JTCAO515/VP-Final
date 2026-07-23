@@ -1,6 +1,8 @@
 export const LEGAL_EFFECTIVE_DATE = "July 24, 2026";
 export const LEGAL_CONTACT_EMAIL = "admin@go2china.space";
 
+// Keep public trust copy in this typed source so every legal route uses the same accepted baseline.
+
 export type LegalDocumentId = "privacy" | "terms" | "affiliate" | "human-help" | "emergency";
 
 type LegalLink = Readonly<{
