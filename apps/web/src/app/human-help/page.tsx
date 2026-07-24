@@ -131,6 +131,10 @@ export default function HumanHelpPage() {
             account access support. Submission does not guarantee a reply, booking, price, or
             completion.
           </p>
+          <nav aria-label="Human Help policies" className="helpPolicyLinks">
+            <a href="/human-help-disclaimer">Read the full service limits</a>
+            <a href="/emergency-disclaimer">Emergency guidance</a>
+          </nav>
           {task ? (
             <div className="confirmation">
               <b>Request received</b>

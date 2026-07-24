@@ -18,6 +18,11 @@ the outbound gateway.
 | `/[city]/[poi]`                  | Programmatic POI page                                                    |
 | `/human-help`                    | Human Task request surface                                               |
 | `/account`                       | Server-verified traveler session and email/password registration/sign-in |
+| `/privacy`                       | Public Privacy Policy                                                    |
+| `/terms`                         | Public Terms of Use                                                      |
+| `/affiliate-disclosure`          | Public affiliate relationship disclosure                                 |
+| `/human-help-disclaimer`         | Full Human Help controlled-preview limits                                |
+| `/emergency-disclaimer`          | Official emergency-channel guidance and product limits                   |
 | `/share/trips/[token]`           | Public read-only Trip share                                              |
 | `/outbound`                      | Validated partner redirect gateway                                       |
 | `/api/copilot`                   | First-pass Copilot request                                               |
@@ -167,6 +172,16 @@ and truthful; retries are offered only for retryable jobs within the server-owne
 - Responsive behavior is verified at 375, 768, 1280, and 1440 pixel widths.
 - At narrow widths, primary navigation uses four equal tracks and prompt cards wrap their text; no
   Copilot element may force horizontal page scrolling.
+
+## Public Trust and Legal Pages
+
+Every public route uses the shared footer, which links the Privacy Policy, Terms of Use, Affiliate
+Disclosure, Human Help Disclaimer, and Emergency Disclaimer. Human Help also links its service
+limits and emergency guidance at the point where a traveler submits a request. Public copy follows
+the accepted [Phase 0 legal and trust baseline](../commercial/phase-0-public-legal-baseline.md): it
+does not promise a self-service deletion control, a precise unverified retention period, payment,
+an SLA, emergency response, or third-party fulfillment. A future commercial action must place an
+affiliate disclosure before or adjacent to the action in addition to keeping the footer link.
 
 Explore reads POIs through the runtime-owned KnowledgeService. Deployed modes therefore use the
 durable Postgres adapter, while only explicit `local-demo` may render the labelled seed dataset.

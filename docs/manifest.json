@@ -906,6 +906,24 @@
       ]
     },
     {
+      "path": "docs/commercial/phase-0-public-legal-baseline.md",
+      "title": "Phase 0 Public Legal and Trust Baseline",
+      "category": "business",
+      "type": "constraint",
+      "status": "accepted",
+      "owner": "operator / compliance",
+      "summary": "Approved operator facts, privacy request process, affiliate disclosure, Human Help limits, emergency boundary, and prohibited public claims for Phase 0.",
+      "sourcePrefixes": [
+        "apps/web/src/app/legal-content.ts",
+        "apps/web/src/app/legal-page.tsx",
+        "apps/web/src/app/privacy/",
+        "apps/web/src/app/terms/",
+        "apps/web/src/app/affiliate-disclosure/",
+        "apps/web/src/app/human-help-disclaimer/",
+        "apps/web/src/app/emergency-disclaimer/"
+      ]
+    },
+    {
       "path": "docs/compliance/README.md",
       "title": "Compliance Notes",
       "category": "business",
