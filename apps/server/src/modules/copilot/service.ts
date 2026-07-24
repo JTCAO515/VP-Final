@@ -11,6 +11,10 @@ import {
 import { z } from "zod";
 import { createHash } from "node:crypto";
 import type { KnowledgeService } from "../knowledge/service.js";
+import {
+  opaqueCopilotSessionId,
+  redactCopilotConversation,
+} from "../observability/copilotPersistence.js";
 import type { AgentAttemptTrace, AgentTraceService } from "../trace/service.js";
 import { normalizeAgentFailure } from "../trace/service.js";
 import type { TripIdentity, VersionedTripService } from "../trip/versionedService.js";
@@ -58,6 +62,13 @@ export type GeneratedEnvelope = {
   candidate: unknown;
   attempts?: AgentAttemptTrace[];
 };
+
+class CopilotEnvelopeValidationError extends Error {
+  constructor(readonly attempts: AgentAttemptTrace[]) {
+    super("Copilot envelope validation failed.");
+    this.name = "CopilotEnvelopeValidationError";
+  }
+}
 
 type GenerateEnvelope =
   | ((request: CopilotGenerationRequest) => Promise<unknown | GeneratedEnvelope>)
@@ -174,6 +185,12 @@ export function createCopilotPipeline({
             appliedPatchCount: envelope.tripActions.length,
           },
         });
+        const conversation = prepareConversationTraceSafely({
+          identity,
+          userMessage: parsedInput.message,
+          assistantEnvelope: result.envelope,
+          cityIntent: detectCity(parsedInput.message) ?? null,
+        });
         await recordTraceSafely(traceService, {
           id: runId,
           identity,
@@ -186,10 +203,17 @@ export function createCopilotPipeline({
           attempts,
           validationStatus: "passed",
           repairCount,
+          ...(conversation ? { conversation } : {}),
         });
         return result;
       } catch (error) {
         attempts = [...attempts, ...attemptsFromFailure(error)];
+        const conversation = prepareConversationTraceSafely({
+          identity,
+          userMessage: parsedInput.message,
+          assistantEnvelope: null,
+          cityIntent: detectCity(parsedInput.message) ?? null,
+        });
         await recordTraceSafely(traceService, {
           id: runId,
           identity,
@@ -202,6 +226,7 @@ export function createCopilotPipeline({
           validationStatus: "failed",
           repairCount,
           failureClass: normalizeAgentFailure(error),
+          ...(conversation ? { conversation } : {}),
         });
         throw error;
       }
@@ -217,8 +242,35 @@ async function recordTraceSafely(
   try {
     await traceService.recordRun(input);
   } catch {
-    // Observability must never change the user-visible Copilot result.
+    reportObservabilityFailure();
   }
+}
+
+function prepareConversationTraceSafely(input: {
+  identity: TripIdentity;
+  userMessage: string;
+  assistantEnvelope: CopilotEnvelope | null;
+  cityIntent: string | null;
+}): NonNullable<Parameters<AgentTraceService["recordRun"]>[0]["conversation"]> | undefined {
+  try {
+    const redacted = redactCopilotConversation(input.userMessage, input.assistantEnvelope);
+    return {
+      sessionId: opaqueCopilotSessionId(input.identity),
+      userMessage: redacted.userMessage,
+      assistantEnvelope: redacted.assistantEnvelope,
+      cityIntent: input.cityIntent,
+      redactionClasses: redacted.redactionClasses,
+    };
+  } catch {
+    reportObservabilityFailure();
+    return undefined;
+  }
+}
+
+function reportObservabilityFailure(): void {
+  console.warn("copilot_observability_write_failed", {
+    failureClass: "persistence_error",
+  });
 }
 
 function normalizeIntentDecision(
@@ -234,7 +286,6 @@ function parseGeneratedEnvelope(value: unknown): {
 } {
   const generated = isGeneratedEnvelope(value) ? value : { candidate: value };
   const candidates = repairCandidates(generated.candidate);
-  let lastError: unknown;
   for (const [index, candidate] of candidates.entries()) {
     try {
       return {
@@ -242,11 +293,9 @@ function parseGeneratedEnvelope(value: unknown): {
         attempts: generated.attempts ?? [],
         repairCount: index,
       };
-    } catch (error) {
-      lastError = error;
-    }
+    } catch {}
   }
-  throw lastError ?? new Error("Copilot envelope validation failed.");
+  throw new CopilotEnvelopeValidationError(generated.attempts ?? []);
 }
 
 function repairCandidates(value: unknown): unknown[] {

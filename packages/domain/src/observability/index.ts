@@ -29,9 +29,11 @@ const FORBIDDEN_TEXT = [
   /[\w.+-]+@[\w.-]+\.[a-z]{2,}/i,
   /\b(?:\+?\d[\d\s()-]{6,}\d)\b/,
   /\b(?:sk[-_]|sb_secret_)[A-Za-z0-9._-]{12,}\b/i,
+  /\b[a-f0-9]{32}\.[A-Za-z0-9_-]{12,}\b/i,
   /\bBearer\s+[A-Za-z0-9._~+/=-]{12,}\b/i,
   /\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b/,
-  /\b(?:passport|visa|travel document)(?:\s+(?:number|no\.?))?\s*[:#-]?\s*[A-Z0-9]{6,12}\b/i,
+  /\b(?:cookie|signature)(?:\s+(?:value\s+)?is|\s*[:=])\s*(?!\[redacted\b)[^\s,;]+/i,
+  /\b(?:passport|visa|travel document)(?:\s+(?:number|no\.?))?(?:\s+is\s+|\s*[:#-]\s*|\s+)(?=[A-Z0-9]{6,12}\b)(?=[A-Z0-9]*\d)[A-Z0-9]+\b/i,
 ];
 
 export function containsForbiddenConversationMaterial(value: unknown): boolean {
@@ -197,3 +199,4 @@ export const CopilotProductEventSchema = TelemetryEventBaseSchema.extend({
 export type CopilotConversationTurn = z.infer<typeof CopilotConversationTurnSchema>;
 export type LlmCallCostRecord = z.infer<typeof LlmCallCostRecordSchema>;
 export type CopilotProductEventAction = z.infer<typeof CopilotProductEventActionSchema>;
+export type ConversationRedactionClass = z.infer<typeof ConversationRedactionClassSchema>;

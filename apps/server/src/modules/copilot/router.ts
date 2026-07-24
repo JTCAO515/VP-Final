@@ -11,6 +11,9 @@ import {
   AnonymousTurnControlUnavailableError,
   AnonymousTurnLimitExceededError,
 } from "./anonymousTurnCounter.js";
+import { opaqueCopilotSessionId } from "../observability/copilotPersistence.js";
+import type { CopilotProductEventService } from "../trace/service.js";
+import type { TripIdentity } from "../trip/versionedService.js";
 
 export const copilotRouter = router({
   completeTrip: publicProcedure.input(CompleteTripInputSchema).mutation(async ({ ctx, input }) => {
@@ -62,7 +65,7 @@ export const copilotRouter = router({
     const identity = requireTripIdentity(ctx.identity);
     const reservation =
       identity.kind === "anonymous"
-        ? await reserveAnonymousTurn(ctx.anonymousTurnCounter, identity.anonId)
+        ? await reserveAnonymousTurn(ctx.anonymousTurnCounter, ctx.productEventService, identity)
         : null;
     try {
       const result = await createCopilotPipeline({
@@ -83,17 +86,47 @@ export const copilotRouter = router({
 
 async function reserveAnonymousTurn(
   counter: ServerContext["anonymousTurnCounter"],
-  anonId: string,
+  productEventService: CopilotProductEventService | undefined,
+  identity: Extract<TripIdentity, { kind: "anonymous" }>,
 ) {
   if (!counter) throw new AnonymousTurnControlUnavailableError("counter_not_configured");
-  const admission = await counter.reserve(anonId);
+  const admission = await counter.reserve(identity.anonId);
   if (!admission.allowed) {
     if (admission.reason === "capacity_reserved") {
       throw new AnonymousTurnCapacityReservedError(admission.usage);
     }
+    const sessionId = opaqueCopilotSessionId(identity);
+    await recordProductEventSafely(productEventService, {
+      identity,
+      action: "anon_limit_hit",
+      entityType: "copilot_session",
+      entityId: sessionId,
+      props: { limit: admission.usage.limit },
+    });
+    await recordProductEventSafely(productEventService, {
+      identity,
+      action: "register_prompt_shown",
+      entityType: "copilot_session",
+      entityId: sessionId,
+      props: { reason: "anonymous_turn_limit" },
+    });
     throw new AnonymousTurnLimitExceededError(admission.usage);
   }
   return admission;
+}
+
+async function recordProductEventSafely(
+  service: CopilotProductEventService | undefined,
+  input: Parameters<CopilotProductEventService["recordProductEvent"]>[0],
+): Promise<void> {
+  if (!service) return;
+  try {
+    await service.recordProductEvent(input);
+  } catch {
+    console.warn("copilot_observability_write_failed", {
+      failureClass: "persistence_error",
+    });
+  }
 }
 
 async function releaseReservationSafely(

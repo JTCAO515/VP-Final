@@ -15,7 +15,11 @@ export type ProviderFailureClass =
   | "total_timeout";
 
 export class ModelProviderError extends Error {
-  constructor(readonly failureClass: ProviderFailureClass) {
+  constructor(
+    readonly failureClass: ProviderFailureClass,
+    readonly usage?: TokenUsage,
+    readonly model?: string,
+  ) {
     super(failureClass);
     this.name = "ModelProviderError";
   }
@@ -93,7 +97,14 @@ export function createOpenAiCompatibleProvider(
             signal: controller.signal,
           },
         );
-        if (!response.ok) throw new ModelProviderError("http_error");
+        if (!response.ok) {
+          const errorPayload = await parseJsonIfPresent(response);
+          throw new ModelProviderError(
+            "http_error",
+            usageFromPayload(errorPayload, config.pricingProvider),
+            modelFromPayload(errorPayload),
+          );
+        }
         const parsed = await parseJson(response);
         const result = parseResponse(parsed, config.pricingProvider);
         return {
@@ -125,19 +136,33 @@ function parseResponse(
   usage?: TokenUsage;
 } {
   if (!isRecord(value)) throw new ModelProviderError("malformed_response");
+  const usage = isRecord(value.usage) ? normalizeUsage(value.usage, provider) : undefined;
+  const model = typeof value.model === "string" ? value.model : undefined;
   const choices = value.choices;
   const first = Array.isArray(choices) ? choices[0] : undefined;
   const message = isRecord(first) ? first.message : undefined;
   const content = isRecord(message) ? message.content : undefined;
   if (typeof content !== "string" || content.trim().length === 0) {
-    throw new ModelProviderError("malformed_response");
+    throw new ModelProviderError("malformed_response", usage, model);
   }
-  const usage = isRecord(value.usage) ? normalizeUsage(value.usage, provider) : undefined;
   return {
     content,
-    ...(typeof value.model === "string" ? { model: value.model } : {}),
+    ...(model ? { model } : {}),
     ...(usage ? { usage } : {}),
   };
+}
+
+function usageFromPayload(
+  value: unknown,
+  provider: ModelPricingProvider | undefined,
+): TokenUsage | undefined {
+  return isRecord(value) && isRecord(value.usage)
+    ? normalizeUsage(value.usage, provider)
+    : undefined;
+}
+
+function modelFromPayload(value: unknown): string | undefined {
+  return isRecord(value) && typeof value.model === "string" ? value.model : undefined;
 }
 
 function normalizeUsage(
@@ -186,6 +211,14 @@ async function parseJson(response: Response): Promise<unknown> {
     return await response.json();
   } catch {
     throw new ModelProviderError("malformed_response");
+  }
+}
+
+async function parseJsonIfPresent(response: Response): Promise<unknown> {
+  try {
+    return await response.json();
+  } catch {
+    return undefined;
   }
 }
 

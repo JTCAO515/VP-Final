@@ -81,8 +81,18 @@ revoked. Conversations contain only pre-redacted text and a validated pre-redact
 snapshot prices and tokens per provider attempt. The cost ledger preserves total input tokens plus a
 cached-input subset and separate cache-miss/cache-hit price snapshots; cached tokens may never exceed
 total input tokens. A `cost_pricing_missing` event requires the same explicit future retention as
-other Copilot events. Internal views expose only aggregate cost,
-volume, and fallback metrics. The eight Copilot product-event actions require an explicit event expiry.
+other Copilot events. The runtime writer commits each turn and its N cost attempts with the Agent Run
+in one transaction. It copies provider-reported usage and the fixed-point price/cost snapshot; absent
+usage is zero rather than estimated. The default retention windows are conversation 180 days, cost
+400 days, and event 180 days, with separate positive-integer server env overrides. Internal views
+expose only aggregate cost, volume, and fallback metrics. The eight Copilot product-event actions
+require an explicit event expiry.
+Cost rows keep an immutable, non-null Agent Run UUID, but their lifecycle is independent of the
+30-day trace parent. A database trigger requires the Agent Run to exist when a cost row is inserted
+and rejects later changes to the correlation id. After trace purge, the retained UUID is an expected
+historical dangling reference rather than corruption; the cost row remains until its own deadline.
+This preserves ADR-0007 privacy minimization without shortening the financial reconciliation window.
+See [ADR-0010](../adr/ADR-0010-copilot-cost-accounting-contract.md).
 Events accept an authenticated identity without requiring a fabricated anonymous id, while still
 rejecting rows with no trusted identity.
 All three record classes use the restricted `internal.purge_expired_copilot_observability()` routine

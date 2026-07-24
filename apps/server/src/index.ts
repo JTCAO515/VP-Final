@@ -16,6 +16,7 @@ export {
 } from "./db/knowledgeBulkImportService.js";
 export { createDbHumanTaskService } from "./db/humanTaskService.js";
 export { createDbAgentTraceService } from "./db/agentTraceService.js";
+export type { DbAgentTraceService } from "./db/agentTraceService.js";
 export { createDbOpsAuthorizationService } from "./db/opsAuthorizationService.js";
 export { createDbVersionedTripService } from "./db/versionedTripService.js";
 export { createDbCompletionJobService } from "./db/completionJobService.js";
@@ -41,6 +42,11 @@ export {
   createInMemoryHumanTaskService,
 } from "./modules/task/service.js";
 export { createInMemoryAgentTraceService, normalizeAgentFailure } from "./modules/trace/service.js";
+export {
+  opaqueCopilotSessionId,
+  resolveCopilotRetentionPolicy,
+  retentionDeadline,
+} from "./modules/observability/copilotPersistence.js";
 export { createInMemoryCompletionJobService } from "./modules/copilot/completionJobService.js";
 export {
   ANONYMOUS_TURN_TTL_SECONDS,
@@ -135,7 +141,9 @@ export type {
 export type {
   AgentAttemptTrace,
   AgentTraceService,
+  CopilotProductEventService,
   RecordAgentRunInput,
+  RecordCopilotProductEventInput,
   ToolCallTrace,
 } from "./modules/trace/service.js";
 export type {

@@ -4,6 +4,7 @@ import { createVersionedInMemoryTripService } from "../trip/versionedService.js"
 import { createInMemoryCompletionJobService } from "./completionJobService.js";
 import { createInMemoryAnonymousTurnCounter } from "./anonymousTurnCounter.js";
 import type { CompletionQueue } from "./completionQueue.js";
+import { createInMemoryAgentTraceService } from "../trace/service.js";
 
 const identity = { kind: "anonymous" as const, anonId: "anon-beijing" };
 
@@ -26,11 +27,13 @@ describe("copilotRouter", () => {
 
   it("rejects an anonymous fourth turn before model generation", async () => {
     const anonymousTurnCounter = createInMemoryAnonymousTurnCounter({ limit: 3 });
+    const productEventService = createInMemoryAgentTraceService();
     let generationCalls = 0;
     const caller = appRouter.createCaller({
       tripService: createVersionedInMemoryTripService(),
       identity,
       anonymousTurnCounter,
+      productEventService,
       copilotModelDependencies: {
         routeIntent: () => "chat_only",
         generateEnvelope: () => {
@@ -53,6 +56,19 @@ describe("copilotRouter", () => {
       cause: expect.objectContaining({ code: "ANONYMOUS_TURN_LIMIT_REACHED" }),
     });
     expect(generationCalls).toBe(3);
+    expect(productEventService.listProductEvents()).toMatchObject([
+      {
+        action: "anon_limit_hit",
+        entityType: "copilot_session",
+        props: { limit: 3 },
+      },
+      {
+        action: "register_prompt_shown",
+        entityType: "copilot_session",
+        props: { reason: "anonymous_turn_limit" },
+      },
+    ]);
+    expect(productEventService.listProductEvents()[0]?.entityId).not.toBe(identity.anonId);
   });
 
   it("does not require the anonymous counter for an authenticated traveler", async () => {

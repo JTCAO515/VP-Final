@@ -115,10 +115,18 @@ lifecycle transitions. P0-16 extends the injected service interface with private
 Ops consumers, but the public Web route neither calls those methods nor exposes evidence in its
 receipt or failure response.
 
-Copilot writes a best-effort private Agent Trace after a validated result or failure. A trace write
-failure cannot alter the public response or Trip state. Trace records follow
-[ADR-0007](../adr/ADR-0007-agent-trace-privacy-retention.md) and never contain raw prompts, envelope
-payloads, cookies, credentials, or narrative errors.
+Copilot writes best-effort private observability after a validated result or failure. Before the
+composition root receives the record, the user message and typed envelope are recursively redacted
+for email, phone, travel-document, credential, cookie, and signature material. The durable writer
+then atomically stores one redacted conversation turn, every immutable model-attempt cost snapshot,
+and allowlisted product events with explicit retention deadlines. Anonymous-limit and IP-rate-limit
+events use the same injected event service; IP events never contain the trusted or spoofed address.
+Any observability failure emits only `persistence_error` and cannot alter the public response or Trip
+state. The legacy Agent Trace remains digest/metadata-only under
+[ADR-0007](../adr/ADR-0007-agent-trace-privacy-retention.md).
+The Copilot route schedules these writes with Next.js `after()` so a validated answer, registration
+wall, or rate-limit response does not wait for Postgres. If scheduling itself is unavailable, the
+same safe best-effort write starts without awaiting it and retains the fixed sanitized failure log.
 
 Safe model-failure diagnostics identify the actual provider and model attempted, while omitting the
 internal route name, prompt, upstream body, cache usage, prices, exact cost snapshot, and credentials.

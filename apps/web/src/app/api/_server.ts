@@ -26,6 +26,7 @@ import {
   type AgentTraceService,
   type AnonymousTurnCounter,
   type CopilotIpRateLimiter,
+  type CopilotProductEventService,
   type CompleteDay,
   type CompletionJobService,
   type CompletionQueue,
@@ -36,10 +37,12 @@ import {
 } from "@visepanda/app-server";
 
 type Environment = Readonly<Record<string, string | undefined>>;
+type DeferTask = (task: () => Promise<void>) => void;
 type WebServerServices = {
   humanTaskService: HumanTaskService;
   knowledgeService: KnowledgeService;
   traceService: AgentTraceService;
+  productEventService?: CopilotProductEventService;
   tripService: VersionedTripService;
   completionJobService?: CompletionJobService;
   completionQueue?: CompletionQueue;
@@ -63,7 +66,7 @@ export class WebRuntimeUnavailableError extends Error {
   }
 }
 
-export function getServerCaller(identity?: RequestIdentity) {
+export function getServerCaller(identity?: RequestIdentity, deferTask?: DeferTask) {
   const runtime = resolveRuntimeMode(process.env);
   const modelContext =
     runtime.ok && runtime.mode !== "test" && runtime.mode !== "local-demo"
@@ -72,9 +75,11 @@ export function getServerCaller(identity?: RequestIdentity) {
           demoDialogueOnly: true,
         }
       : {};
+  const services = getWebServerServices(process.env);
+  const requestServices = deferTask ? deferObservability(services, deferTask) : services;
   return appRouter.createCaller({
     ...(identity ? { identity } : {}),
-    ...getWebServerServices(process.env),
+    ...requestServices,
     ...modelContext,
   });
 }
@@ -97,10 +102,12 @@ export function createWebServerServices(environment: Environment): WebServerServ
 
   if (availability.adapter === "memory-demo") {
     const tripService = createVersionedInMemoryTripService();
+    const traceService = createInMemoryAgentTraceService();
     return {
       humanTaskService: createInMemoryHumanTaskService(),
       knowledgeService: createInMemoryKnowledgeService(),
-      traceService: createInMemoryAgentTraceService(),
+      traceService,
+      productEventService: traceService,
       tripService,
       completionJobService: createInMemoryCompletionJobService(tripService),
       anonymousTurnCounter: createInMemoryAnonymousTurnCounter(),
@@ -119,6 +126,7 @@ export function createWebServerServices(environment: Environment): WebServerServ
     humanTaskService: createDbHumanTaskService(db),
     knowledgeService: createDbKnowledgeService(db),
     traceService,
+    productEventService: traceService,
     tripService: createDbVersionedTripService(db),
     completionJobService: createDbCompletionJobService(db),
     ...(completionQueue ? { completionQueue } : {}),
@@ -172,6 +180,56 @@ export function setTestWebServerServices(services: WebServerServices | null): vo
 
 export function getCopilotIpRateLimiter(): CopilotIpRateLimiter | undefined {
   return getWebServerServices(process.env).copilotIpRateLimiter;
+}
+
+export function getCopilotProductEventService(
+  deferTask?: DeferTask,
+): CopilotProductEventService | undefined {
+  const services = getWebServerServices(process.env);
+  return deferTask
+    ? deferObservability(services, deferTask).productEventService
+    : services.productEventService;
+}
+
+function deferObservability(services: WebServerServices, deferTask: DeferTask): WebServerServices {
+  const traceService: AgentTraceService = {
+    recordRun(input) {
+      scheduleDeferredWrite(deferTask, () => services.traceService.recordRun(input));
+      return Promise.resolve();
+    },
+  };
+  const productEventService = services.productEventService
+    ? {
+        recordProductEvent(input: Parameters<CopilotProductEventService["recordProductEvent"]>[0]) {
+          scheduleDeferredWrite(deferTask, () =>
+            services.productEventService!.recordProductEvent(input),
+          );
+          return Promise.resolve();
+        },
+      }
+    : undefined;
+  return {
+    ...services,
+    traceService,
+    ...(productEventService ? { productEventService } : {}),
+  };
+}
+
+function scheduleDeferredWrite(deferTask: DeferTask, write: () => Promise<void>): void {
+  const task = async () => {
+    try {
+      await write();
+    } catch {
+      console.warn("copilot_observability_write_failed", {
+        failureClass: "persistence_error",
+      });
+    }
+  };
+  try {
+    deferTask(task);
+  } catch {
+    void task();
+  }
 }
 
 export function getCompletionCallbackRuntime() {

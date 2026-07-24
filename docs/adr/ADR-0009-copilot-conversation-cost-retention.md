@@ -31,10 +31,12 @@ Three records are distinct and remain independently queryable:
    require an explicit retention deadline. Events require at least one trusted user or anonymous
    identity; both may coexist briefly to preserve login attribution, but neither may be fabricated.
 
-The runtime owner must set `VISEPANDA_COPILOT_RECORD_RETENTION_DAYS`; the accepted default and maximum
-for the controlled demo are 30 days. Database rows intentionally have no time-based default: a writer
-that forgets the configured deadline fails instead of creating indefinite retention. Changing the
-maximum is a privacy decision, not an ordinary environment tweak.
+The accepted defaults are 180 days for conversation content, 400 days for cost records, and 180 days
+for product events. The runtime may override them separately with positive-integer server settings.
+Database rows intentionally have no time-based default: a writer that forgets the configured deadline
+fails instead of creating indefinite retention. Changing these windows is a privacy and accounting
+decision, not an ordinary environment tweak. ADR-0010 freezes the cost-specific pricing and lifecycle
+semantics that amend this ADR's original controlled-demo retention assumption.
 
 Both new tables, their aggregate views, and their purge routine are server-only. `anon` and
 `authenticated` receive no direct access. Internal aggregate views expose cost, volume, and fallback
@@ -59,8 +61,8 @@ replace a real answer with fake success or leak the rejected payload into logs.
   `attempts_jsonb`.
 - Unit-price snapshots make each attempt reconcilable without relying on a mutable provider price
   catalog.
-- Thirty-day raw records are sufficient for the controlled demo. Longer-lived sanitized aggregates
-  require a separate retention decision and are not implied by these views.
+- Conversation content and events expire on their 180-day deadlines. Cost records remain available
+  for 400-day reconciliation without retaining their 30-day Agent Trace parent.
 
 ## Rollback
 

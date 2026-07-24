@@ -269,6 +269,70 @@ describe("OpenAI-compatible provider", () => {
     ).rejects.toEqual(expect.objectContaining({ failureClass: "timeout" }));
   });
 
+  it("retains provider-reported usage on failed HTTP and malformed-content responses", async () => {
+    const httpProvider = createOpenAiCompatibleProvider({
+      id: "primary",
+      pricingProvider: "moonshot",
+      baseUrl: "https://provider.example",
+      apiKey: "test-key",
+      model: "configured-model",
+      timeoutMs: 1_000,
+      maxTokens: 100,
+      fetchImpl: vi.fn<typeof fetch>().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            model: "billed-model",
+            usage: {
+              prompt_tokens: 80,
+              completion_tokens: 4,
+              prompt_tokens_details: { cached_tokens: 20 },
+            },
+            error: { message: "must never escape" },
+          }),
+          { status: 429 },
+        ),
+      ),
+    });
+    await expect(
+      httpProvider.generate({ task: "router", prompt: "Classify", effort: "low" }),
+    ).rejects.toMatchObject({
+      failureClass: "http_error",
+      model: "billed-model",
+      usage: { inputTokens: 80, cachedInputTokens: 20, outputTokens: 4 },
+    });
+
+    const malformedProvider = createOpenAiCompatibleProvider({
+      id: "primary",
+      pricingProvider: "deepseek",
+      baseUrl: "https://provider.example",
+      apiKey: "test-key",
+      model: "configured-model",
+      timeoutMs: 1_000,
+      maxTokens: 100,
+      fetchImpl: vi.fn<typeof fetch>().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            model: "deepseek-v4-pro",
+            choices: [{ message: { content: "" } }],
+            usage: {
+              prompt_tokens: 100,
+              completion_tokens: 7,
+              prompt_cache_hit_tokens: 25,
+            },
+          }),
+          { status: 200 },
+        ),
+      ),
+    });
+    await expect(
+      malformedProvider.generate({ task: "trip_writer", prompt: "Plan", effort: "high" }),
+    ).rejects.toMatchObject({
+      failureClass: "malformed_response",
+      model: "deepseek-v4-pro",
+      usage: { inputTokens: 100, cachedInputTokens: 25, outputTokens: 7 },
+    });
+  });
+
   it("uses the provider timeout as the per-attempt cap", async () => {
     vi.useFakeTimers();
     try {

@@ -4,11 +4,17 @@ import {
   AnonymousTurnControlUnavailableError,
   AnonymousTurnLimitExceededError,
   CopilotIpRateLimitUnavailableError,
+  opaqueCopilotSessionId,
   TripVersionConflictError,
+  type TripIdentity,
 } from "@visepanda/app-server";
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { z } from "zod";
-import { getCopilotIpRateLimiter, getServerCaller } from "../_server";
+import {
+  getCopilotIpRateLimiter,
+  getCopilotProductEventService,
+  getServerCaller,
+} from "../_server";
 import { runtimeUnavailableResponse } from "../_runtimeError";
 import { applyIdentityCookies, resolveRequestIdentity } from "../../../lib/requestIdentity";
 import { findModelFailure, summarizeModelFailure } from "./modelFailure";
@@ -41,6 +47,10 @@ export async function POST(request: Request) {
     const admission = await limiter.check(clientAddress);
     if (!admission.allowed) {
       const retryAfterSeconds = admission.retryAfterSeconds;
+      const trustedIdentity = toTripIdentity(identity);
+      if (trustedIdentity) {
+        await recordRateLimitEventSafely(trustedIdentity, retryAfterSeconds);
+      }
       return applyIdentityCookies(
         NextResponse.json(
           {
@@ -54,7 +64,7 @@ export async function POST(request: Request) {
         cookieResponse,
       );
     }
-    const result = await getServerCaller(identity).copilot.run(parsed.data);
+    const result = await getServerCaller(identity, after).copilot.run(parsed.data);
     const envelope = CopilotEnvelopeSchema.parse(result.envelope);
     const emptyDays = result.trip?.days.filter((day) => day.blocks.length === 0).length ?? 0;
 
@@ -179,6 +189,39 @@ export async function POST(request: Request) {
       cookieResponse,
     );
   }
+}
+
+async function recordRateLimitEventSafely(
+  identity: TripIdentity,
+  retryAfterSeconds: number,
+): Promise<void> {
+  try {
+    const service = getCopilotProductEventService(after);
+    if (!service) return;
+    await service.recordProductEvent({
+      identity,
+      action: "rate_limited",
+      entityType: "copilot_session",
+      entityId: opaqueCopilotSessionId(identity),
+      props: { retryAfterSeconds },
+    });
+  } catch {
+    console.warn("copilot_observability_write_failed", {
+      failureClass: "persistence_error",
+    });
+  }
+}
+
+function toTripIdentity(
+  identity: Awaited<ReturnType<typeof resolveRequestIdentity>>,
+): TripIdentity | null {
+  if (identity.kind === "authenticated") {
+    return { kind: "authenticated", userId: identity.userId };
+  }
+  if (identity.kind === "anonymous") {
+    return { kind: "anonymous", anonId: identity.anonId };
+  }
+  return null;
 }
 
 function findError<T extends Error>(

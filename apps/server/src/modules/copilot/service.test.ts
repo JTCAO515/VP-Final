@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { createInMemoryKnowledgeService } from "../knowledge/service.js";
 import { createInMemoryAgentTraceService } from "../trace/service.js";
 import { createVersionedInMemoryTripService } from "../trip/versionedService.js";
@@ -234,7 +234,9 @@ describe("createCopilotPipeline", () => {
       }),
     });
 
-    await expect(pipeline.run({ message: "How does this work?" }, identity)).rejects.toThrow();
+    await expect(
+      pipeline.run({ message: "How does this work? Email alex@example.com" }, identity),
+    ).rejects.toThrow();
     expect(traceService.listRuns()).toMatchObject([
       {
         identity,
@@ -243,7 +245,9 @@ describe("createCopilotPipeline", () => {
         failureClass: "validation_error",
       },
     ]);
-    expect(JSON.stringify(traceService.listRuns())).not.toContain("How does this work?");
+    const serialized = JSON.stringify(traceService.listRuns());
+    expect(serialized).toContain("How does this work? Email [redacted email]");
+    expect(serialized).not.toContain("alex@example.com");
   });
 
   it("repairs a string message from real providers into the typed message object", async () => {
@@ -272,14 +276,33 @@ describe("createCopilotPipeline", () => {
     });
   });
 
-  it("records anonymous success without retaining prompt or response text", async () => {
+  it("records a redacted anonymous conversation without retaining restricted material", async () => {
     const traceService = createInMemoryAgentTraceService();
     const pipeline = createCopilotPipeline({
       tripService: createVersionedInMemoryTripService(),
       traceService,
+      generateEnvelope: () => ({
+        intent: "chat_only",
+        message: {
+          headline: "Account follow-up",
+          body: "We will not repeat cookie=session-secret or alex@example.com.",
+          highlights: [],
+        },
+        tripActions: [],
+        toolCards: [],
+        commercialActions: [],
+        humanHelp: null,
+        citations: [],
+      }),
     });
 
-    await pipeline.run({ message: "Private travel request" }, identity);
+    await pipeline.run(
+      {
+        message:
+          "Email alex@example.com, passport E12345678, cookie=session-secret, signature=abc123def456",
+      },
+      identity,
+    );
 
     expect(traceService.listRuns()).toMatchObject([
       {
@@ -287,14 +310,27 @@ describe("createCopilotPipeline", () => {
         status: "succeeded",
         validationStatus: "passed",
         attempts: [],
+        conversation: {
+          userMessage:
+            "Email [redacted email], [redacted travel document], [redacted cookie], [redacted signature]",
+          assistantEnvelope: {
+            message: {
+              body: "We will not repeat [redacted cookie] or [redacted email].",
+            },
+          },
+          redactionClasses: ["cookie", "email", "signature", "travel_document"],
+        },
       },
     ]);
     const serialized = JSON.stringify(traceService.listRuns());
-    expect(serialized).not.toContain("Private travel request");
-    expect(serialized).not.toContain("I can help");
+    expect(serialized).not.toContain("alex@example.com");
+    expect(serialized).not.toContain("E12345678");
+    expect(serialized).not.toContain("session-secret");
+    expect(serialized).not.toContain("abc123def456");
   });
 
   it("does not fail a successful Copilot response when trace persistence fails", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
     const pipeline = createCopilotPipeline({
       tripService: createVersionedInMemoryTripService(),
       traceService: {
@@ -307,6 +343,12 @@ describe("createCopilotPipeline", () => {
     await expect(pipeline.run({ message: "Hello there" }, identity)).resolves.toMatchObject({
       envelope: { intent: "chat_only" },
     });
+    expect(warn).toHaveBeenCalledWith("copilot_observability_write_failed", {
+      failureClass: "persistence_error",
+    });
+    expect(JSON.stringify(warn.mock.calls)).not.toContain("trace database unavailable");
+    expect(JSON.stringify(warn.mock.calls)).not.toContain("Hello there");
+    warn.mockRestore();
   });
 
   it("repairs a bounded JSON envelope response and records provider attempts", async () => {
@@ -358,6 +400,45 @@ describe("createCopilotPipeline", () => {
         attempts: [
           { provider: "router_primary", status: "succeeded" },
           { provider: "concierge_primary", status: "succeeded", costUsd: 0.01 },
+        ],
+      },
+    ]);
+  });
+
+  it("records billed attempts when every envelope repair candidate is invalid", async () => {
+    const traceService = createInMemoryAgentTraceService();
+    const pipeline = createCopilotPipeline({
+      tripService: createVersionedInMemoryTripService(),
+      traceService,
+      generateEnvelope: () => ({
+        candidate: "not a Copilot envelope",
+        attempts: [
+          {
+            provider: "concierge_primary",
+            model: "concierge-model",
+            status: "succeeded",
+            inputTokens: 10,
+            outputTokens: 20,
+            costUsd: 0.01,
+            latencyMs: 123,
+          },
+        ],
+      }),
+    });
+
+    await expect(pipeline.run({ message: "Help me" }, identity)).rejects.toThrow(
+      "Copilot envelope validation failed",
+    );
+    expect(traceService.listRuns()).toMatchObject([
+      {
+        status: "failed",
+        failureClass: "validation_error",
+        attempts: [
+          {
+            provider: "concierge_primary",
+            inputTokens: 10,
+            outputTokens: 20,
+          },
         ],
       },
     ]);

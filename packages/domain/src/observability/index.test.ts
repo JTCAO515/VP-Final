@@ -38,6 +38,11 @@ describe("Copilot persistence contracts", () => {
         nested: { cookie: "signed-value", provider: `sk-${"abcdefghijklmnop"}` },
       }),
     ).toBe(true);
+    expect(containsForbiddenConversationMaterial("my cookie is session-secret")).toBe(true);
+    expect(containsForbiddenConversationMaterial("signature is abc123def456")).toBe(true);
+    expect(
+      containsForbiddenConversationMaterial("aabbccddeeff00112233445566778899.tokenvalue123456"),
+    ).toBe(true);
     expect(() =>
       CopilotConversationTurnSchema.parse({
         id: "0d4db9c5-8f90-41c3-8cdf-f86368d0d521",

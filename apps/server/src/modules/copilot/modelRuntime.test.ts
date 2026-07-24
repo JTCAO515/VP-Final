@@ -2,7 +2,9 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   createDemoModelRuntime,
   DemoModelExecutionError,
+  DemoModelResponseError,
   DemoModelUnavailableError,
+  createDemoCopilotModelDependencies,
 } from "./modelRuntime.js";
 
 afterEach(() => {
@@ -99,5 +101,40 @@ describe("demo model runtime", () => {
     expect(JSON.stringify(result)).not.toMatch(
       /test-moonshot-key|test-zhipu-key|test-deepseek-key|cookie|signature/i,
     );
+  });
+
+  it("preserves billed attempts when router output cannot be parsed", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn<typeof fetch>().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            model: "catalog-confirmed-qwen",
+            choices: [{ message: { content: '{"not_intent":"question"}' } }],
+            usage: { prompt_tokens: 25, completion_tokens: 5 },
+          }),
+          { status: 200 },
+        ),
+      ),
+    );
+    const dependencies = createDemoCopilotModelDependencies({
+      DASHSCOPE_API_KEY: "test-dashscope-key",
+      DEEPSEEK_API_KEY: "test-deepseek-key",
+      VISEPANDA_MODEL_ROUTER_PRIMARY: "catalog-confirmed-qwen",
+      VISEPANDA_MODEL_ROUTER_FALLBACK: "catalog-confirmed-deepseek",
+    });
+
+    await expect(
+      dependencies.routeIntent({ message: "Hello", currentTrip: null }),
+    ).rejects.toMatchObject({
+      name: DemoModelResponseError.name,
+      attempts: [
+        expect.objectContaining({
+          route: "router_primary",
+          inputTokens: 25,
+          outputTokens: 5,
+        }),
+      ],
+    });
   });
 });

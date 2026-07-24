@@ -315,9 +315,7 @@ export const llmCallCosts = pgTable(
   "llm_call_costs",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    agentRunId: uuid("agent_run_id")
-      .notNull()
-      .references(() => agentRuns.id, { onDelete: "cascade" }),
+    agentRunId: uuid("agent_run_id").notNull(),
     userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }),
     anonId: text("anon_id"),
     attemptIndex: integer("attempt_index").notNull(),

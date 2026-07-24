@@ -728,11 +728,25 @@
       "type": "decision",
       "status": "accepted",
       "owner": "security / data platform",
-      "summary": "Separates redacted Copilot turns, per-attempt costs, and product events under a 30-day server-only retention boundary.",
+      "summary": "Separates redacted Copilot turns, per-attempt costs, and product events under explicit 180/400/180-day server-only retention boundaries.",
       "sourcePrefixes": [
         "packages/domain/src/observability/",
         "apps/server/src/db/schema.ts",
         "infra/supabase/migrations/20260719100000_copilot_observability_records.sql"
+      ]
+    },
+    {
+      "path": "docs/adr/ADR-0010-copilot-cost-accounting-contract.md",
+      "title": "ADR-0010: Copilot Cost Accounting Contract",
+      "category": "decisions",
+      "type": "decision",
+      "status": "accepted",
+      "owner": "AI platform / data platform",
+      "summary": "Freezes cache-aware provider cost calculation, price snapshots, independent 400-day ledger retention, and write-time Agent Run integrity.",
+      "sourcePrefixes": [
+        "packages/ai/src/pricingRegistry.ts",
+        "apps/server/src/db/schema.ts",
+        "infra/supabase/migrations/20260724090000_llm_cost_agent_run_lifecycle.sql"
       ]
     },
 
