@@ -19,15 +19,29 @@ import {
   resolveCopilotRetentionPolicy,
   retentionDeadline,
 } from "../modules/observability/copilotPersistence.js";
+import { resolveDailyLlmBudgetUsd } from "../modules/observability/dailyBudget.js";
 import type {
   AgentTraceService,
   CopilotProductEventService,
   RecordCopilotProductEventInput,
 } from "../modules/trace/service.js";
+import { observeDailyLlmBudget } from "./dailyBudgetObserver.js";
 
 export type DbAgentTraceService = AgentTraceService & CopilotProductEventService;
 
-export function createDbAgentTraceService(db: Db): DbAgentTraceService {
+export function createDbAgentTraceService(
+  db: Db,
+  options: {
+    environment?: Readonly<Record<string, string | undefined>>;
+    now?: () => Date;
+    onDailyBudgetObservationError?: () => void;
+    dailyBudgetObserver?: typeof observeDailyLlmBudget;
+  } = {},
+): DbAgentTraceService {
+  const environment = options.environment ?? process.env;
+  const dailyBudgetUsd = resolveDailyLlmBudgetUsd(environment);
+  const now = options.now ?? (() => new Date());
+  const dailyBudgetObserver = options.dailyBudgetObserver ?? observeDailyLlmBudget;
   return {
     async recordRun(input) {
       const attempts = input.attempts.map((attempt) => ({
@@ -72,8 +86,8 @@ export function createDbAgentTraceService(db: Db): DbAgentTraceService {
         6,
       );
       const primaryAttempt = attempts.at(-1);
-      const createdAt = new Date();
-      const retention = resolveCopilotRetentionPolicy();
+      const createdAt = now();
+      const retention = resolveCopilotRetentionPolicy(environment);
       const identity = input.identity ? identityRecord(input.identity) : null;
 
       if (input.conversation && !identity) {
@@ -312,6 +326,23 @@ export function createDbAgentTraceService(db: Db): DbAgentTraceService {
 
         await tx.insert(telemetryEvents).values(events.map(toEventInsert));
       });
+
+      if (dailyBudgetUsd && identity && costRecords.length > 0) {
+        try {
+          await dailyBudgetObserver({
+            db,
+            identity: input.identity!,
+            budgetUsd: dailyBudgetUsd,
+            createdAt,
+            retentionDays: retention.eventDays,
+          });
+        } catch {
+          options.onDailyBudgetObservationError?.();
+          console.warn("copilot_daily_budget_observation_failed", {
+            failureClass: "persistence_error",
+          });
+        }
+      }
     },
 
     async recordProductEvent(input) {

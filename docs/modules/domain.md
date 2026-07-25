@@ -48,7 +48,9 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
   a price or silently treat a zero-price row as reconciled.
 - `daily_budget_exceeded` is a retained operations-only product-event action. It records one
   fixed-point threshold observation per UTC day; it is not a billing event, user entitlement, or
-  authorization to stop model service.
+  authorization to stop model service. Its properties are a strict two-field object (`budgetUsd`,
+  `observedCostUsd`) containing canonical eight-decimal fixed-point strings; extra properties,
+  prompts, credentials, cookies, signatures, and contact content are rejected.
 - Human Task status changes use `transitionHumanTask`; the generic update contract cannot carry a
   status. The canonical forward path is `requested -> triaged -> quoted -> payment_pending -> paid ->
 fulfilling -> done`, with explicit cancellation edges and no terminal recovery. A transition reason

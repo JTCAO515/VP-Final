@@ -121,6 +121,42 @@ describe("Copilot persistence contracts", () => {
         retention_expires_at: expiresAt,
       }),
     ).toThrow();
+    expect(
+      CopilotProductEventSchema.parse({
+        id: "event-budget",
+        anon_id: "anonymous-session",
+        surface: "server",
+        action: "daily_budget_exceeded",
+        entity_type: "llm_daily_budget",
+        entity_id: "2026-07-19",
+        props_jsonb: {
+          budgetUsd: "1.00000000",
+          observedCostUsd: "1.25000000",
+        },
+        created_at: createdAt,
+        retention_expires_at: expiresAt,
+      }).props_jsonb,
+    ).toEqual({
+      budgetUsd: "1.00000000",
+      observedCostUsd: "1.25000000",
+    });
+    expect(() =>
+      CopilotProductEventSchema.parse({
+        id: "event-budget",
+        anon_id: "anonymous-session",
+        surface: "server",
+        action: "daily_budget_exceeded",
+        entity_type: "llm_daily_budget",
+        entity_id: "2026-07-19",
+        props_jsonb: {
+          budgetUsd: "1.00000000",
+          observedCostUsd: "1.25000000",
+          prompt: "must not persist",
+        },
+        created_at: createdAt,
+        retention_expires_at: expiresAt,
+      }),
+    ).toThrow();
     expect(() =>
       CopilotProductEventSchema.parse({
         id: "event-1",
