@@ -173,15 +173,19 @@ export async function POST(request: Request) {
       );
     }
     const conflict = findTripConflict(error);
+    if (!conflict) {
+      console.error("copilot_unexpected_failure", {
+        failureClass: "unexpected_error",
+      });
+    }
     return applyIdentityCookies(
       NextResponse.json(
         {
           ok: false,
+          ...(!conflict ? { code: "COPILOT_REQUEST_FAILED" } : {}),
           error: conflict
             ? "This trip changed in another session. Reload it before trying again."
-            : error instanceof Error
-              ? error.message
-              : "Copilot request failed.",
+            : "Copilot is temporarily unavailable. Try again later.",
           ...(conflict ? { code: conflict.code, currentVersion: conflict.currentVersion } : {}),
         },
         { status: conflict ? 409 : 502 },
