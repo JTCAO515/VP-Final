@@ -629,7 +629,7 @@ export const telemetryEvents = pgTable(
     ),
     copilotRetentionCheck: check(
       "events_copilot_retention_check",
-      sql`${table.action} not in ('session_started', 'turn_completed', 'anon_limit_hit', 'rate_limited', 'register_prompt_shown', 'fallback_triggered', 'model_failure') or (${table.retentionExpiresAt} is not null and ${table.retentionExpiresAt} > ${table.createdAt})`,
+      sql`${table.action} not in ('session_started', 'turn_completed', 'anon_limit_hit', 'rate_limited', 'register_prompt_shown', 'fallback_triggered', 'model_failure', 'cost_pricing_missing', 'daily_budget_exceeded') or (${table.retentionExpiresAt} is not null and ${table.retentionExpiresAt} > ${table.createdAt})`,
     ),
     identityCheck: check(
       "events_at_least_one_identity_check",

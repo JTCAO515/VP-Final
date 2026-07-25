@@ -48,6 +48,11 @@ the public Web application and protected by server-side role checks.
 - P0-16 shows private evidence only inside the authorized detail. Append controls remain unavailable
   until `done` or `cancelled`; Operators can propose a gap but cannot publish a fact or bypass Editor
   review.
+- #249 reserves an explicit Admin-only `cost.read` permission for the private Copilot cost summary.
+  The contract includes daily/model/identity aggregates, cached-input and cache-hit metrics, and an
+  unpriced-call reconciliation queue. The `/costs` route and runtime daily-budget event writer remain
+  later consumers of this reviewed contract; this contract change alone does not claim the Ops table
+  is live.
 - Partner and payment operations are not yet available.
 
 Production use still requires OA-001, OA-004, and OA-010 verification. Missing Auth or database
@@ -59,7 +64,7 @@ configuration fails closed; there is no production memory-role fallback.
 | -------- | ------------------------------------------------------------------- |
 | Operator | Task triage and fulfilment; limited contact access                  |
 | Editor   | POI, fact, and knowledge-gap workflow; no payment or contact access |
-| Admin    | Partner, role, price, and audit configuration                       |
+| Admin    | Partner, role, cost reconciliation, price, and audit configuration  |
 
 Roles are intentionally non-hierarchical. Admin does not silently inherit Editor or Operator access;
 each permission is explicit. An Admin cannot change their own role through the UI, reducing accidental

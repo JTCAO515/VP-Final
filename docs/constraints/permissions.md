@@ -17,6 +17,10 @@ Status: active
   client claims, Auth user metadata, email allowlists, and hidden navigation MUST NOT grant access.
 - The first Ops Admin MUST be created through the registered trusted-console bootstrap action. Runtime
   code MUST NOT contain a bootstrap email, default admin, or self-elevation path.
+- Copilot cost summaries and reconciliation-health rows MUST require the explicit Admin-only
+  `cost.read` permission. They MUST remain server-rendered or server-routed from the private
+  `internal` schema and MUST NOT expose conversation content, credentials, raw cookies, signatures,
+  or a traveler-visible cost surface.
 - Users MUST only read/write their own Trips, memory, entitlements, and Human Tasks unless a documented
   share or operator workflow applies.
 - Human Task owner identity MUST be server-derived and exactly one of verified user or signed anonymous

@@ -14,6 +14,7 @@ export const OpsPermissionSchema = z.enum([
   "membership.write",
   "partner.read",
   "partner.write",
+  "cost.read",
 ]);
 export type OpsPermission = z.infer<typeof OpsPermissionSchema>;
 
@@ -59,7 +60,7 @@ export type OpsAuthorizationService = {
 const ROLE_PERMISSIONS: Record<OpsRole, readonly OpsPermission[]> = {
   editor: ["knowledge.read", "knowledge.write"],
   operator: ["task.read", "task.contact.read", "task.write"],
-  admin: ["membership.read", "membership.write", "partner.read", "partner.write"],
+  admin: ["membership.read", "membership.write", "partner.read", "partner.write", "cost.read"],
 };
 
 export function permissionsForRole(role: OpsRole): OpsPermission[] {

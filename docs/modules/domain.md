@@ -46,6 +46,9 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
   cached tokens cannot exceed total input tokens. Cache-miss and cache-hit input prices are separate
   immutable snapshots. `cost_pricing_missing` is a retained product event, not permission to invent
   a price or silently treat a zero-price row as reconciled.
+- `daily_budget_exceeded` is a retained operations-only product-event action. It records one
+  fixed-point threshold observation per UTC day; it is not a billing event, user entitlement, or
+  authorization to stop model service.
 - Human Task status changes use `transitionHumanTask`; the generic update contract cannot carry a
   status. The canonical forward path is `requested -> triaged -> quoted -> payment_pending -> paid ->
 fulfilling -> done`, with explicit cancellation edges and no terminal recovery. A transition reason
