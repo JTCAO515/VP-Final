@@ -5,8 +5,9 @@ import {
   createInMemoryHumanTaskService,
   createInMemoryKnowledgeService,
   createVersionedInMemoryTripService,
+  TripVersionConflictError,
 } from "@visepanda/app-server";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createAnonymousSessionValue } from "../../../lib/requestIdentity";
 import { setTestWebServerServices } from "../_server";
 import { POST } from "./route";
@@ -28,6 +29,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  vi.restoreAllMocks();
   setTestWebServerServices(null);
   restoreEnv("VISEPANDA_RUNTIME_MODE", originalEnvironment.runtimeMode);
   restoreEnv("VISEPANDA_ANON_SESSION_SECRET", originalEnvironment.anonSecret);
@@ -201,6 +203,78 @@ describe("POST /api/copilot anonymous turn wall", () => {
       error: "Copilot request protection is temporarily unavailable. Try again later.",
     });
   });
+
+  it("does not expose unexpected database or driver details", async () => {
+    const knowledgeService = createInMemoryKnowledgeService();
+    const internalFailure =
+      "Failed query: select * from poi_facts; cookie=private; signature=private";
+    const errorLog = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    setTestWebServerServices({
+      anonymousTurnCounter: createInMemoryAnonymousTurnCounter({ limit: 3 }),
+      copilotIpRateLimiter: createInMemoryCopilotIpRateLimiter(),
+      humanTaskService: createInMemoryHumanTaskService(),
+      knowledgeService: {
+        ...knowledgeService,
+        async listPois() {
+          throw new Error(internalFailure);
+        },
+      },
+      traceService: createInMemoryAgentTraceService(),
+      tripService: createVersionedInMemoryTripService(),
+    });
+
+    const response = await POST(request("Shanghai metro advice"));
+    const body = await response.json();
+
+    expect(response.status).toBe(502);
+    expect(body).toEqual({
+      ok: false,
+      code: "COPILOT_REQUEST_FAILED",
+      error: "Copilot is temporarily unavailable. Try again later.",
+    });
+    expect(JSON.stringify(body)).not.toContain("poi_facts");
+    expect(JSON.stringify(body)).not.toContain("cookie");
+    expect(JSON.stringify(body)).not.toContain("signature");
+    expect(errorLog).toHaveBeenCalledWith("copilot_unexpected_failure", {
+      failureClass: "unexpected_error",
+    });
+    expect(JSON.stringify(errorLog.mock.calls)).not.toContain(internalFailure);
+  });
+
+  it("preserves the typed Trip conflict response", async () => {
+    const tripService = createVersionedInMemoryTripService();
+    setTestWebServerServices({
+      anonymousTurnCounter: createInMemoryAnonymousTurnCounter({ limit: 3 }),
+      copilotIpRateLimiter: createInMemoryCopilotIpRateLimiter(),
+      humanTaskService: createInMemoryHumanTaskService(),
+      knowledgeService: createInMemoryKnowledgeService(),
+      traceService: createInMemoryAgentTraceService(),
+      tripService: {
+        ...tripService,
+        async get() {
+          throw new TripVersionConflictError(7);
+        },
+      },
+    });
+
+    const response = await POST(
+      request(
+        "Update this Trip",
+        undefined,
+        true,
+        "203.0.113.42",
+        "11111111-1111-4111-8111-111111111111",
+      ),
+    );
+
+    expect(response.status).toBe(409);
+    await expect(response.json()).resolves.toEqual({
+      ok: false,
+      code: "TRIP_VERSION_CONFLICT",
+      currentVersion: 7,
+      error: "This trip changed in another session. Reload it before trying again.",
+    });
+  });
 });
 
 function request(
@@ -208,6 +282,7 @@ function request(
   spoofedAddress?: string,
   includeTrustedAddress = true,
   trustedAddress = "203.0.113.42",
+  tripId?: string,
 ): Request {
   const anonId = "a".repeat(43);
   const cookie = createAnonymousSessionValue("test-secret", anonId);
@@ -219,7 +294,7 @@ function request(
       ...(includeTrustedAddress ? { "x-vercel-forwarded-for": trustedAddress } : {}),
       ...(spoofedAddress ? { "x-forwarded-for": spoofedAddress } : {}),
     },
-    body: JSON.stringify({ message }),
+    body: JSON.stringify({ message, ...(tripId ? { tripId } : {}) }),
   });
 }
 
