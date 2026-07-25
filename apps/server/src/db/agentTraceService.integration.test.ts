@@ -19,6 +19,7 @@ describeDatabase("database AgentTraceService", () => {
     await sql`delete from public.trips where anon_id like 'trace-test-%'`;
     await sql`delete from public.events where anon_id like 'trace-test-%'`;
     await sql`delete from public.copilot_conversation_turns where anon_id like 'trace-test-%'`;
+    await sql`delete from public.llm_call_costs where anon_id like 'trace-test-%'`;
     await sql`delete from public.agent_runs where anon_id like 'trace-test-%' or user_id = ${userId}`;
     await sql`
       insert into auth.users (
@@ -36,6 +37,7 @@ describeDatabase("database AgentTraceService", () => {
     await sql`delete from public.trips where anon_id like 'trace-test-%'`;
     await sql`delete from public.events where anon_id like 'trace-test-%'`;
     await sql`delete from public.copilot_conversation_turns where anon_id like 'trace-test-%'`;
+    await sql`delete from public.llm_call_costs where anon_id like 'trace-test-%'`;
     await sql`delete from public.agent_runs where anon_id like 'trace-test-%' or user_id = ${userId}`;
     await sql`delete from public.users where id = ${userId}`;
     await sql`delete from auth.users where id = ${userId}`;
@@ -330,5 +332,127 @@ describeDatabase("database AgentTraceService", () => {
     expect(persisted).not.toContain("session-secret");
     expect(persisted).not.toContain("abc123def456");
     expect(persisted).not.toContain("sk-secretvalue12345");
+  });
+
+  it("records one observational daily warning after exact retained costs cross the threshold", async () => {
+    const identity = { kind: "anonymous" as const, anonId: "trace-test-daily-budget" };
+    const createdAt = new Date("2030-01-02T12:00:00.000Z");
+    const budgetService = createDbAgentTraceService(drizzle(sql, { schema }), {
+      environment: { VISEPANDA_DAILY_LLM_BUDGET_USD: "0.50" },
+      now: () => createdAt,
+    });
+    const sessionId = crypto.randomUUID();
+
+    async function record(
+      costUsd: string,
+      targetService: ReturnType<typeof createDbAgentTraceService> = budgetService,
+    ) {
+      const runId = crypto.randomUUID();
+      await targetService.recordRun({
+        id: runId,
+        identity,
+        intent: "question",
+        status: "succeeded",
+        inputDigest: "a".repeat(64),
+        outputDigest: "b".repeat(64),
+        latencyMs: 10,
+        attempts: [
+          {
+            provider: "test-provider",
+            model: "test-model",
+            status: "succeeded",
+            inputTokens: 1,
+            outputTokens: 1,
+            costUsd: Number(costUsd),
+            latencyMs: 10,
+            costSnapshot: {
+              provider: "test-provider",
+              model: "test-model",
+              effort: "medium",
+              inputTokens: 1,
+              cachedInputTokens: 0,
+              outputTokens: 1,
+              inputPricePerMillionUsd: "1.00000000",
+              cachedInputPricePerMillionUsd: "0.00000000",
+              outputPricePerMillionUsd: "1.00000000",
+              costUsd,
+              pricingMissing: false,
+              fallbackTriggered: false,
+            },
+          },
+        ],
+        validationStatus: "passed",
+        repairCount: 0,
+        conversation: {
+          sessionId,
+          userMessage: "Give one short travel tip",
+          assistantEnvelope: {
+            intent: "question",
+            message: { headline: "Tip", body: "Use official transport apps.", highlights: [] },
+            tripActions: [],
+            toolCards: [],
+            commercialActions: [],
+            humanHelp: null,
+            citations: [],
+            risk: { level: "low", reason: null },
+          },
+          cityIntent: null,
+          redactionClasses: [],
+        },
+      });
+    }
+
+    await record("0.30000000");
+    expect(
+      await sql`
+        select count(*)::int as count
+        from public.events
+        where action = 'daily_budget_exceeded' and entity_id = '2030-01-02'
+      `,
+    ).toMatchObject([{ count: 0 }]);
+
+    await record("0.30000000");
+    await record("0.30000000");
+
+    const events = await sql`
+      select entity_type, entity_id, props_jsonb,
+             (extract(epoch from (retention_expires_at - created_at)) / 86400)::int as retention_days
+      from public.events
+      where action = 'daily_budget_exceeded' and entity_id = '2030-01-02'
+    `;
+    expect(events).toMatchObject([
+      {
+        entity_type: "llm_daily_budget",
+        entity_id: "2030-01-02",
+        props_jsonb: {
+          budgetUsd: "0.50000000",
+          observedCostUsd: "0.60000000",
+        },
+        retention_days: 180,
+      },
+    ]);
+    expect(JSON.stringify(events)).not.toMatch(/api[_-]?key|cookie|signature|prompt/i);
+
+    let observationFailures = 0;
+    const failingObserverService = createDbAgentTraceService(drizzle(sql, { schema }), {
+      environment: { VISEPANDA_DAILY_LLM_BUDGET_USD: "0.01" },
+      now: () => new Date("2030-01-03T12:00:00.000Z"),
+      dailyBudgetObserver: async () => {
+        throw new Error("simulated observer failure");
+      },
+      onDailyBudgetObservationError: () => {
+        observationFailures += 1;
+      },
+    });
+    await record("0.10000000", failingObserverService);
+
+    expect(observationFailures).toBe(1);
+    expect(
+      await sql`
+        select count(*)::int as count
+        from public.llm_call_costs
+        where anon_id = ${identity.anonId}
+      `,
+    ).toMatchObject([{ count: 4 }]);
   });
 });

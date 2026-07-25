@@ -88,6 +88,12 @@ modules yet.
 - The explicit Ops permission matrix reserves `cost.read` for Admins only. It grants access only to
   sanitized private aggregates and reconciliation metadata through a protected server consumer; it
   does not grant direct Data API access or expose conversation content.
+- When `VISEPANDA_DAILY_LLM_BUDGET_USD` is configured with a positive fixed-point USD value, the
+  durable Trace writer observes the retained UTC-day cost total after each committed model run.
+  Crossing the threshold appends at most one private `daily_budget_exceeded` event for that UTC day,
+  with only the fixed-point threshold and observed total. The warning is observational: failures are
+  logged without undoing the cost ledger, and neither crossing the threshold nor observation failure
+  stops Copilot service. An unset threshold leaves warning emission explicitly disabled.
 - The Copilot runtime writer commits the private Agent Run, one pre-redacted conversation turn, and
   every model-attempt cost row in one transaction. Cost rows copy the immutable provider/model,
   runtime effort, reported tokens, cache subset, three prices, fixed-point USD result, fallback flag,

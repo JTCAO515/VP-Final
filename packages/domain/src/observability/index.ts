@@ -26,6 +26,13 @@ export const ConversationRedactionClassSchema = z.enum([
 export const ModelEffortSchema = z.enum(["low", "medium", "high"]);
 
 const FORBIDDEN_KEY = /(?:authorization|api[_-]?key|cookie|set[_-]?cookie|signature|secret)/i;
+const FixedPointUsdSchema = z.string().regex(/^(0|[1-9]\d*)\.\d{8}$/);
+export const DailyBudgetExceededPropsSchema = z
+  .object({
+    budgetUsd: FixedPointUsdSchema,
+    observedCostUsd: FixedPointUsdSchema,
+  })
+  .strict();
 const FORBIDDEN_TEXT = [
   /[\w.+-]+@[\w.-]+\.[a-z]{2,}/i,
   /\b(?:\+?\d[\d\s()-]{6,}\d)\b/,
@@ -181,7 +188,19 @@ export const CopilotProductEventSchema = TelemetryEventBaseSchema.extend({
       message: "Copilot product events require a trusted user or anonymous identity",
     });
   }
-  if (containsForbiddenConversationMaterial(event.props_jsonb)) {
+  if (
+    event.action === "daily_budget_exceeded" &&
+    !DailyBudgetExceededPropsSchema.safeParse(event.props_jsonb).success
+  ) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["props_jsonb"],
+      message: "Daily budget events require only fixed-point threshold and observed totals",
+    });
+  } else if (
+    event.action !== "daily_budget_exceeded" &&
+    containsForbiddenConversationMaterial(event.props_jsonb)
+  ) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       path: ["props_jsonb"],
