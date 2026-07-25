@@ -37,7 +37,13 @@ describe("Ops authorization", () => {
       permissions: ["task.read", "task.contact.read", "task.write"],
     });
     await expect(service.getAccess(adminId)).resolves.toMatchObject({
-      permissions: ["membership.read", "membership.write", "partner.read", "partner.write"],
+      permissions: [
+        "membership.read",
+        "membership.write",
+        "partner.read",
+        "partner.write",
+        "cost.read",
+      ],
     });
 
     const matrix = {
@@ -55,6 +61,7 @@ describe("Ops authorization", () => {
       "membership.write",
       "partner.read",
       "partner.write",
+      "cost.read",
     ] as const;
     for (const permission of permissions) {
       expect(matrix.editor.permissions.includes(permission)).toBe(
@@ -62,7 +69,9 @@ describe("Ops authorization", () => {
       );
       expect(matrix.operator.permissions.includes(permission)).toBe(permission.startsWith("task."));
       expect(matrix.admin.permissions.includes(permission)).toBe(
-        permission.startsWith("membership.") || permission.startsWith("partner."),
+        permission.startsWith("membership.") ||
+          permission.startsWith("partner.") ||
+          permission.startsWith("cost."),
       );
     }
   });

@@ -109,6 +109,10 @@ Before merging a backlog-changing PR:
 - **Observed correction (2026-07-20):** PR #255 completed P0-15 with permission-bounded detail, note persistence, PII-free audit, and controlled-preview triage. PR #257 subsequently completed P0-16 with private terminal-task evidence, redaction, inherited retention, and sanitized open-gap proposals; an earlier serialized snapshot missed this merged state.
 - **Observed correction (2026-07-20):** PR #258 completed #246 with a server-authoritative anonymous three-turn wall, and PR #260 completed #247 with a Vercel-trusted, HMAC-only atomic IP sliding-window guard. Real local Redis protocol evidence passed for both controls; production Upstash/Vercel evidence remains gated by OA-012 and OA-013.
 - **Observed correction (2026-07-21):** GitHub closed-state verification found DOC-P0-01 #131, DOC-P0-02 #132, DOC-P0-03 #133, and DOC-P0-05 #138 still described as `Ready`, while completed P0-04c #168 remained described as active. Their rows now record completion; P0-04's separate production OA evidence gate remains unchanged.
-- **Active D2 deviation:** P0-12 says #75 completed the legal routes, but #75 remains blocked and no Privacy, Terms, affiliate-disclosure, Human Help disclaimer, or emergency-disclaimer route exists. Keep P0-12 blocked until the accountable content baseline and routes are accepted; do not invent legal copy or link to 404 pages.
-- **Active D2 deviation:** #248 has an accepted persistence schema but no frozen provider-pricing snapshot contract. Missing prices currently collapse to USD 0 in the router, so runtime cost persistence must not proceed until pricing provenance and fail-honest behavior are accepted.
-- **Next observation:** complete OA-012/OA-013 before claiming either Redis guard is production-ready, obtain the #75 D3 content decision before P0-12, and resume #248 only after the pricing contract is frozen. #249 now has its #247 prerequisite but still waits for #248 runtime persistence. No open Issue currently has status:ready; keep trigger-gated Phase 1/2/3 rollout and payment work blocked.
+- **Observed correction (2026-07-25):** #75 and #248 are closed with their accepted legal-route and
+  cache-aware runtime-persistence boundaries merged. P0-12 and #249 are therefore in progress from
+  current `main`; neither may redefine those accepted contracts.
+- **Next observation:** complete OA-004 before claiming the durable production database is current,
+  and complete OA-012/OA-013 before claiming either Redis guard is production-ready. #249 begins with
+  a schema-first private cost-summary and budget-event contract. Keep trigger-gated Phase 1/2/3
+  rollout and payment work blocked.

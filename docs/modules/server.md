@@ -85,6 +85,9 @@ modules yet.
   contact data before persistence, rejects high-risk secrets/documents, and atomically appends a
   content-free audit event. A separate KnowledgeService transaction creates only a normalized open
   gap plus audit; it cannot create, review, or publish a POI fact.
+- The explicit Ops permission matrix reserves `cost.read` for Admins only. It grants access only to
+  sanitized private aggregates and reconciliation metadata through a protected server consumer; it
+  does not grant direct Data API access or expose conversation content.
 - The Copilot runtime writer commits the private Agent Run, one pre-redacted conversation turn, and
   every model-attempt cost row in one transaction. Cost rows copy the immutable provider/model,
   runtime effort, reported tokens, cache subset, three prices, fixed-point USD result, fallback flag,
@@ -101,9 +104,9 @@ modules yet.
   `VISEPANDA_EVENT_RETENTION_DAYS`. Invalid or non-positive values fail persistence preparation.
   Database-write failure emits a content-free operational warning and cannot alter the validated
   Copilot answer or Trip result.
-  The intended 400-day cost deadline is not yet an effective lifecycle guarantee: the accepted cost
-  table still cascades from the 30-day Agent Run parent. #248 requires an architecture amendment
-  before merge; neither FK semantics nor ADR-0007 retention may be changed implicitly.
+  The 400-day cost lifecycle is independent of the 30-day Agent Run lifecycle. The accepted trigger
+  requires the opaque Agent Run id at insert time and keeps that immutable correlation id after trace
+  purge without cascading the retained cost row.
 - The runtime resolver and router injection boundary are implemented and tested, but Web/Ops
   composition migration remains in P0-06c and P0-06d. Therefore no deployed durable-path claim is
   made yet.
@@ -184,8 +187,9 @@ distinguish its own previous partial effect from a later unrelated Trip edit.
 - [ADR-0009](../adr/ADR-0009-copilot-conversation-cost-retention.md) freezes separate redacted turn,
   per-attempt cost, and product-event records. The additive #248 cache-pricing contract preserves
   total input tokens, adds a bounded cached-input subset and separate hit-price snapshot, and retains
-  `cost_pricing_missing` events. The runtime writer now consumes those frozen contracts; aggregate
-  reconciliation view extensions and ADR-0010 archival remain the separate #248d boundary.
+  `cost_pricing_missing` events. The runtime writer consumes those frozen contracts. #249 adds cached
+  input/cache-hit aggregates, an unpriced-call reconciliation view, and the operations-only
+  `daily_budget_exceeded` event contract without changing the accepted cost formula.
 - The Copilot runtime preserves the provider route separately from the actual pricing provider and
   carries the cache-aware, fixed-point attempt cost snapshot into the allowlisted trace object.
   The exact snapshot is now written per attempt; the legacy Agent Run total remains a bounded summary,

@@ -11,6 +11,7 @@ export const CopilotProductEventActionSchema = z.enum([
   "fallback_triggered",
   "model_failure",
   "cost_pricing_missing",
+  "daily_budget_exceeded",
 ]);
 
 export const ConversationRedactionClassSchema = z.enum([

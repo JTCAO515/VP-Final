@@ -85,8 +85,12 @@ other Copilot events. The runtime writer commits each turn and its N cost attemp
 in one transaction. It copies provider-reported usage and the fixed-point price/cost snapshot; absent
 usage is zero rather than estimated. The default retention windows are conversation 180 days, cost
 400 days, and event 180 days, with separate positive-integer server env overrides. Internal views
-expose only aggregate cost, volume, and fallback metrics. The eight Copilot product-event actions
-require an explicit event expiry.
+expose only aggregate cost, volume, fallback, cached-input, and cache-hit metrics. A private
+reconciliation-health view lists only opaque run/attempt and model metadata for retained token-bearing
+calls whose three immutable price snapshots are all zero; it exposes no conversation content or
+identity. The nine Copilot product-event actions require an explicit event expiry.
+`daily_budget_exceeded` is unique per UTC day and records a fixed-point threshold observation only;
+it is an operations warning and MUST NOT stop model service automatically.
 Cost rows keep an immutable, non-null Agent Run UUID, but their lifecycle is independent of the
 30-day trace parent. A database trigger requires the Agent Run to exist when a cost row is inserted
 and rejects later changes to the correlation id. After trace purge, the retained UUID is an expected

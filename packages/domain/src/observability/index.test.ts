@@ -91,6 +91,7 @@ describe("Copilot persistence contracts", () => {
       "fallback_triggered",
       "model_failure",
       "cost_pricing_missing",
+      "daily_budget_exceeded",
     ]);
     expect(() =>
       CopilotProductEventSchema.parse({
