@@ -32,7 +32,7 @@ export default async function GuidePage({ params }: Props) {
 
   return (
     <main className="shell guidePage">
-      <SiteHeader active="explore" context="China travel guide" />
+      <SiteHeader active="guides" context="China travel guide" />
       <script
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd(guide)) }}
         type="application/ld+json"

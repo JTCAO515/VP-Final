@@ -399,6 +399,18 @@ Non-negotiable:
 - Focus ring visible, preferably China red or ink depending on background.
 - Status always includes text, not only color.
 
+### 9.1 Shared Shell and Responsive Hierarchy
+
+- Public pages use one shared header and footer; route-specific pages must not invent a competing
+  navigation rhythm.
+- Primary navigation contains Copilot, Explore, Guides, and Human Help in that order. Account is a
+  utility destination, not a fifth equal-weight product tab.
+- At 720 pixels and below, the four primary destinations use equal-width 44-pixel-minimum targets.
+- A keyboard-visible skip link must move focus past the shared navigation.
+- The mobile Copilot hierarchy is prompt first. A long answer or Trip preview must never appear
+  before the input in visual or keyboard order.
+- Responsive acceptance is recorded at 375, 768, 1280, and 1440 pixels with no horizontal overflow.
+
 ---
 
 ## 10. Implementation Guidance
@@ -461,7 +473,7 @@ Do not create `packages/ui` page components until another surface needs them.
 - [ ] No black-gold luxury theme.
 - [ ] No festival/cultural cliché decoration.
 - [ ] Product workspace visible in first viewport.
-- [ ] 375px / 768px / 1024px / 1440px checked.
+- [ ] 375px / 768px / 1280px / 1440px checked.
 - [ ] No horizontal overflow.
 - [ ] Focus states visible.
 - [ ] Loading/disabled states present.

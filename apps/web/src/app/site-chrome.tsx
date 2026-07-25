@@ -1,4 +1,4 @@
-type SiteSection = "copilot" | "explore" | "help" | "account";
+type SiteSection = "copilot" | "explore" | "guides" | "help" | "account";
 
 type SiteHeaderProps = Readonly<{
   active?: SiteSection;
@@ -8,33 +8,48 @@ type SiteHeaderProps = Readonly<{
 const NAV_ITEMS: ReadonlyArray<Readonly<{ section: SiteSection; href: string; label: string }>> = [
   { section: "copilot", href: "/", label: "Copilot" },
   { section: "explore", href: "/explore", label: "Explore" },
+  { section: "guides", href: "/guides/payment", label: "Guides" },
   { section: "help", href: "/human-help", label: "Human Help" },
-  { section: "account", href: "/account", label: "Account" },
 ];
 
 export function SiteHeader({ active, context = "China Travel AI Copilot" }: SiteHeaderProps) {
   return (
-    <header className="siteHeader">
-      <a className="brandMark" href="/" aria-label="VisePanda home">
-        <span aria-hidden="true">V</span>
-        <b>VisePanda</b>
+    <>
+      <a className="skipLink" href="#page-content">
+        Skip to main content
       </a>
-      <nav className="siteNav" aria-label="Primary navigation">
-        {NAV_ITEMS.map((item) => (
+      <header className="siteHeader">
+        <a className="brandMark" href="/" aria-label="VisePanda home">
+          <span aria-hidden="true">V</span>
+          <b>VisePanda</b>
+        </a>
+        <nav className="siteNav" aria-label="Primary navigation">
+          {NAV_ITEMS.map((item) => (
+            <a
+              aria-current={active === item.section ? "page" : undefined}
+              href={item.href}
+              key={item.section}
+            >
+              {item.label}
+            </a>
+          ))}
+        </nav>
+        <div className="siteUtilities">
+          <p className="siteContext">
+            <span aria-hidden="true" />
+            {context}
+          </p>
           <a
-            aria-current={active === item.section ? "page" : undefined}
-            href={item.href}
-            key={item.section}
+            aria-current={active === "account" ? "page" : undefined}
+            className="siteAccountLink"
+            href="/account"
           >
-            {item.label}
+            Account
           </a>
-        ))}
-      </nav>
-      <p className="siteContext">
-        <span aria-hidden="true" />
-        {context}
-      </p>
-    </header>
+        </div>
+      </header>
+      <span className="pageContentAnchor" id="page-content" tabIndex={-1} />
+    </>
   );
 }
 
@@ -48,7 +63,9 @@ export function SiteFooter() {
       <p>Practical guidance for confident travel in China.</p>
       <div className="siteFooterLinks">
         <nav aria-label="Product links">
-          <a href="/guides/payment">Payment guide</a>
+          <a href="/">Copilot</a>
+          <a href="/explore">Explore</a>
+          <a href="/guides/payment">Guides</a>
           <a href="/human-help">Human Help</a>
           <a href="/account">Account</a>
         </nav>

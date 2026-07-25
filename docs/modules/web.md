@@ -168,6 +168,15 @@ and truthful; retries are offered only for retryable jobs within the server-owne
 - The canonical visual source is the Red Gold Design System.
 - Public product routes share one navigation and footer rhythm. Floating navigation may use a
   translucent material, but content hierarchy and legibility take priority over decoration.
+- The shared header exposes four primary destinations in one stable order: Copilot, Explore,
+  Guides, and Human Help. Account is a separate utility action. The shared footer repeats those
+  product destinations and every accepted trust/legal route.
+- On narrow screens the Copilot workspace uses a prompt-first stack: the composer and example
+  questions precede the potentially long conversation and Trip detail stream. Desktop keeps the
+  conversation at left and the prompt rail at right. This is composition only; response, Trip, and
+  completion behavior remain unchanged.
+- Every shared header provides a keyboard-visible skip link to the content immediately after the
+  navigation. Primary navigation and account targets remain at least 44 pixels high.
 - Interactive controls provide immediate press feedback and preserve a 44-pixel minimum target.
   Reduced-motion, reduced-transparency, and increased-contrast preferences must retain a complete,
   understandable experience.
