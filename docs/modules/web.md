@@ -60,6 +60,11 @@ sanitized runtime diagnostic: route/provider id, configured model id, failure cl
 never logs a prompt, provider response body, credential, cookie, or raw error payload. This is the
 minimum evidence needed to diagnose the real-provider gate without widening public error details.
 
+Unexpected Copilot persistence, driver, or internal runtime failures return the stable public 502
+`COPILOT_REQUEST_FAILED` contract with generic retry guidance. Raw exception messages, SQL, relation
+names, connection details, cookies, signatures, prompts, and provider material must never cross the
+public response boundary; server diagnostics for this fallback are limited to a fixed failure class.
+
 DEMO-01b keeps the Web surface deliberately narrow: it renders only the validated assistant
 headline/body/highlights envelope, a static read-only preview of up to three returned Trip days,
 and visible request, failure, and retry states. Request labels describe observed lifecycle state; they
