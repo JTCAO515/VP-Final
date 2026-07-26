@@ -20,6 +20,14 @@
       "types": "./src/db/opsCostSummaryService.ts",
       "default": "./dist/db/opsCostSummaryService.js"
     },
+    "./partner-administration": {
+      "types": "./src/modules/commerce/partnerAdministration.ts",
+      "default": "./dist/modules/commerce/partnerAdministration.js"
+    },
+    "./db-partner-administration": {
+      "types": "./src/db/partnerAdministrationService.ts",
+      "default": "./dist/db/partnerAdministrationService.js"
+    },
     "./ops-authorization": {
       "types": "./src/modules/opsAuthorization/service.ts",
       "default": "./dist/modules/opsAuthorization/service.js"

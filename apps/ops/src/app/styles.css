@@ -151,6 +151,13 @@ button:disabled {
   opacity: 0.55;
 }
 
+.secondaryButton,
+.partnerStatusActions button {
+  background: var(--soft);
+  border: 1px solid var(--line);
+  color: var(--text);
+}
+
 .linkButton {
   background: transparent;
   color: var(--text);
@@ -408,6 +415,146 @@ button:disabled {
   padding: 18px 20px;
 }
 
+.partnerHeading,
+.partnerListHeading,
+.partnerCard header {
+  align-items: flex-start;
+  display: flex;
+  gap: 18px;
+  justify-content: space-between;
+}
+
+.partnerHeading h1,
+.partnerHeading p,
+.partnerListHeading h2,
+.partnerListHeading p,
+.partnerEditor h2,
+.partnerEditor p,
+.partnerCard p {
+  margin-top: 0;
+}
+
+.partnerWorkspace {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: minmax(280px, 0.72fr) minmax(0, 1.28fr);
+}
+
+.partnerEditor {
+  align-self: start;
+  display: grid;
+  gap: 18px;
+  padding: 20px;
+  position: sticky;
+  top: 18px;
+}
+
+.partnerEditor form,
+.partnerEditor label {
+  display: grid;
+  gap: 7px;
+}
+
+.partnerEditor form {
+  gap: 13px;
+}
+
+.partnerEditor label,
+.partnerCard dt {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.partnerEditor input {
+  min-width: 0;
+  width: 100%;
+}
+
+.partnerNotice,
+.partnerPreviewNotice {
+  background: var(--soft);
+  border: 1px solid var(--line);
+  padding: 10px 12px;
+}
+
+.partnerListHeading {
+  margin-bottom: 12px;
+}
+
+.partnerList {
+  display: grid;
+  gap: 14px;
+}
+
+.partnerCard {
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+}
+
+.partnerCard header > div {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.partnerCard header strong {
+  font-size: 18px;
+}
+
+.partnerStatus {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 3px 8px;
+  text-transform: uppercase;
+}
+
+.partnerStatus-active {
+  background: var(--vp-success-soft);
+  color: var(--vp-success);
+}
+
+.partnerStatus-pending {
+  background: var(--vp-warning-soft);
+  color: var(--vp-ink);
+}
+
+.partnerStatus-inactive {
+  background: var(--soft);
+  color: var(--muted);
+}
+
+.partnerCard dl {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+}
+
+.partnerCard dl div {
+  min-width: 0;
+}
+
+.partnerCard dd {
+  margin: 4px 0 0;
+  overflow-wrap: anywhere;
+}
+
+.partnerStatusActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.partnerStatusActions .activateButton {
+  background: var(--accent);
+  color: var(--vp-on-primary);
+}
+
 .costNotice > p,
 .reconciliation > p {
   max-width: 620px;
@@ -467,5 +614,31 @@ button:disabled {
 
   .metric:last-child {
     grid-column: 1 / -1;
+  }
+
+  .topbar {
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 18px;
+  }
+
+  .page {
+    padding: 20px 16px;
+  }
+
+  .partnerHeading,
+  .partnerListHeading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .partnerWorkspace,
+  .partnerCard dl {
+    grid-template-columns: 1fr;
+  }
+
+  .partnerEditor {
+    position: static;
   }
 }
