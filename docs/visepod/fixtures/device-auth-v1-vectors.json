@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "algorithm": "RSA-PSS-SHA256",
+  "saltLengthBytes": 32,
+  "canonicalFieldOrder": [
+    "protocol",
+    "deviceId",
+    "credentialVersion",
+    "challengeId",
+    "nonce",
+    "issuedAtMs",
+    "expiresAtMs",
+    "audience",
+    "purpose"
+  ],
+  "fields": {
+    "protocol": "VPOD-AUTH/1",
+    "deviceId": "018f6f5f-5b4e-7d3a-8c9b-1a2b3c4d5e6f",
+    "credentialVersion": "1",
+    "challengeId": "018f6f60-3d2a-7ca1-9b2c-2b3c4d5e6f70",
+    "nonce": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+    "issuedAtMs": "1785148800000",
+    "expiresAtMs": "1785148860000",
+    "audience": "visepanda-device-api",
+    "purpose": "device_session"
+  },
+  "canonicalUtf8Base64": "VlBPRC1BVVRILzEKMDE4ZjZmNWYtNWI0ZS03ZDNhLThjOWItMWEyYjNjNGQ1ZTZmCjEKMDE4ZjZmNjAtM2QyYS03Y2ExLTliMmMtMmIzYzRkNWU2ZjcwCkFBRUNBd1FGQmdjSUNRb0xEQTBPRHhBUkVoTVVGUllYR0JrYUd4d2RIaDgKMTc4NTE0ODgwMDAwMAoxNzg1MTQ4ODYwMDAwCnZpc2VwYW5kYS1kZXZpY2UtYXBpCmRldmljZV9zZXNzaW9u",
+  "canonicalSha256Hex": "67ff887a2b61af72e9ffea56463752a063ac49e19de252ab1f3786b5d931ceee",
+  "publicKeySpkiPem": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAn5CheZGbYyYoSOhrfcG2\nFvjW3yKrQNOqlG9WgWj4pxxwj+tIzPtmVxwP75yuNKZsprYGDlbfdNW+HJ3XSP8v\nqTVlX8+sa/vmKwJEKC8KKSiN+7lrTTrLQoKtEmzhQNOUsOuYl7hDfJjk9UpHPjLX\nROZ7ZJxWtQn8lr36cg4AxduScZ8RjubHhz0KyGEfwj6LEt7fccvNF3JLuuF9+I6e\nX87ITq7ZEvXfQmzx1cAFxXX9Nfp9jK0QxupN2m5PTPVRg8/uSzmm/eztDNgOBV4p\nGErLFsPzxojwGhcc45Y833iV2/6e1YKrvetEmldMwqccPDfzDIYaDIc7aLg4+dCv\nDwIDAQAB\n-----END PUBLIC KEY-----\n",
+  "publicKeySpkiSha256Hex": "c598ff91971bbd9f43a5a9c8e6cb0cbc2c99afd21d403c100974ce896832c349",
+  "signatureBase64Url": "L1OUy1qEfGFg4AlXnA6SP1lPRtpNX0lYig8CykMu9LWfKd75IlL-8b_3665jTbHPlnJT9QAG5mJoA89U5CRd188dZ1iWvJ8G7AoIifUxY9Cymupppq7YiKbYRcEhbSx45A2BQDZeqHXyRw-tyX_IpF6nyzSBL4__Bocxm5igKLiFIEk1nucIyi-KWMv8UQ0NWdeCq-cdDaPm6QLk98zho2Vq_jJ5l4PWlS4ait1Zs6pf8PcCp48zt8KyZdbE_nnmsb19bYhca1oS6VXWFS64uuwdlh3IYR6G0mLI2mhz5KNrcSYKksIW2j3fpgOivM5iEWhu3U7qN6RYbFaOgN6TLQ",
+  "expectedVerification": true,
+  "challengePolicy": {
+    "nonceBytes": 32,
+    "ttlMs": 60000,
+    "consume": "atomic-once",
+    "clockAuthority": "server"
+  },
+  "tokenPolicy": {
+    "opaqueTokenBytes": 32,
+    "storage": "sha256-digest-only",
+    "tokenTtlMs": 300000,
+    "maxConnectedSessionMs": 900000,
+    "scopes": ["device:session"],
+    "refreshSupported": false
+  },
+  "negativeCases": [
+    {
+      "id": "altered-device-id",
+      "mutation": {
+        "field": "deviceId",
+        "value": "018f6f5f-5b4e-7d3a-8c9b-1a2b3c4d5e70"
+      },
+      "expectedCode": "DEVICE_SIGNATURE_INVALID"
+    },
+    {
+      "id": "expired-challenge",
+      "serverNowMs": "1785148860001",
+      "expectedCode": "DEVICE_CHALLENGE_EXPIRED"
+    },
+    {
+      "id": "replayed-challenge",
+      "precondition": "challenge already consumed",
+      "expectedCode": "DEVICE_CHALLENGE_REPLAYED"
+    },
+    {
+      "id": "revoked-device",
+      "precondition": "device status revoked",
+      "expectedCode": "DEVICE_REVOKED"
+    },
+    {
+      "id": "superseded-credential",
+      "precondition": "credential version is not active",
+      "expectedCode": "DEVICE_CREDENTIAL_REVOKED"
+    }
+  ],
+  "revocationAssertions": {
+    "outstandingChallengesDeleted": true,
+    "activeSessionsDeleted": true,
+    "activeTransportDisconnected": true,
+    "statusOnlyRecoveryAllowed": false,
+    "physicalReprovisionRequired": true
+  }
+}

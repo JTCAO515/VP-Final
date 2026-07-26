@@ -54,3 +54,16 @@ the repository.
 
 “Done” means the relevant lifecycle gate has passed, not merely that code is committed. A production
 flow also requires observability, rollback, and an owner.
+
+## Cross-runtime Contract Fixtures
+
+Deterministic fixtures shared with a runtime outside this monorepo must have a repository-owned
+verifier and run in the root test gate. The VisePod firmware/server authentication seed is checked by:
+
+```bash
+pnpm visepod:auth-vector
+```
+
+This check proves canonical bytes, the committed public-key signature, and frozen challenge/session
+policy fields. It does not replace real hardware, external provider, deployment, or security-review
+evidence.

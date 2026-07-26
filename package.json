@@ -10,9 +10,10 @@
     "docs:index": "node scripts/docs/generate-index.mjs",
     "docs:check": "node scripts/docs/check.mjs",
     "docs:impact": "node scripts/docs/check-impact.mjs",
-    "test": "turbo run test",
+    "test": "turbo run test && pnpm visepod:auth-vector",
     "typecheck": "turbo run typecheck",
-    "lint": "turbo run lint"
+    "lint": "turbo run lint",
+    "visepod:auth-vector": "node scripts/verify-visepod-auth-vector.mjs"
   },
   "devDependencies": {
     "prettier": "^3.4.2",

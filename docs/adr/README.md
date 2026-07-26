@@ -17,6 +17,7 @@ New ADRs are append-only and use the next numeric prefix.
 | [ADR-0010](ADR-0010-copilot-cost-accounting-contract.md)               | Accepted | Freezes cache-aware provider pricing, deterministic cost calculation, and independent cost-ledger lifecycle.                               |
 | [ADR-0011](ADR-0011-retention-purge-scheduling.md)                     | Accepted | Uses database-local scheduled retention purges with bounded health evidence.                                                               |
 | [ADR-0012](ADR-0012-phase0-telemetry-observation-contract.md)          | Accepted | Freezes privacy-safe Phase 0 telemetry capture, registered actions, and private aggregate views.                                           |
+| [ADR-0013](ADR-0013-visepod-device-authentication.md)                  | Proposed | Selects ESP32-S3 RSA DS-backed challenge authentication for P01, pending hardware evidence and independent Tier B review.                 |
 
 ## When to Add an ADR
 
@@ -34,3 +35,5 @@ Each ADR should include:
 - Context
 - Decision
 - Consequences
+- Rollback or exit decision
+- Verification required for acceptance
