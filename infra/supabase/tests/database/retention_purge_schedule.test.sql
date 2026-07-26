@@ -32,7 +32,7 @@ select is(
 );
 
 select throws_ok(
-  $select internal.run_retention_purge(null)$,
+  $$select internal.run_retention_purge(null)$$,
   '22023',
   'Unsupported retention purge target',
   'the purge wrapper rejects a null target'
