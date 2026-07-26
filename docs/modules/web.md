@@ -60,6 +60,11 @@ sanitized runtime diagnostic: route/provider id, configured model id, failure cl
 never logs a prompt, provider response body, credential, cookie, or raw error payload. This is the
 minimum evidence needed to diagnose the real-provider gate without widening public error details.
 
+Unexpected Copilot persistence, driver, or internal runtime failures return the stable public 502
+`COPILOT_REQUEST_FAILED` contract with generic retry guidance. Raw exception messages, SQL, relation
+names, connection details, cookies, signatures, prompts, and provider material must never cross the
+public response boundary; server diagnostics for this fallback are limited to a fixed failure class.
+
 DEMO-01b keeps the Web surface deliberately narrow: it renders only the validated assistant
 headline/body/highlights envelope, a static read-only preview of up to three returned Trip days,
 and visible request, failure, and retry states. Request labels describe observed lifecycle state; they
@@ -170,6 +175,15 @@ and truthful; retries are offered only for retryable jobs within the server-owne
 - The canonical visual source is the Red Gold Design System.
 - Public product routes share one navigation and footer rhythm. Floating navigation may use a
   translucent material, but content hierarchy and legibility take priority over decoration.
+- The shared header exposes four primary destinations in one stable order: Copilot, Explore,
+  Guides, and Human Help. Account is a separate utility action. The shared footer repeats those
+  product destinations and every accepted trust/legal route.
+- On narrow screens the Copilot workspace uses a prompt-first stack: the composer and example
+  questions precede the potentially long conversation and Trip detail stream. Desktop keeps the
+  conversation at left and the prompt rail at right. This is composition only; response, Trip, and
+  completion behavior remain unchanged.
+- Every shared header provides a keyboard-visible skip link to the content immediately after the
+  navigation. Primary navigation and account targets remain at least 44 pixels high.
 - Interactive controls provide immediate press feedback and preserve a 44-pixel minimum target.
   Reduced-motion, reduced-transparency, and increased-contrast preferences must retain a complete,
   understandable experience.
