@@ -16,9 +16,17 @@
       "types": "./src/db/opsAuthorizationService.ts",
       "default": "./dist/db/opsAuthorizationService.js"
     },
+    "./db-ops-cost-summary": {
+      "types": "./src/db/opsCostSummaryService.ts",
+      "default": "./dist/db/opsCostSummaryService.js"
+    },
     "./ops-authorization": {
       "types": "./src/modules/opsAuthorization/service.ts",
       "default": "./dist/modules/opsAuthorization/service.js"
+    },
+    "./ops-cost-summary": {
+      "types": "./src/modules/costSummary/service.ts",
+      "default": "./dist/modules/costSummary/service.js"
     },
     "./runtime": {
       "types": "./src/runtime/runtimeMode.ts",
