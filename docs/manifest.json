@@ -749,6 +749,19 @@
         "infra/supabase/migrations/20260724090000_llm_cost_agent_run_lifecycle.sql"
       ]
     },
+    {
+      "path": "docs/adr/ADR-0011-retention-purge-scheduling.md",
+      "title": "ADR-0011: Database-local Retention Purge Scheduling",
+      "category": "decisions",
+      "type": "decision",
+      "status": "accepted",
+      "owner": "security / data platform",
+      "summary": "Uses private pg_cron jobs, bounded deletion-count evidence, and per-target health to enforce accepted retention deadlines.",
+      "sourcePrefixes": [
+        "infra/supabase/migrations/20260726150000_retention_purge_schedule.sql",
+        "infra/supabase/tests/database/retention_purge_schedule.test.sql"
+      ]
+    },
 
     {
       "path": "docs/runbooks/README.md",
