@@ -49,7 +49,7 @@ declare
   events_deleted bigint := 0;
   human_tasks_deleted bigint := 0;
 begin
-  if p_target not in ('agent_traces', 'copilot_observability', 'human_tasks') then
+  if p_target is null or p_target not in ('agent_traces', 'copilot_observability', 'human_tasks') then
     raise exception using errcode = '22023', message = 'Unsupported retention purge target';
   end if;
 
