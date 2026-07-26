@@ -31,3 +31,4 @@ Each ADR should include:
 - Context
 - Decision
 - Consequences
+- [ADR-0011](ADR-0011-retention-purge-scheduling.md): database-local daily retention purge scheduling, bounded execution evidence, and failure health.
