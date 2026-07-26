@@ -46,7 +46,12 @@ Status: active
 - The completion callback and QStash delivery use a five-minute request budget. The ten-minute job
   claim lease MUST remain longer than that budget so a still-running callback cannot be reclaimed by
   an overlapping delivery.
-- Database-backed integration tests whose normal test path skips without `DATABASE_URL` MUST be\n  listed explicitly in the CI `Database contracts` job before their PR can claim durable verification.\n  A skipped test in the general test job is not database evidence.\n- Feature flags MUST have owner, default, exposure rule, expiry/review date, and rollback behavior.
+- Database-backed integration tests whose normal test path skips without `DATABASE_URL` MUST be
+  listed explicitly in the CI `Database contracts` job before their PR can claim durable verification.
+  A skipped test in the general test job is not database evidence. The outbound Commerce adapter is
+  included in this explicit database suite because redirect authorization depends on an authoritative
+  partner lookup and ledger commit.
+- Feature flags MUST have owner, default, exposure rule, expiry/review date, and rollback behavior.
 - Rollback MUST NOT reverse an already-applied destructive data change; migrations require a forward
   recovery plan.
 

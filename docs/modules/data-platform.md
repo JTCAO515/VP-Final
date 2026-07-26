@@ -45,8 +45,10 @@ commercial evidence, Human Tasks, and telemetry. Repository migrations are the s
 - Partner config, outbound clicks, telemetry, Human Tasks, and internal aggregates are server-only.
 - Retained outbound clicks may carry one verified user id or one signed anonymous id, never both.
   These fields are derived by the server and are not accepted from redirect query parameters. The
-  public gateway must still require an active database partner and an HTTPS allowlisted host before
-  the later runtime consumer writes or redirects.
+  public gateway requires an active database partner and an exact HTTPS allowlisted host, then writes
+  the click in the same locked partner transaction before redirecting. The database compatibility
+  constraint still permits a retained row to become ownerless after account deletion, but every new
+  runtime write passes the stricter exactly-one-identity domain contract.
 - `poi_fact_editorial_audit` is server-only: it retains a bulk collection row id, deterministic
   content digest, researcher/reviewer handles, actual evidence-review time, and internal review notes.
   RLS is enabled and no `anon` or `authenticated` grant exists. It must not be joined into any public

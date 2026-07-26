@@ -15,6 +15,7 @@ export {
   KnowledgeImportValidationError,
 } from "./db/knowledgeBulkImportService.js";
 export { createDbHumanTaskService } from "./db/humanTaskService.js";
+export { createDbCommerceService } from "./db/commerceService.js";
 export { createDbAgentTraceService } from "./db/agentTraceService.js";
 export type { DbAgentTraceService } from "./db/agentTraceService.js";
 export { createDbOpsAuthorizationService } from "./db/opsAuthorizationService.js";
@@ -104,9 +105,22 @@ export {
   createVersionedInMemoryTripService,
   TripVersionConflictError,
 } from "./modules/trip/versionedService.js";
+export {
+  createCommerceService,
+  InvalidOutboundTargetError,
+  PartnerUnavailableError,
+} from "./modules/commerce/service.js";
+export { OutboundRedirectInputSchema } from "./modules/commerce/router.js";
 export type { RequestIdentity } from "./context.js";
 export type { AdapterAvailability, RuntimeMode, RuntimeResolution } from "./runtime/runtimeMode.js";
 export type { KnowledgeService } from "./modules/knowledge/service.js";
+export type {
+  CommerceService,
+  CreateOutboundRedirectCommand,
+  OutboundClickWriter,
+  OutboundIdentity,
+  OutboundRedirect,
+} from "./modules/commerce/service.js";
 export type {
   AnonymousTurnAdmission,
   AnonymousTurnCounter,
