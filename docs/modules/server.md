@@ -65,6 +65,12 @@ modules yet.
   header, Redis failure, or invalid response fails closed before model execution under OA-013.
 - Knowledge, Human Task, and Telemetry routers require a service selected by the composition root;
   omitted capabilities return typed `SERVICE_UNAVAILABLE` and never construct memory internally.
+- P0-18a freezes the outbound-click persistence shape before the commerce runtime is connected.
+  Retained clicks may carry one server-derived verified user id or one signed anonymous id, never
+  both; the additive database constraint preserves legacy ownerless rows and account-deletion
+  history. A later runtime writer must enforce exactly one identity through the domain schema and
+  may redirect only for an active database partner to an explicitly allowlisted HTTPS host. This
+  package does not yet claim a durable outbound writer or public redirect gateway.
 - The knowledge bulk-import adapter is durable-only. It validates the fixed six-city CSV at the trust
   boundary, dry-runs against database identities, commits only a wholly valid batch in one transaction,
   and records private editorial provenance separately from public fact reads. `local-demo` and test
