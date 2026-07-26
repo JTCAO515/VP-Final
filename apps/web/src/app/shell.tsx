@@ -395,12 +395,13 @@ export function CopilotShell() {
         }
       }
     } catch (error) {
-      setRequestFailure((current) =>
-        current ??
-        requestFailureNotice({
-          ok: false,
-          error: error instanceof Error ? error.message : "Copilot connection failed.",
-        }),
+      setRequestFailure(
+        (current) =>
+          current ??
+          requestFailureNotice({
+            ok: false,
+            error: error instanceof Error ? error.message : "Copilot connection failed.",
+          }),
       );
       setProgress({
         status: "failed",
@@ -602,13 +603,14 @@ export function CopilotShell() {
               <CopilotRequestNotice
                 notice={requestFailure}
                 noticeRef={preflightFailureNotice}
-                onRetry={
-                  requestFailure.retryable ? () => void submitPrompt({ retry: true }) : null
-                }
+                onRetry={requestFailure.retryable ? () => void submitPrompt({ retry: true }) : null}
               />
             ) : null}
             {registrationNotice ? (
-              <div className={`copilotNotice account ${registrationGate ? "blocked" : "warning"}`} role={registrationGate ? "alert" : "status"}>
+              <div
+                className={`copilotNotice account ${registrationGate ? "blocked" : "warning"}`}
+                role={registrationGate ? "alert" : "status"}
+              >
                 <span className="copilotNoticeLabel">Account</span>
                 <div>
                   <strong>{registrationNotice.title}</strong>
@@ -897,10 +899,7 @@ export function requestFailureNotice(error: ErrorResponse): RequestFailureNotice
       retryable: true,
     };
   }
-  if (
-    error.code === "MODEL_CONFIGURATION_UNAVAILABLE" ||
-    error.code === "MODEL_EXECUTION_FAILED"
-  ) {
+  if (error.code === "MODEL_CONFIGURATION_UNAVAILABLE" || error.code === "MODEL_EXECUTION_FAILED") {
     return {
       kind: "model-failure",
       label: "Model unavailable",
