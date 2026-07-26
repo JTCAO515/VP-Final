@@ -49,7 +49,8 @@ export function createDbOpsCostSummaryService(
       const window = costWindow(now(), query.windowDays);
       const fromDay = `${window.fromDay}T00:00:00.000Z`;
       const throughExclusive = new Date(`${window.throughDay}T00:00:00.000Z`);
-      throughExclusive.setUTCDate(throughExclusive.getUTCDate() + 1);\n      const throughExclusiveTimestamp = throughExclusive.toISOString();
+      throughExclusive.setUTCDate(throughExclusive.getUTCDate() + 1);
+      const throughExclusiveTimestamp = throughExclusive.toISOString();
 
       const [dailyRows, modelRows, identityRows, reconciliationRows] = await Promise.all([
         db.execute<DailyRow>(sql`
