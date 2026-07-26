@@ -68,10 +68,7 @@ describe("previewTripDays", () => {
   });
 
   it("renders an honest new-visitor state without live-preview claims or an actionable blank submit", () => {
-    const runtimeGlobal = globalThis as typeof globalThis & { React?: typeof React };
-    runtimeGlobal.React = React;
-    const html = renderToStaticMarkup(React.createElement(CopilotShell));
-    delete runtimeGlobal.React;
+    const html = renderWithReactGlobal(React.createElement(CopilotShell));
 
     expect(html).toContain("Illustrative arrival example");
     expect(html).toContain("Not live trip data");
@@ -130,7 +127,7 @@ describe("previewTripDays", () => {
   });
 
   it("renders model failure as an honest shared notice with a retry action", () => {
-    const html = renderToStaticMarkup(
+    const html = renderWithReactGlobal(
       React.createElement(CopilotRequestNotice, {
         notice: requestFailureNotice({
           ok: false,
@@ -150,7 +147,7 @@ describe("previewTripDays", () => {
   });
 
   it("does not offer an immediate retry button for the IP wait state", () => {
-    const html = renderToStaticMarkup(
+    const html = renderWithReactGlobal(
       React.createElement(CopilotRequestNotice, {
         notice: requestFailureNotice({
           ok: false,
@@ -168,6 +165,16 @@ describe("previewTripDays", () => {
     expect(html).not.toContain("<button");
   });
 });
+
+function renderWithReactGlobal(element: React.ReactNode): string {
+  const runtimeGlobal = globalThis as typeof globalThis & { React?: typeof React };
+  runtimeGlobal.React = React;
+  try {
+    return renderToStaticMarkup(element);
+  } finally {
+    delete runtimeGlobal.React;
+  }
+}
 
 function progress(status: "idle" | "skeleton" | "completing" | "completed" | "failed") {
   return {
