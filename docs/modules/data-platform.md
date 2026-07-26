@@ -43,6 +43,10 @@ commercial evidence, Human Tasks, and telemetry. Repository migrations are the s
   writes and event append occur in one transaction; public share tokens are revocable read-only
   capabilities. See [ADR-0004](../adr/ADR-0004-identity-trip-ownership-security.md).
 - Partner config, outbound clicks, telemetry, Human Tasks, and internal aggregates are server-only.
+- Retained outbound clicks may carry one verified user id or one signed anonymous id, never both.
+  These fields are derived by the server and are not accepted from redirect query parameters. The
+  public gateway must still require an active database partner and an HTTPS allowlisted host before
+  the later runtime consumer writes or redirects.
 - `poi_fact_editorial_audit` is server-only: it retains a bulk collection row id, deterministic
   content digest, researcher/reviewer handles, actual evidence-review time, and internal review notes.
   RLS is enabled and no `anon` or `authenticated` grant exists. It must not be joined into any public
@@ -85,12 +89,8 @@ other Copilot events. The runtime writer commits each turn and its N cost attemp
 in one transaction. It copies provider-reported usage and the fixed-point price/cost snapshot; absent
 usage is zero rather than estimated. The default retention windows are conversation 180 days, cost
 400 days, and event 180 days, with separate positive-integer server env overrides. Internal views
-expose only aggregate cost, volume, fallback, cached-input, and cache-hit metrics. A private
-reconciliation-health view lists only opaque run/attempt and model metadata for retained token-bearing
-calls whose three immutable price snapshots are all zero; it exposes no conversation content or
-identity. The nine Copilot product-event actions require an explicit event expiry.
-`daily_budget_exceeded` is unique per UTC day and records a fixed-point threshold observation only;
-it is an operations warning and MUST NOT stop model service automatically.
+expose only aggregate cost, volume, and fallback metrics. The eight Copilot product-event actions
+require an explicit event expiry.
 Cost rows keep an immutable, non-null Agent Run UUID, but their lifecycle is independent of the
 30-day trace parent. A database trigger requires the Agent Run to exist when a cost row is inserted
 and rejects later changes to the correlation id. After trace purge, the retained UUID is an expected
