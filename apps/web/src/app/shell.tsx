@@ -361,7 +361,7 @@ export function CopilotShell() {
           });
           return;
         }
-        setRequestFailure(requestFailureNotice(data));
+        if (!data.ok) setRequestFailure(requestFailureNotice(data));
         throw new Error(data.ok ? "Copilot request failed." : data.error);
       }
 
