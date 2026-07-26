@@ -88,6 +88,11 @@ modules yet.
 - The explicit Ops permission matrix reserves `cost.read` for Admins only. It grants access only to
   sanitized private aggregates and reconciliation metadata through a protected server consumer; it
   does not grant direct Data API access or expose conversation content.
+- The Ops cost-summary adapter queries only the accepted `internal.copilot_cost_*` views after an
+  explicit `cost.read` check. Its 14-day UTC projection includes daily/model totals, cached-input and
+  fallback rates, top identity aggregates represented by one-way short references, and unpriced-call
+  health counts. Raw identity ids, Agent Run ids, conversations, credentials, cookies, and signatures
+  are not part of the service result.
 - When `VISEPANDA_DAILY_LLM_BUDGET_USD` is configured with a positive fixed-point USD value, the
   durable Trace writer observes the retained UTC-day cost total after each committed model run.
   Crossing the threshold appends at most one private `daily_budget_exceeded` event for that UTC day,

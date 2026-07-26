@@ -18,6 +18,7 @@ export { createDbHumanTaskService } from "./db/humanTaskService.js";
 export { createDbAgentTraceService } from "./db/agentTraceService.js";
 export type { DbAgentTraceService } from "./db/agentTraceService.js";
 export { createDbOpsAuthorizationService } from "./db/opsAuthorizationService.js";
+export { createDbOpsCostSummaryService } from "./db/opsCostSummaryService.js";
 export { createDbVersionedTripService } from "./db/versionedTripService.js";
 export { createDbCompletionJobService } from "./db/completionJobService.js";
 export {
@@ -47,6 +48,7 @@ export {
   resolveCopilotRetentionPolicy,
   retentionDeadline,
 } from "./modules/observability/copilotPersistence.js";
+export { resolveDailyLlmBudgetUsd } from "./modules/observability/dailyBudget.js";
 export { createInMemoryCompletionJobService } from "./modules/copilot/completionJobService.js";
 export {
   ANONYMOUS_TURN_TTL_SECONDS,
@@ -93,6 +95,11 @@ export {
   permissionsForRole,
   requireOpsAccess,
 } from "./modules/opsAuthorization/service.js";
+export {
+  costWindow,
+  privateIdentityReference,
+  requireCostRead,
+} from "./modules/costSummary/service.js";
 export {
   createVersionedInMemoryTripService,
   TripVersionConflictError,
@@ -155,6 +162,14 @@ export type {
   OpsRole,
   RecordOpsAuditInput,
 } from "./modules/opsAuthorization/service.js";
+export type {
+  CopilotCostDailySummary,
+  CopilotCostIdentitySummary,
+  CopilotCostModelSummary,
+  CopilotCostReconciliationSummary,
+  CopilotCostSummary,
+  OpsCostSummaryService,
+} from "./modules/costSummary/service.js";
 export type {
   ApplyTripPatchInput,
   ClaimIdentity,

@@ -27,6 +27,9 @@ the public Web application and protected by server-side role checks.
   Mutation responses contain status/audit evidence only and never echo contact or description.
 - `/login`: verified Supabase Ops sign-in.
 - `/roles` and `/api/roles`: Admin-only membership management.
+- `/costs`: Admin-only server-rendered Copilot cost summary for the latest 14 UTC days. It displays
+  retained daily/model aggregates, cache and fallback rates, pseudonymous top-identity references,
+  and reconciliation health without exposing conversation content or raw identity ids.
 
 ## Current State
 
@@ -49,10 +52,12 @@ the public Web application and protected by server-side role checks.
   until `done` or `cancelled`; Operators can propose a gap but cannot publish a fact or bypass Editor
   review.
 - #249 reserves an explicit Admin-only `cost.read` permission for the private Copilot cost summary.
-  The contract includes daily/model/identity aggregates, cached-input and cache-hit metrics, and an
-  unpriced-call reconciliation queue. The `/costs` route and runtime daily-budget event writer remain
-  later consumers of this reviewed contract; this contract change alone does not claim the Ops table
-  is live.
+  The runtime warning observer records at most one threshold event per UTC day without stopping model
+  service. The `/costs` server consumer reads only the reviewed internal aggregate/reconciliation
+  views. Stable user and anonymous ids are transformed into short one-way references before reaching
+  the page; no conversation, run id, credential, cookie, or signature is returned. Missing durable
+  configuration shows an honest unavailable state, and an unset warning threshold is labelled as not
+  configured rather than assigned a default.
 - Partner and payment operations are not yet available.
 
 Production use still requires OA-001, OA-004, and OA-010 verification. Missing Auth or database

@@ -344,6 +344,105 @@ button:disabled {
   padding: 12px 14px;
 }
 
+.costHeading,
+.costNotice,
+.reconciliation {
+  align-items: center;
+  display: flex;
+  gap: 24px;
+  justify-content: space-between;
+}
+
+.costHeading .eyebrow,
+.costHeading h1,
+.costHeading p,
+.costNotice p,
+.reconciliation p,
+.reconciliation h2,
+.costUnavailable p,
+.costUnavailable h2 {
+  margin-top: 0;
+}
+
+.costHeading .pill {
+  flex: 0 0 auto;
+}
+
+.costStatus {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  margin-bottom: 18px;
+}
+
+.metric {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  padding: 16px;
+}
+
+.metric span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.metric strong {
+  font-size: 22px;
+  overflow-wrap: anywhere;
+}
+
+.dangerMetric,
+.needsReview {
+  border-color: var(--accent);
+}
+
+.costNotice,
+.reconciliation,
+.costUnavailable {
+  margin-bottom: 24px;
+  padding: 18px 20px;
+}
+
+.costNotice > p,
+.reconciliation > p {
+  max-width: 620px;
+}
+
+.costSection {
+  margin: 28px 0;
+}
+
+.costSection > h2 {
+  font-size: 20px;
+  margin: 0 0 12px;
+}
+
+.tableScroll {
+  overflow-x: auto;
+}
+
+.tableScroll table {
+  min-width: 720px;
+}
+
+.tableScroll td strong,
+.tableScroll td small {
+  display: block;
+}
+
+.tableScroll td small {
+  margin-top: 4px;
+}
+
+.costUnavailable {
+  max-width: 720px;
+}
+
 @media (max-width: 760px) {
   .taskDetailGrid,
   .taskRequest dl {
@@ -352,5 +451,21 @@ button:disabled {
 
   .taskHeading {
     gap: 14px;
+  }
+
+  .costHeading,
+  .costNotice,
+  .reconciliation {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .costStatus {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .metric:last-child {
+    grid-column: 1 / -1;
   }
 }
