@@ -1,0 +1,26 @@
+{
+  "name": "@visepanda/visepod-speech-spike",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "benchmark": "tsx src/cli.ts",
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "prettier --check src"
+  },
+  "dependencies": {
+    "ws": "^8.18.3"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.1",
+    "@types/ws": "^8.18.1",
+    "prettier": "^3.4.2",
+    "tsx": "^4.20.6",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}
