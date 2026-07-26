@@ -47,9 +47,9 @@ export function createDbOpsCostSummaryService(
     async getSummary(actor, query = {}) {
       requireCostRead(actor);
       const window = costWindow(now(), query.windowDays);
-      const fromDay = new Date(`${window.fromDay}T00:00:00.000Z`);
+      const fromDay = `${window.fromDay}T00:00:00.000Z`;
       const throughExclusive = new Date(`${window.throughDay}T00:00:00.000Z`);
-      throughExclusive.setUTCDate(throughExclusive.getUTCDate() + 1);
+      throughExclusive.setUTCDate(throughExclusive.getUTCDate() + 1);\n      const throughExclusiveTimestamp = throughExclusive.toISOString();
 
       const [dailyRows, modelRows, identityRows, reconciliationRows] = await Promise.all([
         db.execute<DailyRow>(sql`
@@ -97,7 +97,7 @@ export function createDbOpsCostSummaryService(
                  count(distinct (provider, model))::bigint as affected_model_count,
                  min(created_at) as oldest_unpriced_at
           from internal.copilot_cost_reconciliation_health
-          where created_at >= ${fromDay} and created_at < ${throughExclusive}
+          where created_at >= ${fromDay} and created_at < ${throughExclusiveTimestamp}
         `),
       ]);
 
