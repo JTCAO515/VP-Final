@@ -9,16 +9,16 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
 
 ## Public Areas
 
-| Area            | Owns                                                                                                              |
-| --------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `trip`          | TripState, TripPatch operations, `applyPatch`, `diffTrips`, generation progress                                   |
-| `copilot`       | Intent, message, citations, tool cards, commercial actions, Human Help handoff, envelope, completion-job contract |
-| `knowledge`     | POI, execution facts, knowledge gaps, scene-tag derivation, reviewed seed data, and ADR-0006 fact eligibility     |
-| `task`          | Human Task input, lifecycle, transition commands, private outcome evidence, and non-status updates                |
-| `commerce`      | Partner configuration, outbound click, URL validation and tracking construction                                   |
-| `events`        | Telemetry event contract                                                                                          |
-| `observability` | Redacted Copilot turn, per-attempt cost, product-event action, and forbidden-persistence contracts                |
-| `errors`        | Shared typed error shapes                                                                                         |
+| Area            | Owns                                                                                                                             |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `trip`          | TripState, TripPatch operations, `applyPatch`, `diffTrips`, generation progress                                                  |
+| `copilot`       | Intent, message, citations, tool cards, commercial actions, Human Help handoff, envelope, completion-job contract                |
+| `knowledge`     | POI, execution facts, knowledge gaps, scene-tag derivation, reviewed seed data, and ADR-0006 fact eligibility                    |
+| `task`          | Human Task input, lifecycle, transition commands, private outcome evidence, and non-status updates                               |
+| `commerce`      | Validated partner configuration, trusted-identity outbound records, active-only HTTPS host validation, and tracking construction |
+| `events`        | Telemetry event contract                                                                                                         |
+| `observability` | Redacted Copilot turn, per-attempt cost, product-event action, and forbidden-persistence contracts                               |
+| `errors`        | Shared typed error shapes                                                                                                        |
 
 ## Invariants
 
@@ -46,11 +46,6 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
   cached tokens cannot exceed total input tokens. Cache-miss and cache-hit input prices are separate
   immutable snapshots. `cost_pricing_missing` is a retained product event, not permission to invent
   a price or silently treat a zero-price row as reconciled.
-- `daily_budget_exceeded` is a retained operations-only product-event action. It records one
-  fixed-point threshold observation per UTC day; it is not a billing event, user entitlement, or
-  authorization to stop model service. Its properties are a strict two-field object (`budgetUsd`,
-  `observedCostUsd`) containing canonical eight-decimal fixed-point strings; extra properties,
-  prompts, credentials, cookies, signatures, and contact content are rejected.
 - Human Task status changes use `transitionHumanTask`; the generic update contract cannot carry a
   status. The canonical forward path is `requested -> triaged -> quoted -> payment_pending -> paid ->
 fulfilling -> done`, with explicit cancellation edges and no terminal recovery. A transition reason

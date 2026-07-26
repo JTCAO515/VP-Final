@@ -590,6 +590,8 @@ export const outboundClicks = pgTable(
       .notNull()
       .references(() => partners.key, { onDelete: "restrict" }),
     targetUrl: text("target_url").notNull(),
+    userId: uuid("user_id").references(() => users.id, { onDelete: "set null" }),
+    anonId: text("anon_id"),
     source: text("source"),
     intent: text("intent"),
     entityId: text("entity_id"),
@@ -599,6 +601,12 @@ export const outboundClicks = pgTable(
     partnerCreatedIdx: index("outbound_clicks_partner_created_idx").on(
       table.partner,
       table.createdAt,
+    ),
+    userCreatedIdx: index("outbound_clicks_user_created_idx").on(table.userId, table.createdAt),
+    anonCreatedIdx: index("outbound_clicks_anon_created_idx").on(table.anonId, table.createdAt),
+    identityExclusiveCheck: check(
+      "outbound_clicks_identity_exclusive_check",
+      sql`num_nonnulls(${table.userId}, ${table.anonId}) <= 1`,
     ),
   }),
 );
@@ -629,7 +637,7 @@ export const telemetryEvents = pgTable(
     ),
     copilotRetentionCheck: check(
       "events_copilot_retention_check",
-      sql`${table.action} not in ('session_started', 'turn_completed', 'anon_limit_hit', 'rate_limited', 'register_prompt_shown', 'fallback_triggered', 'model_failure', 'cost_pricing_missing', 'daily_budget_exceeded') or (${table.retentionExpiresAt} is not null and ${table.retentionExpiresAt} > ${table.createdAt})`,
+      sql`${table.action} not in ('session_started', 'turn_completed', 'anon_limit_hit', 'rate_limited', 'register_prompt_shown', 'fallback_triggered', 'model_failure') or (${table.retentionExpiresAt} is not null and ${table.retentionExpiresAt} > ${table.createdAt})`,
     ),
     identityCheck: check(
       "events_at_least_one_identity_check",

@@ -133,6 +133,11 @@ describe("database schema", () => {
   it("maps the outbound commerce tables", () => {
     expect(partners.trackingParam.name).toBe("tracking_param");
     expect(outboundClicks.targetUrl.name).toBe("target_url");
+    expect(outboundClicks.userId.name).toBe("user_id");
+    expect(outboundClicks.anonId.name).toBe("anon_id");
+    expect(getTableConfig(outboundClicks).checks.map((constraint) => constraint.name)).toContain(
+      "outbound_clicks_identity_exclusive_check",
+    );
   });
 
   it("maps the telemetry events table", () => {
