@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(26);
+select plan(27);
 
 select ok(
   exists (select 1 from pg_extension where extname = 'pg_cron'),
@@ -29,6 +29,13 @@ select is(
   has_function_privilege('authenticated', 'internal.run_retention_purge(text)', 'execute'),
   false,
   'authenticated clients cannot execute the purge wrapper'
+);
+
+select throws_ok(
+  $select internal.run_retention_purge(null)$,
+  '22023',
+  'Unsupported retention purge target',
+  'the purge wrapper rejects a null target'
 );
 
 select is(
