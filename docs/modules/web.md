@@ -109,6 +109,13 @@ model attempts. Missing trusted platform/header, salt, Redis configuration, or R
 returns HTTP 503 `COPILOT_IP_RATE_LIMIT_UNAVAILABLE`. Tests and explicit `local-demo` use one fixed
 local identity; other non-Vercel deployed modes fail closed. OA-013 owns production verification.
 
+The workspace presents anonymous exhaustion, trusted-network rate limiting, and model-provider
+failure through one accessible status-notice pattern while preserving different recovery actions.
+Anonymous exhaustion links to account access and disables composition; an HTTP 429 displays the
+server-authoritative wait interval without an immediate retry control; model failure states say that
+no answer was generated and may offer retry. These messages never imply a booking, fallback answer,
+provider-health guarantee, or successful model call.
+
 Human Help now writes through the durable P0-13 adapter. `/api/human-help` derives owner identity from
 the verified session or signed anonymous cookie, requires an idempotency key, and returns only the
 task id, `requested` status, and creation time. It never echoes contact or description and never

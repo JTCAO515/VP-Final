@@ -4,9 +4,11 @@ import { describe, expect, it } from "vitest";
 import {
   anonymousTurnNotice,
   attachTripToLatestAssistant,
+  CopilotRequestNotice,
   CopilotShell,
   previewTripDays,
   progressLabel,
+  requestFailureNotice,
 } from "./shell";
 
 const completedTrip = {
@@ -66,10 +68,7 @@ describe("previewTripDays", () => {
   });
 
   it("renders an honest new-visitor state without live-preview claims or an actionable blank submit", () => {
-    const runtimeGlobal = globalThis as typeof globalThis & { React?: typeof React };
-    runtimeGlobal.React = React;
-    const html = renderToStaticMarkup(React.createElement(CopilotShell));
-    delete runtimeGlobal.React;
+    const html = renderWithReactGlobal(React.createElement(CopilotShell));
 
     expect(html).toContain("Illustrative arrival example");
     expect(html).toContain("Not live trip data");
@@ -109,7 +108,73 @@ describe("previewTripDays", () => {
       detail: "This anonymous question was blocked before it reached a model.",
     });
   });
+
+  it("turns an IP limit into a wait state with the trusted retry interval", () => {
+    const notice = requestFailureNotice({
+      ok: false,
+      code: "COPILOT_IP_RATE_LIMITED",
+      error: "provider text is not used",
+      retryAfterSeconds: 42,
+    });
+
+    expect(notice).toEqual({
+      kind: "rate-limit",
+      label: "Request limit",
+      title: "This network has reached its Copilot limit.",
+      detail: "Please wait 42 seconds before asking another question.",
+      retryable: false,
+    });
+  });
+
+  it("renders model failure as an honest shared notice with a retry action", () => {
+    const html = renderWithReactGlobal(
+      React.createElement(CopilotRequestNotice, {
+        notice: requestFailureNotice({
+          ok: false,
+          code: "MODEL_EXECUTION_FAILED",
+          error: "internal provider response",
+        }),
+        noticeRef: { current: null },
+        onRetry: () => undefined,
+      }),
+    );
+
+    expect(html).toContain('class="copilotNotice model-failure"');
+    expect(html).toContain("The Copilot models could not respond.");
+    expect(html).toContain("No answer was generated or invented.");
+    expect(html).toContain(">Try again</button>");
+    expect(html).not.toContain("internal provider response");
+  });
+
+  it("does not offer an immediate retry button for the IP wait state", () => {
+    const html = renderWithReactGlobal(
+      React.createElement(CopilotRequestNotice, {
+        notice: requestFailureNotice({
+          ok: false,
+          code: "COPILOT_IP_RATE_LIMITED",
+          error: "Too many requests",
+          retryAfterSeconds: 60,
+        }),
+        noticeRef: { current: null },
+        onRetry: null,
+      }),
+    );
+
+    expect(html).toContain('class="copilotNotice rate-limit"');
+    expect(html).toContain("Please wait 60 seconds");
+    expect(html).not.toContain("<button");
+  });
 });
+
+function renderWithReactGlobal(element: React.ReactNode): string {
+  const runtimeGlobal = globalThis as typeof globalThis & { React?: typeof React };
+  runtimeGlobal.React = React;
+  try {
+    return renderToStaticMarkup(element);
+  } finally {
+    delete runtimeGlobal.React;
+  }
+}
 
 function progress(status: "idle" | "skeleton" | "completing" | "completed" | "failed") {
   return {
