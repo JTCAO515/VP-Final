@@ -102,6 +102,14 @@ rejecting rows with no trusted identity.
 All three record classes use the restricted `internal.purge_expired_copilot_observability()` routine
 under [ADR-0009](../adr/ADR-0009-copilot-conversation-cost-retention.md).
 
+ADR-0011 enforces the existing retention deadlines with three staggered database-local Supabase Cron
+jobs. Each job calls a restricted target through `internal.run_retention_purge(text)`; successful and
+failed executions retain only target, timestamps, non-negative deletion counts, and normalized
+SQLSTATE in `internal.retention_purge_runs`. The private `internal.retention_purge_health` view
+marks missing, overdue, or consecutively failed targets. No scheduler object, audit row, or health
+view is granted to `anon` or `authenticated`. Merge does not prove production enforcement: OA-015
+must observe the applied jobs and at least one real scheduled run per target.
+
 P0-04b migration `20260711001932_exclusive_trip_owner.sql` converts any legacy dual-owner row to its
 authenticated owner, then replaces the previous at-least-one check with
 `num_nonnulls(owner, anon_id) = 1`. The versioned Postgres adapter scopes every private query by the
