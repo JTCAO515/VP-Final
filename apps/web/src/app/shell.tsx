@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 import {
   AnonymousTurnUsageSchema,
   CompletionJobSchema,
@@ -44,7 +44,20 @@ type CopilotSuccessResponse = {
   version: unknown;
 };
 
-type ErrorResponse = { ok: false; error: string; code?: string; anonymousUsage?: unknown };
+type ErrorResponse = {
+  ok: false;
+  error: string;
+  code?: string;
+  anonymousUsage?: unknown;
+  retryAfterSeconds?: unknown;
+};
+type RequestFailureNotice = {
+  kind: "rate-limit" | "model-failure" | "request-failure";
+  label: string;
+  title: string;
+  detail: string;
+  retryable: boolean;
+};
 const LAST_TRIP_ID_KEY = "visepanda.lastTripId";
 const EXAMPLE_PROMPTS = [
   "How do I prepare payment before arriving in China?",
@@ -116,6 +129,7 @@ export function CopilotShell() {
   const [completionJob, setCompletionJob] = useState<CompletionJob | null>(null);
   const [anonymousUsage, setAnonymousUsage] = useState<AnonymousTurnUsage | null>(null);
   const [registrationGate, setRegistrationGate] = useState(false);
+  const [requestFailure, setRequestFailure] = useState<RequestFailureNotice | null>(null);
   const monitorGeneration = useRef(0);
   const promptInput = useRef<HTMLInputElement>(null);
   const preflightFailureNotice = useRef<HTMLDivElement>(null);
@@ -124,8 +138,8 @@ export function CopilotShell() {
   const detailPassFailed = isDetailPassFailure(progress, trip);
   const registrationNotice = anonymousTurnNotice(anonymousUsage, registrationGate);
   const shouldRevealPreflightFailure =
+    requestFailure !== null &&
     progress.status === "failed" &&
-    progress.attempts === 0 &&
     !detailPassFailed &&
     !registrationGate;
 
@@ -292,6 +306,7 @@ export function CopilotShell() {
     if (!retry) {
       setMessages((current) => [...current, { role: "user", body: prompt }]);
     }
+    setRequestFailure(null);
     setProgress({
       status: "skeleton",
       completedDays: 0,
@@ -315,11 +330,13 @@ export function CopilotShell() {
         if (!data.ok && data.code === "ANONYMOUS_TURN_IN_PROGRESS") {
           setAnonymousUsage(parseAnonymousTurnUsage(data.anonymousUsage));
           setRegistrationGate(false);
+          setRequestFailure(requestFailureNotice(data));
           throw new Error(data.error);
         }
         if (!data.ok && data.code === "ANONYMOUS_TURN_LIMIT_REACHED") {
           setAnonymousUsage(parseAnonymousTurnUsage(data.anonymousUsage));
           setRegistrationGate(true);
+          setRequestFailure(null);
           setProgress({
             status: "failed",
             completedDays: 0,
@@ -334,6 +351,7 @@ export function CopilotShell() {
           (data.code === "COPILOT_IP_RATE_LIMITED" ||
             data.code === "COPILOT_IP_RATE_LIMIT_UNAVAILABLE")
         ) {
+          setRequestFailure(requestFailureNotice(data));
           setProgress({
             status: "failed",
             completedDays: 0,
@@ -343,12 +361,14 @@ export function CopilotShell() {
           });
           return;
         }
+        setRequestFailure(requestFailureNotice(data));
         throw new Error(data.ok ? "Copilot request failed." : data.error);
       }
 
       const envelope = CopilotEnvelopeSchema.parse(data.envelope);
       setAnonymousUsage(parseAnonymousTurnUsage(data.anonymousUsage));
       setRegistrationGate(false);
+      setRequestFailure(null);
       const nextTrip = TripStateSchema.nullable().parse(data.trip);
       const nextVersion = zeroOrPositiveInteger(data.version);
       setMessages((current) => [
@@ -374,6 +394,14 @@ export function CopilotShell() {
         }
       }
     } catch (error) {
+      setRequestFailure(
+        (current) =>
+          current ??
+          requestFailureNotice({
+            ok: false,
+            error: error instanceof Error ? error.message : "Copilot connection failed.",
+          }),
+      );
       setProgress({
         status: "failed",
         completedDays: 0,
@@ -387,10 +415,6 @@ export function CopilotShell() {
   function chooseQuestion(question: string): void {
     if (registrationGate) return;
     setInput(question);
-    focusPrompt();
-  }
-
-  function focusPrompt(): void {
     window.requestAnimationFrame(() => {
       promptInput.current?.scrollIntoView({ block: "center" });
       promptInput.current?.focus();
@@ -410,7 +434,7 @@ export function CopilotShell() {
             transport, language, tickets, and the next step when plans change.
           </p>
           <div className="heroActions">
-            <a className="primaryAction" href="#ask-copilot" onClick={focusPrompt}>
+            <a className="primaryAction" href="#ask-copilot">
               Ask the Copilot
             </a>
             <a className="secondaryAction" href="/explore">
@@ -502,72 +526,10 @@ export function CopilotShell() {
           </p>
         </div>
         <div className="copilotLayout">
-          <aside className="copilotRail" aria-label="Copilot prompt composer">
-            <div className="railHeader">
-              <div>
-                <strong>Start with a practical question</strong>
-                <span>Ask in plain English</span>
-              </div>
-              <span className="previewBadge">Preview</span>
-            </div>
-            {progress.status === "failed" && !detailPassFailed && !registrationGate ? (
-              <div className="copilotFailure" ref={preflightFailureNotice} role="alert">
-                <strong>Copilot could not respond.</strong>
-                <span>{progress.error ?? "Please check your connection and try again."}</span>
-                <button onClick={() => void submitPrompt({ retry: true })} type="button">
-                  Try again
-                </button>
-              </div>
-            ) : null}
-            {registrationNotice ? (
-              <div
-                className={`registrationNotice ${registrationGate ? "blocked" : "warning"}`}
-                role={registrationGate ? "alert" : "status"}
-              >
-                <div>
-                  <strong>{registrationNotice.title}</strong>
-                  <span>{registrationNotice.detail}</span>
-                </div>
-                <a href="/account">Create account or sign in</a>
-              </div>
-            ) : null}
-            <form
-              className="railComposer"
-              onSubmit={(event) => {
-                event.preventDefault();
-                void submitPrompt();
-              }}
-            >
-              <input
-                aria-label="Trip prompt"
-                disabled={registrationGate}
-                onChange={(event) => setInput(event.target.value)}
-                placeholder="Ask about payments, transport, language, or travel basics"
-                ref={promptInput}
-                value={input}
-              />
-              <button disabled={!input.trim() || isWorking || registrationGate} type="submit">
-                {isWorking ? "Thinking" : "Ask Copilot"}
-              </button>
-            </form>
-            <div className="quickReplies" aria-label="Example questions">
-              {EXAMPLE_PROMPTS.map((prompt) => (
-                <button
-                  disabled={registrationGate}
-                  key={prompt}
-                  onClick={() => chooseQuestion(prompt)}
-                  type="button"
-                >
-                  {prompt}
-                </button>
-              ))}
-            </div>
-          </aside>
-
           <section className="conversationPanel" aria-label="Copilot conversation">
             <div className="canvasToolbar">
               <div>
-                <h3>Conversation</h3>
+                <h1>Conversation</h1>
                 <span>Practical China travel guidance</span>
               </div>
               <span
@@ -615,6 +577,67 @@ export function CopilotShell() {
               ) : null}
             </div>
           </section>
+
+          <aside className="copilotRail" aria-label="Copilot prompt composer">
+            <div className="railHeader">
+              <div>
+                <strong>Start with a practical question</strong>
+                <span>Ask in plain English</span>
+              </div>
+              <span className="previewBadge">Preview</span>
+            </div>
+            <div className="quickReplies" aria-label="Example questions">
+              {EXAMPLE_PROMPTS.map((prompt) => (
+                <button
+                  disabled={registrationGate}
+                  key={prompt}
+                  onClick={() => chooseQuestion(prompt)}
+                  type="button"
+                >
+                  {prompt}
+                </button>
+              ))}
+            </div>
+            {shouldRevealPreflightFailure && requestFailure ? (
+              <CopilotRequestNotice
+                notice={requestFailure}
+                noticeRef={preflightFailureNotice}
+                onRetry={requestFailure.retryable ? () => void submitPrompt({ retry: true }) : null}
+              />
+            ) : null}
+            {registrationNotice ? (
+              <div
+                className={`copilotNotice account ${registrationGate ? "blocked" : "warning"}`}
+                role={registrationGate ? "alert" : "status"}
+              >
+                <span className="copilotNoticeLabel">Account</span>
+                <div>
+                  <strong>{registrationNotice.title}</strong>
+                  <span>{registrationNotice.detail}</span>
+                </div>
+                <a href="/account">Create account or sign in</a>
+              </div>
+            ) : null}
+            <form
+              className="railComposer"
+              onSubmit={(event) => {
+                event.preventDefault();
+                void submitPrompt();
+              }}
+            >
+              <input
+                aria-label="Trip prompt"
+                disabled={registrationGate}
+                onChange={(event) => setInput(event.target.value)}
+                placeholder="Ask about payments, transport, language, or travel basics"
+                ref={promptInput}
+                value={input}
+              />
+              <button disabled={!input.trim() || isWorking || registrationGate} type="submit">
+                {isWorking ? "Thinking" : "Ask Copilot"}
+              </button>
+            </form>
+          </aside>
         </div>
       </section>
 
@@ -851,6 +874,84 @@ export function anonymousTurnNotice(
         title: "Your next question needs an account.",
         detail: `You have used all ${usage.limit} anonymous Copilot turns. Create an account or sign in before you continue.`,
       };
+}
+
+export function requestFailureNotice(error: ErrorResponse): RequestFailureNotice {
+  if (error.code === "COPILOT_IP_RATE_LIMITED") {
+    const retryAfterSeconds = positiveInteger(error.retryAfterSeconds);
+    return {
+      kind: "rate-limit",
+      label: "Request limit",
+      title: "This network has reached its Copilot limit.",
+      detail: retryAfterSeconds
+        ? `Please wait ${retryAfterSeconds} seconds before asking another question.`
+        : "Please wait a little before asking another question.",
+      retryable: false,
+    };
+  }
+  if (error.code === "COPILOT_IP_RATE_LIMIT_UNAVAILABLE") {
+    return {
+      kind: "request-failure",
+      label: "Protection unavailable",
+      title: "Copilot is temporarily unavailable.",
+      detail: "Request protection could not be verified. Please try again later.",
+      retryable: true,
+    };
+  }
+  if (error.code === "MODEL_CONFIGURATION_UNAVAILABLE" || error.code === "MODEL_EXECUTION_FAILED") {
+    return {
+      kind: "model-failure",
+      label: "Model unavailable",
+      title: "The Copilot models could not respond.",
+      detail: "No answer was generated or invented. Please try again in a moment.",
+      retryable: true,
+    };
+  }
+  if (error.code === "ANONYMOUS_TURN_IN_PROGRESS") {
+    return {
+      kind: "request-failure",
+      label: "Question in progress",
+      title: "Your previous question is still finishing.",
+      detail: "Wait a moment before trying this question again.",
+      retryable: true,
+    };
+  }
+  return {
+    kind: "request-failure",
+    label: "Request failed",
+    title: "Copilot could not respond.",
+    detail: error.error || "Please check your connection and try again.",
+    retryable: true,
+  };
+}
+
+export function CopilotRequestNotice({
+  notice,
+  noticeRef,
+  onRetry,
+}: {
+  notice: RequestFailureNotice;
+  noticeRef: RefObject<HTMLDivElement | null>;
+  onRetry: (() => void) | null;
+}) {
+  return (
+    <div className={`copilotNotice ${notice.kind}`} ref={noticeRef} role="alert">
+      <span className="copilotNoticeLabel">{notice.label}</span>
+      <div>
+        <strong>{notice.title}</strong>
+        <span>{notice.detail}</span>
+      </div>
+      {onRetry ? (
+        <button onClick={onRetry} type="button">
+          Try again
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
+function positiveInteger(value: unknown): number | null {
+  return typeof value === "number" && Number.isInteger(value) && value > 0 ? value : null;
 }
 
 function parseAnonymousTurnUsage(value: unknown): AnonymousTurnUsage | null {
