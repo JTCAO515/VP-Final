@@ -991,6 +991,26 @@
       "summary": "Quality-gated six-city POI coverage targets, evidence rules, editorial waves, and bulk-import handoff.",
       "sourcePrefixes": []
     },
+    {
+      "path": "docs/planning/visepod-investor-prototype-amendment.md",
+      "title": "VisePod Investor Prototype Amendment",
+      "category": "planning",
+      "type": "planning",
+      "status": "draft",
+      "owner": "operator / architecture",
+      "summary": "Controlled three-to-five-device value hypothesis, investor story, comparison protocol, and lifecycle gates.",
+      "sourcePrefixes": []
+    },
+    {
+      "path": "docs/visepod/README.md",
+      "title": "VisePod Documentation",
+      "category": "planning",
+      "type": "reference",
+      "status": "draft",
+      "owner": "operator / architecture",
+      "summary": "Reading order, prototype boundary, non-capabilities, and evidence rule for the VisePod initiative.",
+      "sourcePrefixes": []
+    },
 
     {
       "path": "evals/README.md",
