@@ -122,6 +122,9 @@ describe("DashScope spike failure boundaries", () => {
     const options = baseOptions(fixturePath, url);
     const observation = await runDashScopeSpeechRound({
       ...options,
+      // Give the CI event loop enough room to observe task-started; the
+      // disconnect itself is still driven deterministically by chunk index.
+      timeoutMs: 500,
       networkProfile: { ...options.networkProfile, id: "wifi_disconnect", disconnectAfterChunk: 1 },
     });
     expect(observation).toMatchObject({
