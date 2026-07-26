@@ -6,12 +6,12 @@ telemetry plan.
 
 ## Current Revenue Lines
 
-| Line                    | Current state                                              | Required tracking                                      |
-| ----------------------- | ---------------------------------------------------------- | ------------------------------------------------------ |
-| Outbound affiliate      | Gateway and click ledger skeleton                          | `outbound_clicks` + telemetry                          |
-| Human Task              | Durable controlled-preview intake; no quote or payment yet | `human_tasks` receipt + future state/payment ledger    |
-| Trip Pass               | Not active                                                 | Entitlement + purchase/restore ledger when implemented |
-| Custom quote / lead fee | Not active                                                 | Quote object + partner/agency ledger when implemented  |
+| Line                    | Current state                                                | Required tracking                                        |
+| ----------------------- | ------------------------------------------------------------ | -------------------------------------------------------- |
+| Outbound affiliate      | Durable active-partner gateway; no partner active by default | `outbound_clicks` + optional non-authoritative telemetry |
+| Human Task              | Durable controlled-preview intake; no quote or payment yet   | `human_tasks` receipt + future state/payment ledger      |
+| Trip Pass               | Not active                                                   | Entitlement + purchase/restore ledger when implemented   |
+| Custom quote / lead fee | Not active                                                   | Quote object + partner/agency ledger when implemented    |
 
 ## Human Help Controlled Preview
 
@@ -39,6 +39,14 @@ require an explicit operator decision and independent review; UI copy cannot wid
 ## Partner Rules
 
 - Partner links go through `/outbound`.
-- Allowed hosts must be configured before links are shown.
+- Public redirect requires an active database partner and an exact allowlisted HTTPS host. Pending,
+  inactive, and unknown partners do not redirect or create a click.
+- The authoritative `outbound_clicks` row must commit before redirect. A ledger failure blocks the
+  action; a later non-authoritative telemetry failure does not erase or block an already recorded
+  click.
+- Identity comes only from the verified session or server-signed anonymous cookie. Query identity is
+  ignored and cookies, signatures, provider credentials, and contact fields are not click payloads.
+- Allowed hosts and active status must be configured through the authorized Ops boundary before links
+  are shown; the repository does not activate a partner.
 - Disclosure copy is required near commercial actions.
 - Commission assumptions are not revenue until settlement data exists.

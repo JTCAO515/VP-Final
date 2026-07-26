@@ -37,7 +37,7 @@ the outbound gateway.
 
 The Next.js API layer creates an in-process server caller through one composition root. Explicit
 `preview`, `staging`, and `production` modes require `DATABASE_URL` and select only the existing
-Postgres Trip, Knowledge, Agent Trace, and Human Task adapters. Missing/invalid mode or database configuration returns typed
+Postgres Trip, Knowledge, Agent Trace, Human Task, and Commerce adapters. Missing/invalid mode or database configuration returns typed
 503 `RUNTIME_UNAVAILABLE`; it never selects memory. Tests inject services explicitly. Only explicit
 `local-demo` may use a process-cached, non-durable memory pair. The selected durable service pair is
 also process-cached so requests reuse the Postgres pool; persistence remains in Postgres across cold
@@ -47,6 +47,14 @@ starts.
 selection: only `local-demo` may use labelled fixtures/memory; deployed modes return honest
 unavailable states when a required durable dependency is absent. OA-004/OA-005 remain unverified, so
 no live durable Vercel claim is made.
+
+The `/outbound` route resolves identity only from a verified Supabase session or the server-signed
+anonymous cookie; query parameters cannot supply ownership. It delegates partner lookup, URL
+validation, and click persistence to the server Commerce service. Only a current `active` database
+partner with an exact allowlisted HTTPS host can redirect, and the click row must commit first.
+Pending, inactive, unknown, malformed, or unrecordable actions return an honest non-redirect
+response. A newly issued anonymous cookie is preserved on both success and failure. No partner is
+active by repository default, and partner management remains an authorized Ops follow-up.
 
 For DEMO-01, that composition root injects the v3 real-model Copilot dependencies only in a deployed
 runtime. Explicit `test` and `local-demo` retain their deterministic fixtures. A deployed route with

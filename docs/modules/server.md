@@ -13,14 +13,14 @@ Next.js runtimes rather than deployed as an independent service.
 `apps/server/src/router.ts` composes:
 
 - `copilot`: route, retrieve, generate, validate, apply Trip actions, and two-pass completion.
+- `commerce`: active-partner lookup, safe outbound construction, and durable click recording.
 - `trip`: owner-scoped create/read/Patch/claim/share/revoke operations through the versioned Trip service.
 - `knowledge`: POI/fact/gap reads and operations workflow.
 - `task`: owner-scoped Human Task intake/reads plus authorized, audited lifecycle transitions.
 - `telemetry`: event validation and ingestion interface.
 - `trace`: private agent-run and tool-call metadata recording.
 
-`identity` and `commerce` directories reserve domain boundaries but are not complete production
-modules yet.
+`identity` remains a reserved domain boundary rather than a complete standalone module.
 
 ## Service and Adapter Pattern
 
@@ -65,12 +65,13 @@ modules yet.
   header, Redis failure, or invalid response fails closed before model execution under OA-013.
 - Knowledge, Human Task, and Telemetry routers require a service selected by the composition root;
   omitted capabilities return typed `SERVICE_UNAVAILABLE` and never construct memory internally.
-- P0-18a freezes the outbound-click persistence shape before the commerce runtime is connected.
-  Retained clicks may carry one server-derived verified user id or one signed anonymous id, never
-  both; the additive database constraint preserves legacy ownerless rows and account-deletion
-  history. A later runtime writer must enforce exactly one identity through the domain schema and
-  may redirect only for an active database partner to an explicitly allowlisted HTTPS host. This
-  package does not yet claim a durable outbound writer or public redirect gateway.
+- P0-18b connects the frozen outbound contract to the Commerce router and Postgres adapter. In one
+  transaction, the adapter locks the requested partner, requires its current database status to be
+  `active`, validates the exact HTTPS host allowlist, derives exactly one verified-user or signed-
+  anonymous identity, and inserts the click before returning a redirect. A ledger failure is
+  authoritative and prevents redirect; optional product telemetry runs only after the ledger commit
+  and cannot undo a valid redirect. No partner is activated by code, and Ops partner mutation remains
+  a separate P0-18c boundary.
 - The knowledge bulk-import adapter is durable-only. It validates the fixed six-city CSV at the trust
   boundary, dry-runs against database identities, commits only a wholly valid batch in one transaction,
   and records private editorial provenance separately from public fact reads. `local-demo` and test

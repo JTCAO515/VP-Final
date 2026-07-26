@@ -4,6 +4,7 @@ import {
   createDbAgentTraceService,
   createDbCompletionJobService,
   createDbHumanTaskService,
+  createDbCommerceService,
   createDbKnowledgeService,
   createDbVersionedTripService,
   createDemoCopilotModelDependencies,
@@ -31,6 +32,7 @@ import {
   type CompletionJobService,
   type CompletionQueue,
   type HumanTaskService,
+  type CommerceService,
   type KnowledgeService,
   type RequestIdentity,
   type VersionedTripService,
@@ -49,6 +51,7 @@ type WebServerServices = {
   completionDay?: CompleteDay;
   anonymousTurnCounter?: AnonymousTurnCounter;
   copilotIpRateLimiter?: CopilotIpRateLimiter;
+  commerceService?: CommerceService;
 };
 
 const store = globalThis as typeof globalThis & {
@@ -124,6 +127,7 @@ export function createWebServerServices(environment: Environment): WebServerServ
   const copilotIpRateLimiter = resolveCopilotIpRateLimiter(environment);
   return {
     humanTaskService: createDbHumanTaskService(db),
+    commerceService: createDbCommerceService(db),
     knowledgeService: createDbKnowledgeService(db),
     traceService,
     productEventService: traceService,
