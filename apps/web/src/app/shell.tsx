@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import { useEffect, useRef, useState, type RefObject } from "react";
 import {
   AnonymousTurnUsageSchema,
@@ -362,8 +361,9 @@ export function CopilotShell() {
           });
           return;
         }
-        if (!data.ok) setRequestFailure(requestFailureNotice(data));
-        throw new Error(data.ok ? "Copilot request failed." : data.error);
+        if (data.ok) throw new Error("Copilot request failed.");
+        setRequestFailure(requestFailureNotice(data));
+        throw new Error(data.error);
       }
 
       const envelope = CopilotEnvelopeSchema.parse(data.envelope);
@@ -395,13 +395,12 @@ export function CopilotShell() {
         }
       }
     } catch (error) {
-      setRequestFailure(
-        (current) =>
-          current ??
-          requestFailureNotice({
-            ok: false,
-            error: error instanceof Error ? error.message : "Copilot connection failed.",
-          }),
+      setRequestFailure((current) =>
+        current ??
+        requestFailureNotice({
+          ok: false,
+          error: error instanceof Error ? error.message : "Copilot connection failed.",
+        }),
       );
       setProgress({
         status: "failed",
@@ -416,10 +415,6 @@ export function CopilotShell() {
   function chooseQuestion(question: string): void {
     if (registrationGate) return;
     setInput(question);
-    focusPrompt();
-  }
-
-  function focusPrompt(): void {
     window.requestAnimationFrame(() => {
       promptInput.current?.scrollIntoView({ block: "center" });
       promptInput.current?.focus();
@@ -439,7 +434,7 @@ export function CopilotShell() {
             transport, language, tickets, and the next step when plans change.
           </p>
           <div className="heroActions">
-            <a className="primaryAction" href="#ask-copilot" onClick={focusPrompt}>
+            <a className="primaryAction" href="#ask-copilot">
               Ask the Copilot
             </a>
             <a className="secondaryAction" href="/explore">
@@ -531,71 +526,10 @@ export function CopilotShell() {
           </p>
         </div>
         <div className="copilotLayout">
-          <aside className="copilotRail" aria-label="Copilot prompt composer">
-            <div className="railHeader">
-              <div>
-                <strong>Start with a practical question</strong>
-                <span>Ask in plain English</span>
-              </div>
-              <span className="previewBadge">Preview</span>
-            </div>
-            {shouldRevealPreflightFailure && requestFailure ? (
-              <CopilotRequestNotice
-                notice={requestFailure}
-                noticeRef={preflightFailureNotice}
-                onRetry={requestFailure.retryable ? () => void submitPrompt({ retry: true }) : null}
-              />
-            ) : null}
-            {registrationNotice ? (
-              <div
-                className={`copilotNotice account ${registrationGate ? "blocked" : "warning"}`}
-                role={registrationGate ? "alert" : "status"}
-              >
-                <span className="copilotNoticeLabel">Account</span>
-                <div>
-                  <strong>{registrationNotice.title}</strong>
-                  <span>{registrationNotice.detail}</span>
-                </div>
-                <a href="/account">Create account or sign in</a>
-              </div>
-            ) : null}
-            <form
-              className="railComposer"
-              onSubmit={(event) => {
-                event.preventDefault();
-                void submitPrompt();
-              }}
-            >
-              <input
-                aria-label="Trip prompt"
-                disabled={registrationGate}
-                onChange={(event) => setInput(event.target.value)}
-                placeholder="Ask about payments, transport, language, or travel basics"
-                ref={promptInput}
-                value={input}
-              />
-              <button disabled={!input.trim() || isWorking || registrationGate} type="submit">
-                {isWorking ? "Thinking" : "Ask Copilot"}
-              </button>
-            </form>
-            <div className="quickReplies" aria-label="Example questions">
-              {EXAMPLE_PROMPTS.map((prompt) => (
-                <button
-                  disabled={registrationGate}
-                  key={prompt}
-                  onClick={() => chooseQuestion(prompt)}
-                  type="button"
-                >
-                  {prompt}
-                </button>
-              ))}
-            </div>
-          </aside>
-
           <section className="conversationPanel" aria-label="Copilot conversation">
             <div className="canvasToolbar">
               <div>
-                <h3>Conversation</h3>
+                <h1>Conversation</h1>
                 <span>Practical China travel guidance</span>
               </div>
               <span
@@ -643,6 +577,66 @@ export function CopilotShell() {
               ) : null}
             </div>
           </section>
+
+          <aside className="copilotRail" aria-label="Copilot prompt composer">
+            <div className="railHeader">
+              <div>
+                <strong>Start with a practical question</strong>
+                <span>Ask in plain English</span>
+              </div>
+              <span className="previewBadge">Preview</span>
+            </div>
+            <div className="quickReplies" aria-label="Example questions">
+              {EXAMPLE_PROMPTS.map((prompt) => (
+                <button
+                  disabled={registrationGate}
+                  key={prompt}
+                  onClick={() => chooseQuestion(prompt)}
+                  type="button"
+                >
+                  {prompt}
+                </button>
+              ))}
+            </div>
+            {shouldRevealPreflightFailure && requestFailure ? (
+              <CopilotRequestNotice
+                notice={requestFailure}
+                noticeRef={preflightFailureNotice}
+                onRetry={
+                  requestFailure.retryable ? () => void submitPrompt({ retry: true }) : null
+                }
+              />
+            ) : null}
+            {registrationNotice ? (
+              <div className={`copilotNotice account ${registrationGate ? "blocked" : "warning"}`} role={registrationGate ? "alert" : "status"}>
+                <span className="copilotNoticeLabel">Account</span>
+                <div>
+                  <strong>{registrationNotice.title}</strong>
+                  <span>{registrationNotice.detail}</span>
+                </div>
+                <a href="/account">Create account or sign in</a>
+              </div>
+            ) : null}
+            <form
+              className="railComposer"
+              onSubmit={(event) => {
+                event.preventDefault();
+                void submitPrompt();
+              }}
+            >
+              <input
+                aria-label="Trip prompt"
+                disabled={registrationGate}
+                onChange={(event) => setInput(event.target.value)}
+                placeholder="Ask about payments, transport, language, or travel basics"
+                ref={promptInput}
+                value={input}
+              />
+              <button disabled={!input.trim() || isWorking || registrationGate} type="submit">
+                {isWorking ? "Thinking" : "Ask Copilot"}
+              </button>
+            </form>
+          </aside>
         </div>
       </section>
 
@@ -903,7 +897,10 @@ export function requestFailureNotice(error: ErrorResponse): RequestFailureNotice
       retryable: true,
     };
   }
-  if (error.code === "MODEL_CONFIGURATION_UNAVAILABLE" || error.code === "MODEL_EXECUTION_FAILED") {
+  if (
+    error.code === "MODEL_CONFIGURATION_UNAVAILABLE" ||
+    error.code === "MODEL_EXECUTION_FAILED"
+  ) {
     return {
       kind: "model-failure",
       label: "Model unavailable",
