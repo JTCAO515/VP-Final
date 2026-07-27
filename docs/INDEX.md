@@ -9,32 +9,31 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 ## Current Handoff Snapshot
 
-- **Updated:** 2026-07-26 by Codex / serialized Phase 0 merge-batch reconciliation
+- **Updated:** 2026-07-27 by Codex / serialized Phase 0 terminal-state reconciliation
 - **Base branch:** `main`
-- **Last fully verified commit:** `e5a2cef after PR #309 merged on top of PR #312; both PR heads reported green verify, docs, evals, Database contracts, Vercel Preview Comments, and Web/Ops Vercel deployment checks`
+- **Last fully verified commit:** `ac9b8e7 after PR #317 merged on top of P0-18b PR #315; both merged PR heads reported green verify, docs, evals, Database contracts, Vercel Preview Comments, and Web/Ops Vercel deployment checks`
 - **Current phase:** Phase 0 — production hardening and commercial safety
-- **Maturity:** The real-provider Copilot, durable Trip completion, signed anonymous identity, cost and product-event persistence, three-turn and trusted-IP guards, truthful request states, controlled-preview Human Tasks, legal pages, retention contracts, and database-local retention scheduler are merged. P0-18a has frozen outbound identity and partner-safety semantics; P0-18b runtime persistence is implementation-active but not merged. No partner is active, no booking or commission is promised, no payment is live, P0-19/P0-20 remain dependency-blocked, and Phase 1 through Phase 4 remain trigger-gated.
-- **Last completed control action:** PR #312 merged the Tier B database-local retention scheduler and ADR-0011. PR #309 then merged the Tier B P0-18a outbound ledger, trusted-identity, exact-host, and partner-activation contract. Their merge order left the generated INDEX stale relative to the registered ADR, which Issue #313 repairs without changing runtime behavior.
+- **Maturity:** The real-provider Copilot, durable Trip completion, signed anonymous identity, cost and product-event persistence, three-turn and trusted-IP guards, truthful request states, controlled-preview Human Tasks, legal pages, retention contracts, database-local retention scheduler, durable outbound ledger, and Admin-only partner configuration are merged. P0-19a privacy-safe telemetry is in independent Tier B review; its producer slice and P0-20 remain downstream. No partner is active, no booking or commission is promised, no payment is live, and Phase 1 through Phase 4 remain trigger-gated.
+- **Last completed control action:** P0-18 reached code terminal state: PR #309 froze the contract, PR #315 persisted the trusted outbound gateway/ledger, and PR #317 added Admin-only partner administration. Issue #311 independently verified the three production migrations, pg_cron schedule, and retention health on VP-Final-V2 without a production write.
 
 ### Active Work
 
 | Ref | Work | State | Owner | Next action |
 | --- | --- | --- | --- | --- |
-| Issue #155 / P0-18b | Connect the outbound gateway to the authoritative Commerce service and Postgres ledger | A fresh base-main implementation branch exists locally. It removes the process-local ledger, resolves identity only from verified session or signed anonymous cookie, requires an active database partner and exact HTTPS host allowlist, persists the ledger row before redirect, and treats secondary telemetry as non-authoritative. Full local typecheck, lint, build, test, eval, pgTAP, and database-advisor checks passed; the Tier B PR is not yet open because the serialized docs baseline must be repaired first. | Codex implementation; independent architecture/security reviewer for merge | Merge Issue #313's serialized handoff refresh, rebase P0-18b onto that main, rerun the documentation and full repository gates, then open one Tier B PR for independent review. Do not self-merge. |
-| Issue #313 | Refresh serialized handoff after the July 26 Phase 0 merge batch | Tier A documentation-only reconciliation is being prepared from current main. It may change only docs/handoff.json and the generated docs/INDEX.md. | Codex | Regenerate the index, pass docs and diff gates, open a base-main PR, and leave it for review. |
-| OA-004 / OA-015 | Reconcile the approved Supabase production project and retention-schedule evidence | The operator reports that the new production database URL, migration, deployments, and three prerequisite PRs are complete. However, the currently authenticated project-scoped Supabase MCP still reports 26 migrations ending at 20260724090000, and a read-only cron.job query fails because the relation does not exist. This is an evidence/project-identity mismatch, not proof that the operator action failed. | Operator for project identity; Codex for read-only evidence after alignment | Before claiming OA-015 verified, align the MCP project reference with the production project used by Vercel and rerun sanitized migration, cron schedule, and retention-health reads. Do not expose a database URL or password. |
+| Issue #321 / P0-19a | Freeze privacy-safe telemetry contract, durable adapter, and funnel views | PR #323 is base-main, non-draft, clean, and has real verify/docs/evals/Database contracts plus Vercel checks green. It introduces the contract and durable boundary only; P0-19b #322 must not start until independent review and merge. | Codex implementation; independent architecture/privacy reviewer for merge | Independently review and merge PR #323, then start #322 from fresh main. Do not self-merge either Tier B slice. |
+| Issue #298 / VPOD-00 | Freeze multi-meter voice-call cost accounting contract | ADR-0012 numbering is reserved and the device-auth draft now uses ADR-0013. Implementation is paused at a D2 schema boundary: the existing unique Agent Run attempt cannot represent STT+LLM+TTS rows, and per-device aggregation has no frozen opaque device correlation contract. | Architecture owner for contract freeze; Codex implementation after acceptance | Accept or revise the proposed call kind, uniqueness, and device-correlation semantics in #298; then start one additive Tier B migration/ADR PR from fresh main. |
+| VisePod drafts #318 / #319 / #320 | Investor-prototype positioning, speech feasibility, and device-authentication boundaries | All remain Draft/Tier B. #319 waits for OA-016 real, consented speech evidence; #320 waits for hardware and independent security evidence. No device runtime, registry, gateway, or firmware work is authorized. | Operator/Hardware Agent/independent reviewer; Codex for bounded implementation | Keep Draft until their individual evidence gates are met; do not treat documentation or harness code as hardware/prod proof. |
 
 ### Immediate Queue
 
 | Priority | Control action | Exit criteria |
 | --- | --- | --- |
-| P0 | Complete and merge the Issue #313 serialized handoff refresh, then rebase and submit P0-18b as a Tier B PR. | docs:check and docs:impact pass on the snapshot PR; P0-18b is rebased to the resulting main, all required local and GitHub checks are green, its real ledger and identity evidence is sanitized, and the PR remains unmerged for independent review. |
+| P0 | Independently review PR #323, then serialize P0-19b #322 from fresh main. | #323 merges with its privacy contract intact; #322 has one base-main producer-integration PR with full gates, no payment emitters, and remains unmerged for independent Tier B review. |
 
 ### Current Blockers
 
-- P0-18b is Tier B because it controls trusted identity and an authoritative commercial ledger. It cannot self-merge, and P0-18c Ops partner configuration must not start until P0-18b is reviewed and merged.
-- OA-004/OA-015 production evidence is internally inconsistent: the operator reports the new production migration complete, while the currently authenticated project-scoped MCP observes the older 26-migration project with no cron schema. Production retention scheduling must not be called verified until project identity and read-only evidence agree.
-- P0-19 remains blocked by the canonical dependency graph until P0-18 produces durable outbound events and the privacy-safe telemetry boundary is accepted.
+- P0-19b #322 and P0-20 #157 remain blocked on independent merge of P0-19a PR #323; no producer integration or public-runtime budget behavior may be started early.
+- VPOD-00 #298 awaits architecture acceptance of multi-call uniqueness and opaque device-correlation semantics; no financial migration is allowed before that D2 contract is frozen.
 - P0-20 remains blocked on the accepted P0-19 observation boundary and the remaining provider/eval safety decisions; it must not be replaced by mock health or fake budget behavior.
 - P0-17 remains blocked by the deferred payment-provider and legal operator decision OA-006. No payment, booking, commission, or paid Human Help capability is live.
 - SEO publication Issues #58, #59, and #84 through #86 remain blocked until evidence eligibility, partner activation, and no-empty-page gates are accepted; do not generate filler or commercial links for pending partners.
@@ -42,12 +41,10 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 ### Last Verification Evidence
 
-- PR #309 merged at e5a2cef. Its real GitHub check-runs show verify, docs, evals, Database contracts, Vercel Preview Comments, and both Vercel deployments passing; Supabase Preview was skipped by integration. It freezes P0-18a contracts only and does not claim runtime ledger integration.
-- PR #312 merged at 97a6c6d. Its real GitHub check-runs show verify, docs, evals, Database contracts, Vercel Preview Comments, and both Vercel deployments passing; Supabase Preview was skipped by integration. It adds the database-local retention scheduler and private health evidence but requires separate production application and verification. Issue #311 was reopened as status:blocked after the configured production MCP contradicted the claimed application evidence.
-- GitHub metadata on 2026-07-26 confirms #120, #185, #245, #248, and #249 are closed; #155 is open with status:in-progress; #311 is reopened status:blocked; #156, #157, #154, Phase 1/2/3 work, and downstream SEO release work remain blocked.
-- The configured project-scoped Supabase MCP read on 2026-07-26 reports exactly 26 migrations through 20260724090000. A read-only cron.job query returns relation-not-found. No table row content, identity, prompt, response, credential, cookie, signature, database URL, or password was read or retained. This evidence is intentionally recorded as a project-alignment discrepancy, not a production-failure conclusion.
-- On the unmerged P0-18b local branch, the Commerce service unit tests, Web route tests, seven Postgres integration cases, all 220 pgTAP assertions, security advisor, repository typecheck, lint, build, test suites, and five AI golden evals passed. The first build attempt hit a transient Next .next/export ENOTEMPTY cache condition; a clean-cache rerun passed. These are implementation artifacts, not mainline capability evidence.
-- Issue #313 exists solely to restore the serialized documentation baseline required by the #215/#263 workflow. It may not carry runtime, migration, operator-register, or product changes.
+- PR #309, #315, and #317 merged P0-18a/18b/18c with their required GitHub checks green. P0-18 is closed; no partner was activated and no affiliate/payment claim was introduced.
+- Issue #311 closed after independent read-only verification against VP-Final-V2 confirmed 29 migrations, pg_cron 1.6.4, all three active visepanda purge jobs, and healthy retention targets. The operator push was not repeated.
+- PR #323 P0-19a is clean and green in GitHub at this snapshot, but has no independent review decision. Its checks are evidence of implementation quality, not merge authorization.
+- Phase 2/3/4 functional work was not started. Their WAU, Human Task, quote-volume, legal-entity, settlement, and order-volume triggers remain unproven.
 
 ## Mandatory Markdown Reading Order
 
