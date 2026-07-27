@@ -157,8 +157,13 @@ redirectable.
 
 Browser capture sends only a strict client-safe action subset and bounded dimensions. The server, not
 the request body, derives exactly one verified-user or signed-anonymous identity, the event id,
-timestamp, Web surface, and retention deadline before it writes the event ledger. Server-owned
-producers use the larger registered-action contract only after their authoritative operation commits.
+timestamp, Web surface, and retention deadline before it writes the event ledger. Copilot writes
+submission/skeleton/Patch/detail/failure or approved Human Help-suggestion events only after the
+associated pipeline state is known. The outbound producer writes `outbound_clicked` and
+`partner_redirected` only after its click-ledger commit and carries the exact same durable click id;
+the latter records an issued redirect, not a partner conversion. Human Task intake writes only
+`task_submitted` after creation commits. Ops triage/cancellation and the reserved
+`quote_created`, `payment_link_clicked`, `task_paid`, and `task_done` actions have no producer.
 All actions have allowlisted properties; contact details, raw prompts, model secrets, cookies,
 signatures, and unrestricted payloads are rejected before storage or optional analytics delivery.
 Event failures must not break a primary user action, and a capture endpoint must not claim success

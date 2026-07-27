@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { createInMemoryKnowledgeService } from "../knowledge/service.js";
+import { createInMemoryTelemetryService } from "../telemetry/service.js";
 import { createInMemoryAgentTraceService } from "../trace/service.js";
 import { createVersionedInMemoryTripService } from "../trip/versionedService.js";
 import { createCopilotPipeline, defaultRouteIntent } from "./service.js";
@@ -40,6 +41,43 @@ describe("createCopilotPipeline", () => {
     });
   });
 
+  it("records only allowlisted Copilot telemetry after a successful skeleton response", async () => {
+    const telemetryService = createInMemoryTelemetryService();
+    const pipeline = createCopilotPipeline({
+      telemetryService,
+      tripService: createVersionedInMemoryTripService(),
+    });
+
+    const result = await pipeline.run({ message: "Plan my China trip" }, identity);
+    const events = await telemetryService.list();
+
+    expect(events).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          anon_id: identity.anonId,
+          action: "prompt_submitted",
+          entity_type: "trip",
+          entity_id: result.trip?.id,
+          intent: "trip_create",
+          props_jsonb: {},
+        }),
+        expect.objectContaining({
+          action: "patch_applied",
+          entity_id: result.trip?.id,
+          intent: "trip_create",
+          props_jsonb: {},
+        }),
+        expect.objectContaining({
+          action: "skeleton_received",
+          entity_id: result.trip?.id,
+          intent: "trip_create",
+          props_jsonb: {},
+        }),
+      ]),
+    );
+    expect(JSON.stringify(events)).not.toContain("Plan my China trip");
+  });
+
   it("keeps chat-only responses from mutating trip state", async () => {
     const tripService = createVersionedInMemoryTripService();
     const pipeline = createCopilotPipeline({ tripService });
@@ -75,7 +113,11 @@ describe("createCopilotPipeline", () => {
   });
 
   it("returns editable human help prefill when handoff is needed", async () => {
-    const pipeline = createCopilotPipeline({ tripService: createVersionedInMemoryTripService() });
+    const telemetryService = createInMemoryTelemetryService();
+    const pipeline = createCopilotPipeline({
+      telemetryService,
+      tripService: createVersionedInMemoryTripService(),
+    });
 
     const result = await pipeline.run(
       { message: "I need human help to call a Beijing hotel" },
@@ -87,6 +129,15 @@ describe("createCopilotPipeline", () => {
       kind: "task",
       city: "Beijing",
     });
+    await expect(telemetryService.list()).resolves.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          action: "human_help_suggested",
+          intent: "human_help",
+          props_jsonb: { city: "Beijing", kind: "task" },
+        }),
+      ]),
+    );
   });
 
   it("records knowledge gaps for uncited question answers", async () => {
@@ -248,6 +299,32 @@ describe("createCopilotPipeline", () => {
     const serialized = JSON.stringify(traceService.listRuns());
     expect(serialized).toContain("How does this work? Email [redacted email]");
     expect(serialized).not.toContain("alex@example.com");
+  });
+
+  it("records a normalized failure class without retaining the prompt when generation fails", async () => {
+    const telemetryService = createInMemoryTelemetryService();
+    const pipeline = createCopilotPipeline({
+      telemetryService,
+      tripService: createVersionedInMemoryTripService(),
+      routeIntent: () => "question",
+      generateEnvelope: () => {
+        throw new Error("provider timeout");
+      },
+    });
+
+    await expect(
+      pipeline.run({ message: "My private prompt is alex@example.com" }, identity),
+    ).rejects.toThrow("provider timeout");
+    const events = await telemetryService.list();
+    expect(events).toEqual([
+      expect.objectContaining({
+        action: "copilot_failed",
+        intent: "question",
+        entity_type: "copilot_session",
+        props_jsonb: { failureClass: "timeout" },
+      }),
+    ]);
+    expect(JSON.stringify(events)).not.toContain("alex@example.com");
   });
 
   it("repairs a string message from real providers into the typed message object", async () => {

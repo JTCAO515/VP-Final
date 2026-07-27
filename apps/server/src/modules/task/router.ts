@@ -3,6 +3,7 @@ import { TRPCError } from "@trpc/server";
 import type { RequestIdentity } from "../../context.js";
 import { publicProcedure, router } from "../../trpc.js";
 import { requireService } from "../../runtime/requireService.js";
+import { recordTelemetrySafely } from "../telemetry/producer.js";
 import {
   HumanTaskCapacityError,
   HumanTaskIdempotencyConflictError,
@@ -14,11 +15,25 @@ export const taskRouter = router({
   create: publicProcedure.input(HumanTaskSubmissionSchema).mutation(async ({ ctx, input }) => {
     try {
       const { idempotency_key, ...request } = input;
-      return await requireService(ctx.humanTaskService, "Human Task").create({
-        identity: requireHumanTaskIdentity(ctx.identity),
+      const identity = requireHumanTaskIdentity(ctx.identity);
+      const task = await requireService(ctx.humanTaskService, "Human Task").create({
+        identity,
         idempotencyKey: idempotency_key,
         request,
       });
+      recordTelemetrySafely(
+        ctx.telemetryService,
+        {
+          ...telemetryIdentity(identity),
+          surface: "server",
+          action: "task_submitted",
+          entity_type: "human_task",
+          entity_id: task.id,
+          props_jsonb: { city: task.city, kind: task.kind },
+        },
+        "human_task_telemetry_write_failed",
+      );
+      return task;
     } catch (error) {
       throw mapHumanTaskError(error);
     }
@@ -35,6 +50,12 @@ function requireHumanTaskIdentity(identity: RequestIdentity | undefined): HumanT
     throw new TRPCError({ code: "UNAUTHORIZED", message: "A valid session is required." });
   }
   return identity;
+}
+
+function telemetryIdentity(identity: HumanTaskIdentity): { user_id?: string; anon_id?: string } {
+  return identity.kind === "authenticated"
+    ? { user_id: identity.userId }
+    : { anon_id: identity.anonId };
 }
 
 function mapHumanTaskError(error: unknown): TRPCError {

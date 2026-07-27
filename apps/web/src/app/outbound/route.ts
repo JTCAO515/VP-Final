@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { OutboundRedirectInputSchema } from "@visepanda/app-server";
 import { getServerCaller } from "../api/_server";
 import { runtimeUnavailableResponse } from "../api/_runtimeError";
@@ -29,7 +29,9 @@ export async function GET(request: Request) {
         cookieResponse,
       );
     }
-    const result = await getServerCaller(identity).commerce.createOutboundRedirect(input.data);
+    const result = await getServerCaller(identity, after).commerce.createOutboundRedirect(
+      input.data,
+    );
     return applyIdentityCookies(NextResponse.redirect(result.redirectUrl, 302), cookieResponse);
   } catch (error) {
     const unavailable = runtimeUnavailableResponse(error);

@@ -1,5 +1,5 @@
 import { HumanTaskReceiptSchema, HumanTaskSubmissionSchema } from "@visepanda/domain";
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { getServerCaller } from "../_server";
 import { runtimeUnavailableResponse } from "../_runtimeError";
 import { applyIdentityCookies, resolveRequestIdentity } from "../../../lib/requestIdentity";
@@ -17,7 +17,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const task = await getServerCaller(identity).task.create(parsed.data);
+    const task = await getServerCaller(identity, after).task.create(parsed.data);
     return applyIdentityCookies(
       NextResponse.json({ ok: true, task: HumanTaskReceiptSchema.parse(task) }),
       cookieResponse,

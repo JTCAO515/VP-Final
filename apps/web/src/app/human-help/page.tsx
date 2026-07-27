@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import type { HumanTaskReceipt } from "@visepanda/domain";
 import { SiteFooter, SiteHeader } from "../site-chrome";
+import { captureClientTelemetry } from "../../lib/clientTelemetry";
 
 type SubmitState = "idle" | "submitting" | "sent" | "error";
 
@@ -13,12 +14,33 @@ export default function HumanHelpPage() {
   const [description, setDescription] = useState("");
   const [error, setError] = useState<string | null>(null);
   const idempotencyKey = useRef<string | null>(null);
+  const taskStarted = useRef(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     setKind(params.get("kind") ?? "other");
     setDescription(params.get("description") ?? "");
   }, []);
+
+  useEffect(() => {
+    captureClientTelemetry({
+      action: "human_help_viewed",
+      entity_type: "human_help_form",
+      entity_id: "shanghai-preview",
+      props_jsonb: { city: "Shanghai" },
+    });
+  }, []);
+
+  function markTaskStarted(): void {
+    if (taskStarted.current) return;
+    taskStarted.current = true;
+    captureClientTelemetry({
+      action: "task_started",
+      entity_type: "human_help_form",
+      entity_id: "shanghai-preview",
+      props_jsonb: { city: "Shanghai", kind },
+    });
+  }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -79,7 +101,11 @@ export default function HumanHelpPage() {
       </section>
 
       <section className="helpGrid">
-        <form className="panel helpForm" onSubmit={(event) => void submit(event)}>
+        <form
+          className="panel helpForm"
+          onFocusCapture={markTaskStarted}
+          onSubmit={(event) => void submit(event)}
+        >
           <label>
             City
             <input name="city" readOnly required value="Shanghai" />

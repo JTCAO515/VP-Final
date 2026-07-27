@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { appRouter } from "../../router.js";
+import { createInMemoryTelemetryService } from "../telemetry/service.js";
 import { createVersionedInMemoryTripService } from "../trip/versionedService.js";
 import { createInMemoryHumanTaskService } from "./service.js";
 
@@ -18,6 +19,7 @@ describe("task router", () => {
 
   it("requires trusted identity and creates only an owner-scoped request", async () => {
     const humanTaskService = createInMemoryHumanTaskService();
+    const telemetryService = createInMemoryTelemetryService();
     const unauthenticated = appRouter.createCaller({
       humanTaskService,
       identity: { kind: "none" },
@@ -36,6 +38,7 @@ describe("task router", () => {
     const caller = appRouter.createCaller({
       humanTaskService,
       identity: { kind: "anonymous", anonId: "anon-a" },
+      telemetryService,
       tripService: createVersionedInMemoryTripService(),
     });
 
@@ -49,5 +52,14 @@ describe("task router", () => {
 
     expect(task.status).toBe("requested");
     expect(await caller.task.listMine()).toHaveLength(1);
+    await expect(telemetryService.list()).resolves.toEqual([
+      expect.objectContaining({
+        anon_id: "anon-a",
+        action: "task_submitted",
+        entity_type: "human_task",
+        entity_id: task.id,
+        props_jsonb: { city: "Shanghai", kind: "ticket_help" },
+      }),
+    ]);
   });
 });

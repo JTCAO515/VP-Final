@@ -18,6 +18,8 @@ import {
 import type { AgentAttemptTrace, AgentTraceService } from "../trace/service.js";
 import { normalizeAgentFailure } from "../trace/service.js";
 import type { TripIdentity, VersionedTripService } from "../trip/versionedService.js";
+import type { TelemetryService } from "../telemetry/service.js";
+import { recordTelemetrySafely } from "../telemetry/producer.js";
 
 export const CopilotRunInputSchema = z.object({
   message: z.string().min(1),
@@ -91,6 +93,7 @@ export type CopilotPipelineDependencies = {
   routeIntent?: RouteIntent;
   retrieveContext?: RetrieveContext;
   generateEnvelope?: GenerateEnvelope;
+  telemetryService?: TelemetryService;
   traceService?: AgentTraceService;
   demoDialogueOnly?: boolean;
 };
@@ -101,6 +104,7 @@ export function createCopilotPipeline({
   routeIntent = defaultRouteIntent,
   retrieveContext = defaultRetrieveContext,
   generateEnvelope = defaultGenerateEnvelope,
+  telemetryService,
   traceService,
   demoDialogueOnly = false,
 }: CopilotPipelineDependencies) {
@@ -185,6 +189,7 @@ export function createCopilotPipeline({
             appliedPatchCount: envelope.tripActions.length,
           },
         });
+        recordCopilotSuccessTelemetry(telemetryService, identity, result);
         const conversation = prepareConversationTraceSafely({
           identity,
           userMessage: parsedInput.message,
@@ -208,6 +213,7 @@ export function createCopilotPipeline({
         return result;
       } catch (error) {
         attempts = [...attempts, ...attemptsFromFailure(error)];
+        recordCopilotFailureTelemetry(telemetryService, identity, parsedInput, intent, error);
         const conversation = prepareConversationTraceSafely({
           identity,
           userMessage: parsedInput.message,
@@ -232,6 +238,93 @@ export function createCopilotPipeline({
       }
     },
   };
+}
+
+function recordCopilotSuccessTelemetry(
+  telemetryService: TelemetryService | undefined,
+  identity: TripIdentity,
+  result: CopilotRunResult,
+): void {
+  const entity = copilotTelemetryEntity(identity, result.trip?.id);
+  const base = {
+    ...telemetryIdentity(identity),
+    surface: "server" as const,
+    ...entity,
+    intent: result.trace.intent,
+  };
+
+  recordTelemetrySafely(
+    telemetryService,
+    { ...base, action: "prompt_submitted", props_jsonb: {} },
+    "copilot_telemetry_write_failed",
+  );
+  if (result.trace.appliedPatchCount > 0) {
+    recordTelemetrySafely(
+      telemetryService,
+      { ...base, action: "patch_applied", props_jsonb: {} },
+      "copilot_telemetry_write_failed",
+    );
+  }
+  if (result.trip?.days.some((day) => day.blocks.length === 0)) {
+    recordTelemetrySafely(
+      telemetryService,
+      { ...base, action: "skeleton_received", props_jsonb: {} },
+      "copilot_telemetry_write_failed",
+    );
+  }
+  if (result.envelope.humanHelp) {
+    recordTelemetrySafely(
+      telemetryService,
+      {
+        ...base,
+        action: "human_help_suggested",
+        props_jsonb: {
+          city: result.envelope.humanHelp.city,
+          kind: result.envelope.humanHelp.kind,
+        },
+      },
+      "copilot_telemetry_write_failed",
+    );
+  }
+}
+
+function recordCopilotFailureTelemetry(
+  telemetryService: TelemetryService | undefined,
+  identity: TripIdentity,
+  input: CopilotRunInput,
+  intent: CopilotIntent | undefined,
+  error: unknown,
+): void {
+  recordTelemetrySafely(
+    telemetryService,
+    {
+      ...telemetryIdentity(identity),
+      surface: "server",
+      ...copilotTelemetryEntity(identity, input.tripId),
+      action: "copilot_failed",
+      ...(intent ? { intent } : {}),
+      props_jsonb: { failureClass: normalizeAgentFailure(error) },
+    },
+    "copilot_telemetry_write_failed",
+  );
+}
+
+function copilotTelemetryEntity(
+  identity: TripIdentity,
+  tripId?: string,
+): {
+  entity_type: "trip" | "copilot_session";
+  entity_id: string;
+} {
+  return tripId
+    ? { entity_type: "trip", entity_id: tripId }
+    : { entity_type: "copilot_session", entity_id: opaqueCopilotSessionId(identity) };
+}
+
+function telemetryIdentity(identity: TripIdentity): { user_id?: string; anon_id?: string } {
+  return identity.kind === "authenticated"
+    ? { user_id: identity.userId }
+    : { anon_id: identity.anonId };
 }
 
 async function recordTraceSafely(

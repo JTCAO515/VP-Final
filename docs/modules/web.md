@@ -62,8 +62,13 @@ accepts only client-safe Explore and Human Help pre-submit actions with bounded 
 client-supplied identity, id, timestamp, expiry, commercial attribution, and unrestricted payloads.
 The composition root supplies the durable telemetry service, which derives one trusted identity and
 the remaining persistence metadata. A successful capture returns no stored event content. A rejected
-or unavailable capture is honest and does not change the user's primary product operation; server
-lifecycle producers are wired separately after the telemetry contract is reviewed.
+or unavailable capture is honest and does not change the user's primary product operation. Explore
+and guide views use this bounded client path for `poi_viewed`, `scene_filter_used`, and `guide_viewed`;
+Human Help records `human_help_viewed` and the first form focus as `task_started`. These browser
+captures are best effort and do not include form text. Server lifecycle producers are scheduled after
+the associated authoritative Copilot result, outbound click-ledger commit, or Human Task creation;
+they cannot delay the answer, redirect, or task receipt. `partner_redirected` means that VisePanda
+issued a durable approved redirect, not that a partner accepted a booking or conversion.
 
 For DEMO-01, that composition root injects the v3 real-model Copilot dependencies only in a deployed
 runtime. Explicit `test` and `local-demo` retain their deterministic fixtures. A deployed route with

@@ -53,30 +53,47 @@ export function createCommerceService(input: {
     async createOutboundRedirect(command) {
       const redirect = await input.writer.createRedirect(command);
       if (input.telemetryService) {
-        try {
-          const eventIntent = CopilotIntentSchema.safeParse(command.intent).data;
-          await input.telemetryService.track({
-            ...telemetryIdentity(command.identity),
-            surface: "web",
-            action: "outbound_clicked",
-            entity_type: "outbound_click",
-            entity_id: redirect.click.id,
-            partner: redirect.click.partner,
-            click_id: redirect.click.id,
-            ...(eventIntent ? { intent: eventIntent } : {}),
-            props_jsonb: {},
-          });
-        } catch {
-          input.onTelemetryError?.();
-          console.warn("outbound_telemetry_write_failed", {
-            failureClass: "persistence_error",
-            clickId: redirect.click.id,
-          });
-        }
+        recordOutboundTelemetrySafely(input, command, redirect);
       }
       return redirect;
     },
   };
+}
+
+function recordOutboundTelemetrySafely(
+  input: Parameters<typeof createCommerceService>[0],
+  command: CreateOutboundRedirectCommand,
+  redirect: OutboundRedirect,
+): void {
+  const eventIntent = CopilotIntentSchema.safeParse(command.intent).data;
+  const base = {
+    ...telemetryIdentity(command.identity),
+    surface: "web" as const,
+    entity_type: "outbound_click",
+    entity_id: redirect.click.id,
+    partner: redirect.click.partner,
+    click_id: redirect.click.id,
+    ...(eventIntent ? { intent: eventIntent } : {}),
+    props_jsonb: {},
+  };
+  try {
+    void Promise.all([
+      input.telemetryService!.track({ ...base, action: "outbound_clicked" }),
+      input.telemetryService!.track({ ...base, action: "partner_redirected" }),
+    ]).catch(() => {
+      input.onTelemetryError?.();
+      console.warn("outbound_telemetry_write_failed", {
+        failureClass: "persistence_error",
+        clickId: redirect.click.id,
+      });
+    });
+  } catch {
+    input.onTelemetryError?.();
+    console.warn("outbound_telemetry_write_failed", {
+      failureClass: "persistence_error",
+      clickId: redirect.click.id,
+    });
+  }
 }
 
 function telemetryIdentity(identity: OutboundIdentity): {

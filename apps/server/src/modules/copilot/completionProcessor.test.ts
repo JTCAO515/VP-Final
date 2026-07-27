@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { createInMemoryTelemetryService } from "../telemetry/service.js";
 import { createVersionedInMemoryTripService } from "../trip/versionedService.js";
 import { createInMemoryCompletionJobService } from "./completionJobService.js";
 import { createCompletionProcessor } from "./completionProcessor.js";
@@ -8,7 +9,10 @@ const tripId = "20000000-0000-0000-0000-000000000001";
 const idempotencyKey = "20000000-0000-0000-0000-000000000002";
 const identity = { kind: "anonymous" as const, anonId: "processor-owner" };
 
-async function setup(completeDay: Parameters<typeof createCompletionProcessor>[0]["completeDay"]) {
+async function setup(
+  completeDay: Parameters<typeof createCompletionProcessor>[0]["completeDay"],
+  telemetryService?: Parameters<typeof createCompletionProcessor>[0]["telemetryService"],
+) {
   const tripService = createVersionedInMemoryTripService();
   await tripService.create(
     {
@@ -32,7 +36,13 @@ async function setup(completeDay: Parameters<typeof createCompletionProcessor>[0
     jobService,
     tripService,
     publish,
-    processor: createCompletionProcessor({ completeDay, jobService, queue, tripService }),
+    processor: createCompletionProcessor({
+      completeDay,
+      jobService,
+      queue,
+      ...(telemetryService ? { telemetryService } : {}),
+      tripService,
+    }),
   };
 }
 
@@ -56,6 +66,38 @@ describe("completion processor", () => {
     const events = await setupResult.tripService.getEvents(tripId, identity);
     expect(events).toHaveLength(2);
     expect(events?.[1]?.completion).toEqual({ jobId: setupResult.job.id, attempt: 1 });
+  });
+
+  it("records details completion only after the Trip update is durable", async () => {
+    const telemetryService = createInMemoryTelemetryService();
+    const setupResult = await setup(
+      async (day) => ({
+        id: `completed-${day.id}`,
+        type: "attraction",
+        title: "Yu Garden",
+      }),
+      telemetryService,
+    );
+
+    await expect(
+      setupResult.processor.process({ jobId: setupResult.job.id, idempotencyKey }),
+    ).resolves.toEqual({ accepted: true, state: "completed" });
+    await expect(telemetryService.list()).resolves.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          action: "patch_applied",
+          entity_type: "trip",
+          entity_id: tripId,
+          props_jsonb: {},
+        }),
+        expect.objectContaining({
+          action: "details_completed",
+          entity_type: "trip",
+          entity_id: tripId,
+          props_jsonb: {},
+        }),
+      ]),
+    );
   });
 
   it("marks stale Trip state conflicted without overwrite", async () => {
