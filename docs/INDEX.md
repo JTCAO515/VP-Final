@@ -100,6 +100,8 @@ Current system shape, boundaries, data flows, and overall design controls.
 | [Runtime and Data Flows](architecture/runtime-data-flows.md) | explanation | active | architecture | Copilot, Trip, knowledge, commerce, identity, task, and telemetry flows. |
 | [Runtime Mode and Adapter Inventory](architecture/runtime-adapter-inventory.md) | reference | active | server / platform | Explicit runtime modes, safe adapter diagnostics, durable object owners, and canonical follow-ups. |
 | [System Overview](architecture/system-overview.md) | explanation | active | architecture | Product-to-system view of the modular monolith and user surfaces. |
+| [VisePod Device Authentication](visepod/device-authentication.md) | explanation | draft | device identity / security architecture | Candidate challenge canonicalization, RSA-PSS verification, short-lived token, provisioning, rotation, revocation, and hardware evidence contract. |
+| [VisePod Prototype Documentation](visepod/README.md) | reference | draft | VisePod architecture | Reading order, prototype boundary, and evidence status for the VisePod investor-demo workstream. |
 
 ## Modules
 
@@ -144,6 +146,7 @@ Normative, testable rules that block merge or release when violated.
 | [Iteration Constraints](constraints/iteration.md) | constraint | active | overall design | Lifecycle, Issue, PR, documentation, eval, migration, and phase-trigger gates. |
 | [Karpathy Coding Discipline](constraints/karpathy-guidelines.md) | constraint | active | engineering | Mandatory assumption, simplicity, surgical-change, and goal-driven verification rules. |
 | [Permission and Data Access Constraints](constraints/permissions.md) | constraint | active | security | Authentication, authorization, RLS, Ops, service-role, privacy, and retention rules. |
+| [VisePod Device Authentication Threat Model](visepod/device-authentication-threat-model.md) | constraint | draft | device security | Threats, mandatory P01 controls, evidence gates, residual risk, and stop conditions for teardown, replay, cloning, leakage, and loss. |
 | [钱学森 Skills Constraints](constraints/qian-systems-engineering.md) | constraint | active | overall design | Thirty-one mandatory systems, documentation, and focused-implementation rules with evidence gates. |
 
 ## Governance
@@ -183,6 +186,7 @@ Append-only records of accepted and superseded binding decisions.
 | [ADR-0010: Copilot Cost Accounting Contract](adr/ADR-0010-copilot-cost-accounting-contract.md) | decision | accepted | AI platform / data platform | Freezes cache-aware provider cost calculation, price snapshots, independent 400-day ledger retention, and write-time Agent Run integrity. |
 | [ADR-0011: Database-local Retention Purge Scheduling](adr/ADR-0011-retention-purge-scheduling.md) | decision | accepted | security / data platform | Uses private pg_cron jobs, bounded deletion-count evidence, and per-target health to enforce accepted retention deadlines. |
 | [ADR-0012: Phase 0 Telemetry Observation Contract](adr/ADR-0012-phase0-telemetry-observation-contract.md) | decision | accepted | data platform / privacy | Freezes privacy-safe browser telemetry capture, server-derived persistence, registered actions, and private Phase 0 aggregate views. |
+| [ADR-0013: VisePod Prototype Device Authentication](adr/ADR-0013-visepod-device-authentication.md) | decision | draft | device identity / security architecture | Proposes ESP32-S3 RSA DS-backed challenge authentication, scoped sessions, physical provisioning, and a fail-closed exit for the VisePod P01 prototype. |
 
 ## Runbooks
 

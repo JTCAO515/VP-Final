@@ -779,6 +779,52 @@
         "infra/supabase/tests/database/phase0_telemetry_contract.test.sql"
       ]
     },
+    {
+      "path": "docs/adr/ADR-0013-visepod-device-authentication.md",
+      "title": "ADR-0013: VisePod Prototype Device Authentication",
+      "category": "decisions",
+      "type": "decision",
+      "status": "draft",
+      "owner": "device identity / security architecture",
+      "summary": "Proposes ESP32-S3 RSA DS-backed challenge authentication, scoped sessions, physical provisioning, and a fail-closed exit for the VisePod P01 prototype.",
+      "sourcePrefixes": [
+        "docs/visepod/fixtures/device-auth-v1-vectors.json",
+        "scripts/verify-visepod-auth-vector.mjs"
+      ]
+    },
+    {
+      "path": "docs/visepod/README.md",
+      "title": "VisePod Prototype Documentation",
+      "category": "architecture",
+      "type": "reference",
+      "status": "draft",
+      "owner": "VisePod architecture",
+      "summary": "Reading order, prototype boundary, and evidence status for the VisePod investor-demo workstream.",
+      "sourcePrefixes": ["docs/visepod/"]
+    },
+    {
+      "path": "docs/visepod/device-authentication.md",
+      "title": "VisePod Device Authentication",
+      "category": "architecture",
+      "type": "explanation",
+      "status": "draft",
+      "owner": "device identity / security architecture",
+      "summary": "Candidate challenge canonicalization, RSA-PSS verification, short-lived token, provisioning, rotation, revocation, and hardware evidence contract.",
+      "sourcePrefixes": [
+        "docs/visepod/fixtures/device-auth-v1-vectors.json",
+        "scripts/verify-visepod-auth-vector.mjs"
+      ]
+    },
+    {
+      "path": "docs/visepod/device-authentication-threat-model.md",
+      "title": "VisePod Device Authentication Threat Model",
+      "category": "constraints",
+      "type": "constraint",
+      "status": "draft",
+      "owner": "device security",
+      "summary": "Threats, mandatory P01 controls, evidence gates, residual risk, and stop conditions for teardown, replay, cloning, leakage, and loss.",
+      "sourcePrefixes": ["docs/visepod/"]
+    },
 
     {
       "path": "docs/runbooks/README.md",
