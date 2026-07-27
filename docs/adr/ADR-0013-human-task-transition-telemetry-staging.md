@@ -1,7 +1,7 @@
 # ADR-0013: Human Task Transition Telemetry Staging
 
 Date: 2026-07-27
-Status: Draft
+Status: Accepted
 Deciders: architecture owner through Issue #322 / P0-19b
 Owner: data platform / Human Help
 Review date: before P0-19b producer rollout
@@ -18,17 +18,16 @@ triage or cancellation to `quote_created`, `payment_link_clicked`, `task_paid`, 
 would make the funnel factually false. Adding a generic event at the producer layer would bypass
 the schema-first, allowlisted action contract and its privacy review.
 
-## Candidate Decision
+## Decision
 
-This draft proposes the following narrow Phase 0 staging rule for independent review:
+Phase 0 uses the following narrow Human Task staging rule:
 
 - P0-19b emits `task_submitted` only after the durable Human Task intake succeeds. It remains the
   sole Human Help lifecycle event in the current controlled preview.
 - Browser-originated `human_help_viewed` and `task_started` retain their already accepted bounded
   capture meanings. They are not status-transition evidence.
 - Current Ops triage and cancellation mutations emit no product telemetry event. Their existing
-  permission-bounded mutation and audit behavior remains authoritative; omitting a telemetry row
-  is more truthful than reusing a different action name.
+  permission-bounded mutation and audit behavior remains authoritative.
 - `quote_created`, `payment_link_clicked`, `task_paid`, and `task_done` remain contract-only. No
   producer may emit them until the corresponding authorized state/payment behavior is separately
   accepted and available.
@@ -36,6 +35,14 @@ This draft proposes the following narrow Phase 0 staging rule for independent re
   named action, strict bounded property schema, retention/privacy review, additive migration, and
   producer integration after that contract merges. It must not be added opportunistically in an
   Ops route.
+
+The governing criterion is that one fact has one authoritative source. Human Task lifecycle status
+already has an authoritative, permission-bounded source in `human_tasks` and its audit behavior.
+Duplicating triage or cancellation in telemetry would create a weaker second source that can drift
+without a resolution rule. Lifecycle analysis must derive from `human_tasks`, not telemetry.
+`task_submitted` remains valid because it records submission-time funnel and session context that a
+Human Task row does not hold. A new lifecycle event is allowed only when a proposed question cannot
+be answered from `human_tasks`; the future D2 contract must state that gap explicitly.
 
 ## Alternatives Considered
 
@@ -54,7 +61,7 @@ the Human Help funnel and create an implied payment/completion claim.
 Rejected. Copilot, Explore/Guide, durable outbound, and Human Help intake producers have accepted
 semantics independent of this narrow Ops-transition gap.
 
-## Consequences if Accepted
+## Consequences
 
 - P0-19b can implement its non-payment producer set without a schema or migration change.
 - The private Human Help funnel records intake, not unsupported operational conversion stages.
