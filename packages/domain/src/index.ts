@@ -13,3 +13,4 @@ export * from "./knowledge/seed.js";
 export * from "./observability/index.js";
 export * from "./task/index.js";
 export * from "./trip/index.js";
+export * from "./visepod/index.js";

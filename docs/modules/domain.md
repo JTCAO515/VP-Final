@@ -19,6 +19,7 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
 | `events`        | Telemetry event contract                                                                                                         |
 | `observability` | Redacted Copilot turn, per-attempt cost, product-event action, and forbidden-persistence contracts                               |
 | `errors`        | Shared typed error shapes                                                                                                        |
+| `visepod`       | Signed Wi-Fi device-turn metadata, raw PCM bounds, indexed playback segments, health/errors, HMAC vector, and sentence splitting |
 
 ## Invariants
 
@@ -58,6 +59,11 @@ fulfilling -> done`, with explicit cancellation edges and no terminal recovery. 
 - Human Task evidence is typed as `outcome` or `transcript_excerpt` and is eligible only after
   `done` or `cancelled`. Email/phone data is replaced before persistence; credential, payment, OTP,
   and travel-document content is rejected.
+- VisePod v1 validates one HTTPS push-to-talk turn as strict metadata plus raw PCM and validates
+  response segments by explicit, contiguous index rather than array order. Device ids and nonces
+  accept only RFC 3986 unreserved characters, and the canonical HMAC string, signing vector, audio
+  limits, response/error shapes, and deterministic sentence splitter remain portable across firmware,
+  server, Web, and Mobile. See [Device Protocol v1](../visepod/device-protocol-v1.md).
 
 ## Change Workflow
 
@@ -77,4 +83,4 @@ pnpm --filter @visepanda/domain lint
 ```
 
 Current test suites cover Trip patches, Copilot envelopes, knowledge derivation, task transitions,
-commerce URL construction, events, and errors.
+commerce URL construction, events, errors, and the VisePod v1 contract/signing vector.
