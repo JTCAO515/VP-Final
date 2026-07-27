@@ -625,23 +625,50 @@ export const telemetryEvents = pgTable(
     partner: text("partner"),
     clickId: uuid("click_id"),
     propsJsonb: jsonb("props_jsonb").notNull().default({}),
-    retentionExpiresAt: timestamp("retention_expires_at", { withTimezone: true }),
+    retentionExpiresAt: timestamp("retention_expires_at", { withTimezone: true }).notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
     anonCreatedIdx: index("events_anon_created_idx").on(table.anonId, table.createdAt),
+    userCreatedIdx: index("events_user_created_idx").on(table.userId, table.createdAt),
     actionCreatedIdx: index("events_action_created_idx").on(table.action, table.createdAt),
+    partnerCreatedIdx: index("events_partner_created_idx").on(table.partner, table.createdAt),
+    clickCreatedIdx: index("events_click_created_idx").on(table.clickId, table.createdAt),
     surfaceCheck: check(
       "events_surface_check",
       sql`${table.surface} in ('web', 'mobile', 'server', 'ops')`,
+    ),
+    registeredActionCheck: check(
+      "events_registered_action_check",
+      sql`${table.action} in (
+        'session_started', 'turn_completed', 'anon_limit_hit', 'rate_limited',
+        'register_prompt_shown', 'fallback_triggered', 'model_failure',
+        'cost_pricing_missing', 'daily_budget_exceeded', 'prompt_submitted',
+        'skeleton_received', 'details_completed', 'patch_applied', 'copilot_failed',
+        'human_help_suggested', 'guide_viewed', 'poi_viewed', 'scene_filter_used',
+        'outbound_clicked', 'partner_redirected', 'human_help_viewed', 'task_started',
+        'task_submitted', 'quote_created', 'payment_link_clicked', 'task_paid', 'task_done'
+      )`,
+    ),
+    propsObjectCheck: check(
+      "events_props_object_check",
+      sql`jsonb_typeof(${table.propsJsonb}) = 'object'`,
     ),
     copilotRetentionCheck: check(
       "events_copilot_retention_check",
       sql`${table.action} not in ('session_started', 'turn_completed', 'anon_limit_hit', 'rate_limited', 'register_prompt_shown', 'fallback_triggered', 'model_failure') or (${table.retentionExpiresAt} is not null and ${table.retentionExpiresAt} > ${table.createdAt})`,
     ),
+    retentionCheck: check(
+      "events_retention_check",
+      sql`${table.retentionExpiresAt} > ${table.createdAt}`,
+    ),
     identityCheck: check(
-      "events_at_least_one_identity_check",
-      sql`num_nonnulls(${table.userId}, ${table.anonId}) >= 1`,
+      "events_exactly_one_identity_check",
+      sql`num_nonnulls(${table.userId}, ${table.anonId}) = 1`,
+    ),
+    outboundContinuityCheck: check(
+      "events_outbound_continuity_check",
+      sql`${table.action} not in ('outbound_clicked', 'partner_redirected') or (${table.partner} is not null and ${table.clickId} is not null)`,
     ),
   }),
 );

@@ -58,7 +58,6 @@ describe("CommerceService", () => {
         track: async () => {
           throw new Error("telemetry offline");
         },
-        list: async () => [],
       },
       onTelemetryError,
     });
@@ -86,7 +85,7 @@ describe("CommerceService", () => {
           throw new Error("ledger offline");
         },
       },
-      telemetryService: { track, list: async () => [] },
+      telemetryService: { track },
     });
 
     await expect(

@@ -1,7 +1,14 @@
 import { randomUUID } from "node:crypto";
 import { TelemetryEventSchema, type TelemetryEvent } from "@visepanda/domain";
+import {
+  resolveCopilotRetentionPolicy,
+  retentionDeadline,
+} from "../observability/copilotPersistence.js";
 
-export type TelemetryInput = Omit<TelemetryEvent, "id" | "created_at" | "props_jsonb"> & {
+export type TelemetryInput = Omit<
+  TelemetryEvent,
+  "id" | "created_at" | "retention_expires_at" | "props_jsonb"
+> & {
   id?: string | undefined;
   created_at?: string | undefined;
   props_jsonb?: Record<string, unknown> | undefined;
@@ -9,7 +16,6 @@ export type TelemetryInput = Omit<TelemetryEvent, "id" | "created_at" | "props_j
 
 export type TelemetryService = {
   track(input: TelemetryInput): Promise<TelemetryEvent>;
-  list(): Promise<TelemetryEvent[]>;
 };
 
 export type PostHogConfig = {
@@ -17,29 +23,44 @@ export type PostHogConfig = {
   host?: string;
 };
 
-export function createInMemoryTelemetryService(
-  config: {
-    posthog?: PostHogConfig;
-    fetchFn?: typeof fetch;
-  } = {},
-): TelemetryService {
+export type TelemetryServiceOptions = {
+  environment?: Readonly<Record<string, string | undefined>>;
+  fetchFn?: typeof fetch;
+  now?: () => Date;
+  posthog?: PostHogConfig;
+  randomId?: () => string;
+  onDeliveryError?: () => void;
+};
+
+export function prepareTelemetryEvent(
+  input: TelemetryInput,
+  options: Pick<TelemetryServiceOptions, "environment" | "now" | "randomId"> = {},
+): TelemetryEvent {
+  const createdAt = input.created_at ? new Date(input.created_at) : (options.now?.() ?? new Date());
+  const retention = resolveCopilotRetentionPolicy(options.environment).eventDays;
+  return TelemetryEventSchema.parse({
+    ...input,
+    id: input.id ?? options.randomId?.() ?? randomUUID(),
+    props_jsonb: input.props_jsonb ?? {},
+    created_at: createdAt.toISOString(),
+    retention_expires_at: retentionDeadline(createdAt, retention).toISOString(),
+  });
+}
+
+export function createInMemoryTelemetryService(options: TelemetryServiceOptions = {}) {
   const events: TelemetryEvent[] = [];
 
   return {
-    async track(input) {
-      const event = TelemetryEventSchema.parse({
-        ...input,
-        id: input.id ?? randomUUID(),
-        created_at: input.created_at ?? new Date().toISOString(),
-      });
+    async track(input: TelemetryInput) {
+      const event = prepareTelemetryEvent(input, options);
       events.push(event);
-      await sendPostHog(event, config.posthog, config.fetchFn);
+      await deliverPostHogSafely(event, options);
       return event;
     },
     async list() {
-      return events;
+      return structuredClone(events);
     },
-  };
+  } satisfies TelemetryService & { list(): Promise<TelemetryEvent[]> };
 }
 
 export async function sendPostHog(
@@ -68,4 +89,16 @@ export async function sendPostHog(
       timestamp: event.created_at,
     }),
   });
+}
+
+export async function deliverPostHogSafely(
+  event: TelemetryEvent,
+  options: Pick<TelemetryServiceOptions, "fetchFn" | "onDeliveryError" | "posthog">,
+): Promise<void> {
+  try {
+    await sendPostHog(event, options.posthog, options.fetchFn);
+  } catch {
+    options.onDeliveryError?.();
+    console.warn("telemetry_delivery_failed", { failureClass: "delivery_error" });
+  }
 }

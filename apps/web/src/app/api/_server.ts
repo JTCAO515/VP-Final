@@ -6,6 +6,7 @@ import {
   createDbHumanTaskService,
   createDbCommerceService,
   createDbKnowledgeService,
+  createDbTelemetryService,
   createDbVersionedTripService,
   createDemoCopilotModelDependencies,
   createInMemoryAnonymousTurnCounter,
@@ -14,6 +15,7 @@ import {
   createInMemoryKnowledgeService,
   createInMemoryHumanTaskService,
   createInMemoryAgentTraceService,
+  createInMemoryTelemetryService,
   createVersionedInMemoryTripService,
   createModelCompleteDay,
   createQStashCompletionQueue,
@@ -34,6 +36,7 @@ import {
   type HumanTaskService,
   type CommerceService,
   type KnowledgeService,
+  type TelemetryService,
   type RequestIdentity,
   type VersionedTripService,
 } from "@visepanda/app-server";
@@ -52,6 +55,7 @@ type WebServerServices = {
   anonymousTurnCounter?: AnonymousTurnCounter;
   copilotIpRateLimiter?: CopilotIpRateLimiter;
   commerceService?: CommerceService;
+  telemetryService?: TelemetryService;
 };
 
 const store = globalThis as typeof globalThis & {
@@ -111,6 +115,7 @@ export function createWebServerServices(environment: Environment): WebServerServ
       knowledgeService: createInMemoryKnowledgeService(),
       traceService,
       productEventService: traceService,
+      telemetryService: createInMemoryTelemetryService({ environment }),
       tripService,
       completionJobService: createInMemoryCompletionJobService(tripService),
       anonymousTurnCounter: createInMemoryAnonymousTurnCounter(),
@@ -122,6 +127,7 @@ export function createWebServerServices(environment: Environment): WebServerServ
   if (!databaseUrl) throw new WebRuntimeUnavailableError("database_url_missing");
   const db = createDb(databaseUrl);
   const traceService = createDbAgentTraceService(db);
+  const telemetryService = createDbTelemetryService(db, { environment });
   const completionQueue = resolveCompletionQueue(environment);
   const anonymousTurnCounter = resolveAnonymousTurnCounter(environment);
   const copilotIpRateLimiter = resolveCopilotIpRateLimiter(environment);
@@ -131,6 +137,7 @@ export function createWebServerServices(environment: Environment): WebServerServ
     knowledgeService: createDbKnowledgeService(db),
     traceService,
     productEventService: traceService,
+    telemetryService,
     tripService: createDbVersionedTripService(db),
     completionJobService: createDbCompletionJobService(db),
     ...(completionQueue ? { completionQueue } : {}),

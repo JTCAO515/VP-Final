@@ -70,6 +70,13 @@ Next.js runtimes rather than deployed as an independent service.
   header, Redis failure, or invalid response fails closed before model execution under OA-013.
 - Knowledge, Human Task, and Telemetry routers require a service selected by the composition root;
   omitted capabilities return typed `SERVICE_UNAVAILABLE` and never construct memory internally.
+- P0-19 makes the generic telemetry capture router a narrow browser boundary rather than a generic
+  ledger write API. It accepts only the domain's client-safe action subset and bounded dimensions,
+  then derives a single trusted identity from `RequestIdentity`, fixes the Web surface, and delegates
+  id/timestamp/180-day expiry to the telemetry service. The Postgres adapter writes the validated row
+  before optional PostHog delivery; delivery failure cannot erase the durable event, while a telemetry
+  write failure is reported safely and never faked as capture success. Server-owned Copilot, outbound,
+  and Human Help lifecycle producers remain a separate P0-19b integration step.
 - P0-18b connects the frozen outbound contract to the Commerce router and Postgres adapter. In one
   transaction, the adapter locks the requested partner, requires its current database status to be
   `active`, validates the exact HTTPS host allowlist, derives exactly one verified-user or signed-

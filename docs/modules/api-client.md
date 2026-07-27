@@ -17,6 +17,11 @@ Trip inputs intentionally contain no owner identity or replacement snapshot fiel
 return `{ trip, version }`, and existing mutations carry `expectedVersion` plus a Patch so clients
 cannot bypass server identity or optimistic concurrency.
 
+The typed telemetry capture input is intentionally a narrow `ClientTelemetryAction` union rather than
+`string`. It includes only browser-safe pre-submit observation actions and no client-owned identity,
+timestamp, retention, commercial click, or arbitrary event fields. Server lifecycle events use the
+server-owned telemetry service rather than this client contract.
+
 ## Current Limitation
 
 The repository does not yet expose a stable deployed `/trpc` endpoint. Web and Ops currently create

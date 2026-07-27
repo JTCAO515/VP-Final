@@ -89,7 +89,7 @@ select throws_ok(
     ) values (
       'cache-contract-test', 'server', 'cost_pricing_missing', 'llm_call'
     )$$,
-  '23514',
+  '23502',
   null,
   'cost pricing missing events require a retention deadline'
 );

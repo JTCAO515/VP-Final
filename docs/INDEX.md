@@ -185,6 +185,7 @@ Append-only records of accepted and superseded binding decisions.
 | [ADR-0009: Copilot Conversation and Cost Retention](adr/ADR-0009-copilot-conversation-cost-retention.md) | decision | accepted | security / data platform | Separates redacted Copilot turns, per-attempt costs, and product events under explicit 180/400/180-day server-only retention boundaries. |
 | [ADR-0010: Copilot Cost Accounting Contract](adr/ADR-0010-copilot-cost-accounting-contract.md) | decision | accepted | AI platform / data platform | Freezes cache-aware provider cost calculation, price snapshots, independent 400-day ledger retention, and write-time Agent Run integrity. |
 | [ADR-0011: Database-local Retention Purge Scheduling](adr/ADR-0011-retention-purge-scheduling.md) | decision | accepted | security / data platform | Uses private pg_cron jobs, bounded deletion-count evidence, and per-target health to enforce accepted retention deadlines. |
+| [ADR-0012: Phase 0 Telemetry Observation Contract](adr/ADR-0012-phase0-telemetry-observation-contract.md) | decision | accepted | data platform / privacy | Freezes privacy-safe browser telemetry capture, server-derived persistence, registered actions, and private Phase 0 aggregate views. |
 
 ## Runbooks
 

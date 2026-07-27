@@ -148,7 +148,16 @@ describe("database schema", () => {
       "events_copilot_retention_check",
     );
     expect(getTableConfig(telemetryEvents).checks.map((constraint) => constraint.name)).toContain(
-      "events_at_least_one_identity_check",
+      "events_exactly_one_identity_check",
+    );
+    expect(getTableConfig(telemetryEvents).checks.map((constraint) => constraint.name)).toContain(
+      "events_registered_action_check",
+    );
+    expect(getTableConfig(telemetryEvents).checks.map((constraint) => constraint.name)).toContain(
+      "events_outbound_continuity_check",
+    );
+    expect(getTableConfig(telemetryEvents).indexes.map((index) => index.config.name)).toContain(
+      "events_click_created_idx",
     );
   });
 

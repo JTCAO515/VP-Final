@@ -28,8 +28,9 @@ Three records are distinct and remain independently queryable:
 3. The existing `events` table remains the product-event ledger. The seven frozen Copilot actions are
    `session_started`, `turn_completed`, `anon_limit_hit`, `rate_limited`,
    `register_prompt_shown`, `fallback_triggered`, and `model_failure`. New rows for these actions
-   require an explicit retention deadline. Events require at least one trusted user or anonymous
-   identity; both may coexist briefly to preserve login attribution, but neither may be fabricated.
+   require an explicit retention deadline. ADR-0012 supersedes the original identity allowance for
+   all new event writes: every event has exactly one server-derived trusted user or anonymous identity.
+   Login attribution uses a separate lifecycle, not a dual-identity event row.
 
 The accepted defaults are 180 days for conversation content, 400 days for cost records, and 180 days
 for product events. The runtime may override them separately with positive-integer server settings.

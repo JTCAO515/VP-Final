@@ -31,6 +31,7 @@ the outbound gateway.
 | `/api/auth/login`                | Supabase email/password sign-in and SSR cookie issuance                  |
 | `/api/auth/logout`               | Supabase sign-out and SSR cookie clearing                                |
 | `/api/auth/session`              | Verified display-safe session status and cookie refresh                  |
+| `/api/telemetry`                 | Strict privacy-safe browser telemetry capture                            |
 | `/api/trips/*`                   | Trip read, claim, and share handlers                                     |
 
 ## Data Access
@@ -55,6 +56,14 @@ partner with an exact allowlisted HTTPS host can redirect, and the click row mus
 Pending, inactive, unknown, malformed, or unrecordable actions return an honest non-redirect
 response. A newly issued anonymous cookie is preserved on both success and failure. No partner is
 active by repository default, and partner management remains an authorized Ops follow-up.
+
+`POST /api/telemetry` is a deliberately narrow, best-effort observation endpoint. Its request body
+accepts only client-safe Explore and Human Help pre-submit actions with bounded dimensions; it rejects
+client-supplied identity, id, timestamp, expiry, commercial attribution, and unrestricted payloads.
+The composition root supplies the durable telemetry service, which derives one trusted identity and
+the remaining persistence metadata. A successful capture returns no stored event content. A rejected
+or unavailable capture is honest and does not change the user's primary product operation; server
+lifecycle producers are wired separately after the telemetry contract is reviewed.
 
 For DEMO-01, that composition root injects the v3 real-model Copilot dependencies only in a deployed
 runtime. Explicit `test` and `local-demo` retain their deterministic fixtures. A deployed route with

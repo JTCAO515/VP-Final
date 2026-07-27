@@ -44,7 +44,7 @@ select throws_ok(
 select throws_ok(
   $$insert into public.events (anon_id, surface, action, entity_type)
     values ('anonymous', 'server', 'turn_completed', 'copilot_turn')$$,
-  '23514',
+  '23502',
   null,
   'Copilot product events require retention'
 );

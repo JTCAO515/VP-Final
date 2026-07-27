@@ -56,6 +56,12 @@ Status: active
   typed conflict and MUST NOT silently overwrite snapshots or events.
 - Personal data, prompts, transcripts, and payment evidence MUST be minimized and excluded from routine
   logs and telemetry.
+- Browser telemetry MUST be a strict capture schema, not a generic event-write surface. It MAY NOT
+  accept identities, cookies, timestamps, ids, retention deadlines, commercial partner/click ids, or
+  arbitrary properties from the client. The server MUST derive exactly one trusted identity and all
+  persistence metadata; stored actions and properties MUST be registered and allowlisted. Private
+  telemetry views MUST expose aggregate measures only, and no `anon` or `authenticated` Data API role
+  may read the ledger or those views.
 - Deletion/export/retention behavior MUST be documented before collecting a new personal-data class.
 - AI trace data MUST follow ADR-0007: server-only allowlisted metadata/digests, one verified or signed
   identity at most, no raw payload/error storage, and an enforceable retention deadline.

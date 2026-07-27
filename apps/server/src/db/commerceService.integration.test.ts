@@ -130,7 +130,6 @@ integration("DbCommerceService", () => {
         track: async () => {
           throw new Error("telemetry offline");
         },
-        list: async () => [],
       },
       onTelemetryError,
     });
