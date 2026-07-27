@@ -145,7 +145,6 @@
       "summary": "Reading routes, document classes, statuses, and index rules.",
       "sourcePrefixes": ["scripts/docs/"]
     },
-
     {
       "path": "docs/methodology/README.md",
       "title": "Methodology Guide",
@@ -777,6 +776,21 @@
         "apps/web/src/app/api/telemetry/",
         "infra/supabase/migrations/20260727120000_phase0_telemetry_contract.sql",
         "infra/supabase/tests/database/phase0_telemetry_contract.test.sql"
+      ]
+    },
+    {
+      "path": "docs/adr/ADR-0013-human-task-transition-telemetry-staging.md",
+      "title": "ADR-0013: Human Task Transition Telemetry Staging",
+      "category": "decisions",
+      "type": "decision",
+      "status": "draft",
+      "owner": "data platform / Human Help",
+      "summary": "Candidate D2 decision: retain truthful Human Task intake telemetry while deferring Ops transition events until a reviewed action contract exists.",
+      "sourcePrefixes": [
+        "packages/domain/src/events/",
+        "apps/server/src/modules/telemetry/",
+        "apps/server/src/modules/task/",
+        "apps/ops/"
       ]
     },
 
