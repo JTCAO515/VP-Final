@@ -762,6 +762,23 @@
         "infra/supabase/tests/database/retention_purge_schedule.test.sql"
       ]
     },
+    {
+      "path": "docs/adr/ADR-0012-phase0-telemetry-observation-contract.md",
+      "title": "ADR-0012: Phase 0 Telemetry Observation Contract",
+      "category": "decisions",
+      "type": "decision",
+      "status": "accepted",
+      "owner": "data platform / privacy",
+      "summary": "Freezes privacy-safe browser telemetry capture, server-derived persistence, registered actions, and private Phase 0 aggregate views.",
+      "sourcePrefixes": [
+        "packages/domain/src/events/",
+        "apps/server/src/modules/telemetry/",
+        "apps/server/src/db/telemetryService.ts",
+        "apps/web/src/app/api/telemetry/",
+        "infra/supabase/migrations/20260727120000_phase0_telemetry_contract.sql",
+        "infra/supabase/tests/database/phase0_telemetry_contract.test.sql"
+      ]
+    },
 
     {
       "path": "docs/runbooks/README.md",

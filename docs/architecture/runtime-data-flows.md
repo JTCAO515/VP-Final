@@ -155,7 +155,13 @@ redirectable.
 
 ## Telemetry Flow
 
-Telemetry accepts only registered action names and allowlisted properties. Event failures must not
-break the primary user action. Contact details, raw prompts, model secrets, and unrestricted payloads
-must not enter analytics. Commercial and payment ledgers remain authoritative even when a matching
-telemetry event is missing.
+Browser capture sends only a strict client-safe action subset and bounded dimensions. The server, not
+the request body, derives exactly one verified-user or signed-anonymous identity, the event id,
+timestamp, Web surface, and retention deadline before it writes the event ledger. Server-owned
+producers use the larger registered-action contract only after their authoritative operation commits.
+All actions have allowlisted properties; contact details, raw prompts, model secrets, cookies,
+signatures, and unrestricted payloads are rejected before storage or optional analytics delivery.
+Event failures must not break a primary user action, and a capture endpoint must not claim success
+when its own write fails. Private live aggregate views support Phase 0 funnel/outbound/Human Help
+observation without exposing row content. Commercial and payment ledgers remain authoritative even
+when matching telemetry is missing; payment events are names only until the payment boundary exists.

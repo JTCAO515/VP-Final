@@ -16,7 +16,7 @@ commercial evidence, Human Tasks, and telemetry. Repository migrations are the s
 | Copilot dialogue  | `copilot_conversation_turns`                                                              |
 | Knowledge         | `pois`, `poi_facts`, `poi_fact_editorial_audit`, `knowledge_gaps`, `poi_commercial_links` |
 | Commerce          | `partners`, `outbound_clicks`                                                             |
-| Telemetry         | `events`, `trust_funnel_daily` materialized aggregate                                     |
+| Telemetry         | `events`, `trust_funnel_daily`, private Phase 0 funnel/outbound/Human Help live views     |
 | Human operations  | `human_tasks`, `human_task_transitions`, `human_task_evidence`                            |
 | Ops authorization | `ops_memberships`, `ops_audit_events`                                                     |
 
@@ -103,6 +103,19 @@ Events accept an authenticated identity without requiring a fabricated anonymous
 rejecting rows with no trusted identity.
 All three record classes use the restricted `internal.purge_expired_copilot_observability()` routine
 under [ADR-0009](../adr/ADR-0009-copilot-conversation-cost-retention.md).
+
+P0-19 tightens `events` into the one product-observation ledger. Every new row has exactly one
+server-derived verified-user or signed-anonymous identity, a registered action, object-shaped
+allowlisted properties, and an explicit event retention deadline. Browser capture is deliberately
+smaller than the stored schema: it may send only low-risk Explore and Human Help pre-submit actions;
+the server derives identity, timestamp, surface, id, and expiry. It cannot submit arbitrary action
+names, user/anonymous ids, cookies, timestamps, partners, click ids, or unrestricted JSON. Outbound
+events require the durable partner and click id written by the server. `internal.phase0_funnel_daily`,
+`internal.phase0_outbound_daily`, and `internal.phase0_human_help_daily` are ordinary private live
+views, not materialized views: Phase 0 has no refresh job to drift. They expose aggregate counts and
+bounded city/category/kind dimensions only, never raw identity, content, credential, cookie, or
+signature columns. Payment action names are contract-only until the separate payment boundary is
+accepted. See [ADR-0012](../adr/ADR-0012-phase0-telemetry-observation-contract.md).
 
 ADR-0011 enforces the existing retention deadlines with three staggered database-local Supabase Cron
 jobs. Each job calls a restricted target through `internal.run_retention_purge(text)`; successful and

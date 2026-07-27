@@ -46,6 +46,11 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
   cached tokens cannot exceed total input tokens. Cache-miss and cache-hit input prices are separate
   immutable snapshots. `cost_pricing_missing` is a retained product event, not permission to invent
   a price or silently treat a zero-price row as reconciled.
+- `events` has two related contracts: a stored telemetry event requires exactly one trusted identity,
+  registered action, allowlisted object properties, and a future retention deadline; browser capture
+  is a smaller client-safe action union with no persistence metadata or attribution authority. The
+  event property validator rejects unrestricted content and sensitive key/text shapes while allowing
+  fixed-point numeric amounts used by the bounded cost observation action.
 - Human Task status changes use `transitionHumanTask`; the generic update contract cannot carry a
   status. The canonical forward path is `requested -> triaged -> quoted -> payment_pending -> paid ->
 fulfilling -> done`, with explicit cancellation edges and no terminal recovery. A transition reason

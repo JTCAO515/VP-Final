@@ -19,6 +19,7 @@ export { createDbCommerceService } from "./db/commerceService.js";
 export { createDbPartnerAdministrationService } from "./db/partnerAdministrationService.js";
 export { createDbAgentTraceService } from "./db/agentTraceService.js";
 export type { DbAgentTraceService } from "./db/agentTraceService.js";
+export { createDbTelemetryService } from "./db/telemetryService.js";
 export { createDbOpsAuthorizationService } from "./db/opsAuthorizationService.js";
 export { createDbOpsCostSummaryService } from "./db/opsCostSummaryService.js";
 export { createDbVersionedTripService } from "./db/versionedTripService.js";
@@ -45,6 +46,10 @@ export {
   createInMemoryHumanTaskService,
 } from "./modules/task/service.js";
 export { createInMemoryAgentTraceService, normalizeAgentFailure } from "./modules/trace/service.js";
+export {
+  createInMemoryTelemetryService,
+  prepareTelemetryEvent,
+} from "./modules/telemetry/service.js";
 export {
   opaqueCopilotSessionId,
   resolveCopilotRetentionPolicy,
@@ -125,6 +130,12 @@ export { OutboundRedirectInputSchema } from "./modules/commerce/router.js";
 export type { RequestIdentity } from "./context.js";
 export type { AdapterAvailability, RuntimeMode, RuntimeResolution } from "./runtime/runtimeMode.js";
 export type { KnowledgeService } from "./modules/knowledge/service.js";
+export type {
+  PostHogConfig,
+  TelemetryInput,
+  TelemetryService,
+  TelemetryServiceOptions,
+} from "./modules/telemetry/service.js";
 export type {
   CommerceService,
   CreateOutboundRedirectCommand,

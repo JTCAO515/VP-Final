@@ -95,12 +95,24 @@ describe("Copilot persistence contracts", () => {
     ]);
     expect(() =>
       CopilotProductEventSchema.parse({
-        id: "event-1",
+        id: "00000000-0000-4000-8000-000000000401",
         anon_id: "anonymous-session",
         surface: "server",
         action: "turn_completed",
         entity_type: "copilot_turn",
         created_at: createdAt,
+      }),
+    ).toThrow();
+    expect(() =>
+      CopilotProductEventSchema.parse({
+        id: "00000000-0000-4000-8000-000000000401",
+        user_id: "d879df9f-79b5-43bb-9987-a6040f6ae983",
+        anon_id: "anonymous-session",
+        surface: "server",
+        action: "turn_completed",
+        entity_type: "copilot_turn",
+        created_at: createdAt,
+        retention_expires_at: expiresAt,
       }),
     ).toThrow();
     expect(() =>
@@ -111,7 +123,7 @@ describe("Copilot persistence contracts", () => {
     ).toThrow();
     expect(() =>
       CopilotProductEventSchema.parse({
-        id: "event-1",
+        id: "00000000-0000-4000-8000-000000000401",
         anon_id: "anonymous-session",
         surface: "server",
         action: "model_failure",
@@ -123,7 +135,7 @@ describe("Copilot persistence contracts", () => {
     ).toThrow();
     expect(
       CopilotProductEventSchema.parse({
-        id: "event-budget",
+        id: "00000000-0000-4000-8000-000000000402",
         anon_id: "anonymous-session",
         surface: "server",
         action: "daily_budget_exceeded",
@@ -142,7 +154,7 @@ describe("Copilot persistence contracts", () => {
     });
     expect(() =>
       CopilotProductEventSchema.parse({
-        id: "event-budget",
+        id: "00000000-0000-4000-8000-000000000402",
         anon_id: "anonymous-session",
         surface: "server",
         action: "daily_budget_exceeded",
@@ -159,7 +171,7 @@ describe("Copilot persistence contracts", () => {
     ).toThrow();
     expect(() =>
       CopilotProductEventSchema.parse({
-        id: "event-1",
+        id: "00000000-0000-4000-8000-000000000401",
         anon_id: "anonymous-session",
         surface: "server",
         action: "turn_completed",

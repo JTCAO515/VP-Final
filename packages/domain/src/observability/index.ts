@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { CopilotEnvelopeSchema } from "../copilot/index.js";
-import { TelemetryEventBaseSchema } from "../events/index.js";
+import { TelemetryEventBaseSchema, validateTelemetryProperties } from "../events/index.js";
 
 export const CopilotProductEventActionSchema = z.enum([
   "session_started",
@@ -26,13 +26,6 @@ export const ConversationRedactionClassSchema = z.enum([
 export const ModelEffortSchema = z.enum(["low", "medium", "high"]);
 
 const FORBIDDEN_KEY = /(?:authorization|api[_-]?key|cookie|set[_-]?cookie|signature|secret)/i;
-const FixedPointUsdSchema = z.string().regex(/^(0|[1-9]\d*)\.\d{8}$/);
-export const DailyBudgetExceededPropsSchema = z
-  .object({
-    budgetUsd: FixedPointUsdSchema,
-    observedCostUsd: FixedPointUsdSchema,
-  })
-  .strict();
 const FORBIDDEN_TEXT = [
   /[\w.+-]+@[\w.-]+\.[a-z]{2,}/i,
   /\b(?:\+?\d[\d\s()-]{6,}\d)\b/,
@@ -182,20 +175,17 @@ export const CopilotProductEventSchema = TelemetryEventBaseSchema.extend({
   action: CopilotProductEventActionSchema,
   retention_expires_at: z.string().datetime(),
 }).superRefine((event, ctx) => {
-  if (!event.user_id && !event.anon_id) {
+  if (Number(event.user_id != null) + Number(event.anon_id != null) !== 1) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: "Copilot product events require a trusted user or anonymous identity",
+      message: "Copilot product events require exactly one trusted identity",
     });
   }
-  if (
-    event.action === "daily_budget_exceeded" &&
-    !DailyBudgetExceededPropsSchema.safeParse(event.props_jsonb).success
-  ) {
+  if (!validateTelemetryProperties(event.action, event.props_jsonb)) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       path: ["props_jsonb"],
-      message: "Daily budget events require only fixed-point threshold and observed totals",
+      message: "Copilot product event properties must match the registered action allowlist",
     });
   } else if (
     event.action !== "daily_budget_exceeded" &&

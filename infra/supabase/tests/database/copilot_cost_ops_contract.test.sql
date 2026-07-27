@@ -156,7 +156,7 @@ select throws_ok(
       'cost-contract-unpriced', 'server', 'daily_budget_exceeded',
       'llm_daily_budget', (current_date + 1)::text
     )$$,
-  '23514',
+  '23502',
   null,
   'daily budget warning requires a future retention deadline'
 );

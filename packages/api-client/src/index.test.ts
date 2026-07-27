@@ -1,5 +1,11 @@
 import type { inferRouterInputs, inferRouterOutputs } from "@trpc/server";
-import type { CompletionJob, CopilotEnvelope, Poi, TripState } from "@visepanda/domain";
+import type {
+  ClientTelemetryAction,
+  CompletionJob,
+  CopilotEnvelope,
+  Poi,
+  TripState,
+} from "@visepanda/domain";
 import { expect, expectTypeOf, it } from "vitest";
 import { createApiClient } from "./index.js";
 import type { AppRouter } from "./index.js";
@@ -35,7 +41,7 @@ it("keeps client inputs and outputs tied to the app router", () => {
   expectTypeOf<Outputs["copilot"]["completeTrip"]>().toEqualTypeOf<CompletionJob>();
   expectTypeOf<Outputs["knowledge"]["listPois"]>().toEqualTypeOf<Poi[]>();
   expectTypeOf<Outputs["knowledge"]["updateFact"]>().toEqualTypeOf<Poi[]>();
-  expectTypeOf<Inputs["telemetry"]["track"]["action"]>().toEqualTypeOf<string>();
+  expectTypeOf<Inputs["telemetry"]["track"]["action"]>().toEqualTypeOf<ClientTelemetryAction>();
   expectTypeOf<Inputs["task"]["create"]["kind"]>().toEqualTypeOf<
     "call_restaurant" | "ticket_help" | "translation_help" | "transport_help" | "other"
   >();
