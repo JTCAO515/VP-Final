@@ -9,31 +9,31 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 ## Current Handoff Snapshot
 
-- **Updated:** 2026-07-27 by Codex / serialized Phase 0 telemetry-state reconciliation
+- **Updated:** 2026-07-27 by Codex / serialized post-#328/#329 governance refresh
 - **Base branch:** `main`
-- **Last fully verified commit:** `5a54261 after PR #323 merged P0-19a and PR #324 serialized the preceding handoff; the #323 merge head reported green verify, docs, evals, Database contracts, and Vercel checks`
+- **Last fully verified commit:** `8870229 feat(vpod): freeze signed HTTPS device protocol v1 (#328); PR #328 was independently approved after rebase, and #329 accepted ADR-0013's no-Ops-transition telemetry staging decision`
 - **Current phase:** Phase 0 — production hardening and commercial safety
-- **Maturity:** The real-provider Copilot, durable Trip completion, signed anonymous identity, cost and product-event persistence, three-turn and trusted-IP guards, truthful request states, controlled-preview Human Tasks, legal pages, retention contracts, database-local retention scheduler, durable outbound ledger, Admin-only partner configuration, and P0-19a privacy-safe telemetry contract/adapter/views are merged. P0-19b producer integration awaits a D2 decision on authorized Ops lifecycle-event semantics; P0-19d endpoint limiting must use the resulting producer density. P0-20 remains downstream. No partner is active, no booking or commission is promised, no payment is live, and Phase 1 through Phase 4 remain trigger-gated.
-- **Last completed control action:** P0-19a reached code terminal state: PR #323 froze the privacy-safe event contract, durable adapter, trusted ingestion route, and private funnel views. P0-18 remains complete through PRs #309/#315/#317. Issue #311 independently verified the three production migrations, pg_cron schedule, and retention health on VP-Final-V2 without a production write.
+- **Maturity:** The real-provider Copilot, durable Trip completion, signed anonymous identity, cost and product-event persistence, three-turn and trusted-IP guards, truthful request states, controlled-preview Human Tasks, legal pages, retention contracts, database-local retention scheduler, durable outbound ledger, Admin-only partner configuration, P0-19a privacy-safe telemetry contract/adapter/views, and VisePod HTTPS Device Protocol v1 are merged. ADR-0013 freezes the Phase 0 Human Task rule: only durable intake may emit task_submitted; Ops triage/cancellation and quote/payment/done actions have no producer. P0-19b can now implement the accepted producer subset, while P0-19d must use the resulting producer density. P0-20 remains downstream. No partner is active, no booking or commission is promised, no payment is live, and Phase 1 through Phase 4 remain trigger-gated.
+- **Last completed control action:** PR #328 froze the VisePod v1 Wi-Fi HTTPS turn contract, signature vector, audio limits, and versioning policy. PR #329 accepted ADR-0013 Human Task transition telemetry staging. P0-19a remains the telemetry contract authority; P0-18 remains complete through PRs #309/#315/#317. Issue #311 independently verified the three production migrations, pg_cron schedule, and retention health on VP-Final-V2 without a production write.
 
 ### Active Work
 
 | Ref | Work | State | Owner | Next action |
 | --- | --- | --- | --- | --- |
-| Issue #322 / P0-19b | Connect Copilot, Explore, outbound, and Human Help telemetry producers | P0-19a is merged in PR #323. The producer slice is paused at a D2 contract gap: currently enabled authorized Ops transitions are triage/cancellation, but the frozen action catalog has no semantically matching transition action. Payment and done emitters remain excluded. | Architecture owner for transition-event semantics; Codex implementation after acceptance | Freeze whether the current preview emits no Ops transition event or accept a schema-first authorized-transition action; then start one base-main Tier B producer-integration PR. |
+| Issue #322 / P0-19b | Connect Copilot, Explore, outbound, and Human Help telemetry producers | P0-19a is merged in PR #323 and ADR-0013 is accepted through PR #329. The accepted Phase 0 producer subset is Copilot, Explore/Guide, durable outbound click/redirect, and durable Human Task intake. Ops triage/cancellation, quote, payment, and done emitters remain excluded. | Codex implementation; independent reviewer for Tier B merge | Implement one base-main Tier B producer-integration PR, verify no payment or Ops lifecycle producer exists, and request independent review. |
 | Issue #325 / P0-19d | Rate-limit the public telemetry endpoint | The endpoint hardening scope is accepted but its threshold must be based on actual #322 producer density; no threshold is guessed before that observation exists. | Codex implementation after #322 density is available; independent reviewer for Tier B merge | After #322 merges, measure the registered producer density, freeze the normal-use threshold, then implement the Redis-backed pre-write guard. |
-| Issue #298 / VPOD-00 | Freeze multi-meter voice-call cost accounting contract | ADR-0012 numbering is reserved and the device-auth draft now uses ADR-0013. Implementation is paused at a D2 schema boundary: the existing unique Agent Run attempt cannot represent STT+LLM+TTS rows, and per-device aggregation has no frozen opaque device correlation contract. | Architecture owner for contract freeze; Codex implementation after acceptance | Accept or revise the proposed call kind, uniqueness, and device-correlation semantics in #298; then start one additive Tier B migration/ADR PR from fresh main. |
+| Issue #298 / VPOD-00 | Freeze multi-meter voice-call cost accounting contract | Implementation is paused at a D2 schema boundary: the existing unique Agent Run attempt cannot represent STT+LLM+TTS rows, and per-device aggregation has no frozen opaque device-correlation contract. ADR-0013 and ADR-0014 are already assigned to Human Task staging and VisePod HTTPS transport. | Architecture owner for contract freeze; Codex implementation after acceptance | Accept or revise the proposed call kind, uniqueness, and device-correlation semantics in #298; then start one additive Tier B migration/ADR PR from fresh main. |
 | VisePod drafts #318 / #319 / #320 | Investor-prototype positioning, speech feasibility, and device-authentication boundaries | All remain Draft/Tier B. #319 waits for OA-016 real, consented speech evidence; #320 waits for hardware and independent security evidence. No device runtime, registry, gateway, or firmware work is authorized. | Operator/Hardware Agent/independent reviewer; Codex for bounded implementation | Keep Draft until their individual evidence gates are met; do not treat documentation or harness code as hardware/prod proof. |
 
 ### Immediate Queue
 
 | Priority | Control action | Exit criteria |
 | --- | --- | --- |
-| P0 | Freeze the P0-19b authorized Ops transition-event mapping, then serialize #322 from fresh main. | The selected mapping preserves lifecycle semantics; #322 has one base-main producer-integration PR with full gates, no payment emitters, and remains unmerged for independent Tier B review. |
+| P0 | Implement #322 from fresh main using accepted ADR-0013 staging, then request independent Tier B review. | #322 has one base-main producer-integration PR with full gates, no payment or Ops-transition emitters, and remains unmerged for independent Tier B review. |
 
 ### Current Blockers
 
-- P0-19b #322 awaits architecture acceptance of the authorized Ops transition-event mapping; no triage/cancellation may be mislabeled as a payment, quote, or done event. P0-19d #325 cannot select an honest normal-use threshold until #322 establishes producer density.
+- P0-19d #325 cannot select an honest normal-use threshold until #322 establishes producer density. ADR-0013 forbids P0-19b from labeling triage/cancellation as quote, payment, or done activity.
 - VPOD-00 #298 awaits architecture acceptance of multi-call uniqueness and opaque device-correlation semantics; no financial migration is allowed before that D2 contract is frozen.
 - P0-20 remains blocked on P0-19b/#325 and the remaining provider/eval safety decisions; it must not be replaced by mock health or fake budget behavior.
 - P0-17 remains blocked by the deferred payment-provider and legal operator decision OA-006. No payment, booking, commission, or paid Human Help capability is live.
@@ -45,6 +45,7 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 - PR #309, #315, and #317 merged P0-18a/18b/18c with their required GitHub checks green. P0-18 is closed; no partner was activated and no affiliate/payment claim was introduced.
 - Issue #311 closed after independent read-only verification against VP-Final-V2 confirmed 29 migrations, pg_cron 1.6.4, all three active visepanda purge jobs, and healthy retention targets. The operator push was not repeated.
 - PR #323 P0-19a merged on 2026-07-27 after its required GitHub checks were green. Its trusted telemetry boundary and private funnel views are now the producer contract authority.
+- PR #329 accepted ADR-0013: Phase 0 emits durable task_submitted only, with no Ops triage/cancellation or payment/done telemetry producer. PR #328 merged Device Protocol v1 at 8870229 after an independent architecture approval.
 - Phase 2/3/4 functional work was not started. Their WAU, Human Task, quote-volume, legal-entity, settlement, and order-volume triggers remain unproven.
 
 ## Mandatory Markdown Reading Order
@@ -101,6 +102,8 @@ Current system shape, boundaries, data flows, and overall design controls.
 | [Runtime and Data Flows](architecture/runtime-data-flows.md) | explanation | active | architecture | Copilot, Trip, knowledge, commerce, identity, task, and telemetry flows. |
 | [Runtime Mode and Adapter Inventory](architecture/runtime-adapter-inventory.md) | reference | active | server / platform | Explicit runtime modes, safe adapter diagnostics, durable object owners, and canonical follow-ups. |
 | [System Overview](architecture/system-overview.md) | explanation | active | architecture | Product-to-system view of the modular monolith and user surfaces. |
+| [VisePod Device Protocol v1](visepod/device-protocol-v1.md) | reference | accepted | VisePod architecture | Frozen HTTPS turn, signed PCM, indexed segment, error, and compatibility contract for VisePod v1. |
+| [VisePod Documentation](visepod/README.md) | reference | active | VisePod architecture | Reading order and boundaries for the Wi-Fi VisePod companion-device contract. |
 
 ## Modules
 
@@ -184,6 +187,8 @@ Append-only records of accepted and superseded binding decisions.
 | [ADR-0010: Copilot Cost Accounting Contract](adr/ADR-0010-copilot-cost-accounting-contract.md) | decision | accepted | AI platform / data platform | Freezes cache-aware provider cost calculation, price snapshots, independent 400-day ledger retention, and write-time Agent Run integrity. |
 | [ADR-0011: Database-local Retention Purge Scheduling](adr/ADR-0011-retention-purge-scheduling.md) | decision | accepted | security / data platform | Uses private pg_cron jobs, bounded deletion-count evidence, and per-target health to enforce accepted retention deadlines. |
 | [ADR-0012: Phase 0 Telemetry Observation Contract](adr/ADR-0012-phase0-telemetry-observation-contract.md) | decision | accepted | data platform / privacy | Freezes privacy-safe browser telemetry capture, server-derived persistence, registered actions, and private Phase 0 aggregate views. |
+| [ADR-0013: Human Task Transition Telemetry Staging](adr/ADR-0013-human-task-transition-telemetry-staging.md) | decision | accepted | data platform / Human Help | Human Task lifecycle analysis derives from the authoritative task record; Phase 0 telemetry retains intake context and does not duplicate Ops transitions. |
+| [ADR-0014: VisePod HTTPS Turn Transport](adr/ADR-0014-vise-pod-https-turn-transport.md) | decision | accepted | VisePod architecture | Freezes one signed HTTPS request per Wi-Fi VisePod turn instead of a persistent WebSocket transport. |
 
 ## Runbooks
 
