@@ -70,6 +70,15 @@ the associated authoritative Copilot result, outbound click-ledger commit, or Hu
 they cannot delay the answer, redirect, or task receipt. `partner_redirected` means that VisePanda
 issued a durable approved redirect, not that a partner accepted a booking or conversion.
 
+Before the endpoint delegates to the telemetry service, it requires both the verified signed-session
+or account identity and Vercel's trusted client address to pass independent Upstash sliding windows.
+The current default allows a generous real browsing burst: `60/minute` and `300/hour` per identity,
+then `180/minute` and `900/hour` for a shared network. This covers the current three guide mounts,
+five Explore scene choices, POI opens, and two Human Help pre-submit observations without treating
+normal browsing as abuse. The route rejects excess requests with HTTP 429 and `Retry-After`, fails
+closed with HTTP 503 when the guard cannot establish trusted dependencies, and never lets a rejected
+request reach telemetry storage. Its Redis keys and bounded rejection counter use HMAC digests only.
+
 For DEMO-01, that composition root injects the v3 real-model Copilot dependencies only in a deployed
 runtime. Explicit `test` and `local-demo` retain their deterministic fixtures. A deployed route with
 missing model configuration returns 503 `MODEL_CONFIGURATION_UNAVAILABLE`; it never falls back to

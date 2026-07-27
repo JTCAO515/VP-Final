@@ -83,6 +83,13 @@ Next.js runtimes rather than deployed as an independent service.
   trusted identity, registered action, entity, optional intent, and allowlisted dimensions. Ops
   triage/cancellation emits no product telemetry, and `quote_created`, `payment_link_clicked`,
   `task_paid`, and `task_done` remain contract-only until their owning boundaries are accepted.
+- P0-19d protects the public browser capture route before `TelemetryService.track` with two atomic
+  Upstash sliding windows: a HMAC-derived verified-identity window (`60/minute`, `300/hour` by
+  default) and a separate HMAC-derived Vercel trusted-network window (`180/minute`, `900/hour`).
+  Both must admit a request. The limiter returns a visible 429/`Retry-After` when either is exhausted
+  and a typed 503 when trusted Vercel evidence, Redis, or the HMAC salt is unavailable. Rejections
+  increment only an HMAC-keyed, one-hour per-network Redis counter; they do not become telemetry rows
+  and cannot turn an abuse flood into durable database growth.
 - P0-18b connects the frozen outbound contract to the Commerce router and Postgres adapter. In one
   transaction, the adapter locks the requested partner, requires its current database status to be
   `active`, validates the exact HTTPS host allowlist, derives exactly one verified-user or signed-

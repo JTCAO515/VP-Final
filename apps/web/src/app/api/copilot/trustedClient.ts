@@ -12,10 +12,7 @@ export class TrustedClientAddressUnavailableError extends Error {
   }
 }
 
-export function resolveTrustedCopilotClientAddress(
-  headers: Headers,
-  environment: Environment,
-): string {
+export function resolveTrustedClientAddress(headers: Headers, environment: Environment): string {
   if (environment.VERCEL === "1") {
     const address = headers
       .get("x-vercel-forwarded-for")
@@ -35,3 +32,7 @@ export function resolveTrustedCopilotClientAddress(
   }
   throw new TrustedClientAddressUnavailableError("trusted_platform_unavailable");
 }
+
+// Copilot established this Vercel-only trust boundary. Telemetry uses the same
+// resolver so one public route cannot silently accept a weaker client IP source.
+export const resolveTrustedCopilotClientAddress = resolveTrustedClientAddress;

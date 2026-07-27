@@ -16,14 +16,17 @@ import {
   createInMemoryHumanTaskService,
   createInMemoryAgentTraceService,
   createInMemoryTelemetryService,
+  createInMemoryTelemetryRateLimiter,
   createVersionedInMemoryTripService,
   createModelCompleteDay,
   createQStashCompletionQueue,
   createUpstashAnonymousTurnCounter,
   createUpstashCopilotIpRateLimiter,
+  createUpstashTelemetryRateLimiter,
   resolveQStashCompletionQueueConfig,
   resolveUpstashAnonymousTurnCounterConfig,
   resolveUpstashCopilotIpRateLimiterConfig,
+  resolveUpstashTelemetryRateLimiterConfig,
   resolveDatabaseAdapter,
   resolveRuntimeMode,
   type AgentTraceService,
@@ -37,6 +40,7 @@ import {
   type CommerceService,
   type KnowledgeService,
   type TelemetryService,
+  type TelemetryRateLimiter,
   type RequestIdentity,
   type VersionedTripService,
 } from "@visepanda/app-server";
@@ -54,6 +58,7 @@ type WebServerServices = {
   completionDay?: CompleteDay;
   anonymousTurnCounter?: AnonymousTurnCounter;
   copilotIpRateLimiter?: CopilotIpRateLimiter;
+  telemetryRateLimiter?: TelemetryRateLimiter;
   commerceService?: CommerceService;
   telemetryService?: TelemetryService;
 };
@@ -121,6 +126,7 @@ export function createWebServerServices(environment: Environment): WebServerServ
       completionJobService: createInMemoryCompletionJobService(tripService),
       anonymousTurnCounter: createInMemoryAnonymousTurnCounter(),
       copilotIpRateLimiter: createInMemoryCopilotIpRateLimiter(),
+      telemetryRateLimiter: createInMemoryTelemetryRateLimiter(),
     };
   }
 
@@ -132,6 +138,7 @@ export function createWebServerServices(environment: Environment): WebServerServ
   const completionQueue = resolveCompletionQueue(environment);
   const anonymousTurnCounter = resolveAnonymousTurnCounter(environment);
   const copilotIpRateLimiter = resolveCopilotIpRateLimiter(environment);
+  const telemetryRateLimiter = resolveTelemetryRateLimiter(environment);
   return {
     humanTaskService: createDbHumanTaskService(db),
     commerceService: createDbCommerceService(db, { telemetryService }),
@@ -144,6 +151,7 @@ export function createWebServerServices(environment: Environment): WebServerServ
     ...(completionQueue ? { completionQueue } : {}),
     ...(anonymousTurnCounter ? { anonymousTurnCounter } : {}),
     ...(copilotIpRateLimiter ? { copilotIpRateLimiter } : {}),
+    ...(telemetryRateLimiter ? { telemetryRateLimiter } : {}),
     completionDay: createModelCompleteDay({ environment, traceService }),
   };
 }
@@ -151,6 +159,14 @@ export function createWebServerServices(environment: Environment): WebServerServ
 function resolveCopilotIpRateLimiter(environment: Environment): CopilotIpRateLimiter | undefined {
   try {
     return createUpstashCopilotIpRateLimiter(resolveUpstashCopilotIpRateLimiterConfig(environment));
+  } catch {
+    return undefined;
+  }
+}
+
+function resolveTelemetryRateLimiter(environment: Environment): TelemetryRateLimiter | undefined {
+  try {
+    return createUpstashTelemetryRateLimiter(resolveUpstashTelemetryRateLimiterConfig(environment));
   } catch {
     return undefined;
   }
@@ -192,6 +208,10 @@ export function setTestWebServerServices(services: WebServerServices | null): vo
 
 export function getCopilotIpRateLimiter(): CopilotIpRateLimiter | undefined {
   return getWebServerServices(process.env).copilotIpRateLimiter;
+}
+
+export function getTelemetryRateLimiter(): TelemetryRateLimiter | undefined {
+  return getWebServerServices(process.env).telemetryRateLimiter;
 }
 
 export function getCopilotProductEventService(
