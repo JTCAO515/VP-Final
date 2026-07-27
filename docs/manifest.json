@@ -783,9 +783,9 @@
       "title": "ADR-0013: Human Task Transition Telemetry Staging",
       "category": "decisions",
       "type": "decision",
-      "status": "draft",
+      "status": "accepted",
       "owner": "data platform / Human Help",
-      "summary": "Candidate D2 decision: retain truthful Human Task intake telemetry while deferring Ops transition events until a reviewed action contract exists.",
+      "summary": "Human Task lifecycle analysis derives from the authoritative task record; Phase 0 telemetry retains intake context and does not duplicate Ops transitions.",
       "sourcePrefixes": [
         "packages/domain/src/events/",
         "apps/server/src/modules/telemetry/",
