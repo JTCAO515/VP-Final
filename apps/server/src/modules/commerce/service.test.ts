@@ -34,14 +34,47 @@ describe("CommerceService", () => {
       entityId: "poi-1",
     });
 
-    await expect(telemetry.list()).resolves.toMatchObject([
-      {
-        anon_id: click.anonId,
-        action: "outbound_clicked",
-        partner: click.partner,
-        click_id: click.id,
+    await expect(telemetry.list()).resolves.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          anon_id: click.anonId,
+          action: "outbound_clicked",
+          partner: click.partner,
+          click_id: click.id,
+        }),
+        expect.objectContaining({
+          anon_id: click.anonId,
+          action: "partner_redirected",
+          partner: click.partner,
+          click_id: click.id,
+        }),
+      ]),
+    );
+  });
+
+  it("does not wait for outbound telemetry before returning the durable redirect", async () => {
+    const service = createCommerceService({
+      writer: {
+        createRedirect: async () => ({
+          click,
+          redirectUrl: `${click.targetUrl}?vp_click_id=${click.id}`,
+        }),
       },
-    ]);
+      telemetryService: {
+        track: () => new Promise<never>(() => undefined),
+      },
+    });
+
+    await expect(
+      Promise.race([
+        service.createOutboundRedirect({
+          identity: { kind: "anonymous", anonId: click.anonId! },
+          partnerKey: click.partner,
+          targetUrl: click.targetUrl,
+        }),
+        new Promise<"timeout">((resolve) => setTimeout(() => resolve("timeout"), 50)),
+      ]),
+    ).resolves.toMatchObject({ click });
   });
 
   it("returns the durable redirect when non-authoritative telemetry fails", async () => {

@@ -110,12 +110,13 @@ export function createWebServerServices(environment: Environment): WebServerServ
   if (availability.adapter === "memory-demo") {
     const tripService = createVersionedInMemoryTripService();
     const traceService = createInMemoryAgentTraceService();
+    const telemetryService = createInMemoryTelemetryService({ environment });
     return {
       humanTaskService: createInMemoryHumanTaskService(),
       knowledgeService: createInMemoryKnowledgeService(),
       traceService,
       productEventService: traceService,
-      telemetryService: createInMemoryTelemetryService({ environment }),
+      telemetryService,
       tripService,
       completionJobService: createInMemoryCompletionJobService(tripService),
       anonymousTurnCounter: createInMemoryAnonymousTurnCounter(),
@@ -133,7 +134,7 @@ export function createWebServerServices(environment: Environment): WebServerServ
   const copilotIpRateLimiter = resolveCopilotIpRateLimiter(environment);
   return {
     humanTaskService: createDbHumanTaskService(db),
-    commerceService: createDbCommerceService(db),
+    commerceService: createDbCommerceService(db, { telemetryService }),
     knowledgeService: createDbKnowledgeService(db),
     traceService,
     productEventService: traceService,
@@ -219,11 +220,38 @@ function deferObservability(services: WebServerServices, deferTask: DeferTask): 
         },
       }
     : undefined;
+  const telemetryService = services.telemetryService
+    ? {
+        track(input: Parameters<TelemetryService["track"]>[0]) {
+          return scheduleDeferredTelemetry(deferTask, () =>
+            services.telemetryService!.track(input),
+          );
+        },
+      }
+    : undefined;
   return {
     ...services,
     traceService,
     ...(productEventService ? { productEventService } : {}),
+    ...(telemetryService ? { telemetryService } : {}),
   };
+}
+
+function scheduleDeferredTelemetry<T>(deferTask: DeferTask, write: () => Promise<T>): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const task = async () => {
+      try {
+        resolve(await write());
+      } catch (error) {
+        reject(error);
+      }
+    };
+    try {
+      deferTask(task);
+    } catch {
+      void task();
+    }
+  });
 }
 
 function scheduleDeferredWrite(deferTask: DeferTask, write: () => Promise<void>): void {

@@ -67,7 +67,22 @@ integration("DbCommerceService", () => {
       intent: "commerce_intent",
       entityId: "poi-123",
     });
-    await expect(telemetry.list()).resolves.toHaveLength(1);
+    await expect(telemetry.list()).resolves.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          action: "outbound_clicked",
+          anon_id: anonymousId,
+          partner: "test-active",
+          click_id: clickIds[0],
+        }),
+        expect.objectContaining({
+          action: "partner_redirected",
+          anon_id: anonymousId,
+          partner: "test-active",
+          click_id: clickIds[0],
+        }),
+      ]),
+    );
     expect(JSON.stringify(row)).not.toMatch(/api[_-]?key|cookie|signature|authorization|email/i);
   });
 

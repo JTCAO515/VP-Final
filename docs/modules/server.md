@@ -75,8 +75,14 @@ Next.js runtimes rather than deployed as an independent service.
   then derives a single trusted identity from `RequestIdentity`, fixes the Web surface, and delegates
   id/timestamp/180-day expiry to the telemetry service. The Postgres adapter writes the validated row
   before optional PostHog delivery; delivery failure cannot erase the durable event, while a telemetry
-  write failure is reported safely and never faked as capture success. Server-owned Copilot, outbound,
-  and Human Help lifecycle producers remain a separate P0-19b integration step.
+  write failure is reported safely and never faked as capture success. P0-19b wires only the
+  registered producer subset after its authoritative action: Copilot records submission, successful
+  skeleton/Patch, completion detail, failure, and approved Human Help suggestion metadata; outbound
+  records `outbound_clicked` and `partner_redirected` only after the click ledger commits; Human Task
+  intake records `task_submitted` only after durable creation. The producer payloads contain only
+  trusted identity, registered action, entity, optional intent, and allowlisted dimensions. Ops
+  triage/cancellation emits no product telemetry, and `quote_created`, `payment_link_clicked`,
+  `task_paid`, and `task_done` remain contract-only until their owning boundaries are accepted.
 - P0-18b connects the frozen outbound contract to the Commerce router and Postgres adapter. In one
   transaction, the adapter locks the requested partner, requires its current database status to be
   `active`, validates the exact HTTPS host allowlist, derives exactly one verified-user or signed-

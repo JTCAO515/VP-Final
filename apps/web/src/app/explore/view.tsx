@@ -9,6 +9,7 @@ import {
 } from "@visepanda/domain";
 import { poiEntries } from "../poiSeo";
 import { SiteFooter, SiteHeader } from "../site-chrome";
+import { captureClientTelemetry } from "../../lib/clientTelemetry";
 import { deriveExploreFacts } from "./factPresentation";
 
 type ExploreViewProps = Readonly<{
@@ -34,6 +35,18 @@ export function ExploreView({ pois, availability, asOf }: ExploreViewProps) {
     [entries, pois, referenceTime, selectedTag],
   );
 
+  function selectScene(tag: TravelerSceneTag | "All"): void {
+    if (tag !== "All" && tag !== selectedTag) {
+      captureClientTelemetry({
+        action: "scene_filter_used",
+        entity_type: "explore_scene",
+        entity_id: "scene-filter",
+        props_jsonb: { scene: tag },
+      });
+    }
+    setSelectedTag(tag);
+  }
+
   return (
     <main className="shell">
       <SiteHeader active="explore" context="Verified place context" />
@@ -51,7 +64,7 @@ export function ExploreView({ pois, availability, asOf }: ExploreViewProps) {
       <section className="exploreFilters" aria-label="Explore scene filters">
         <button
           className={selectedTag === "All" ? "active" : ""}
-          onClick={() => setSelectedTag("All")}
+          onClick={() => selectScene("All")}
           type="button"
         >
           All
@@ -60,7 +73,7 @@ export function ExploreView({ pois, availability, asOf }: ExploreViewProps) {
           <button
             className={selectedTag === tag ? "active" : ""}
             key={tag}
-            onClick={() => setSelectedTag(tag)}
+            onClick={() => selectScene(tag)}
             type="button"
           >
             {tag}
@@ -108,7 +121,18 @@ export function ExploreView({ pois, availability, asOf }: ExploreViewProps) {
               </div>
             ) : null}
             {href ? (
-              <a className="poiLink" href={`/${href.citySlug}/${href.poiSlug}`}>
+              <a
+                className="poiLink"
+                href={`/${href.citySlug}/${href.poiSlug}`}
+                onClick={() =>
+                  captureClientTelemetry({
+                    action: "poi_viewed",
+                    entity_type: "poi",
+                    entity_id: poi.id,
+                    props_jsonb: { city: poi.city, category: poi.category },
+                  })
+                }
+              >
                 Open guide
               </a>
             ) : null}

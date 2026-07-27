@@ -32,6 +32,7 @@ export async function POST(request: Request) {
       completeDay: runtime.completionDay,
       jobService: runtime.completionJobService,
       queue: runtime.completionQueue,
+      ...(runtime.telemetryService ? { telemetryService: runtime.telemetryService } : {}),
       tripService: runtime.tripService,
     }).process(parsed.data);
     return NextResponse.json({ ok: true, result });

@@ -1,6 +1,8 @@
 import { TripBlockSchema, TripPatchSchema, type TripBlock, type TripDay } from "@visepanda/domain";
 import type { CompletionJobService } from "./completionJobService.js";
 import type { CompletionDelivery, CompletionQueue } from "./completionQueue.js";
+import type { TelemetryService } from "../telemetry/service.js";
+import { recordTelemetrySafely } from "../telemetry/producer.js";
 import {
   TripVersionConflictError,
   type TripIdentity,
@@ -21,11 +23,13 @@ export function createCompletionProcessor({
   completeDay,
   jobService,
   queue,
+  telemetryService,
   tripService,
 }: {
   completeDay: CompleteDay;
   jobService: CompletionJobService;
   queue: CompletionQueue;
+  telemetryService?: TelemetryService;
   tripService: VersionedTripService;
 }) {
   return {
@@ -52,6 +56,7 @@ export function createCompletionProcessor({
       const emptyDays = snapshot.trip.days.filter((day) => day.blocks.length === 0);
       if (emptyDays.length === 0) {
         await jobService.settle(job.id, job.attempt, "completed");
+        recordCompletionTelemetry(telemetryService, identity, job.tripId, false);
         return { accepted: true, state: "completed" };
       }
       if (latestCompletionEvent?.completion?.attempt === job.attempt) {
@@ -99,6 +104,7 @@ export function createCompletionProcessor({
 
       if (failedDays === 0) {
         await jobService.settle(job.id, job.attempt, "completed");
+        recordCompletionTelemetry(telemetryService, identity, job.tripId, operations.length > 0);
         return { accepted: true, state: "completed" };
       }
       return retryOrFail(job, operations.length > 0 ? "partial_completion" : "provider_failed");
@@ -119,6 +125,35 @@ export function createCompletionProcessor({
       }
     },
   };
+}
+
+function recordCompletionTelemetry(
+  telemetryService: TelemetryService | undefined,
+  identity: TripIdentity,
+  tripId: string,
+  patchApplied: boolean,
+): void {
+  const base = {
+    ...(identity.kind === "authenticated"
+      ? { user_id: identity.userId }
+      : { anon_id: identity.anonId }),
+    surface: "server" as const,
+    entity_type: "trip",
+    entity_id: tripId,
+    props_jsonb: {},
+  };
+  if (patchApplied) {
+    recordTelemetrySafely(
+      telemetryService,
+      { ...base, action: "patch_applied" },
+      "completion_telemetry_write_failed",
+    );
+  }
+  recordTelemetrySafely(
+    telemetryService,
+    { ...base, action: "details_completed" },
+    "completion_telemetry_write_failed",
+  );
 }
 
 function isUniqueViolation(error: unknown): boolean {

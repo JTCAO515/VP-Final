@@ -70,6 +70,7 @@ export const copilotRouter = router({
     try {
       const result = await createCopilotPipeline({
         ...(ctx.knowledgeService ? { knowledgeService: ctx.knowledgeService } : {}),
+        ...(ctx.telemetryService ? { telemetryService: ctx.telemetryService } : {}),
         ...(ctx.traceService ? { traceService: ctx.traceService } : {}),
         ...(ctx.copilotModelDependencies ?? {}),
         ...(ctx.demoDialogueOnly ? { demoDialogueOnly: true } : {}),
