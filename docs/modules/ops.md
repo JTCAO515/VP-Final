@@ -30,6 +30,11 @@ the public Web application and protected by server-side role checks.
 - `/costs`: Admin-only server-rendered Copilot cost summary for the latest 14 UTC days. It displays
   retained daily/model aggregates, cache and fallback rates, pseudonymous top-identity references,
   and reconciliation health without exposing conversation content or raw identity ids.
+- `/partners`: Admin-only partner registry and editor. Configuration saves preserve status; activation
+  is a separate confirmed action. Pending records are non-clickable previews.
+- `/api/partners` and `/api/partners/:partnerKey`: Admin-only list/detail/create/update/status APIs.
+  They reuse the domain Partner schema and return truthful validation, conflict, missing, and
+  unavailable states.
 
 ## Current State
 
@@ -58,7 +63,13 @@ the public Web application and protected by server-side role checks.
   the page; no conversation, run id, credential, cookie, or signature is returned. Missing durable
   configuration shows an honest unavailable state, and an unset warning threshold is labelled as not
   configured rather than assigned a default.
-- Partner and payment operations are not yet available.
+- Partner configuration is available only to verified Admin sessions. Each create, configuration
+  update, or explicit status transition commits the partner mutation and one bounded audit row in the
+  same database transaction. Audit metadata contains field names or previous/current status only;
+  host values, target URLs, contacts, credentials, cookies, and signatures are excluded. No partner
+  is activated by repository defaults, and this surface does not represent affiliate approval,
+  booking, commission, payment, reconciliation, or revenue.
+- Payment operations are not yet available.
 
 Production use still requires OA-001, OA-004, and OA-010 verification. Missing Auth or database
 configuration fails closed; there is no production memory-role fallback.

@@ -15,6 +15,11 @@ Status: active
   sensitive mutations.
 - Ops role authority MUST come only from `ops_memberships`. Roles are non-hierarchical and explicit;
   client claims, Auth user metadata, email allowlists, and hidden navigation MUST NOT grant access.
+- Partner configuration reads and writes MUST require a verified Admin session plus `partner.read` or
+  `partner.write`. A configuration save MUST NOT change status. Activation MUST be a separately
+  confirmed action. Every accepted mutation MUST atomically append an audit row containing only actor,
+  action, target key, and changed field names or previous/current status; values, contacts, target
+  URLs, credentials, cookies, and signatures are forbidden in audit metadata.
 - The first Ops Admin MUST be created through the registered trusted-console bootstrap action. Runtime
   code MUST NOT contain a bootstrap email, default admin, or self-elevation path.
 - Copilot cost summaries and reconciliation-health rows MUST require the explicit Admin-only

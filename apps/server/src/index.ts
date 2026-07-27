@@ -16,6 +16,7 @@ export {
 } from "./db/knowledgeBulkImportService.js";
 export { createDbHumanTaskService } from "./db/humanTaskService.js";
 export { createDbCommerceService } from "./db/commerceService.js";
+export { createDbPartnerAdministrationService } from "./db/partnerAdministrationService.js";
 export { createDbAgentTraceService } from "./db/agentTraceService.js";
 export type { DbAgentTraceService } from "./db/agentTraceService.js";
 export { createDbOpsAuthorizationService } from "./db/opsAuthorizationService.js";
@@ -110,6 +111,16 @@ export {
   InvalidOutboundTargetError,
   PartnerUnavailableError,
 } from "./modules/commerce/service.js";
+export {
+  createInMemoryPartnerAdministrationService,
+  createPartnerAdministrationService,
+  PartnerActivationConfirmationError,
+  PartnerAdministrationForbiddenError,
+  PartnerConfigurationConflictError,
+  PartnerConfigurationInputSchema,
+  PartnerConfigurationNotFoundError,
+  PartnerStatusChangeInputSchema,
+} from "./modules/commerce/partnerAdministration.js";
 export { OutboundRedirectInputSchema } from "./modules/commerce/router.js";
 export type { RequestIdentity } from "./context.js";
 export type { AdapterAvailability, RuntimeMode, RuntimeResolution } from "./runtime/runtimeMode.js";
@@ -121,6 +132,15 @@ export type {
   OutboundIdentity,
   OutboundRedirect,
 } from "./modules/commerce/service.js";
+export type {
+  PartnerAdministrationService,
+  PartnerAdministrationStore,
+  PartnerAuditInput,
+  PartnerConfiguration,
+  PartnerConfigurationField,
+  PartnerConfigurationInput,
+  PartnerStatusChangeInput,
+} from "./modules/commerce/partnerAdministration.js";
 export type {
   AnonymousTurnAdmission,
   AnonymousTurnCounter,

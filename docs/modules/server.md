@@ -33,6 +33,11 @@ Next.js runtimes rather than deployed as an independent service.
 - Runtime dependencies are injected through `ServerContext` or a caller factory.
 - `@visepanda/app-server/runtime` owns explicit mode parsing, database capability metadata, and the
   persistent-object ownership inventory. It does not select a service inside a router.
+- Partner administration is a private Ops composition boundary, not a public root-router procedure.
+  The service requires both the Admin role and explicit partner permission. Its Postgres adapter uses
+  one transaction-level lock to validate exact-host uniqueness, preserve immutable keys, calculate
+  bounded audit metadata from the locked current row, write the configuration/status, and append the
+  audit event atomically.
 
 ## Current State
 
@@ -189,6 +194,9 @@ distinguish its own previous partial effect from a later unrelated Trip edit.
 - Routers MUST NOT import a memory service factory or select an adapter. Tests and composition roots
   inject services explicitly; an omitted optional capability fails closed.
 - Public request identity comes only from verified session context or the signed anonymous cookie.
+- Partner administration MUST derive its actor from verified Ops access. Configuration writes MUST
+  preserve status, while status changes require a separate action and explicit confirmation before
+  activation. Repository data remains pending unless an authorized operator deliberately changes it.
 - Anonymous turn limits MUST reserve capacity atomically before generation and MUST NOT trust a body,
   browser counter, or raw anonymous identifier. A blocked request cannot reach the model. A failed
   model request releases its reservation and does not consume a completed turn.

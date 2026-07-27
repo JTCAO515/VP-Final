@@ -34,6 +34,9 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
               <Link href="/roles">Roles</Link>
             ) : null}
             {access?.permissions.includes("cost.read") ? <Link href="/costs">Costs</Link> : null}
+            {access?.permissions.includes("partner.read") ? (
+              <Link href="/partners">Partners</Link>
+            ) : null}
             {access ? <LogoutButton /> : <Link href="/login">Sign in</Link>}
           </nav>
         </header>

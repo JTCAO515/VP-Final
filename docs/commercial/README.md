@@ -48,5 +48,12 @@ require an explicit operator decision and independent review; UI copy cannot wid
   ignored and cookies, signatures, provider credentials, and contact fields are not click payloads.
 - Allowed hosts and active status must be configured through the authorized Ops boundary before links
   are shown; the repository does not activate a partner.
+- The authorized Ops boundary keeps partner key immutable, validates exact bare hosts with the shared
+  domain schema, and separates configuration save from status transition. Every mutation and its
+  bounded field-name/status audit evidence commit atomically. A pending preview is informational only
+  and cannot create an outbound click or redirect.
 - Disclosure copy is required near commercial actions.
 - Commission assumptions are not revenue until settlement data exists.
+
+The partner registry is an operational control, not evidence of affiliate acceptance. It contains no
+booking inventory, commission terms, payment controls, reconciliation, payout, or revenue claim.

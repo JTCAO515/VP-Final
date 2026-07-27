@@ -51,6 +51,10 @@ Status: active
   A skipped test in the general test job is not database evidence. The outbound Commerce adapter is
   included in this explicit database suite because redirect authorization depends on an authoritative
   partner lookup and ledger commit.
+- Partner administration MUST use the durable database adapter in preview, staging, and production;
+  no local-demo or process-memory fallback is allowed. Its explicit database integration suite MUST
+  remain in the `Database contracts` job because configuration/audit atomicity and rollback cannot be
+  established by unit tests alone.
 - Feature flags MUST have owner, default, exposure rule, expiry/review date, and rollback behavior.
 - Rollback MUST NOT reverse an already-applied destructive data change; migrations require a forward
   recovery plan.
