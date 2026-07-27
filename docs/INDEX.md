@@ -9,18 +9,19 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 ## Current Handoff Snapshot
 
-- **Updated:** 2026-07-27 by Codex / serialized Phase 0 terminal-state reconciliation
+- **Updated:** 2026-07-27 by Codex / serialized Phase 0 telemetry-state reconciliation
 - **Base branch:** `main`
-- **Last fully verified commit:** `ac9b8e7 after PR #317 merged on top of P0-18b PR #315; both merged PR heads reported green verify, docs, evals, Database contracts, Vercel Preview Comments, and Web/Ops Vercel deployment checks`
+- **Last fully verified commit:** `5a54261 after PR #323 merged P0-19a and PR #324 serialized the preceding handoff; the #323 merge head reported green verify, docs, evals, Database contracts, and Vercel checks`
 - **Current phase:** Phase 0 — production hardening and commercial safety
-- **Maturity:** The real-provider Copilot, durable Trip completion, signed anonymous identity, cost and product-event persistence, three-turn and trusted-IP guards, truthful request states, controlled-preview Human Tasks, legal pages, retention contracts, database-local retention scheduler, durable outbound ledger, and Admin-only partner configuration are merged. P0-19a privacy-safe telemetry is in independent Tier B review; its producer slice and P0-20 remain downstream. No partner is active, no booking or commission is promised, no payment is live, and Phase 1 through Phase 4 remain trigger-gated.
-- **Last completed control action:** P0-18 reached code terminal state: PR #309 froze the contract, PR #315 persisted the trusted outbound gateway/ledger, and PR #317 added Admin-only partner administration. Issue #311 independently verified the three production migrations, pg_cron schedule, and retention health on VP-Final-V2 without a production write.
+- **Maturity:** The real-provider Copilot, durable Trip completion, signed anonymous identity, cost and product-event persistence, three-turn and trusted-IP guards, truthful request states, controlled-preview Human Tasks, legal pages, retention contracts, database-local retention scheduler, durable outbound ledger, Admin-only partner configuration, and P0-19a privacy-safe telemetry contract/adapter/views are merged. P0-19b producer integration awaits a D2 decision on authorized Ops lifecycle-event semantics; P0-19d endpoint limiting must use the resulting producer density. P0-20 remains downstream. No partner is active, no booking or commission is promised, no payment is live, and Phase 1 through Phase 4 remain trigger-gated.
+- **Last completed control action:** P0-19a reached code terminal state: PR #323 froze the privacy-safe event contract, durable adapter, trusted ingestion route, and private funnel views. P0-18 remains complete through PRs #309/#315/#317. Issue #311 independently verified the three production migrations, pg_cron schedule, and retention health on VP-Final-V2 without a production write.
 
 ### Active Work
 
 | Ref | Work | State | Owner | Next action |
 | --- | --- | --- | --- | --- |
-| Issue #321 / P0-19a | Freeze privacy-safe telemetry contract, durable adapter, and funnel views | PR #323 is base-main, non-draft, clean, and has real verify/docs/evals/Database contracts plus Vercel checks green. It introduces the contract and durable boundary only; P0-19b #322 must not start until independent review and merge. | Codex implementation; independent architecture/privacy reviewer for merge | Independently review and merge PR #323, then start #322 from fresh main. Do not self-merge either Tier B slice. |
+| Issue #322 / P0-19b | Connect Copilot, Explore, outbound, and Human Help telemetry producers | P0-19a is merged in PR #323. The producer slice is paused at a D2 contract gap: currently enabled authorized Ops transitions are triage/cancellation, but the frozen action catalog has no semantically matching transition action. Payment and done emitters remain excluded. | Architecture owner for transition-event semantics; Codex implementation after acceptance | Freeze whether the current preview emits no Ops transition event or accept a schema-first authorized-transition action; then start one base-main Tier B producer-integration PR. |
+| Issue #325 / P0-19d | Rate-limit the public telemetry endpoint | The endpoint hardening scope is accepted but its threshold must be based on actual #322 producer density; no threshold is guessed before that observation exists. | Codex implementation after #322 density is available; independent reviewer for Tier B merge | After #322 merges, measure the registered producer density, freeze the normal-use threshold, then implement the Redis-backed pre-write guard. |
 | Issue #298 / VPOD-00 | Freeze multi-meter voice-call cost accounting contract | ADR-0012 numbering is reserved and the device-auth draft now uses ADR-0013. Implementation is paused at a D2 schema boundary: the existing unique Agent Run attempt cannot represent STT+LLM+TTS rows, and per-device aggregation has no frozen opaque device correlation contract. | Architecture owner for contract freeze; Codex implementation after acceptance | Accept or revise the proposed call kind, uniqueness, and device-correlation semantics in #298; then start one additive Tier B migration/ADR PR from fresh main. |
 | VisePod drafts #318 / #319 / #320 | Investor-prototype positioning, speech feasibility, and device-authentication boundaries | All remain Draft/Tier B. #319 waits for OA-016 real, consented speech evidence; #320 waits for hardware and independent security evidence. No device runtime, registry, gateway, or firmware work is authorized. | Operator/Hardware Agent/independent reviewer; Codex for bounded implementation | Keep Draft until their individual evidence gates are met; do not treat documentation or harness code as hardware/prod proof. |
 
@@ -28,13 +29,13 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 | Priority | Control action | Exit criteria |
 | --- | --- | --- |
-| P0 | Independently review PR #323, then serialize P0-19b #322 from fresh main. | #323 merges with its privacy contract intact; #322 has one base-main producer-integration PR with full gates, no payment emitters, and remains unmerged for independent Tier B review. |
+| P0 | Freeze the P0-19b authorized Ops transition-event mapping, then serialize #322 from fresh main. | The selected mapping preserves lifecycle semantics; #322 has one base-main producer-integration PR with full gates, no payment emitters, and remains unmerged for independent Tier B review. |
 
 ### Current Blockers
 
-- P0-19b #322 and P0-20 #157 remain blocked on independent merge of P0-19a PR #323; no producer integration or public-runtime budget behavior may be started early.
+- P0-19b #322 awaits architecture acceptance of the authorized Ops transition-event mapping; no triage/cancellation may be mislabeled as a payment, quote, or done event. P0-19d #325 cannot select an honest normal-use threshold until #322 establishes producer density.
 - VPOD-00 #298 awaits architecture acceptance of multi-call uniqueness and opaque device-correlation semantics; no financial migration is allowed before that D2 contract is frozen.
-- P0-20 remains blocked on the accepted P0-19 observation boundary and the remaining provider/eval safety decisions; it must not be replaced by mock health or fake budget behavior.
+- P0-20 remains blocked on P0-19b/#325 and the remaining provider/eval safety decisions; it must not be replaced by mock health or fake budget behavior.
 - P0-17 remains blocked by the deferred payment-provider and legal operator decision OA-006. No payment, booking, commission, or paid Human Help capability is live.
 - SEO publication Issues #58, #59, and #84 through #86 remain blocked until evidence eligibility, partner activation, and no-empty-page gates are accepted; do not generate filler or commercial links for pending partners.
 - Phase 1 mobile/knowledge expansion, Phase 2 entitlements/marketplace, Phase 3 settlement, and the functional VisePod prototype remain trigger-gated. Ready discovery or governance spikes do not authorize downstream product implementation.
@@ -43,7 +44,7 @@ All development follows [钱学森 Skills](methodology/qian-systems-engineering.
 
 - PR #309, #315, and #317 merged P0-18a/18b/18c with their required GitHub checks green. P0-18 is closed; no partner was activated and no affiliate/payment claim was introduced.
 - Issue #311 closed after independent read-only verification against VP-Final-V2 confirmed 29 migrations, pg_cron 1.6.4, all three active visepanda purge jobs, and healthy retention targets. The operator push was not repeated.
-- PR #323 P0-19a is clean and green in GitHub at this snapshot, but has no independent review decision. Its checks are evidence of implementation quality, not merge authorization.
+- PR #323 P0-19a merged on 2026-07-27 after its required GitHub checks were green. Its trusted telemetry boundary and private funnel views are now the producer contract authority.
 - Phase 2/3/4 functional work was not started. Their WAU, Human Task, quote-volume, legal-entity, settlement, and order-volume triggers remain unproven.
 
 ## Mandatory Markdown Reading Order
