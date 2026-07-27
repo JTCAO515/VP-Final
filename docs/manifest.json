@@ -177,6 +177,26 @@
       "sourcePrefixes": []
     },
     {
+      "path": "docs/visepod/README.md",
+      "title": "VisePod Documentation",
+      "category": "architecture",
+      "type": "reference",
+      "status": "active",
+      "owner": "VisePod architecture",
+      "summary": "Reading order and boundaries for the Wi-Fi VisePod companion-device contract.",
+      "sourcePrefixes": ["packages/domain/src/visepod/"]
+    },
+    {
+      "path": "docs/visepod/device-protocol-v1.md",
+      "title": "VisePod Device Protocol v1",
+      "category": "architecture",
+      "type": "reference",
+      "status": "accepted",
+      "owner": "VisePod architecture",
+      "summary": "Frozen HTTPS turn, signed PCM, indexed segment, error, and compatibility contract for VisePod v1.",
+      "sourcePrefixes": ["packages/domain/src/visepod/"]
+    },
+    {
       "path": "docs/architecture/top-level-design.md",
       "title": "Overall Design Baseline",
       "category": "architecture",
@@ -792,6 +812,16 @@
         "apps/server/src/modules/task/",
         "apps/ops/"
       ]
+    },
+    {
+      "path": "docs/adr/ADR-0014-vise-pod-https-turn-transport.md",
+      "title": "ADR-0014: VisePod HTTPS Turn Transport",
+      "category": "decisions",
+      "type": "decision",
+      "status": "accepted",
+      "owner": "VisePod architecture",
+      "summary": "Freezes one signed HTTPS request per Wi-Fi VisePod turn instead of a persistent WebSocket transport.",
+      "sourcePrefixes": ["packages/domain/src/visepod/"]
     },
 
     {

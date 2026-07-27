@@ -92,6 +92,22 @@ Anonymous-to-authenticated claim consumes only a verified authenticated identity
 the current signed anonymous id. Share capabilities are opaque, owner-created, read-only, and
 owner-revocable. P0-04b and P0-04c implement the database and HTTP mappings respectively.
 
+## VisePod Device Contract
+
+VisePod v1 is a versioned external device contract rather than an app-local payload. It uses one
+HTTPS `POST /api/pod/v1/turn` per Wi-Fi push-to-talk turn: strict JSON metadata travels in
+`X-VisePod-Metadata` and the body is bounded raw 16 kHz/16-bit/mono PCM. The request and response
+schemas are owned by `packages/domain/src/visepod`; neither firmware nor a future route may copy
+their enums, limits, or signing grammar locally.
+
+The server must re-hash the raw body, validate the HMAC-SHA256 canonical string in constant time,
+and implement device authorization, timestamp/replay protection, and error-to-HTTP mapping before
+calling any speech or Copilot provider. Successful responses carry explicit contiguous segment
+indexes; consumers must sort by index and cannot infer playback order from an array. The static
+HMAC vector in [Device Protocol v1](../visepod/device-protocol-v1.md) is mandatory cross-language
+evidence. Breaking transport, signing, or required-field changes require a new `/api/pod/v2/*`
+contract and vector, never a silent v1 change.
+
 ## Knowledge Evidence Contract
 
 Fact create/update inputs carry typed `sourceClass`, `sourceLocator`, a PII-free `evidenceSummary`,

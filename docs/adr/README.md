@@ -18,6 +18,7 @@ New ADRs are append-only and use the next numeric prefix.
 | [ADR-0011](ADR-0011-retention-purge-scheduling.md)                     | Accepted | Uses database-local scheduled retention purges with bounded health evidence.                                                               |
 | [ADR-0012](ADR-0012-phase0-telemetry-observation-contract.md)          | Accepted | Freezes privacy-safe Phase 0 telemetry capture, registered actions, and private aggregate views.                                           |
 | [ADR-0013](ADR-0013-human-task-transition-telemetry-staging.md)        | Accepted | Human Task lifecycle analysis derives from `human_tasks`; Phase 0 telemetry records intake context, not duplicate transitions.             |
+| [ADR-0014](ADR-0014-vise-pod-https-turn-transport.md)                  | Accepted | VisePod v1 uses one signed HTTPS request per Wi-Fi push-to-talk turn rather than a persistent WebSocket transport.                         |
 
 ## When to Add an ADR
 
