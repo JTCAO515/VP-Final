@@ -170,3 +170,13 @@ Event failures must not break a primary user action, and a capture endpoint must
 when its own write fails. Private live aggregate views support Phase 0 funnel/outbound/Human Help
 observation without exposing row content. Commercial and payment ledgers remain authoritative even
 when matching telemetry is missing; payment events are names only until the payment boundary exists.
+
+The public browser endpoint has a separate pre-write guard because its normal density is higher than
+Copilot prompts. It first parses the narrow allowlisted capture shape, then atomically requires both
+the verified identity and Vercel-only trusted network to be within their HMAC-keyed Upstash sliding
+windows. Default capacity is `60/minute` and `300/hour` for one identity, plus `180/minute` and
+`900/hour` for a shared network. Those limits exceed the current one-minute product burst (three
+guide mounts, five scene changes, available POI opens, and Human Help's view/start) while still
+bounding scripted writes. A blocked event gets HTTP 429 and `Retry-After` before any database write;
+its bounded rejection count remains in Redis under an opaque key rather than generating another
+durable event. Missing trusted-header or Redis/HMAC configuration produces an honest 503.

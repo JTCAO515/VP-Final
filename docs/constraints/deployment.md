@@ -43,6 +43,16 @@ Status: active
   explicit `local-demo` may use the fixed local limiter identity.
   The Vercel system marker `VERCEL` is part of the Turborepo env contract; it is platform evidence,
   not a substitute for the explicit `VISEPANDA_RUNTIME_MODE` runtime selection.
+- Public telemetry capture MUST use the same approved Upstash Redis service and Vercel-only trusted
+  address resolver before the telemetry database write. It MUST require both a HMAC-derived verified
+  identity window and a HMAC-derived trusted-network window; raw identity, address, salt, cookie,
+  signature, and spoofable `x-forwarded-for` MUST NOT enter Redis keys, arguments, logs, events, or
+  public errors. Optional `VISEPANDA_TELEMETRY_IDENTITY_RATE_LIMIT_MINUTE` and
+  `VISEPANDA_TELEMETRY_IDENTITY_RATE_LIMIT_HOUR` default to `60` and `300`; optional
+  `VISEPANDA_TELEMETRY_IP_RATE_LIMIT_MINUTE` and `VISEPANDA_TELEMETRY_IP_RATE_LIMIT_HOUR` default to
+  `180` and `900`. Invalid/missing trusted dependencies fail closed with an honest 503; an exhausted
+  window returns HTTP 429 plus `Retry-After`. Rejection counters remain bounded, HMAC-keyed per-network
+  Redis observations rather than durable telemetry rows so a flood cannot amplify database writes.
 - The completion callback and QStash delivery use a five-minute request budget. The ten-minute job
   claim lease MUST remain longer than that budget so a still-running callback cannot be reclaimed by
   an overlapping delivery.

@@ -77,6 +77,17 @@ export {
   resolveUpstashCopilotIpRateLimiterConfig,
 } from "./modules/copilot/ipRateLimiter.js";
 export {
+  DEFAULT_TELEMETRY_IDENTITY_HOUR_LIMIT,
+  DEFAULT_TELEMETRY_IDENTITY_MINUTE_LIMIT,
+  DEFAULT_TELEMETRY_IP_HOUR_LIMIT,
+  DEFAULT_TELEMETRY_IP_MINUTE_LIMIT,
+  TELEMETRY_RATE_LIMIT_TTL_SECONDS,
+  TelemetryRateLimitUnavailableError,
+  createInMemoryTelemetryRateLimiter,
+  createUpstashTelemetryRateLimiter,
+  resolveUpstashTelemetryRateLimiterConfig,
+} from "./modules/telemetry/rateLimiter.js";
+export {
   CompletionDeliverySchema,
   CompletionQueueUnavailableError,
   createQStashCompletionQueue,
@@ -163,6 +174,11 @@ export type {
   CopilotIpRateLimiter,
   UpstashCopilotIpRateLimiterConfig,
 } from "./modules/copilot/ipRateLimiter.js";
+export type {
+  TelemetryRateLimitAdmission,
+  TelemetryRateLimiter,
+  UpstashTelemetryRateLimiterConfig,
+} from "./modules/telemetry/rateLimiter.js";
 export type {
   ClaimedCompletionJob,
   CompletionJobService,

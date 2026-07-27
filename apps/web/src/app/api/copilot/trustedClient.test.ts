@@ -1,10 +1,19 @@
 import { describe, expect, it } from "vitest";
 import {
   TrustedClientAddressUnavailableError,
+  resolveTrustedClientAddress,
   resolveTrustedCopilotClientAddress,
 } from "./trustedClient";
 
 describe("resolveTrustedCopilotClientAddress", () => {
+  it("shares the same trusted resolver for other public rate-limited routes", () => {
+    const headers = new Headers({ "x-vercel-forwarded-for": "203.0.113.9" });
+    const environment = { VERCEL: "1", VISEPANDA_RUNTIME_MODE: "production" };
+    expect(resolveTrustedClientAddress(headers, environment)).toBe(
+      resolveTrustedCopilotClientAddress(headers, environment),
+    );
+  });
+
   it("uses only the first valid Vercel-provided address", () => {
     const headers = new Headers({
       "x-vercel-forwarded-for": "invalid, 203.0.113.9, 198.51.100.7",
