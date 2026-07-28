@@ -823,6 +823,21 @@
       "summary": "Freezes one signed HTTPS request per Wi-Fi VisePod turn instead of a persistent WebSocket transport.",
       "sourcePrefixes": ["packages/domain/src/visepod/"]
     },
+    {
+      "path": "docs/adr/ADR-0015-public-runtime-safety-control.md",
+      "title": "ADR-0015: Public Runtime Safety Control",
+      "category": "decisions",
+      "type": "decision",
+      "status": "draft",
+      "owner": "runtime safety / privacy",
+      "summary": "Proposes a bounded, truthful P0-20 public-runtime control plane that reuses accepted identity, rate, model, and Human Help owners.",
+      "sourcePrefixes": [
+        "apps/web/src/app/api/",
+        "apps/server/src/modules/copilot/",
+        "apps/server/src/modules/task/",
+        "packages/ai/src/"
+      ]
+    },
 
     {
       "path": "docs/runbooks/README.md",

@@ -189,6 +189,7 @@ Append-only records of accepted and superseded binding decisions.
 | [ADR-0012: Phase 0 Telemetry Observation Contract](adr/ADR-0012-phase0-telemetry-observation-contract.md) | decision | accepted | data platform / privacy | Freezes privacy-safe browser telemetry capture, server-derived persistence, registered actions, and private Phase 0 aggregate views. |
 | [ADR-0013: Human Task Transition Telemetry Staging](adr/ADR-0013-human-task-transition-telemetry-staging.md) | decision | accepted | data platform / Human Help | Human Task lifecycle analysis derives from the authoritative task record; Phase 0 telemetry retains intake context and does not duplicate Ops transitions. |
 | [ADR-0014: VisePod HTTPS Turn Transport](adr/ADR-0014-vise-pod-https-turn-transport.md) | decision | accepted | VisePod architecture | Freezes one signed HTTPS request per Wi-Fi VisePod turn instead of a persistent WebSocket transport. |
+| [ADR-0015: Public Runtime Safety Control](adr/ADR-0015-public-runtime-safety-control.md) | decision | draft | runtime safety / privacy | Proposes a bounded, truthful P0-20 public-runtime control plane that reuses accepted identity, rate, model, and Human Help owners. |
 
 ## Runbooks
 
