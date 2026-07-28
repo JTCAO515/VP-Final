@@ -8,6 +8,7 @@
 | `packages/ai` | AI runtime | Provider-neutral model router, effort, usage, and cost types | Router skeleton; only static test provider |
 | `packages/api-client` | API | Typed tRPC client derived from the server router | Implemented; external server endpoint is not yet deployed |
 | `packages/ui` | Design system | Shared semantic tokens and web/native primitive contracts | Implemented token contract; no page components |
+| `packages/visepod-speech-spike` | VisePod prototype / AI platform | Isolated fixed-sample STT/TTS and weak-Wi-Fi experiment harness | Experimental only; no production consumer and no real-provider evidence yet |
 | `apps/server` | Backend | Modular tRPC router, services, DB adapters, two-pass Trip completion, and injected AI route executor | Partially implemented |
 | `apps/web` | Traveler Web | Next.js product and public acquisition surfaces | Implemented MVP shell; not production-ready |
 | `apps/ops` | Operations | Fact, gap, and Human Task workflows | Implemented shell; auth and persistence incomplete |
@@ -44,6 +45,8 @@
   available in a clean CI checkout rather than only in a developer's cached `dist` directory.
 - Tests live beside the behavior they protect unless a database or end-to-end runner requires a
   dedicated directory.
+- Experiment-only packages must be private, have no application consumer, label simulated and real
+  evidence separately, and must not become production ownership by accidental reuse.
 - Database changes are new migration files. Existing landed migrations are immutable.
 - Long-form rationale belongs in docs; concise operational commands belong in runbooks; repeated
   coding-agent rules belong in `AGENTS.md` with links to details.

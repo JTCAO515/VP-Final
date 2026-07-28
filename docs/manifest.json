@@ -1052,6 +1052,16 @@
       "summary": "Quality-gated six-city POI coverage targets, evidence rules, editorial waves, and bulk-import handoff.",
       "sourcePrefixes": []
     },
+    {
+      "path": "docs/planning/visepod-speech-provider-latency-assessment.md",
+      "title": "VisePod Speech Provider and Wi-Fi Latency Assessment",
+      "category": "planning",
+      "type": "planning",
+      "status": "draft",
+      "owner": "VisePod prototype / AI platform",
+      "summary": "Fixed-sample provider, weak-Wi-Fi, latency, quality, cost, and honest-failure evidence plan for the investor prototype.",
+      "sourcePrefixes": ["packages/visepod-speech-spike/"]
+    },
 
     {
       "path": "evals/README.md",
