@@ -49,6 +49,12 @@ server-only resolver must still apply the domain freshness and exact-severity ga
   local-facing facts. Local Chinese names, addresses, districts, metro exits, and visibility notes use
   five dedicated `poi_facts.fact_type` values. Each row keeps its own evidence and expiry; a raw POI
   string is never silently promoted to local-display eligibility.
+- `legacy_poi_address_review_queue` is a private, security-invoker live review list of every non-empty
+  raw `pois.address` value. It labels each row `legacy_unverified` and uses the already-ineligible
+  `uncorroborated_scrape` source class only as a quarantine classification; this makes no claim about
+  the historical source. The view creates no fact rows, does not grant client access, and is not a
+  Copilot, Explore, SEO, or local-facing display source. An operator must independently verify a value
+  and create a reviewed `local_address_zh` fact through the normal review workflow.
 - Traveler-owned data requires verified identity and owner policies.
 - Trip rows require one exclusive authenticated or signed-anonymous owner. Owner-scoped conditional
   writes and event append occur in one transaction; public share tokens are revocable read-only
