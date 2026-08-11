@@ -517,6 +517,82 @@ export const poiFactEditorialAudit = pgTable(
   }),
 );
 
+// ADR-0016 fixed expressions are private editorial records. A later server-only resolver may
+// consume only reviewed, unexpired rows; this mapping deliberately exposes no browser data path.
+export const safePhrases = pgTable(
+  "safe_phrases",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    category: text("category").notNull(),
+    scene: text("scene").notNull(),
+    intentKey: text("intent_key").notNull(),
+    variantKey: text("variant_key").notNull(),
+    severity: text("severity").notNull(),
+    chineseExpression: text("chinese_expression").notNull(),
+    englishIntent: text("english_intent").notNull(),
+    sourceClass: text("source_class").notNull().default("operator_verified"),
+    sourceLocator: text("source_locator").notNull(),
+    evidenceSummary: text("evidence_summary").notNull(),
+    verifiedBy: uuid("verified_by").references(() => opsMemberships.userId, {
+      onDelete: "restrict",
+    }),
+    verifiedAt: timestamp("verified_at", { withTimezone: true }),
+    expiresAt: timestamp("expires_at", { withTimezone: true }),
+    reviewPolicy: text("review_policy"),
+    status: text("status").notNull().default("draft"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    selectionIdx: uniqueIndex("safe_phrases_reviewed_selection_unique")
+      .on(table.category, table.scene, table.intentKey, table.variantKey, table.severity)
+      .where(sql`${table.status} = 'reviewed'`),
+    categoryCheck: check(
+      "safe_phrases_category_check",
+      sql`${table.category} in ('allergy_dietary', 'symptoms_medical', 'emergency_help', 'passport_visa_ticket', 'destination_address')`,
+    ),
+    sceneCheck: check(
+      "safe_phrases_scene_check",
+      sql`${table.scene} in ('taxi', 'restaurant', 'venue_entry', 'hotel', 'medical', 'emergency')`,
+    ),
+    severityCheck: check(
+      "safe_phrases_severity_check",
+      sql`${table.severity} in ('standard', 'severe')`,
+    ),
+    keyCheck: check(
+      "safe_phrases_key_check",
+      sql`${table.intentKey} ~ '^[a-z0-9]+([._-][a-z0-9]+)*$' and ${table.variantKey} ~ '^[a-z0-9]+([._-][a-z0-9]+)*$'`,
+    ),
+    expressionCheck: check(
+      "safe_phrases_expression_check",
+      sql`btrim(${table.chineseExpression}) <> '' and char_length(btrim(${table.chineseExpression})) <= 500 and btrim(${table.englishIntent}) <> '' and char_length(btrim(${table.englishIntent})) <= 500`,
+    ),
+    operatorSourceCheck: check(
+      "safe_phrases_operator_source_check",
+      sql`${table.sourceClass} = 'operator_verified'`,
+    ),
+    evidenceCheck: check(
+      "safe_phrases_evidence_check",
+      sql`btrim(${table.sourceLocator}) <> '' and char_length(btrim(${table.sourceLocator})) <= 500 and btrim(${table.evidenceSummary}) <> '' and char_length(btrim(${table.evidenceSummary})) <= 240 and ${table.evidenceSummary} !~* '[[:alnum:].+_-]+@[[:alnum:].-]+\\.[[:alpha:]]{2,}' and ${table.evidenceSummary} !~ '\\m\\+?[0-9][0-9 ()-]{6,}[0-9]\\M'`,
+    ),
+    statusCheck: check(
+      "safe_phrases_status_check",
+      sql`${table.status} in ('draft', 'reviewed', 'deprecated', 'rejected')`,
+    ),
+    reviewPolicyCheck: check(
+      "safe_phrases_review_policy_check",
+      sql`${table.reviewPolicy} is null or ${table.reviewPolicy} = 'operator-verified-90d-v1'`,
+    ),
+    reviewedEvidenceCheck: check(
+      "safe_phrases_reviewed_evidence_check",
+      sql`${table.status} <> 'reviewed' or (${table.verifiedBy} is not null and ${table.verifiedAt} is not null and ${table.expiresAt} is not null and ${table.expiresAt} > ${table.verifiedAt} and ${table.reviewPolicy} = 'operator-verified-90d-v1')`,
+    ),
+    reviewExpiryCheck: check(
+      "safe_phrases_review_expiry_check",
+      sql`${table.status} <> 'reviewed' or ${table.expiresAt} <= ${table.verifiedAt} + interval '90 days'`,
+    ),
+  }),
+);
+
 export const knowledgeGaps = pgTable(
   "knowledge_gaps",
   {

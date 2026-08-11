@@ -9,12 +9,19 @@ commercial evidence, Human Tasks, and telemetry. Repository migrations are the s
 
 ## Current Schema Areas
 
+`safe_phrases` is a private editorial table for ADR-0016's high-risk fixed-expression contract. It
+stores only the fixed expression, its English intent, operator-review provenance, expiry, and a
+closed selection key. It stores no traveler identity, anonymous session, conversation, contact, or
+message content. RLS is enabled and all `anon`/`authenticated` privileges are revoked; a later
+server-only resolver must still apply the domain freshness and exact-severity gate before any display.
+
 | Area              | Relations                                                                                 |
 | ----------------- | ----------------------------------------------------------------------------------------- |
 | Identity and Trip | `users`, `trips`, `trip_events`, `copilot_completion_jobs`                                |
 | AI trace          | `agent_runs`, `tool_calls`, `llm_call_costs`                                              |
 | Copilot dialogue  | `copilot_conversation_turns`                                                              |
 | Knowledge         | `pois`, `poi_facts`, `poi_fact_editorial_audit`, `knowledge_gaps`, `poi_commercial_links` |
+| Safety phrases    | `safe_phrases` (private operator-verified fixed-expression editorial records)             |
 | Commerce          | `partners`, `outbound_clicks`                                                             |
 | Telemetry         | `events`, `trust_funnel_daily`, private Phase 0 funnel/outbound/Human Help live views     |
 | Human operations  | `human_tasks`, `human_task_transitions`, `human_task_evidence`                            |

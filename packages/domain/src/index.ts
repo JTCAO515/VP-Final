@@ -12,6 +12,7 @@ export * from "./knowledge/index.js";
 export * from "./knowledge/placeResolver.js";
 export * from "./knowledge/seed.js";
 export * from "./observability/index.js";
+export * from "./safe-phrases/index.js";
 export * from "./task/index.js";
 export * from "./trip/index.js";
 export * from "./visepod/index.js";
