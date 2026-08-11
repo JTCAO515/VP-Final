@@ -28,6 +28,27 @@ Explore, and SEO, so provenance and freshness are release-critical.
 7. Link recurring unanswered questions to knowledge gaps and mark resolved only when evidence exists.
 8. Sample the resulting Explore/guide/Copilot presentation for misleading wording.
 
+## Legacy Address Quarantine
+
+`public.legacy_poi_address_review_queue` is the live operator list for non-empty historical
+`pois.address` strings. It contains POI id, city, English and legacy Chinese names where present, and
+the raw address. Every row is explicitly `legacy_unverified`; its `uncorroborated_scrape` classification
+is a conservative quarantine marker, not a claim about the original data source.
+
+1. Export or inspect the queue through a server/operator database session. Do not grant it to browser
+   roles or copy it into a public guide.
+2. Locate an independent official, operator-verified, or reputable editorial source for the desired
+   local-facing Chinese address.
+3. Create a new `local_address_zh` fact with the verified text and full evidence. Review it through the
+   ordinary fact review transition; never edit the raw `pois.address` string to claim verification.
+4. Retain the queue row for reconciliation. It is intentionally not removed merely because a similar
+   address fact exists: the raw and reviewed strings can differ by language or formatting and must not
+   be equated automatically.
+
+Rollback: this migration does not mutate legacy POI strings or create facts. If the queue itself must be
+withdrawn, use an append-only follow-up migration to drop the view; keep the existing raw fields
+unpromoted and unavailable to local-facing presentation.
+
 ## Bulk Collection Import
 
 1. Start from the header-only six-city collection template. Do not add columns or use spreadsheet
