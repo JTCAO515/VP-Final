@@ -16,3 +16,4 @@ export * from "./safe-phrases/index.js";
 export * from "./task/index.js";
 export * from "./trip/index.js";
 export * from "./visepod/index.js";
+export * from "./visepod/studio.js";

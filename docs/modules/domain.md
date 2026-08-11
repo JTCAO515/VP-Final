@@ -9,18 +9,18 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
 
 ## Public Areas
 
-| Area            | Owns                                                                                                                             |
-| --------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `trip`          | TripState, TripPatch operations, `applyPatch`, `diffTrips`, generation progress                                                  |
-| `copilot`       | Intent, message, citations, tool cards, commercial actions, Human Help handoff, envelope, completion-job contract                |
-| `knowledge`     | POI, execution facts, knowledge gaps, scene-tag derivation, reviewed seed data, and ADR-0006 fact eligibility                    |
-| `safe-phrases`  | Private operator-verified high-risk fixed-expression contract, exact severity selection, and freshness eligibility               |
-| `task`          | Human Task input, lifecycle, transition commands, private outcome evidence, and non-status updates                               |
-| `commerce`      | Validated partner configuration, trusted-identity outbound records, active-only HTTPS host validation, and tracking construction |
-| `events`        | Telemetry event contract                                                                                                         |
-| `observability` | Redacted Copilot turn, per-attempt cost, product-event action, and forbidden-persistence contracts                               |
-| `errors`        | Shared typed error shapes                                                                                                        |
-| `visepod`       | Signed Wi-Fi device-turn metadata, raw PCM bounds, indexed playback segments, health/errors, HMAC vector, and sentence splitting |
+| Area            | Owns                                                                                                                                                          |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `trip`          | TripState, TripPatch operations, `applyPatch`, `diffTrips`, generation progress                                                                               |
+| `copilot`       | Intent, message, citations, tool cards, commercial actions, Human Help handoff, envelope, completion-job contract                                             |
+| `knowledge`     | POI, execution facts, knowledge gaps, scene-tag derivation, reviewed seed data, and ADR-0006 fact eligibility                                                 |
+| `safe-phrases`  | Private operator-verified high-risk fixed-expression contract, exact severity selection, and freshness eligibility                                            |
+| `task`          | Human Task input, lifecycle, transition commands, private outcome evidence, and non-status updates                                                            |
+| `commerce`      | Validated partner configuration, trusted-identity outbound records, active-only HTTPS host validation, and tracking construction                              |
+| `events`        | Telemetry event contract                                                                                                                                      |
+| `observability` | Redacted Copilot turn, per-attempt cost, product-event action, and forbidden-persistence contracts                                                            |
+| `errors`        | Shared typed error shapes                                                                                                                                     |
+| `visepod`       | Signed Wi-Fi device-turn metadata, raw PCM bounds, indexed playback segments, health/errors, HMAC vector, sentence splitting, and the Studio binding contract |
 
 ## Invariants
 
@@ -86,6 +86,12 @@ fulfilling -> done`, with explicit cancellation edges and no terminal recovery. 
   accept only RFC 3986 unreserved characters, and the canonical HMAC string, signing vector, audio
   limits, response/error shapes, and deterministic sentence splitter remain portable across firmware,
   server, Web, and Mobile. See [Device Protocol v1](../visepod/device-protocol-v1.md).
+- VisePod Studio binding is a separate server-side contract. Its opaque, eight-hour,
+  environment-bound grant is limited to `visepod.provision`; exact user lookup returns only a
+  masked email hint; a UUID idempotency key is retained for 30 days; and a same-payload replay
+  cannot become a second mutation or audit event. The schema does not implement a Studio route,
+  token store, binding table, or device registry. See
+  [Studio Binding Contract v1](../visepod/studio-binding-contract-v1.md).
 
 ## Change Workflow
 

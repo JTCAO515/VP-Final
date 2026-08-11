@@ -13,10 +13,16 @@ live device turn is enabled.
    to use one HTTPS request per push-to-talk turn instead of a persistent socket.
 3. `packages/domain/src/visepod/index.ts` for the executable Zod contract and
    cross-language signing fixture.
+4. [VisePod Studio Binding Contract v1](studio-binding-contract-v1.md) for the
+   separate, server-side user/device provisioning boundary.
+5. [ADR-0017](../adr/ADR-0017-vise-pod-studio-provisioning.md) for why Studio
+   reuses Ops authorization, issues a short-lived grant, and forbids user
+   browsing.
 
 ## Boundary
 
 This directory freezes contracts only. It does not implement `/api/pod/v1/turn`,
-speech-to-text, text-to-speech, device authorization, replay storage, or firmware
-delivery. Those consumers must validate against the v1 schema rather than extend
-the wire format ad hoc.
+speech-to-text, text-to-speech, device authorization, replay storage, firmware
+delivery, a Studio route, a provisioning-token issuer, or a device-binding store.
+Those consumers must validate against the v1 schema rather than extend a wire or
+authorization format ad hoc.
