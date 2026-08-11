@@ -1052,6 +1052,16 @@
       "summary": "Quality-gated six-city POI coverage targets, evidence rules, editorial waves, and bulk-import handoff.",
       "sourcePrefixes": []
     },
+    {
+      "path": "docs/planning/iteration-0-real-travel-task-research.md",
+      "title": "Iteration 0 Real Travel Task Research Protocol",
+      "category": "planning",
+      "type": "planning",
+      "status": "active",
+      "owner": "product research",
+      "summary": "Real-user-only, PII-minimized research fragment and scorecard protocol; it does not define a product-domain task contract.",
+      "sourcePrefixes": ["research/iteration-0/"]
+    },
 
     {
       "path": "evals/README.md",

@@ -1,0 +1,26 @@
+{
+  "example_only": true,
+  "record_class": "illustrative",
+  "warning": "Fictional format example. It is not derived from real fragments and must not select work.",
+  "scorecard_id": "example-cts-20260811-001",
+  "task_hypothesis": "Illustrative only: help communicate a destination.",
+  "task_fragment_ids": [],
+  "scores": {
+    "frequency": null,
+    "time_pressure": null,
+    "web_completeness": null,
+    "external_dependency": null,
+    "fabrication_risk": null,
+    "differentiation": null
+  },
+  "score_rationales": {
+    "frequency": null,
+    "time_pressure": null,
+    "web_completeness": null,
+    "external_dependency": null,
+    "fabrication_risk": null,
+    "differentiation": null
+  },
+  "unknown_dimensions": ["frequency", "time_pressure", "web_completeness", "external_dependency", "fabrication_risk", "differentiation"],
+  "review_note": "No score is possible without real traceable fragments."
+}

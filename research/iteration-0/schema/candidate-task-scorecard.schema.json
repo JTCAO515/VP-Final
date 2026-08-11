@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://go2china.space/schemas/research/iteration-0/candidate-task-scorecard.schema.json",
+  "title": "Iteration 0 candidate task scorecard",
+  "description": "A non-binding evidence-linked scorecard for later product review. It is not a task entity or state machine.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "record_class", "scorecard_id", "scored_on", "task_hypothesis", "task_fragment_ids", "scores", "score_rationales", "unknown_dimensions", "review_note"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "record_class": { "const": "real" },
+    "scorecard_id": { "type": "string", "pattern": "^cts-[0-9]{8}-[0-9]{3,}$" },
+    "scored_on": { "type": "string", "format": "date" },
+    "task_hypothesis": { "type": "string", "minLength": 1, "maxLength": 500 },
+    "task_fragment_ids": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "pattern": "^rtf-[0-9]{8}-[0-9]{3,}$" } },
+    "scores": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["frequency", "time_pressure", "web_completeness", "external_dependency", "fabrication_risk", "differentiation"],
+      "properties": {
+        "frequency": { "$ref": "#/$defs/score" },
+        "time_pressure": { "$ref": "#/$defs/score" },
+        "web_completeness": { "$ref": "#/$defs/score" },
+        "external_dependency": { "$ref": "#/$defs/score" },
+        "fabrication_risk": { "$ref": "#/$defs/score" },
+        "differentiation": { "$ref": "#/$defs/score" }
+      }
+    },
+    "score_rationales": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["frequency", "time_pressure", "web_completeness", "external_dependency", "fabrication_risk", "differentiation"],
+      "properties": {
+        "frequency": { "$ref": "#/$defs/rationale" },
+        "time_pressure": { "$ref": "#/$defs/rationale" },
+        "web_completeness": { "$ref": "#/$defs/rationale" },
+        "external_dependency": { "$ref": "#/$defs/rationale" },
+        "fabrication_risk": { "$ref": "#/$defs/rationale" },
+        "differentiation": { "$ref": "#/$defs/rationale" }
+      }
+    },
+    "unknown_dimensions": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "enum": ["frequency", "time_pressure", "web_completeness", "external_dependency", "fabrication_risk", "differentiation"] }
+    },
+    "review_note": { "type": ["string", "null"], "maxLength": 1000 }
+  },
+  "$defs": {
+    "score": { "type": ["integer", "null"], "minimum": 1, "maximum": 5 },
+    "rationale": { "type": ["string", "null"], "maxLength": 500 }
+  }
+}

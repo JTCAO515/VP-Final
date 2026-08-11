@@ -233,6 +233,7 @@ Frozen product direction and dated evidence-based project reviews.
 
 | Document | Type | Status | Owner | Purpose |
 | --- | --- | --- | --- | --- |
+| [Iteration 0 Real Travel Task Research Protocol](planning/iteration-0-real-travel-task-research.md) | planning | active | product research | Real-user-only, PII-minimized research fragment and scorecard protocol; it does not define a product-domain task contract. |
 | [Planning Guide](planning/README.md) | reference | active | overall design | Authority and lifecycle rules for baselines, plans, and dated reviews. |
 | [Six-City Knowledge Expansion Plan](planning/six-city-knowledge-expansion-plan.md) | planning | active | knowledge operations | Quality-gated six-city POI coverage targets, evidence rules, editorial waves, and bulk-import handoff. |
 | [VisePanda V2 Frozen Product Baseline](planning/visepanda-v2-final-architecture.md) | planning | frozen | operator / architecture | Accepted product thesis, Fable-5 architecture, commercial model, roadmap, and anti-goals. |
