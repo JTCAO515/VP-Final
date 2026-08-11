@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://go2china.space/schemas/research/iteration-0/real-travel-task-fragment.schema.json",
+  "title": "Iteration 0 real travel task fragment",
+  "description": "A sanitized, traceable observation of one traveler goal in one situation. This is not a product-domain entity.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "record_class", "task_fragment_id", "captured_on", "source_trace", "journey_stage", "situational_context", "user_goal", "current_approach", "failure_reason", "time_pressure", "failure_consequence", "completion_evidence", "human_help_need", "willingness_to_pay", "unknown_fields"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "record_class": { "const": "real" },
+    "task_fragment_id": { "type": "string", "pattern": "^rtf-[0-9]{8}-[0-9]{3,}$" },
+    "captured_on": { "type": "string", "format": "date" },
+    "source_trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_ref", "channel", "observed_on", "collector_alias", "consent_status"],
+      "properties": {
+        "source_ref": { "type": "string", "pattern": "^(interview|observation|support|diary|partner)-[A-Za-z0-9._~-]{1,64}$" },
+        "channel": { "enum": ["interview", "observation", "support", "diary", "partner_referral"] },
+        "observed_on": { "type": "string", "format": "date" },
+        "collector_alias": { "type": "string", "pattern": "^(researcher|operator)-[0-9]{3,}$" },
+        "consent_status": { "enum": ["confirmed", "not_required_for_anonymized_observation"] }
+      }
+    },
+    "journey_stage": { "enum": ["dream_plan", "prepare", "arrival", "execute", "return", "unknown"] },
+    "situational_context": { "type": ["string", "null"], "maxLength": 1000 },
+    "user_goal": { "type": ["string", "null"], "maxLength": 500 },
+    "current_approach": { "type": ["string", "null"], "maxLength": 1000 },
+    "failure_reason": { "type": ["string", "null"], "maxLength": 1000 },
+    "time_pressure": { "enum": ["none", "low", "medium", "high", "unknown"] },
+    "failure_consequence": { "type": ["string", "null"], "maxLength": 1000 },
+    "completion_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "description"],
+      "properties": {
+        "status": { "enum": ["completed", "not_completed", "unknown"] },
+        "description": { "type": ["string", "null"], "maxLength": 1000 }
+      }
+    },
+    "human_help_need": { "enum": ["not_needed", "helpful", "required", "unknown"] },
+    "willingness_to_pay": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["level", "evidence"],
+      "properties": {
+        "level": { "enum": ["no", "maybe", "yes", "unknown"] },
+        "evidence": { "type": ["string", "null"], "maxLength": 500 }
+      }
+    },
+    "unknown_fields": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "enum": ["journey_stage", "situational_context", "user_goal", "current_approach", "failure_reason", "time_pressure", "failure_consequence", "completion_evidence", "human_help_need", "willingness_to_pay"] }
+    }
+  }
+}

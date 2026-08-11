@@ -1,0 +1,24 @@
+{
+  "example_only": true,
+  "record_class": "illustrative",
+  "warning": "Fictional format example. Never include it in analysis or candidate selection.",
+  "task_fragment_id": "example-rtf-20260811-001",
+  "journey_stage": "execute",
+  "situational_context": "Illustrative only: a traveler wants to communicate a destination after arrival.",
+  "user_goal": "Illustrative only: make a destination understandable without shared language.",
+  "current_approach": "Illustrative only: show a place name on a phone.",
+  "failure_reason": null,
+  "time_pressure": "unknown",
+  "failure_consequence": null,
+  "completion_evidence": { "status": "unknown", "description": null },
+  "human_help_need": "unknown",
+  "willingness_to_pay": { "level": "unknown", "evidence": null },
+  "unknown_fields": ["failure_reason", "failure_consequence", "completion_evidence", "human_help_need", "willingness_to_pay"],
+  "source_trace": {
+    "source_ref": "example-not-a-real-participant",
+    "channel": "example",
+    "observed_on": "2026-08-11",
+    "collector_alias": "example-only",
+    "consent_status": "not-applicable"
+  }
+}
