@@ -19,6 +19,11 @@ Use for prompt, model, routing, retrieval, normalization, structured-output, or 
 pnpm evals
 ```
 
+The command includes the deterministic SAFETY-01d runtime suite. It is mandatory whenever an AI
+pipeline, safety gate, fixed-expression eligibility rule, retrieval eligibility rule, or execution
+fact presentation path changes. The suite tests the running Copilot boundary with adversarial English
+and Chinese fixtures; it is not a prompt-only or live-provider score.
+
 For a candidate file:
 
 ```bash

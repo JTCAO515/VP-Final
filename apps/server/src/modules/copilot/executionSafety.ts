@@ -46,7 +46,7 @@ const HIGH_RISK_REQUESTS: ReadonlyArray<{
   {
     category: "passport_visa_ticket",
     pattern:
-      /\b(?:show|translate|write|say|state|card|help\s+with)\b[^\n]{0,80}\b(?:passport|visa|ticket|boarding)\b|(?:护照|签证|票务|车票|机票)[^\n]{0,40}(?:说明|出示|翻译|怎么说)/i,
+      /\b(?:passport|visa|boarding\s+(?:pass|ticket))\b|\b(?:show|translate|write|say|state|card|help\s+with)\b[^\n]{0,80}\b(?:ticket|boarding)\b|(?:护照|签证|票务|车票|机票)[^\n]{0,40}(?:说明|出示|翻译|怎么说)/i,
   },
   {
     category: "destination_address",

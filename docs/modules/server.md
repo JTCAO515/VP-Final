@@ -278,3 +278,10 @@ pnpm --filter @visepanda/app-server build
 ```
 
 Security-sensitive changes also require database or API-level ownership tests.
+### Deterministic execution-safety eval gate
+
+`pnpm evals` invokes the server-owned `executionSafety.evals.test.ts` suite in addition to the
+trip-generation golden set. The suite uses the real Copilot pipeline to lock high-risk fixed
+expressions, honest unavailable behavior, and rejection of unsupported executable facts. It is a CI
+gate, not a provider-quality sample; no safety regression may be waived by changing a prompt or
+replacing fixtures with model output.

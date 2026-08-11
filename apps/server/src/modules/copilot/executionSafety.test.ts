@@ -34,6 +34,9 @@ describe("classifyHighRiskRequest", () => {
     expect(classifyHighRiskRequest("I need a doctor for this symptom")).toBe("symptoms_medical");
     expect(classifyHighRiskRequest("Call an ambulance in an emergency")).toBe("emergency_help");
     expect(classifyHighRiskRequest("Show my passport statement")).toBe("passport_visa_ticket");
+    expect(classifyHighRiskRequest("My boarding ticket needs a Chinese statement")).toBe(
+      "passport_visa_ticket",
+    );
     expect(classifyHighRiskRequest("What is the taxi address?")).toBe("destination_address");
   });
 });
