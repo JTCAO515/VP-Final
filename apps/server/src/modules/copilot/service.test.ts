@@ -239,6 +239,88 @@ describe("createCopilotPipeline", () => {
     ]);
   });
 
+  it("retrieves only the uniquely resolved POI and returns no facts for an unknown place", async () => {
+    const now = new Date();
+    const verifiedAt = now.toISOString();
+    const expiresAt = new Date(now.valueOf() + 24 * 60 * 60 * 1000).toISOString();
+    const knowledgeService = createInMemoryKnowledgeService([
+      {
+        id: "poi-shanghai-bund",
+        city: "Shanghai",
+        category: "attraction",
+        nameEn: "The Bund",
+        nameZh: "外滩",
+        sourceIds: {},
+        commercialLinks: [],
+        facts: [
+          {
+            id: "fact-bund-metro",
+            poiId: "poi-shanghai-bund",
+            factType: "metro_access",
+            value: { label: "Bund fact" },
+            confidence: 0.9,
+            source: "https://example.com/bund",
+            sourceClass: "official",
+            sourceLocator: "https://example.com/bund",
+            evidenceSummary: "Official information for the Bund metro access.",
+            ingestedAt: verifiedAt,
+            verifiedAt,
+            expiresAt,
+            reviewPolicy: "execution-90d-v1",
+            version: 1,
+            status: "reviewed",
+          },
+        ],
+      },
+      {
+        id: "poi-shanghai-other",
+        city: "Shanghai",
+        category: "attraction",
+        nameEn: "Other Shanghai Place",
+        sourceIds: {},
+        commercialLinks: [],
+        facts: [
+          {
+            id: "fact-other",
+            poiId: "poi-shanghai-other",
+            factType: "metro_access",
+            value: { label: "Other fact" },
+            confidence: 0.9,
+            source: "https://example.com/other",
+            sourceClass: "official",
+            sourceLocator: "https://example.com/other",
+            evidenceSummary: "Official information for another Shanghai attraction.",
+            ingestedAt: verifiedAt,
+            verifiedAt,
+            expiresAt,
+            reviewPolicy: "execution-90d-v1",
+            version: 1,
+            status: "reviewed",
+          },
+        ],
+      },
+    ]);
+    const retrievedFactIds: string[][] = [];
+    const pipeline = createCopilotPipeline({
+      knowledgeService,
+      tripService: createVersionedInMemoryTripService(),
+      routeIntent: () => "question",
+      generateEnvelope: ({ intent, retrievedFacts }) => {
+        retrievedFactIds.push(retrievedFacts.map((fact) => fact.id));
+        return {
+          intent,
+          message: { headline: "Grounded", body: "Evidence only.", highlights: [] },
+          citations: [],
+        };
+      },
+    });
+
+    await pipeline.run({ message: "Where can I eat near 外滩?" }, identity);
+    await pipeline.run({ message: "How do I get to an imaginary landmark?" }, identity);
+
+    expect(retrievedFactIds).toEqual([["fact-bund-metro"], []]);
+  });
+
   it("rejects citations that are outside the retrieval allowlist", async () => {
     const knowledgeService = createInMemoryKnowledgeService([], []);
     const pipeline = createCopilotPipeline({

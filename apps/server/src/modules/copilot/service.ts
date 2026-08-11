@@ -2,6 +2,7 @@ import {
   applyPatch,
   CopilotEnvelopeSchema,
   CopilotIntentSchema,
+  resolvePoiReference,
   TripStateSchema,
   type CopilotEnvelope,
   type CopilotIntent,
@@ -660,10 +661,20 @@ async function retrieveEligibleFacts(
 ): Promise<RetrievalFact[]> {
   const city = detectCity(request.message);
   const category = detectCategory(request.message, intent);
-  const pois = await knowledgeService.listPois({
-    ...(city ? { city } : {}),
-    ...(category ? { category } : {}),
-  });
+  const candidates = await knowledgeService.listPois();
+  const resolution = resolvePoiReference(request.message, candidates);
+  const pois =
+    resolution.status === "resolved"
+      ? candidates.filter((poi) => poi.id === resolution.poiId)
+      : resolution.status === "city_resolved"
+        ? candidates.filter(
+            (poi) => poi.city === resolution.city && (!category || poi.category === category),
+          )
+        : city
+          ? candidates.filter(
+              (poi) => poi.city === city && (!category || poi.category === category),
+            )
+          : [];
   return pois
     .flatMap((poi) =>
       poi.facts.flatMap((fact) => {

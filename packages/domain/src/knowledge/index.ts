@@ -116,6 +116,8 @@ export const PoiCommercialLinkSchema = z.object({
   disclosure: z.string().min(1),
 });
 
+export const PoiSearchAliasSchema = z.string().trim().min(1).max(100);
+
 export const PoiSchema = z.object({
   id: z.string().min(1),
   city: z.string().min(1),
@@ -126,6 +128,9 @@ export const PoiSchema = z.object({
   latitude: z.number().optional(),
   longitude: z.number().optional(),
   sourceIds: z.record(z.unknown()).default({}),
+  // Search aliases are lexical lookup metadata only. They are not factual evidence and cannot
+  // make a POI fact eligible for retrieval or local-facing presentation.
+  searchAliases: z.array(PoiSearchAliasSchema).optional(),
   facts: z.array(PoiFactSchema).default([]),
   commercialLinks: z.array(PoiCommercialLinkSchema).default([]),
 });

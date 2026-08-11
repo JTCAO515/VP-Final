@@ -44,6 +44,19 @@ describe("PoiSchema", () => {
 
     expect(poi.facts).toEqual([]);
     expect(poi.commercialLinks).toEqual([]);
+    expect(poi.searchAliases).toBeUndefined();
+  });
+
+  it("accepts bounded lexical search aliases without treating them as facts", () => {
+    expect(
+      PoiSchema.parse({
+        id: "poi-alias",
+        city: "Shanghai",
+        category: "attraction",
+        nameEn: "Alias POI",
+        searchAliases: ["Alias Place"],
+      }).searchAliases,
+    ).toEqual(["Alias Place"]);
   });
 });
 

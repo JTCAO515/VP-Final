@@ -105,6 +105,11 @@ Next.js runtimes rather than deployed as an independent service.
   `pois.name_zh` or `pois.address` strings. The Drizzle mapping mirrors the database constraint for
   five bounded local-presentation fact types; current eligible values are derived only in the domain
   package, while later display guards own any user-facing fallback behavior.
+- Copilot knowledge retrieval resolves a unique POI or city through the domain's deterministic lexical
+  resolver before it filters eligible facts. A known Chinese name, pinyin, approved alias, or bounded
+  one-character Latin typo may resolve a candidate; unmatched and cross-city ambiguous references return
+  no facts rather than widening to the catalog. This lookup metadata never changes ADR-0006 evidence
+  eligibility.
 - Human Task creation accepts only a trusted authenticated or signed-anonymous identity, a UUID
   idempotency key, and the minimized controlled-preview request. The Postgres adapter serializes the
   daily Shanghai capacity check, stores exactly one owner, and replays a successful retry without a
