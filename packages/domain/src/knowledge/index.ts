@@ -46,6 +46,20 @@ export const PoiFactReviewPolicySchema = z.enum([
   "stable-180d-v1",
 ]);
 
+// These facts are deliberately separate rows so every value shown to a local person has
+// independent evidence, review, and expiry metadata. Legacy POI strings are not evidence.
+export const PoiLocalPresentationFactTypeSchema = z.enum([
+  "local_name_zh",
+  "local_address_zh",
+  "local_address_district",
+  "local_address_nearest_metro_exit",
+  "local_address_visibility_note",
+]);
+
+export const PoiLocalPresentationFactValueSchema = z.object({
+  text: z.string().trim().min(1).max(500),
+});
+
 const REVIEW_POLICY_DAYS = {
   "volatile-30d-v1": 30,
   "execution-90d-v1": 90,
@@ -79,6 +93,19 @@ export const PoiFactSchema = z.object({
   reviewPolicy: PoiFactReviewPolicySchema.nullable().default(null),
   version: z.number().int().positive(),
   status: PoiFactStatusSchema.default("draft"),
+});
+
+export const PoiLocalPresentationFactSchema = PoiFactSchema.extend({
+  factType: PoiLocalPresentationFactTypeSchema,
+  value: PoiLocalPresentationFactValueSchema,
+});
+
+export const EligiblePoiLocalAddressSchema = z.object({
+  addressZh: z.string().trim().min(1).max(500),
+  nameZh: z.string().trim().min(1).max(500).optional(),
+  district: z.string().trim().min(1).max(500).optional(),
+  nearestMetroExit: z.string().trim().min(1).max(500).optional(),
+  visibilityNote: z.string().trim().min(1).max(500).optional(),
 });
 
 export const PoiCommercialLinkSchema = z.object({
@@ -123,6 +150,9 @@ export type PoiFactStatus = z.infer<typeof PoiFactStatusSchema>;
 export type PoiFactSourceClass = z.infer<typeof PoiFactSourceClassSchema>;
 export type PoiFactReviewPolicy = z.infer<typeof PoiFactReviewPolicySchema>;
 export type PoiFact = z.infer<typeof PoiFactSchema>;
+export type PoiLocalPresentationFactType = z.infer<typeof PoiLocalPresentationFactTypeSchema>;
+export type PoiLocalPresentationFact = z.infer<typeof PoiLocalPresentationFactSchema>;
+export type EligiblePoiLocalAddress = z.infer<typeof EligiblePoiLocalAddressSchema>;
 export type Poi = z.infer<typeof PoiSchema>;
 export type KnowledgeGap = z.infer<typeof KnowledgeGapSchema>;
 
@@ -218,6 +248,36 @@ export function hasReviewablePoiFactEvidence(
 // Kept for existing callers. "Current" now means eligible under ADR-0006, not merely non-expired.
 export const isCurrentPoiFact = isEligiblePoiFact;
 
+export function deriveEligiblePoiLocalAddress(
+  poi: Pick<Poi, "facts">,
+  now = new Date(),
+): EligiblePoiLocalAddress | null {
+  const valuesByType = new Map<PoiLocalPresentationFactType, string[]>();
+
+  for (const fact of poi.facts) {
+    const parsed = PoiLocalPresentationFactSchema.safeParse(fact);
+    if (!parsed.success || !isEligiblePoiFact(parsed.data, now)) continue;
+    const values = valuesByType.get(parsed.data.factType) ?? [];
+    values.push(parsed.data.value.text);
+    valuesByType.set(parsed.data.factType, values);
+  }
+
+  const addressZh = exactlyOne(valuesByType.get("local_address_zh"));
+  if (!addressZh) return null;
+  const nameZh = optionalExactlyOne(valuesByType.get("local_name_zh"));
+  const district = optionalExactlyOne(valuesByType.get("local_address_district"));
+  const nearestMetroExit = optionalExactlyOne(valuesByType.get("local_address_nearest_metro_exit"));
+  const visibilityNote = optionalExactlyOne(valuesByType.get("local_address_visibility_note"));
+
+  return EligiblePoiLocalAddressSchema.parse({
+    addressZh,
+    ...(nameZh ? { nameZh } : {}),
+    ...(district ? { district } : {}),
+    ...(nearestMetroExit ? { nearestMetroExit } : {}),
+    ...(visibilityNote ? { visibilityNote } : {}),
+  });
+}
+
 export function updatePoiFact(
   pois: Poi[],
   factId: string,
@@ -250,6 +310,14 @@ export function updatePoiFact(
         : fact,
     ),
   }));
+}
+
+function exactlyOne(values: string[] | undefined): string | null {
+  return values?.length === 1 ? (values[0] ?? null) : null;
+}
+
+function optionalExactlyOne(values: string[] | undefined): string | undefined {
+  return values?.length === 1 ? values[0] : undefined;
 }
 
 export function derivePoiSceneTags(poi: Poi, now = new Date()): TravelerSceneTag[] {
