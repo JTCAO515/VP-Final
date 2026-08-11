@@ -1,24 +1,38 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-08-11",
-  "updatedBy": "Codex / serialized post-#355 CI stability refresh",
+  "updatedAt": "2026-08-12",
+  "updatedBy": "Codex / serialized post-#357-#367 and #361 safety, knowledge, and Studio-contract refresh",
   "baseBranch": "main",
-  "lastVerifiedCommit": "73ea1b2 test(ci): make shared trigger cleanup deterministic; PR #355 head passed verify, Database contracts, evals, docs, and Vercel Preview Comments before authorized merge as d8101ea",
+  "lastVerifiedCommit": "264676c docs(visepod): freeze Studio binding contract; main CI run 31525051523 passed verify, evals, and Database contracts, and Documentation Governance passed on the merge commit",
   "currentPhase": "Phase 0 — production hardening and commercial safety",
-  "maturity": "The real-provider Copilot, durable Trip completion, signed anonymous identity, cost and product-event persistence, three-turn and trusted-IP guards, truthful request states, controlled-preview Human Tasks, legal pages, retention contracts, database-local retention scheduler, durable outbound ledger, Admin-only partner configuration, P0-19 privacy-safe telemetry contract/adapter/views/producers/public-ingestion guard, and VisePod HTTPS Device Protocol v1 are merged. ADR-0013 freezes the Phase 0 Human Task rule: only durable intake may emit task_submitted; Ops triage/cancellation and quote/payment/done actions have no producer. The public telemetry endpoint now applies pre-write, HMAC-keyed dual identity/network Upstash limits and returns honest 429 or 503 outcomes. P0-20's ADR-0015 is a draft in independent Tier B review; runtime implementation must not begin until that review accepts or revises the contract. No partner is active, no booking or commission is promised, no payment is live, and Phase 1 through Phase 4 remain trigger-gated.",
-  "lastCompleted": "PR #355 removed a nondeterministic Database-contracts failure source without weakening coverage: the one test that creates and drops a shared temporary audit trigger now runs in a separate Vitest process after unrelated server tests. Its head passed verify, docs, evals, Database contracts, and both Vercel previews before merge as d8101ea. P0-19 remains terminal under ADR-0013; payment conversion remains deferred with P0-17 / OA-006. PR #328 froze the VisePod v1 Wi-Fi HTTPS turn contract; PR #329 accepted ADR-0013; P0-18 remains complete through PRs #309/#315/#317. Issue #311 independently verified the three production migrations, pg_cron schedule, and retention health on VP-Final-V2 without a production write.",
+  "maturity": "The real-provider Copilot, durable Trip completion, signed anonymous identity, cost and product-event persistence, three-turn and trusted-IP guards, truthful request states, controlled-preview Human Tasks, legal pages, retention enforcement, durable outbound ledger, Admin-only partner configuration, and P0-19 telemetry boundary are merged. Execution-fact safety now has a reviewed safe-phrase schema, fail-closed model bypass/grounding guard, and blocking runtime evals; local-address facts, legacy-address quarantine, deterministic POI alias resolution, and the no-fallback presentation guard are also merged. VisePod now has the accepted HTTPS Device Protocol v1 plus a draft Studio provisioning contract and pure domain schemas only; no Studio route, token issuer, binding table, device registry, gateway, or firmware runtime exists. ADR-0015 remains Proposed and ADR-0016/0017 remain Draft, so their formal status must be reconciled before dependent implementation expands. No partner is active, no booking or commission is promised, no payment is live, and Phase 1 through Phase 4 remain trigger-gated.",
+  "lastCompleted": "PRs #357/#358 defined the real-task research protocol and execution-fact safety boundary; #359/#360 added provenance-qualified local addresses and deterministic aliases; #362/#363/#366 added the safe-phrase contract, fail-closed grounding, and blocking safety evals; #364/#367 quarantined legacy addresses and guarded presentation; and #361 froze the draft VisePod Studio binding/provisioning contract without implementing runtime capability. Independent architecture review merged #361 as 264676c, whose main CI passed verify, evals, Database contracts, and docs. Parent Issues #344, #345, and #346 were closed only after every accepted child boundary merged. P0-19 remains terminal, production purge evidence remains verified under #311, and payment remains deferred under P0-17 / OA-006.",
   "activeWork": [
     {
       "ref": "Issue #157 / P0-20",
       "title": "Add truthful public-runtime safety and budget controls",
-      "state": "P0-19 is terminal. PR #338 proposes ADR-0015, a Tier B contract for one coherent health, error, token-budget, and Human Help rate-control boundary that reuses existing Copilot and telemetry controls. Its independently verified CI checks are green, but it has not received independent architecture approval.",
-      "owner": "Independent architecture reviewer for ADR-0015; Codex implementation only after acceptance",
-      "next": "Independently accept or revise ADR-0015 in PR #338. Do not create a P0-20 runtime implementation branch while the contract remains draft."
+      "state": "P0-19 is terminal and PR #338 is merged, but ADR-0015 still declares Status: Proposed. No merge result may silently promote that D2 contract to Accepted.",
+      "owner": "Independent architecture reviewer for ADR-0015; Codex implementation only after an explicit status verdict",
+      "next": "Accept, revise, or reject ADR-0015 explicitly. Do not create a P0-20 runtime implementation branch while the authoritative ADR remains Proposed."
+    },
+    {
+      "ref": "ADR-0016 / Issues #344-#351",
+      "title": "Reconcile execution-fact safety decision status",
+      "state": "The safe-phrase schema, fail-closed pipeline, blocking evals, and parent #344 are complete, but ADR-0016 still declares Status: Draft. The implementation is safety-preserving; the document status is inconsistent with merged reality.",
+      "owner": "Independent architecture reviewer",
+      "next": "Review the merged boundary and set ADR-0016 to Accepted or record a forward correction; do not weaken the shipped fail-closed controls while reconciling status."
+    },
+    {
+      "ref": "ADR-0017 / Issues #335-#341",
+      "title": "VisePod Studio provisioning and binding sequence",
+      "state": "PR #361 merged the draft contract and pure domain schemas; Issue #335 is closed. No persistence, provisioning token, endpoint, or Studio consumer is implemented, and ADR-0017 still declares Status: Draft.",
+      "owner": "Independent architecture reviewer for acceptance; Codex only after the accepted dependency is explicit",
+      "next": "Accept or revise ADR-0017 before starting #336. If accepted, implement #336-#341 strictly serially from fresh main as Tier B work."
     },
     {
       "ref": "Issue #298 / VPOD-00",
       "title": "Freeze multi-meter voice-call cost accounting contract",
-      "state": "Implementation is paused at a D2 schema boundary: the existing unique Agent Run attempt cannot represent STT+LLM+TTS rows, and per-device aggregation has no frozen opaque device-correlation contract. ADR-0013 and ADR-0014 are already assigned to Human Task staging and VisePod HTTPS transport.",
+      "state": "Implementation remains paused at a D2 schema boundary: the existing unique Agent Run attempt cannot represent STT+LLM+TTS rows, and per-device aggregation has no frozen opaque device-correlation contract.",
       "owner": "Architecture owner for contract freeze; Codex implementation after acceptance",
       "next": "Accept or revise the proposed call kind, uniqueness, and device-correlation semantics in #298; then start one additive Tier B migration/ADR PR from fresh main."
     },
@@ -33,15 +47,16 @@
   "nextActions": [
     {
       "priority": "P0",
-      "action": "Complete independent Tier B review of PR #338 / ADR-0015 before any #157 runtime implementation work.",
-      "exitCriteria": "ADR-0015 is accepted or revised and re-reviewed; only then may a fresh-main P0-20 implementation sequence add explicit health/degradation, safe error-observation, non-duplicative request/token and Human Help limits, documented authorized Ops exemptions, and truthful UI states."
+      "action": "Reconcile the formal statuses of ADR-0015, ADR-0016, and ADR-0017 through independent architecture review.",
+      "exitCriteria": "Each ADR has an explicit Accepted, revised, or rejected verdict. P0-20 starts only after ADR-0015 is Accepted; VisePod Studio runtime starts only after ADR-0017 is Accepted; the merged ADR-0016 controls remain fail-closed during reconciliation."
     }
   ],
   "blockers": [
     "VPOD-00 #298 awaits architecture acceptance of multi-call uniqueness and opaque device-correlation semantics; no financial migration is allowed before that D2 contract is frozen.",
-    "P0-20 awaits independent Tier B review of draft ADR-0015 in PR #338. Until the contract is accepted or revised, its D2 implementation must not start; the final boundary must preserve ADR-0005 truthful ready/degraded/unavailable semantics, reuse rather than weaken existing Copilot and telemetry guards, and avoid mock health or fake budget behavior.",
+    "P0-20 awaits an explicit architecture verdict on Proposed ADR-0015. Until it is Accepted or revised, D2 implementation must not start; the final boundary must preserve ADR-0005 truthful ready/degraded/unavailable semantics, reuse rather than weaken existing Copilot and telemetry guards, and avoid mock health or fake budget behavior.",
+    "ADR-0016 and ADR-0017 remain Draft even though their bounded contract/implementation PRs merged. Independent architecture must reconcile those statuses before downstream work treats them as accepted authority.",
     "P0-17 remains blocked by the deferred payment-provider and legal operator decision OA-006. No payment, booking, commission, or paid Human Help capability is live.",
-    "SEO publication Issues #58, #59, and #84 through #86 remain blocked until evidence eligibility, partner activation, and no-empty-page gates are accepted; do not generate filler or commercial links for pending partners.",
+    "SEO publication #59 and #84 through #86 remain blocked on an accepted eligibility-driven matrix and no-empty-page gate. Commercial Explore #58 separately requires a deliberately active approved partner; do not generate filler or links for pending/inactive partners.",
     "Phase 1 mobile/knowledge expansion, Phase 2 entitlements/marketplace, Phase 3 settlement, and the functional VisePod prototype remain trigger-gated. Ready discovery or governance spikes do not authorize downstream product implementation."
   ],
   "verification": [
@@ -52,6 +67,8 @@
     "PR #332 P0-19d merged as 1968c13 after head b535ecc passed verify, Database contracts, evals, docs, and Vercel Preview Comments. Its public telemetry guard is fail-closed: production requires Upstash and VISEPANDA_IP_HASH_SALT, returns 503 when unavailable, and requires a post-launch normal-density observation before its defaults are retuned.",
     "PR #355 merged as d8101ea after its head 73ea1b2 passed verify, docs, evals, Database contracts, and both Vercel previews. It keeps general server integration tests parallel while isolating the sole shared-trigger cleanup test, eliminating the observed cross-file trigger cleanup deadlock without reducing database coverage.",
     "PR #329 accepted ADR-0013: Phase 0 emits durable task_submitted only, with no Ops triage/cancellation or payment/done telemetry producer. PR #328 merged Device Protocol v1 at 8870229 after an independent architecture approval.",
+    "PRs #357/#358/#359/#360/#362/#363/#364/#366/#367 merged the research protocol, execution-safety boundary and controls, provenance-qualified local-address path, deterministic aliases, and display guard. Independent reviews confirmed fail-closed behavior and no model/raw-address fallback; parent Issues #344/#345/#346 are closed.",
+    "PR #361 merged as 264676c after independent architecture review of exact head f73c157 and current green checks. Main CI run 31525051523 passed evals, verify, and Database contracts; Documentation Governance also passed. The merge provides a draft Studio contract and pure domain schemas only, not a live provisioning capability.",
     "Phase 2/3/4 functional work was not started. Their WAU, Human Task, quote-volume, legal-entity, settlement, and order-volume triggers remain unproven."
   ],
   "readingOrder": [
