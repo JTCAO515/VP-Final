@@ -110,6 +110,9 @@ Next.js runtimes rather than deployed as an independent service.
   one-character Latin typo may resolve a candidate; unmatched and cross-city ambiguous references return
   no facts rather than widening to the catalog. This lookup metadata never changes ADR-0006 evidence
   eligibility.
+- ADR-0016's `safe_phrases` mapping is a private editorial contract only. No public router, browser
+  table read, model generation, or display path consumes it in this change; a later server-only
+  resolver must require one exact current reviewed category/scene/intent/variant/severity match.
 - Human Task creation accepts only a trusted authenticated or signed-anonymous identity, a UUID
   idempotency key, and the minimized controlled-preview request. The Postgres adapter serializes the
   daily Shanghai capacity check, stores exactly one owner, and replays a successful retry without a

@@ -14,6 +14,7 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
 | `trip`          | TripState, TripPatch operations, `applyPatch`, `diffTrips`, generation progress                                                  |
 | `copilot`       | Intent, message, citations, tool cards, commercial actions, Human Help handoff, envelope, completion-job contract                |
 | `knowledge`     | POI, execution facts, knowledge gaps, scene-tag derivation, reviewed seed data, and ADR-0006 fact eligibility                    |
+| `safe-phrases`  | Private operator-verified high-risk fixed-expression contract, exact severity selection, and freshness eligibility               |
 | `task`          | Human Task input, lifecycle, transition commands, private outcome evidence, and non-status updates                               |
 | `commerce`      | Validated partner configuration, trusted-identity outbound records, active-only HTTPS host validation, and tracking construction |
 | `events`        | Telemetry event contract                                                                                                         |
@@ -44,6 +45,10 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
   POI names plus explicit lexical aliases, resolves a unique landmark to its city, and permits only a
   one-character edit-distance match for a single Latin token. Ambiguous and unmatched references are
   explicit results; aliases are lookup metadata, never evidence or a substitute for ADR-0006 eligibility.
+- High-risk fixed expressions use the separate `safe-phrases` contract. Only one current reviewed,
+  operator-verified expression selected by exact category, scene, intent key, variant key, and
+  severity is eligible. A standard and severe variant are never interchangeable; no match or an
+  ambiguous match returns unavailable. This schema creates no public display or model-generation path.
 - A completion job carries only a Trip reference, base version, idempotency key, bounded attempt state, and safe error code. Its pure state-transition rule permits idempotent reads, `queued -> running`, a running terminal result, and `partial`/`failed -> queued` retry only. It never carries a prompt, model credential, or replacement Trip snapshot.
 - Copilot observability records require exactly one trusted identity, a future retention deadline,
   normalized success/failure fields, and pre-persistence redaction. Domain validation rejects direct
@@ -91,6 +96,6 @@ pnpm --filter @visepanda/domain test
 pnpm --filter @visepanda/domain lint
 ```
 
-Current test suites cover Trip patches, Copilot envelopes, knowledge derivation, local-address
-eligibility, deterministic place resolution, task transitions,
-commerce URL construction, events, errors, and the VisePod v1 contract/signing vector.
+Current test suites cover Trip patches, Copilot envelopes, knowledge derivation and local-address
+eligibility, deterministic place resolution, safe-phrase freshness and severity selection, task
+transitions, commerce URL construction, events, errors, and the VisePod v1 contract/signing vector.

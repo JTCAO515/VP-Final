@@ -18,6 +18,7 @@ import {
   poiFactEditorialAudit,
   poiFacts,
   pois,
+  safePhrases,
   telemetryEvents,
   toolCalls,
   tripEvents,
@@ -131,6 +132,25 @@ describe("database schema", () => {
     expect(knowledgeGaps.questionPattern.name).toBe("question_pattern");
     expect(knowledgeGaps.resolvedAt.name).toBe("resolved_at");
     expect(poiCommercialLinks.poiId.name).toBe("poi_id");
+  });
+
+  it("maps private fixed-expression provenance without traveler ownership", () => {
+    expect(safePhrases.category.name).toBe("category");
+    expect(safePhrases.chineseExpression.name).toBe("chinese_expression");
+    expect(safePhrases.verifiedBy.name).toBe("verified_by");
+    expect(safePhrases.expiresAt.name).toBe("expires_at");
+    expect(safePhrases.status.default).toBe("draft");
+    expect(getTableConfig(safePhrases).indexes.map((index) => index.config.name)).toContain(
+      "safe_phrases_reviewed_selection_unique",
+    );
+    expect(getTableConfig(safePhrases).checks.map((constraint) => constraint.name)).toContain(
+      "safe_phrases_reviewed_evidence_check",
+    );
+    expect(getTableConfig(safePhrases).checks.map((constraint) => constraint.name)).toContain(
+      "safe_phrases_evidence_check",
+    );
+    expect(Object.keys(safePhrases)).not.toContain("userId");
+    expect(Object.keys(safePhrases)).not.toContain("anonId");
   });
 
   it("maps the outbound commerce tables", () => {
