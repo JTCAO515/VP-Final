@@ -22,6 +22,9 @@ Status: active
   downstream read visibility.
 - The Database contracts gate MUST execute a nonzero pgTAP file and test count. `Result: NOTESTS` is
   a failed verification state even if the CLI process exits successfully.
+- A database test that temporarily creates or removes a shared DDL object for failure injection MUST
+  run in a separate process or use an explicit stable lock protocol. It MUST retain the injection
+  coverage and MUST NOT serialize unrelated database tests merely to avoid a cleanup race.
 - A failed check MUST NOT be described as passed; residual risk and blockers must be explicit.
 - A merged change requiring production observation MUST retain a named follow-up owner and review date.
 - Phase 1/2/3 scope MUST NOT start before its accepted trigger unless an ADR changes the trigger.
