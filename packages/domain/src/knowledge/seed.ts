@@ -8,6 +8,7 @@ export const INITIAL_POIS: Poi[] = [
     nameEn: "Yu Garden",
     nameZh: "豫园",
     address: "279 Yuyuan Old St",
+    searchAliases: ["Yuyuan", "Yu Yuan"],
     sourceIds: { editorial: "vp-shanghai-001" },
     commercialLinks: [],
     facts: [
@@ -36,6 +37,7 @@ export const INITIAL_POIS: Poi[] = [
     category: "food",
     nameEn: "Lost Heaven",
     nameZh: "花马天堂",
+    searchAliases: ["Lost Heaven Shanghai"],
     sourceIds: { editorial: "vp-shanghai-002" },
     commercialLinks: [],
     facts: [
@@ -64,6 +66,7 @@ export const INITIAL_POIS: Poi[] = [
     category: "attraction",
     nameEn: "Forbidden City",
     nameZh: "故宫",
+    searchAliases: ["The Palace Museum", "Gugong"],
     sourceIds: { editorial: "vp-beijing-001" },
     commercialLinks: [],
     facts: [
@@ -92,6 +95,7 @@ export const INITIAL_POIS: Poi[] = [
     category: "food",
     nameEn: "Da Dong Roast Duck",
     nameZh: "大董烤鸭",
+    searchAliases: ["DaDong", "Da Dong"],
     sourceIds: { editorial: "vp-beijing-002" },
     commercialLinks: [],
     facts: [

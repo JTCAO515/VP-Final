@@ -40,6 +40,10 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
   `local_address_nearest_metro_exit`, and `local_address_visibility_note` are independent POI facts.
   `deriveEligiblePoiLocalAddress` returns an address only when exactly one current reviewed
   `local_address_zh` fact exists; missing or ambiguous optional components remain absent.
+- Place matching is a deterministic, host-testable knowledge function. It indexes English and Chinese
+  POI names plus explicit lexical aliases, resolves a unique landmark to its city, and permits only a
+  one-character edit-distance match for a single Latin token. Ambiguous and unmatched references are
+  explicit results; aliases are lookup metadata, never evidence or a substitute for ADR-0006 eligibility.
 - A completion job carries only a Trip reference, base version, idempotency key, bounded attempt state, and safe error code. Its pure state-transition rule permits idempotent reads, `queued -> running`, a running terminal result, and `partial`/`failed -> queued` retry only. It never carries a prompt, model credential, or replacement Trip snapshot.
 - Copilot observability records require exactly one trusted identity, a future retention deadline,
   normalized success/failure fields, and pre-persistence redaction. Domain validation rejects direct
@@ -87,6 +91,6 @@ pnpm --filter @visepanda/domain test
 pnpm --filter @visepanda/domain lint
 ```
 
-Current test suites cover Trip patches, Copilot envelopes, knowledge derivation and local-address
-eligibility, task transitions,
+Current test suites cover Trip patches, Copilot envelopes, knowledge derivation, local-address
+eligibility, deterministic place resolution, task transitions,
 commerce URL construction, events, errors, and the VisePod v1 contract/signing vector.
