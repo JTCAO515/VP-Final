@@ -24,11 +24,19 @@ DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres \
   pnpm --filter @visepanda/app-server exec vitest run \
     src/db/versionedTripService.integration.test.ts \
     src/db/opsAuthorizationService.integration.test.ts
+DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres \
+  pnpm --filter @visepanda/app-server exec vitest run \
+    src/db/partnerAdministrationService.integration.test.ts
 supabase db advisors --local --type security --level warn --fail-on error --workdir infra
 ```
 
 Run database contract/RLS tests defined by the repository. Inspect policies using authenticated and
 anonymous roles, not only service-role access.
+
+The partner-administration integration suite is intentionally a separate process: it creates and
+removes a temporary failure-injection trigger on the shared audit table to prove transactional
+rollback. Keep that suite separate from parallel database tests; do not remove its trigger coverage
+or serialize unrelated tests.
 
 Docker Desktop (or a compatible running Docker daemon) is required by local Supabase. If unavailable,
 record the exact failure and rely on the same commands in CI Database contracts; do not claim a local
@@ -96,4 +104,3 @@ row stores only SQLSTATE, never a raw database error.
 To pause a faulty rollout, disable or unschedule only the named `visepanda-purge-*` jobs through
 reviewed SQL or the Supabase Cron UI. Preserve the audit table and retention deadlines, then ship a
 forward migration. Do not drop `pg_cron` because that would delete unrelated jobs as well.
-
