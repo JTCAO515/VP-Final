@@ -7,6 +7,7 @@ import {
   derivePoiSceneTags,
   isEligiblePoiFact,
   isCurrentPoiFact,
+  resolvePoiLocalAddressPresentation,
   resolvePoiFactReview,
   reviewPolicyForFactType,
   updatePoiFact,
@@ -32,6 +33,25 @@ const fact: PoiFact = {
   version: 1,
   status: "reviewed",
 };
+
+function localFact(
+  factType:
+    | "local_name_zh"
+    | "local_address_zh"
+    | "local_address_district"
+    | "local_address_nearest_metro_exit"
+    | "local_address_visibility_note",
+  text: string,
+  overrides: Partial<PoiFact> = {},
+): PoiFact {
+  return PoiLocalPresentationFactSchema.parse({
+    ...fact,
+    id: `fact-${factType}-${text}`,
+    factType,
+    value: { text },
+    ...overrides,
+  });
+}
 
 describe("PoiSchema", () => {
   it("defaults nested collections", () => {
@@ -62,25 +82,6 @@ describe("PoiSchema", () => {
 
 describe("deriveEligiblePoiLocalAddress", () => {
   const now = new Date("2026-07-09T00:00:00.000Z");
-
-  function localFact(
-    factType:
-      | "local_name_zh"
-      | "local_address_zh"
-      | "local_address_district"
-      | "local_address_nearest_metro_exit"
-      | "local_address_visibility_note",
-    text: string,
-    overrides: Partial<PoiFact> = {},
-  ): PoiFact {
-    return PoiLocalPresentationFactSchema.parse({
-      ...fact,
-      id: `fact-${factType}-${text}`,
-      factType,
-      value: { text },
-      ...overrides,
-    });
-  }
 
   it("uses independently eligible facts and leaves missing components absent", () => {
     const address = deriveEligiblePoiLocalAddress(
@@ -155,6 +156,110 @@ describe("deriveEligiblePoiLocalAddress", () => {
         now,
       ),
     ).toBeNull();
+  });
+});
+
+describe("resolvePoiLocalAddressPresentation", () => {
+  const now = new Date("2026-07-09T00:00:00.000Z");
+
+  function poiWithFacts(facts: PoiFact[]): Poi {
+    return PoiSchema.parse({
+      id: "poi-local-address",
+      city: "Shanghai",
+      category: "attraction",
+      nameEn: "Yu Garden",
+      nameZh: "legacy-name-must-not-display",
+      address: "legacy-address-must-not-display",
+      facts,
+    });
+  }
+
+  it("returns only a currently eligible local address for presentation", () => {
+    expect(
+      resolvePoiLocalAddressPresentation(
+        poiWithFacts([
+          localFact("local_address_zh", "上海市黄浦区豫园路279号"),
+          localFact("local_name_zh", "豫园"),
+        ]),
+        now,
+      ),
+    ).toEqual({
+      status: "ready",
+      localAddress: {
+        addressZh: "上海市黄浦区豫园路279号",
+        nameZh: "豫园",
+      },
+    });
+  });
+
+  it("keeps a verified address usable until its actual expiry without a 30-day early downgrade", () => {
+    expect(
+      resolvePoiLocalAddressPresentation(
+        poiWithFacts([
+          localFact("local_address_zh", "上海市黄浦区豫园路279号", {
+            expiresAt: "2026-07-20T00:00:00.000Z",
+          }),
+        ]),
+        now,
+      ).status,
+    ).toBe("ready");
+  });
+
+  it.each([
+    [
+      "draft",
+      localFact("local_address_zh", "draft-address", {
+        status: "draft",
+        verifiedAt: null,
+        expiresAt: null,
+        reviewPolicy: null,
+      }),
+    ],
+    [
+      "expired",
+      localFact("local_address_zh", "expired-address", {
+        expiresAt: "2026-07-08T23:59:59.000Z",
+      }),
+    ],
+    [
+      "model output",
+      localFact("local_address_zh", "model-address", {
+        sourceClass: "model_output",
+      }),
+    ],
+  ])("returns the same honest unavailable decision for a %s address", (_label, addressFact) => {
+    expect(resolvePoiLocalAddressPresentation(poiWithFacts([addressFact]), now)).toEqual({
+      status: "unavailable",
+      message: "We do not have one current verified Chinese address for this place.",
+      alternatives: [
+        { kind: "request_human_help", label: "Request Human Help" },
+        { kind: "enter_address_manually", label: "Enter the address yourself" },
+        {
+          kind: "show_english_name",
+          label: "Show the English name for local confirmation",
+          value: "Yu Garden",
+        },
+      ],
+    });
+  });
+
+  it("never falls back to legacy, ambiguous, or model-authored address values", () => {
+    const decision = resolvePoiLocalAddressPresentation(
+      poiWithFacts([
+        localFact("local_address_zh", "first-reviewed-address"),
+        localFact("local_address_zh", "second-reviewed-address"),
+        localFact("local_address_zh", "model-address", { sourceClass: "model_output" }),
+      ]),
+      now,
+    );
+    const serialized = JSON.stringify(decision);
+
+    expect(decision.status).toBe("unavailable");
+    expect(serialized).not.toContain("legacy-address-must-not-display");
+    expect(serialized).not.toContain("legacy-name-must-not-display");
+    expect(serialized).not.toContain("first-reviewed-address");
+    expect(serialized).not.toContain("second-reviewed-address");
+    expect(serialized).not.toContain("model-address");
   });
 });
 

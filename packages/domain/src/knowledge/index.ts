@@ -108,6 +108,44 @@ export const EligiblePoiLocalAddressSchema = z.object({
   visibilityNote: z.string().trim().min(1).max(500).optional(),
 });
 
+const RequestHumanHelpAlternativeSchema = z.object({
+  kind: z.literal("request_human_help"),
+  label: z.literal("Request Human Help"),
+});
+
+const EnterAddressManuallyAlternativeSchema = z.object({
+  kind: z.literal("enter_address_manually"),
+  label: z.literal("Enter the address yourself"),
+});
+
+const ShowEnglishNameAlternativeSchema = z.object({
+  kind: z.literal("show_english_name"),
+  label: z.literal("Show the English name for local confirmation"),
+  value: z.string().trim().min(1),
+});
+
+export const PoiLocalAddressAlternativeSchema = z.discriminatedUnion("kind", [
+  RequestHumanHelpAlternativeSchema,
+  EnterAddressManuallyAlternativeSchema,
+  ShowEnglishNameAlternativeSchema,
+]);
+
+export const PoiLocalAddressPresentationSchema = z.discriminatedUnion("status", [
+  z.object({
+    status: z.literal("ready"),
+    localAddress: EligiblePoiLocalAddressSchema,
+  }),
+  z.object({
+    status: z.literal("unavailable"),
+    message: z.literal("We do not have one current verified Chinese address for this place."),
+    alternatives: z.tuple([
+      RequestHumanHelpAlternativeSchema,
+      EnterAddressManuallyAlternativeSchema,
+      ShowEnglishNameAlternativeSchema,
+    ]),
+  }),
+]);
+
 export const PoiCommercialLinkSchema = z.object({
   id: z.string().min(1),
   poiId: z.string().min(1),
@@ -158,6 +196,8 @@ export type PoiFact = z.infer<typeof PoiFactSchema>;
 export type PoiLocalPresentationFactType = z.infer<typeof PoiLocalPresentationFactTypeSchema>;
 export type PoiLocalPresentationFact = z.infer<typeof PoiLocalPresentationFactSchema>;
 export type EligiblePoiLocalAddress = z.infer<typeof EligiblePoiLocalAddressSchema>;
+export type PoiLocalAddressAlternative = z.infer<typeof PoiLocalAddressAlternativeSchema>;
+export type PoiLocalAddressPresentation = z.infer<typeof PoiLocalAddressPresentationSchema>;
 export type Poi = z.infer<typeof PoiSchema>;
 export type KnowledgeGap = z.infer<typeof KnowledgeGapSchema>;
 
@@ -280,6 +320,32 @@ export function deriveEligiblePoiLocalAddress(
     ...(district ? { district } : {}),
     ...(nearestMetroExit ? { nearestMetroExit } : {}),
     ...(visibilityNote ? { visibilityNote } : {}),
+  });
+}
+
+// Every Show-to-Local, copy, speech, or address-card consumer must start from this decision.
+// Legacy POI strings and model output are deliberately absent from the unavailable branch.
+export function resolvePoiLocalAddressPresentation(
+  poi: Pick<Poi, "facts" | "nameEn">,
+  now = new Date(),
+): PoiLocalAddressPresentation {
+  const localAddress = deriveEligiblePoiLocalAddress(poi, now);
+  if (localAddress) {
+    return PoiLocalAddressPresentationSchema.parse({ status: "ready", localAddress });
+  }
+
+  return PoiLocalAddressPresentationSchema.parse({
+    status: "unavailable",
+    message: "We do not have one current verified Chinese address for this place.",
+    alternatives: [
+      { kind: "request_human_help", label: "Request Human Help" },
+      { kind: "enter_address_manually", label: "Enter the address yourself" },
+      {
+        kind: "show_english_name",
+        label: "Show the English name for local confirmation",
+        value: poi.nameEn,
+      },
+    ],
   });
 }
 
