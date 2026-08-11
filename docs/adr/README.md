@@ -19,7 +19,7 @@ New ADRs are append-only and use the next numeric prefix.
 | [ADR-0012](ADR-0012-phase0-telemetry-observation-contract.md)          | Accepted | Freezes privacy-safe Phase 0 telemetry capture, registered actions, and private aggregate views.                                           |
 | [ADR-0013](ADR-0013-human-task-transition-telemetry-staging.md)        | Accepted | Human Task lifecycle analysis derives from `human_tasks`; Phase 0 telemetry records intake context, not duplicate transitions.             |
 | [ADR-0014](ADR-0014-vise-pod-https-turn-transport.md)                  | Accepted | VisePod v1 uses one signed HTTPS request per Wi-Fi push-to-talk turn rather than a persistent WebSocket transport.                         |
-| [ADR-0015](ADR-0015-public-runtime-safety-control.md)                  | Proposed | Defines the bounded, truthful public-runtime control plane for P0-20 without duplicating existing owners.                                 |
+| [ADR-0015](ADR-0015-public-runtime-safety-control.md)                  | Accepted | Freezes the bounded, truthful public-runtime control plane for P0-20 without duplicating existing owners.                                 |
 | [ADR-0016](ADR-0016-execution-fact-safety.md)                           | Draft    | Proposes that execution facts need current eligible evidence and high-risk expressions use verified fixed wording or an honest fallback. |
 | [ADR-0017](ADR-0017-vise-pod-studio-provisioning.md)                   | Draft    | Proposes scoped, online-validated Ops provisioning for server-side VisePod user/device bindings and rejects user browsing.                 |
 

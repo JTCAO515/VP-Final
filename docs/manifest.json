@@ -838,9 +838,9 @@
       "title": "ADR-0015: Public Runtime Safety Control",
       "category": "decisions",
       "type": "decision",
-      "status": "draft",
+      "status": "accepted",
       "owner": "runtime safety / privacy",
-      "summary": "Proposes a bounded, truthful P0-20 public-runtime control plane that reuses accepted identity, rate, model, and Human Help owners.",
+      "summary": "Freezes a bounded, truthful P0-20 public-runtime control plane that reuses accepted identity, rate, model, and Human Help owners.",
       "sourcePrefixes": [
         "apps/web/src/app/api/",
         "apps/server/src/modules/copilot/",
