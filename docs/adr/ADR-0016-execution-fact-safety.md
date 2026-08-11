@@ -1,8 +1,9 @@
 # ADR-0016: Execution-Fact Safety and High-Risk Fixed Expressions
 
 Date: 2026-08-11
-Status: Draft — requires independent Tier B architecture review
-Deciders: pending independent architecture review
+Status: Accepted
+Deciders: independent architecture owner through Issue #344
+Decision date: 2026-08-12
 Owner: AI and knowledge safety
 Issue: [#348](https://github.com/JTCAO515/VP-Final/issues/348)
 
