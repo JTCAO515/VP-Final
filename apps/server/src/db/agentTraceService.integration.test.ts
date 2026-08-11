@@ -250,7 +250,7 @@ describeDatabase("database AgentTraceService", () => {
     await pipeline.run(
       {
         message:
-          "Help alex@example.com with passport E12345678; signature=abc123def456; sk-secretvalue12345",
+          "Help alex@example.com with travel document number is E12345678; signature=abc123def456; sk-secretvalue12345",
       },
       identity,
     );

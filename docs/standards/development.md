@@ -54,3 +54,11 @@ the repository.
 
 “Done” means the relevant lifecycle gate has passed, not merely that code is committed. A production
 flow also requires observability, rollback, and an owner.
+
+## AI Evaluation Gate
+
+`pnpm evals` is a blocking CI gate, not an advisory model-quality sample. Changes to Copilot prompts,
+model routing, envelope validation, citation checks, execution-fact support, or high-risk safety paths
+must keep the deterministic safety runtime suite green alongside the Trip-generation golden set. The
+suite exercises the real pipeline with controlled fixtures; it must not be weakened by replacing an
+assertion with model output or by narrowing a safety input after a regression is discovered.

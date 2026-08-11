@@ -556,7 +556,7 @@ describe("createCopilotPipeline", () => {
     await pipeline.run(
       {
         message:
-          "Email alex@example.com, passport E12345678, cookie=session-secret, signature=abc123def456",
+          "Email alex@example.com, travel document number is E12345678, cookie=session-secret, signature=abc123def456",
       },
       identity,
     );
