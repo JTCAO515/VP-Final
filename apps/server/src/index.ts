@@ -10,6 +10,7 @@ export { appRouter } from "./router.js";
 export type { AppRouter } from "./router.js";
 export { createDb } from "./db/client.js";
 export { createDbKnowledgeService } from "./db/knowledgeService.js";
+export { createDbSafePhraseResolver } from "./db/safePhraseResolver.js";
 export {
   createDbKnowledgeBulkImportService,
   KnowledgeImportValidationError,
@@ -32,6 +33,7 @@ export {
 } from "./runtime/runtimeMode.js";
 export { requireService } from "./runtime/requireService.js";
 export { createInMemoryKnowledgeService } from "./modules/knowledge/service.js";
+export type { SafePhraseResolver } from "./modules/copilot/executionSafety.js";
 export {
   HUMAN_TASK_DAILY_CAPACITY,
   HUMAN_TASK_PREVIEW_CITY,

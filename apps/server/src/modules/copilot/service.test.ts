@@ -140,6 +140,104 @@ describe("createCopilotPipeline", () => {
     );
   });
 
+  it("bypasses free generation for a high-risk request and returns only its exact reviewed phrase", async () => {
+    const generateEnvelope = vi.fn(() => {
+      throw new Error("high-risk requests must not reach the generator");
+    });
+    const selection = {
+      category: "allergy_dietary" as const,
+      scene: "restaurant" as const,
+      intentKey: "peanut-allergy",
+      variantKey: "plain",
+      severity: "severe" as const,
+    };
+    const pipeline = createCopilotPipeline({
+      tripService: createVersionedInMemoryTripService(),
+      generateEnvelope,
+      resolveSafePhrase: async () => ({
+        id: "8ad64607-dc57-4d5b-8dfb-3d2813aac985",
+        ...selection,
+        chineseExpression: "我对花生严重过敏。",
+        englishIntent: "I have a severe peanut allergy.",
+        sourceClass: "operator_verified",
+        sourceLocator: "ops://safe-phrase/peanut-allergy",
+        evidenceSummary: "Reviewed by a qualified operator.",
+        verifiedBy: "a75ea05d-0146-4ba5-ae21-7374c623967a",
+        verifiedAt: "2026-08-10T00:00:00.000Z",
+        expiresAt: "2026-09-01T00:00:00.000Z",
+        reviewPolicy: "operator-verified-90d-v1",
+        status: "reviewed",
+        createdAt: "2026-08-10T00:00:00.000Z",
+      }),
+    });
+
+    await expect(
+      pipeline.run(
+        { message: "I have a severe peanut allergy", safePhraseSelection: selection },
+        identity,
+      ),
+    ).resolves.toMatchObject({
+      envelope: { message: { body: "我对花生严重过敏。" }, humanHelp: null },
+    });
+    expect(generateEnvelope).not.toHaveBeenCalled();
+  });
+
+  it("returns the frozen unavailable response and does not fall back to model generation", async () => {
+    const generateEnvelope = vi.fn(() => {
+      throw new Error("high-risk requests must not reach the generator");
+    });
+    const pipeline = createCopilotPipeline({
+      tripService: createVersionedInMemoryTripService(),
+      generateEnvelope,
+      resolveSafePhrase: async () => null,
+    });
+
+    await expect(
+      pipeline.run({ message: "I have a severe peanut allergy" }, identity),
+    ).resolves.toMatchObject({
+      envelope: {
+        message: {
+          body: "I can’t safely create a card for this allergy or dietary restriction. Please use a verified card or ask the venue to confirm ingredients before consuming.",
+        },
+        humanHelp: { kind: "task" },
+      },
+    });
+    expect(generateEnvelope).not.toHaveBeenCalled();
+  });
+
+  it("rejects unsupported execution facts before a response can mutate a Trip", async () => {
+    const tripService = createVersionedInMemoryTripService();
+    const pipeline = createCopilotPipeline({
+      tripService,
+      routeIntent: () => "question",
+      retrieveContext: () => [
+        {
+          id: "fact-metro",
+          label: "Yu Garden: metro access",
+          summary: "Near Metro Line 10",
+          source: "official",
+          verifiedAt: "2026-08-10T00:00:00.000Z",
+          confidence: 1,
+          supportingValues: ["Metro Line 10"],
+        },
+      ],
+      generateEnvelope: () => ({
+        intent: "question",
+        message: {
+          headline: "Route",
+          body: "Take Metro Line 99.",
+          highlights: [],
+        },
+        citations: [{ fact_id: "fact-metro" }],
+      }),
+    });
+
+    await expect(pipeline.run({ message: "How should I get there?" }, identity)).rejects.toThrow(
+      "No answer was generated or invented.",
+    );
+    await expect(tripService.list(identity)).resolves.toEqual([]);
+  });
+
   it("records knowledge gaps for uncited question answers", async () => {
     const knowledgeService = createInMemoryKnowledgeService([], []);
     const pipeline = createCopilotPipeline({

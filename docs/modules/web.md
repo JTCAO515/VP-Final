@@ -86,6 +86,11 @@ fixture text. The API route returns only a dialogue envelope for DEMO-01: Trip m
 Human Help, tool cards, and citations are intentionally absent until their separately governed work
 is complete.
 
+The durable composition also injects the server-only, exact-key Safe Phrase resolver for ADR-0016.
+The browser route does not accept phrase-selection keys, so public high-risk chat input cannot choose
+or enumerate editorial expressions. A later controlled surface may pass an exact server-validated
+selection; otherwise the Copilot pipeline returns the fixed unavailable response instead of model text.
+
 When configured model routes all fail, the route keeps the same public 503 contract and emits only a
 sanitized runtime diagnostic: route/provider id, configured model id, failure class, and latency. It
 never logs a prompt, provider response body, credential, cookie, or raw error payload. This is the

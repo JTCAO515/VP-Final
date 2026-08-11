@@ -72,6 +72,7 @@ export const copilotRouter = router({
         ...(ctx.knowledgeService ? { knowledgeService: ctx.knowledgeService } : {}),
         ...(ctx.telemetryService ? { telemetryService: ctx.telemetryService } : {}),
         ...(ctx.traceService ? { traceService: ctx.traceService } : {}),
+        ...(ctx.safePhraseResolver ? { resolveSafePhrase: ctx.safePhraseResolver } : {}),
         ...(ctx.copilotModelDependencies ?? {}),
         ...(ctx.demoDialogueOnly ? { demoDialogueOnly: true } : {}),
         tripService: ctx.tripService,
