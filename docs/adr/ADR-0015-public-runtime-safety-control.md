@@ -2,13 +2,13 @@
 
 Date: 2026-07-28
 
-Status: Proposed
+Status: Accepted
 
-Decider: architecture owner through Issue #157 / P0-20
+Decider: independent architecture owner through Issue #157 / P0-20
 
 Owner: runtime safety / privacy
 
-Review date: before P0-20 runtime implementation
+Decision date: 2026-08-12
 
 ## Context
 
