@@ -41,6 +41,14 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
   `local_address_nearest_metro_exit`, and `local_address_visibility_note` are independent POI facts.
   `deriveEligiblePoiLocalAddress` returns an address only when exactly one current reviewed
   `local_address_zh` fact exists; missing or ambiguous optional components remain absent.
+- Every Show-to-Local, address-card, copy, or speech consumer MUST use
+  `resolvePoiLocalAddressPresentation`. Its ready branch contains only the eligible fact derivation;
+  its unavailable branch contains the fixed honest message plus Human Help, manual-entry, and
+  English-name confirmation alternatives. It cannot read legacy `Poi.address`/`Poi.nameZh` fields and
+  never accepts a model-authored fallback. A fact remains displayable until its recorded `expiresAt`
+  instant, including during the final 30 days; there is no hidden early user-facing downgrade that
+  would contradict the accepted 90-day review policy. Once the current time passes `expiresAt`, it
+  becomes unavailable, while knowledge operations may still prioritize near-expiry review separately.
 - Place matching is a deterministic, host-testable knowledge function. It indexes English and Chinese
   POI names plus explicit lexical aliases, resolves a unique landmark to its city, and permits only a
   one-character edit-distance match for a single Latin token. Ambiguous and unmatched references are
