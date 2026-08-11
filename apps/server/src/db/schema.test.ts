@@ -125,6 +125,9 @@ describe("database schema", () => {
     expect(getTableConfig(poiFacts).checks.map((constraint) => constraint.name)).toContain(
       "poi_facts_review_expiry_check",
     );
+    expect(getTableConfig(poiFacts).checks.map((constraint) => constraint.name)).toContain(
+      "poi_facts_local_presentation_value_check",
+    );
     expect(knowledgeGaps.questionPattern.name).toBe("question_pattern");
     expect(knowledgeGaps.resolvedAt.name).toBe("resolved_at");
     expect(poiCommercialLinks.poiId.name).toBe("poi_id");

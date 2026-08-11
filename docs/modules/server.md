@@ -101,6 +101,10 @@ Next.js runtimes rather than deployed as an independent service.
   boundary, dry-runs against database identities, commits only a wholly valid batch in one transaction,
   and records private editorial provenance separately from public fact reads. `local-demo` and test
   compositions do not pretend a persistent import occurred.
+- Local-facing Chinese POI values use the durable `poi_facts` lifecycle rather than promoting legacy
+  `pois.name_zh` or `pois.address` strings. The Drizzle mapping mirrors the database constraint for
+  five bounded local-presentation fact types; current eligible values are derived only in the domain
+  package, while later display guards own any user-facing fallback behavior.
 - Human Task creation accepts only a trusted authenticated or signed-anonymous identity, a UUID
   idempotency key, and the minimized controlled-preview request. The Postgres adapter serializes the
   daily Shanghai capacity check, stores exactly one owner, and replays a successful retry without a

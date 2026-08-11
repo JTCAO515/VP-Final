@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   PoiFactEvidenceSummarySchema,
+  PoiLocalPresentationFactSchema,
   PoiSchema,
+  deriveEligiblePoiLocalAddress,
   derivePoiSceneTags,
   isEligiblePoiFact,
   isCurrentPoiFact,
@@ -42,6 +44,104 @@ describe("PoiSchema", () => {
 
     expect(poi.facts).toEqual([]);
     expect(poi.commercialLinks).toEqual([]);
+  });
+});
+
+describe("deriveEligiblePoiLocalAddress", () => {
+  const now = new Date("2026-07-09T00:00:00.000Z");
+
+  function localFact(
+    factType:
+      | "local_name_zh"
+      | "local_address_zh"
+      | "local_address_district"
+      | "local_address_nearest_metro_exit"
+      | "local_address_visibility_note",
+    text: string,
+    overrides: Partial<PoiFact> = {},
+  ): PoiFact {
+    return PoiLocalPresentationFactSchema.parse({
+      ...fact,
+      id: `fact-${factType}-${text}`,
+      factType,
+      value: { text },
+      ...overrides,
+    });
+  }
+
+  it("uses independently eligible facts and leaves missing components absent", () => {
+    const address = deriveEligiblePoiLocalAddress(
+      {
+        facts: [
+          localFact("local_address_zh", "上海市黄浦区豫园路279号"),
+          localFact("local_name_zh", "豫园"),
+          localFact("local_address_district", "黄浦区"),
+        ],
+      },
+      now,
+    );
+
+    expect(address).toEqual({
+      addressZh: "上海市黄浦区豫园路279号",
+      nameZh: "豫园",
+      district: "黄浦区",
+    });
+  });
+
+  it("never promotes legacy POI strings or draft facts into a local address", () => {
+    const legacyOnly = PoiSchema.parse({
+      id: "legacy-poi",
+      city: "Shanghai",
+      category: "attraction",
+      nameEn: "Yu Garden",
+      nameZh: "豫园",
+      address: "279 Yuyuan Old St",
+    });
+
+    expect(legacyOnly.nameZh).toBe("豫园");
+    expect(legacyOnly.address).toBe("279 Yuyuan Old St");
+    expect(deriveEligiblePoiLocalAddress(legacyOnly, now)).toBeNull();
+    expect(
+      deriveEligiblePoiLocalAddress(
+        {
+          facts: [
+            localFact("local_address_zh", "上海市黄浦区豫园路279号", {
+              status: "draft",
+              verifiedAt: null,
+              expiresAt: null,
+              reviewPolicy: null,
+            }),
+          ],
+        },
+        now,
+      ),
+    ).toBeNull();
+  });
+
+  it("fails closed for expired or ambiguous address facts", () => {
+    expect(
+      deriveEligiblePoiLocalAddress(
+        {
+          facts: [
+            localFact("local_address_zh", "上海市黄浦区豫园路279号", {
+              expiresAt: "2026-07-08T00:00:00.000Z",
+            }),
+          ],
+        },
+        now,
+      ),
+    ).toBeNull();
+    expect(
+      deriveEligiblePoiLocalAddress(
+        {
+          facts: [
+            localFact("local_address_zh", "上海市黄浦区豫园路279号"),
+            localFact("local_address_zh", "上海市黄浦区安仁街137号"),
+          ],
+        },
+        now,
+      ),
+    ).toBeNull();
   });
 });
 

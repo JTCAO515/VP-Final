@@ -468,6 +468,10 @@ export const poiFacts = pgTable(
       "poi_facts_review_expiry_check",
       sql`${table.status} <> 'reviewed' or (${table.reviewPolicy} = 'volatile-30d-v1' and ${table.expiresAt} <= ${table.verifiedAt} + interval '30 days') or (${table.reviewPolicy} = 'execution-90d-v1' and ${table.expiresAt} <= ${table.verifiedAt} + interval '90 days') or (${table.reviewPolicy} = 'stable-180d-v1' and ${table.expiresAt} <= ${table.verifiedAt} + interval '180 days')`,
     ),
+    localPresentationValueCheck: check(
+      "poi_facts_local_presentation_value_check",
+      sql`${table.factType} not in ('local_name_zh', 'local_address_zh', 'local_address_district', 'local_address_nearest_metro_exit', 'local_address_visibility_note') or coalesce((jsonb_typeof(${table.valueJsonb}) = 'object' and jsonb_typeof(${table.valueJsonb}->'text') = 'string' and btrim(${table.valueJsonb}->>'text') <> '' and char_length(btrim(${table.valueJsonb}->>'text')) <= 500), false)`,
+    ),
   }),
 );
 

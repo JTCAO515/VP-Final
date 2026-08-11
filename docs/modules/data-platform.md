@@ -38,6 +38,10 @@ commercial evidence, Human Tasks, and telemetry. Repository migrations are the s
   real and not in the future, and it is not expired. `created_at` is ingestion time, not verification.
   Legacy rows lacking typed evidence are retained as `draft`; a migration MUST NOT infer evidence from
   their old `source` string or promote them without review.
+- `pois.name_zh` and `pois.address` are legacy compatibility fields, not independently reviewable
+  local-facing facts. Local Chinese names, addresses, districts, metro exits, and visibility notes use
+  five dedicated `poi_facts.fact_type` values. Each row keeps its own evidence and expiry; a raw POI
+  string is never silently promoted to local-display eligibility.
 - Traveler-owned data requires verified identity and owner policies.
 - Trip rows require one exclusive authenticated or signed-anonymous owner. Owner-scoped conditional
   writes and event append occur in one transaction; public share tokens are revocable read-only
