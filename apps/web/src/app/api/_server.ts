@@ -6,6 +6,7 @@ import {
   createDbHumanTaskService,
   createDbCommerceService,
   createDbKnowledgeService,
+  createDbSafePhraseResolver,
   createDbTelemetryService,
   createDbVersionedTripService,
   createDemoCopilotModelDependencies,
@@ -42,6 +43,7 @@ import {
   type TelemetryService,
   type TelemetryRateLimiter,
   type RequestIdentity,
+  type SafePhraseResolver,
   type VersionedTripService,
 } from "@visepanda/app-server";
 
@@ -61,6 +63,7 @@ type WebServerServices = {
   telemetryRateLimiter?: TelemetryRateLimiter;
   commerceService?: CommerceService;
   telemetryService?: TelemetryService;
+  safePhraseResolver?: SafePhraseResolver;
 };
 
 const store = globalThis as typeof globalThis & {
@@ -146,6 +149,7 @@ export function createWebServerServices(environment: Environment): WebServerServ
     traceService,
     productEventService: traceService,
     telemetryService,
+    safePhraseResolver: createDbSafePhraseResolver(db),
     tripService: createDbVersionedTripService(db),
     completionJobService: createDbCompletionJobService(db),
     ...(completionQueue ? { completionQueue } : {}),

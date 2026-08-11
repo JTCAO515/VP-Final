@@ -2,10 +2,14 @@ import {
   applyPatch,
   CopilotEnvelopeSchema,
   CopilotIntentSchema,
+  isEligiblePoiFact,
   resolvePoiReference,
+  SafePhraseSelectionSchema,
   TripStateSchema,
   type CopilotEnvelope,
   type CopilotIntent,
+  type SafePhrase,
+  type SafePhraseSelection,
   type TripPatch,
   type TripState,
 } from "@visepanda/domain";
@@ -21,11 +25,20 @@ import { normalizeAgentFailure } from "../trace/service.js";
 import type { TripIdentity, VersionedTripService } from "../trip/versionedService.js";
 import type { TelemetryService } from "../telemetry/service.js";
 import { recordTelemetrySafely } from "../telemetry/producer.js";
+import {
+  classifyHighRiskRequest,
+  resolveHighRiskEnvelope,
+  validateExecutionFactSupport,
+  type SafePhraseResolver,
+} from "./executionSafety.js";
 
 export const CopilotRunInputSchema = z.object({
   message: z.string().min(1),
   tripId: z.string().min(1).optional(),
   expectedVersion: z.number().int().nonnegative().optional(),
+  // This exact, controlled key may be supplied only by a future fixed-expression surface. The
+  // pipeline never infers a similar phrase from prose, because severity and intent cannot drift.
+  safePhraseSelection: SafePhraseSelectionSchema.optional(),
 });
 
 export const RetrievalFactSchema = z.object({
@@ -35,6 +48,7 @@ export const RetrievalFactSchema = z.object({
   source: z.string().min(1),
   verifiedAt: z.string().datetime(),
   confidence: z.number().min(0).max(1),
+  supportingValues: z.array(z.string().min(1).max(500)).default([]),
 });
 
 export const CopilotRunResultSchema = z.object({
@@ -81,6 +95,7 @@ export type CopilotRequest = {
   message: string;
   tripId?: string;
   currentTrip: TripState | null;
+  safePhraseSelection?: SafePhraseSelection;
 };
 
 export type CopilotGenerationRequest = CopilotRequest & {
@@ -94,6 +109,7 @@ export type CopilotPipelineDependencies = {
   routeIntent?: RouteIntent;
   retrieveContext?: RetrieveContext;
   generateEnvelope?: GenerateEnvelope;
+  resolveSafePhrase?: SafePhraseResolver;
   telemetryService?: TelemetryService;
   traceService?: AgentTraceService;
   demoDialogueOnly?: boolean;
@@ -105,6 +121,7 @@ export function createCopilotPipeline({
   routeIntent = defaultRouteIntent,
   retrieveContext = defaultRetrieveContext,
   generateEnvelope = defaultGenerateEnvelope,
+  resolveSafePhrase = defaultResolveSafePhrase,
   telemetryService,
   traceService,
   demoDialogueOnly = false,
@@ -126,24 +143,45 @@ export function createCopilotPipeline({
         const request: CopilotRequest = {
           message: parsedInput.message,
           currentTrip,
+          ...(parsedInput.safePhraseSelection
+            ? { safePhraseSelection: parsedInput.safePhraseSelection }
+            : {}),
         };
         if (parsedInput.tripId) request.tripId = parsedInput.tripId;
         const decision = normalizeIntentDecision(await routeIntent(request));
         intent = decision.intent;
         attempts = decision.attempts ?? [];
-        const retrievedFacts = await (knowledgeService
-          ? retrieveEligibleFacts(knowledgeService, request, intent)
-          : retrieveContext(request));
-        const parsedGeneration = parseGeneratedEnvelope(
-          await generateEnvelope({ ...request, intent, retrievedFacts }),
-        );
+        const highRiskCategory = classifyHighRiskRequest(parsedInput.message);
+        const retrievedFacts = highRiskCategory
+          ? []
+          : await (knowledgeService
+              ? retrieveEligibleFacts(knowledgeService, request, intent)
+              : retrieveContext(request));
+        const parsedGeneration = highRiskCategory
+          ? {
+              envelope: await resolveHighRiskEnvelope({
+                category: highRiskCategory,
+                intent,
+                ...(parsedInput.safePhraseSelection
+                  ? { selection: parsedInput.safePhraseSelection }
+                  : {}),
+                resolveSafePhrase,
+                includeHumanHelp: !demoDialogueOnly,
+              }),
+              attempts: [],
+              repairCount: 0,
+            }
+          : parseGeneratedEnvelope(await generateEnvelope({ ...request, intent, retrievedFacts }));
         attempts = [...attempts, ...parsedGeneration.attempts];
         repairCount = parsedGeneration.repairCount;
         if (demoDialogueOnly && parsedGeneration.envelope.intent !== intent) {
           throw new Error("Copilot envelope intent does not match the router decision.");
         }
         if (demoDialogueOnly) assertDemoDialogueEnvelope(parsedGeneration.envelope);
-        const envelope = validateCitations(parsedGeneration.envelope, retrievedFacts);
+        const envelope = validateExecutionFactSupport(
+          validateCitations(parsedGeneration.envelope, retrievedFacts),
+          retrievedFacts,
+        );
         if (knowledgeService && shouldRecordKnowledgeGap(envelope)) {
           const city = detectCity(parsedInput.message);
           await knowledgeService.recordGap({
@@ -534,6 +572,12 @@ export function defaultRetrieveContext(): RetrievalFact[] {
   return [];
 }
 
+// Test and local-demo compositions have no editorial collection. Missing wiring must take the fixed
+// unavailable path, never prose; durable composition injects the private database resolver.
+export function defaultResolveSafePhrase(): SafePhrase | null {
+  return null;
+}
+
 export function defaultGenerateEnvelope({
   currentTrip,
   intent,
@@ -678,7 +722,7 @@ async function retrieveEligibleFacts(
   return pois
     .flatMap((poi) =>
       poi.facts.flatMap((fact) => {
-        if (!fact.sourceClass || !fact.verifiedAt) return [];
+        if (!isEligiblePoiFact(fact)) return [];
         return [
           {
             id: fact.id,
@@ -687,6 +731,7 @@ async function retrieveEligibleFacts(
             source: fact.sourceClass,
             verifiedAt: fact.verifiedAt,
             confidence: fact.confidence,
+            supportingValues: supportingValuesFor(fact.value),
           },
         ];
       }),
@@ -716,6 +761,31 @@ function citationsFor(facts: RetrievalFact[]) {
 function boundedFactSummary(value: Record<string, unknown>): string {
   const label = typeof value.label === "string" ? value.label : "Verified execution fact";
   return label.slice(0, 240);
+}
+
+function supportingValuesFor(value: Record<string, unknown>): string[] {
+  const values = new Set<string>();
+  collectFactStrings(value, values);
+  return [...values].filter((entry) => entry.length <= 500).slice(0, 12);
+}
+
+function collectFactStrings(value: unknown, values: Set<string>): void {
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (trimmed) values.add(trimmed);
+    return;
+  }
+  if (typeof value === "number" && Number.isFinite(value)) {
+    values.add(String(value));
+    return;
+  }
+  if (Array.isArray(value)) {
+    value.forEach((entry) => collectFactStrings(entry, values));
+    return;
+  }
+  if (value && typeof value === "object") {
+    Object.values(value).forEach((entry) => collectFactStrings(entry, values));
+  }
 }
 
 function inferCity(message: string): string {

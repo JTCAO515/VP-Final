@@ -110,9 +110,17 @@ Next.js runtimes rather than deployed as an independent service.
   one-character Latin typo may resolve a candidate; unmatched and cross-city ambiguous references return
   no facts rather than widening to the catalog. This lookup metadata never changes ADR-0006 evidence
   eligibility.
-- ADR-0016's `safe_phrases` mapping is a private editorial contract only. No public router, browser
-  table read, model generation, or display path consumes it in this change; a later server-only
-  resolver must require one exact current reviewed category/scene/intent/variant/severity match.
+- ADR-0016's `safe_phrases` mapping is private and consumed only by a server-side exact-key resolver.
+  A high-risk request bypasses model generation; a fixed expression must match the controlled
+  category/scene/intent/variant/severity key and pass the domain's current-review check. Missing,
+  stale, ambiguous, or severity-mismatched expressions return the ADR's fixed unavailable text
+  rather than a model-authored substitute. The public chat route does not accept arbitrary phrase
+  selections, so until a separately governed controlled surface supplies one, high-risk chat input
+  remains on that unavailable path.
+- After Zod envelope validation, the Copilot pipeline scans all user-presentable envelope fields for
+  concrete address, route/line, time, and price values. Each such value must be present in a cited,
+  currently retrieved fact value; an unsupported value throws before any Trip patch can be applied.
+  This is intentionally stricter than prompt grounding and has no model/fallback bypass.
 - Human Task creation accepts only a trusted authenticated or signed-anonymous identity, a UUID
   idempotency key, and the minimized controlled-preview request. The Postgres adapter serializes the
   daily Shanghai capacity check, stores exactly one owner, and replays a successful retry without a
