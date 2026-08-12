@@ -48,6 +48,17 @@ eight hours after issuance. The server retains a non-secret grant record with
 the issuing Ops user, environment, expiry, and revocation state; the raw token
 is never persisted, logged, audited, or returned by another endpoint.
 
+Every successful token issuance and every explicit grant revocation must
+atomically append one row to the existing `ops_audit_events` relation. The
+actions are exactly `visepod.provision.token_issued` and
+`visepod.provision.token_revoked`. The event uses the server-derived issuing or
+revoking Ops user as actor, `visepod_provisioning_grant` as target type, and the
+non-secret persisted grant id as target id. Bounded metadata records only the
+grant environment and result. It must never contain the raw token, a token
+fragment or digest, an email address, a user credential, a device secret, a
+session, chat, or audio. A failed grant mutation writes neither a successful
+grant state nor one of these committed-action events.
+
 Every Studio operation must validate all of the following online, before
 touching protected data:
 
@@ -107,13 +118,16 @@ IDEMPOTENCY_KEY_CONFLICT` and preserves the original result;
 - a new key is a new request, subject to ordinary authorization and state
   checks.
 
-The sole audit destination is `ops_audit_events`. A committed first mutation
-writes one event with the server-derived actor and timestamp plus bounded
-metadata: `deviceId`, `previousUserId`, `nextUserId`, and `result`. The action
-is exactly one of `visepod.binding.created`, `visepod.binding.rebound`, or
-`visepod.binding.revoked`. An idempotent replay never produces its own audit
+The sole audit destination is `ops_audit_events`. A committed first binding
+mutation writes one event with the server-derived actor and timestamp plus
+bounded metadata: `deviceId`, `previousUserId`, `nextUserId`, and `result`.
+Its action is exactly one of `visepod.binding.created`,
+`visepod.binding.rebound`, or `visepod.binding.revoked`. Provisioning grant
+issuance and explicit revocation use the two actions and bounded grant metadata
+defined above. An idempotent binding replay never produces its own audit
 action. Audit and API responses must not include a password, raw provisioning
-token, device secret, Wi-Fi password, user credential, session, chat, or audio.
+token, token fragment or digest, device secret, Wi-Fi password, user
+credential, session, chat, or audio.
 
 ## Consequences
 
