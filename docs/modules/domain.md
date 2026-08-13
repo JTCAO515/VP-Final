@@ -15,6 +15,7 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
 | `copilot`       | Intent, message, citations, tool cards, commercial actions, Human Help handoff, envelope, completion-job contract                                                                                        |
 | `knowledge`     | POI, execution facts, knowledge gaps, scene-tag derivation, reviewed seed data, and ADR-0006 fact eligibility                                                                                            |
 | `offline`       | Versioned read-only Trip package, local-storage/AsyncStorage serialization, expiry, and credential-free offline boundary                                                                                 |
+| `arrival`       | Versioned privacy-minimized Arrival Pack projection: first-day execution summary, verified-address receipts, fixed Readiness result, content versions, and print/offline eligibility                      |
 | `readiness`     | Versioned, deterministic China preparation questions, explainable self-reported results, and consented persistence request/result contracts; no score, LLM scoring, or commercial CTA                    |
 | `rescue`        | Deterministic incident routing definitions, fail-closed reviewed-target availability, and bounded Human Help offer state                                                                                 |
 | `safe-phrases`  | Private operator-verified high-risk fixed-expression contract, exact severity selection, and freshness eligibility                                                                                       |
@@ -94,6 +95,11 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
 - Tools content is a versioned local preparation pack. It uses local action identifiers rather than
   URLs and contains no partner/booking promise, real-time rate, inventory, or external API call.
   A future consumer must separately prove an action target is available before exposing it.
+- Arrival Pack is a separate export projection, not a Trip write path. It includes only first-day
+  block title/time/status, current reviewed Chinese-address receipts, fixed Readiness output, and
+  version timestamps. It deliberately excludes raw block addresses, descriptions, notes, metadata,
+  conversation, credentials, payment data, and passport content. Missing reviewed addresses, phrase
+  packs, readiness, or first-day data remain explicit null/empty fields rather than inferred content.
 - `events` has two related contracts: a stored telemetry event requires exactly one trusted identity,
   registered action, allowlisted object properties, and a future retention deadline; browser capture
   is a smaller client-safe action union with no persistence metadata or attribution authority. The
