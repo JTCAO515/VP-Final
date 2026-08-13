@@ -16,6 +16,7 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
 | `knowledge`     | POI, execution facts, knowledge gaps, scene-tag derivation, reviewed seed data, and ADR-0006 fact eligibility                                                 |
 | `offline`       | Versioned read-only Trip package, local-storage/AsyncStorage serialization, expiry, and credential-free offline boundary                                       |
 | `readiness`     | Versioned, deterministic China preparation questions and explainable self-reported results; no score, LLM scoring, or commercial CTA                          |
+| `rescue`        | Deterministic incident routing definitions, fail-closed reviewed-target availability, and bounded Human Help offer state                                      |
 | `safe-phrases`  | Private operator-verified high-risk fixed-expression contract, exact severity selection, and freshness eligibility                                            |
 | `task`          | Human Task input, lifecycle, transition commands, private outcome evidence, and non-status updates                                                            |
 | `commerce`      | Validated partner configuration, trusted-identity outbound records, active-only HTTPS host validation, and tracking construction                              |
@@ -79,6 +80,10 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
   rule id, observed self-report, explicit next action, and evidence status. Unanswered questions
   remain `unknown`; it does not calculate a percentage, infer an answer with an LLM, save data,
   or expose a commercial action at the domain layer.
+- Rescue routing carries category and availability metadata only; it deliberately excludes free-form
+  incident narrative. Unreviewed target ids fail closed. Health/safety always routes to the official
+  emergency boundary and never offers Human Help, while a Human Help offer requires a matching
+  configured city/category and retains the best-effort/no-SLA boundary.
 - `events` has two related contracts: a stored telemetry event requires exactly one trusted identity,
   registered action, allowlisted object properties, and a future retention deadline; browser capture
   is a smaller client-safe action union with no persistence metadata or attribution authority. The
