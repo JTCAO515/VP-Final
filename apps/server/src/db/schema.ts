@@ -880,11 +880,90 @@ export const humanTaskEvidence = pgTable(
   }),
 );
 
+export const visePodDeviceBindings = pgTable(
+  "visepod_device_bindings",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    deviceId: text("device_id").notNull(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    state: text("state").notNull().default("active"),
+    boundAt: timestamp("bound_at", { withTimezone: true }).notNull().defaultNow(),
+    boundBy: uuid("bound_by")
+      .notNull()
+      .references(() => authUsers.id, { onDelete: "restrict" }),
+    revokedAt: timestamp("revoked_at", { withTimezone: true }),
+    revokedBy: uuid("revoked_by").references(() => authUsers.id, { onDelete: "restrict" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    deviceActiveUnique: uniqueIndex("visepod_device_bindings_device_active_unique")
+      .on(table.deviceId)
+      .where(sql`${table.state} = 'active'`),
+    deviceHistoryIdx: index("visepod_device_bindings_device_bound_at_idx").on(
+      table.deviceId,
+      table.boundAt,
+    ),
+    userHistoryIdx: index("visepod_device_bindings_user_bound_at_idx").on(
+      table.userId,
+      table.boundAt,
+    ),
+    deviceIdCheck: check(
+      "visepod_device_bindings_device_id_check",
+      sql`${table.deviceId} ~ '^[A-Za-z0-9._~\\-]{1,64}$'`,
+    ),
+    stateCheck: check(
+      "visepod_device_bindings_state_check",
+      sql`${table.state} in ('active', 'revoked')`,
+    ),
+    revokedStateCheck: check(
+      "visepod_device_bindings_revoked_state_check",
+      sql`(${table.state} = 'active' and ${table.revokedAt} is null and ${table.revokedBy} is null)
+        or (${table.state} = 'revoked' and ${table.revokedAt} is not null and ${table.revokedBy} is not null)`,
+    ),
+  }),
+);
+
+export const visePodBindingIdempotency = pgTable(
+  "visepod_binding_idempotency",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    idempotencyKey: uuid("idempotency_key").notNull(),
+    bindingId: uuid("binding_id")
+      .notNull()
+      .references(() => visePodDeviceBindings.id, { onDelete: "cascade" }),
+    commandDigest: text("command_digest").notNull(),
+    responseJsonb: jsonb("response_jsonb").notNull(),
+    retentionExpiresAt: timestamp("retention_expires_at", { withTimezone: true }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    idempotencyKeyUnique: uniqueIndex("visepod_binding_idempotency_key_unique").on(
+      table.idempotencyKey,
+    ),
+    bindingCreatedIdx: index("visepod_binding_idempotency_binding_created_idx").on(
+      table.bindingId,
+      table.createdAt,
+    ),
+    digestCheck: check(
+      "visepod_binding_idempotency_command_digest_check",
+      sql`${table.commandDigest} ~ '^[a-f0-9]{64}$'`,
+    ),
+    retentionCheck: check(
+      "visepod_binding_idempotency_retention_check",
+      sql`${table.retentionExpiresAt} > ${table.createdAt}`,
+    ),
+  }),
+);
+
 export const usersRelations = relations(users, ({ many }) => ({
   trips: many(trips),
   agentRuns: many(agentRuns),
   events: many(telemetryEvents),
   humanTasks: many(humanTasks),
+  visePodDeviceBindings: many(visePodDeviceBindings),
 }));
 
 export const tripsRelations = relations(trips, ({ one, many }) => ({
@@ -989,3 +1068,21 @@ export const humanTaskEvidenceRelations = relations(humanTaskEvidence, ({ one })
     references: [humanTasks.id],
   }),
 }));
+
+export const visePodDeviceBindingsRelations = relations(visePodDeviceBindings, ({ one, many }) => ({
+  user: one(users, {
+    fields: [visePodDeviceBindings.userId],
+    references: [users.id],
+  }),
+  idempotencyRecords: many(visePodBindingIdempotency),
+}));
+
+export const visePodBindingIdempotencyRelations = relations(
+  visePodBindingIdempotency,
+  ({ one }) => ({
+    binding: one(visePodDeviceBindings, {
+      fields: [visePodBindingIdempotency.bindingId],
+      references: [visePodDeviceBindings.id],
+    }),
+  }),
+);

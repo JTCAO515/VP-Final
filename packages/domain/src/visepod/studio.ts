@@ -87,6 +87,8 @@ export const VisePodStudioExactUserLookupResponseSchema = z
   })
   .strict();
 
+export const VisePodDeviceBindingStateSchema = z.enum(["active", "revoked"]);
+
 export const VisePodDeviceBindingSchema = z
   .object({
     deviceId: VisePodDeviceIdSchema,
@@ -96,6 +98,12 @@ export const VisePodDeviceBindingSchema = z
     boundBy: VisePodStudioUserIdSchema,
   })
   .strict();
+
+export const VisePodDeviceBindingHistorySchema = VisePodDeviceBindingSchema.extend({
+  state: VisePodDeviceBindingStateSchema,
+  revokedAt: z.string().datetime().nullable(),
+  revokedBy: VisePodStudioUserIdSchema.nullable(),
+}).strict();
 
 export const VisePodDeviceBindingReadResponseSchema = z
   .object({
@@ -191,6 +199,7 @@ export type VisePodStudioExactUserLookupRequest = z.infer<
 >;
 export type VisePodStudioResolvedUser = z.infer<typeof VisePodStudioResolvedUserSchema>;
 export type VisePodDeviceBinding = z.infer<typeof VisePodDeviceBindingSchema>;
+export type VisePodDeviceBindingHistory = z.infer<typeof VisePodDeviceBindingHistorySchema>;
 export type VisePodBindingCommand = z.infer<typeof VisePodBindingCommandSchema>;
 export type VisePodBindingMutationResponse = z.infer<typeof VisePodBindingMutationResponseSchema>;
 export type VisePodBindingAuditMetadata = z.infer<typeof VisePodBindingAuditMetadataSchema>;
@@ -216,4 +225,58 @@ export function compareVisePodBindingIdempotency(
   const right = VisePodBindingCommandSchema.parse(incoming);
   if (left.idempotencyKey !== right.idempotencyKey) return "new";
   return JSON.stringify(left) === JSON.stringify(right) ? "replay" : "conflict";
+}
+
+export class VisePodBindingStateTransitionError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "VisePodBindingStateTransitionError";
+  }
+}
+
+/**
+ * Computes the sole state mutation a later server writer may persist. The database owns
+ * concurrency and idempotency; this function owns the deterministic state-machine rule.
+ */
+export function transitionVisePodBinding(input: {
+  currentBinding: VisePodDeviceBinding | null;
+  command: VisePodBindingCommand;
+  actorId: string;
+  at: Date;
+}): Omit<VisePodBindingMutationResponse, "idempotencyHit"> {
+  const command = VisePodBindingCommandSchema.parse(input.command);
+  const actorId = VisePodStudioUserIdSchema.parse(input.actorId);
+  const currentBinding = input.currentBinding
+    ? VisePodDeviceBindingSchema.parse(input.currentBinding)
+    : null;
+  const boundAt = input.at.toISOString();
+
+  if (command.operation === "bind") {
+    if (currentBinding?.deviceId && currentBinding.deviceId !== command.deviceId) {
+      throw new VisePodBindingStateTransitionError(
+        "Current binding device does not match command.",
+      );
+    }
+    if (currentBinding?.userId === command.userId) {
+      throw new VisePodBindingStateTransitionError("Device is already bound to this user.");
+    }
+    return {
+      outcome: currentBinding ? "rebound" : "created",
+      binding: {
+        deviceId: command.deviceId,
+        userId: command.userId,
+        state: "active",
+        boundAt,
+        boundBy: actorId,
+      },
+    };
+  }
+
+  if (!currentBinding || currentBinding.deviceId !== command.deviceId) {
+    throw new VisePodBindingStateTransitionError(
+      "Cannot revoke a device without an active binding.",
+    );
+  }
+
+  return { outcome: "revoked", binding: null };
 }

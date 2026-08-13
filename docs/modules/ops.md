@@ -46,11 +46,15 @@ the public Web application and protected by server-side role checks.
   identity from the verified session and enforce the same server-side permission matrix as pages.
 - `ops_memberships` is the sole role authority; client metadata, user metadata, email addresses, and
   navigation visibility are never authorization inputs.
-- VisePod Studio has no parallel authorization or desktop-held service secret. Its draft contract
+- VisePod Studio has no parallel authorization or desktop-held service secret. Its accepted contract
   reserves one explicit `visepod.provision` permission for a later server implementation; no current
-  role silently receives it, and no Studio endpoint, provisioning-token issuer, binding store, or
-  user-browsing surface exists. The later implementation must recheck the existing Ops permission on
-  every short-lived grant use and write accepted binding mutations to `ops_audit_events` only. See
+  role silently receives it, and no Studio endpoint, provisioning-token issuer, or user-browsing
+  surface exists. Private binding history and 30-day idempotency persistence exist only as a
+  server-side schema: one device can have one active assignment, rebind retains a revoked historical
+  row, user deletion cascades the binding relationship, and idempotency retains only a command
+  digest rather than free-text reason content. The later runtime must recheck the
+  existing Ops permission on every short-lived grant use and write accepted binding mutations to
+  `ops_audit_events` only. See
   [Studio Binding Contract v1](../visepod/studio-binding-contract-v1.md).
 - Role changes write membership and audit evidence atomically. Knowledge and Human Task reads use
   durable server adapters. P0-14 exposes only the canonical status transition API: every change
