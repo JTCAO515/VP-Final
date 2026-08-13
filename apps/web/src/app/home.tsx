@@ -19,7 +19,10 @@ const SCENARIO_GROUPS = [
       "A single practical surface for metro questions, places, language, and the next decision.",
     items: [
       ["Metro-friendly routes", "Ask for the simplest route, not the most impressive itinerary."],
-      ["Show to Local", "Turn a clear need into something you can show at a counter or restaurant."],
+      [
+        "Show to Local",
+        "Turn a clear need into something you can show at a counter or restaurant.",
+      ],
       ["Place context", "See what needs booking, what is nearby, and what is worth knowing first."],
     ],
   },
@@ -31,7 +34,10 @@ const SCENARIO_GROUPS = [
     items: [
       ["Practical re-planning", "Ask for alternatives with the information currently available."],
       ["Clear limits", "Know when VisePanda does not have enough evidence to make a claim."],
-      ["Human help, later", "A distinct assisted path is reserved for cases software should not fake."],
+      [
+        "Human help, later",
+        "A distinct assisted path is reserved for cases software should not fake.",
+      ],
     ],
   },
 ] as const;
@@ -147,7 +153,10 @@ export function HomeShell() {
 
 function ProductPreview() {
   return (
-    <div className="productFrame" aria-label="Illustrative VisePanda workspace preview, not live trip data">
+    <div
+      className="productFrame"
+      aria-label="Illustrative VisePanda workspace preview, not live trip data"
+    >
       <div className="productFrameBar">
         <span>Illustrative arrival example</span>
         <small>Not live trip data</small>
