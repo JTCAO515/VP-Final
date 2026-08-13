@@ -5,14 +5,16 @@ Path: `apps/web`
 ## Responsibility
 
 The public Next.js application owns acquisition and traveler-facing Phase 0 experiences. It renders
-the Copilot workspace, Trip Canvas, Explore, guides, POI pages, Human Help, public Trip shares, and
+the product home, VisePanda workspace and Trip Canvas, Explore, guides, POI pages, Human Help, public Trip shares, and
 the outbound gateway.
 
 ## Routes
 
 | Route                            | Purpose                                                                  |
 | -------------------------------- | ------------------------------------------------------------------------ |
-| `/`                              | Copilot workspace and Trip Canvas                                        |
+| `/`                              | Product home with an illustrative, non-interactive VisePanda workspace preview |
+| `/visepanda`                     | Canonical VisePanda workspace and Trip Canvas                            |
+| `/copilot`                       | Legacy redirect to `/visepanda`                                          |
 | `/explore`                       | Execution-fact discovery                                                 |
 | `/guides/[slug]`                 | Editorial execution guides                                               |
 | `/[city]/[poi]`                  | Programmatic POI page                                                    |
@@ -226,9 +228,15 @@ and truthful; retries are offered only for retryable jobs within the server-owne
 
 ## UI Rules
 
-- The home page opens with a product-first Copilot introduction: a single clear promise and a
-  read-only product preview establish the task before the usable Copilot workspace immediately
-  below it. It is not a marketing-only hero.
+- The home page is a product-first landing surface: a single clear promise, an illustrative
+  read-only workspace preview, scenario-grouped capabilities, and an ecosystem section establish
+  the task. It never mounts the live composer or sends a request.
+- `/visepanda` is the canonical interactive workspace. Desktop reserves roughly 65% for the
+  read-only Trip Canvas and 35% for VisePanda conversation/composition. On narrow screens it
+  switches between Trip and VisePanda views without unmounting their current conversation, draft,
+  or Trip state. `/copilot` redirects there for compatibility.
+- Public "Ask VisePanda" entries use a small allowlisted context key and prefill an editable draft;
+  they never auto-send and never encode personal data or a full Trip in the URL.
 - Home-page capability content is grouped by traveler scenario (before flying, on the move, and
   when plans change). Ecosystem surfaces appear in a separate section so one viewport has one
   primary job.
@@ -240,13 +248,12 @@ and truthful; retries are offered only for retryable jobs within the server-owne
 - The canonical visual source is the Red Gold Design System.
 - Public product routes share one navigation and footer rhythm. Floating navigation may use a
   translucent material, but content hierarchy and legibility take priority over decoration.
-- The shared header exposes four primary destinations in one stable order: Copilot, Explore,
-  Guides, and Human Help. Account is a separate utility action. The shared footer repeats those
-  product destinations and every accepted trust/legal route.
-- On narrow screens the Copilot workspace uses a prompt-first stack: the composer and example
-  questions precede the potentially long conversation and Trip detail stream. Desktop keeps the
-  conversation at left and the prompt rail at right. This is composition only; response, Trip, and
-  completion behavior remain unchanged.
+- The shared header exposes four primary destinations in one stable order: VisePanda, Explore,
+  Guides, and Human Help. Account uses the same ordinary, hover, and selected navigation treatment.
+  The shared footer repeats those product destinations and every accepted trust/legal route.
+- On narrow screens the VisePanda workspace uses a visible Trip/VisePanda switch rather than a
+  forced two-column view. This is composition only; response, Trip, and completion behavior remain
+  unchanged.
 - Every shared header provides a keyboard-visible skip link to the content immediately after the
   navigation. Primary navigation and account targets remain at least 44 pixels high.
 - Interactive controls provide immediate press feedback and preserve a 44-pixel minimum target.
@@ -257,7 +264,7 @@ and truthful; retries are offered only for retryable jobs within the server-owne
 - Commercial actions show disclosure and use `/outbound`.
 - Responsive behavior is verified at 375, 768, 1280, and 1440 pixel widths.
 - At narrow widths, primary navigation uses four equal tracks and prompt cards wrap their text; no
-  Copilot element may force horizontal page scrolling.
+  VisePanda element may force horizontal page scrolling.
 
 ## Public Trust and Legal Pages
 
