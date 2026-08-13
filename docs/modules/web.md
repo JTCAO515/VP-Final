@@ -35,6 +35,7 @@ the outbound gateway.
 | `/api/auth/logout`               | Supabase sign-out and SSR cookie clearing                                      |
 | `/api/auth/session`              | Verified display-safe session status and cookie refresh                        |
 | `/api/telemetry`                 | Strict privacy-safe browser telemetry capture                                  |
+| `/api/mobile/trips`              | Verified mobile-session read-only Trip list                                    |
 | `/api/trips/*`                   | Trip read, claim, and share handlers                                           |
 
 ## Data Access
@@ -73,6 +74,13 @@ partner with an exact allowlisted HTTPS host can redirect, and the click row mus
 Pending, inactive, unknown, malformed, or unrecordable actions return an honest non-redirect
 response. A newly issued anonymous cookie is preserved on both success and failure. No partner is
 active by repository default, and partner management remains an authorized Ops follow-up.
+
+`GET /api/mobile/trips` is a narrow native-app boundary. It accepts only a syntactically bounded
+Bearer token, validates that token online through Supabase Auth, derives the authenticated owner
+server-side, and returns the domain-owned `MobileTripListResponseSchema`. It never accepts an owner
+header, shares a browser cookie, exposes Trip events, or permits a write. Missing Supabase public
+configuration and durable Trip failures return a generic 503; an absent or invalid mobile session
+returns 401. The endpoint never logs access tokens.
 
 Explore renders a commercial CTA only when the durable Knowledge service returns an active
 `poi_commercial_links` row. The CTA contains that row's disclosure and routes to same-origin

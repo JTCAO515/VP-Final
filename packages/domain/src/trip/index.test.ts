@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { applyPatch, diffTrips, TripStateSchema } from "./index.js";
+import { applyPatch, diffTrips, MobileTripListResponseSchema, TripStateSchema } from "./index.js";
 import type { TripPatch, TripState } from "./index.js";
 
 const shanghaiTrip: TripState = {
@@ -46,6 +46,18 @@ describe("TripState schema", () => {
     };
 
     expect(() => applyPatch(null, patch)).toThrow("Duplicate TripDay dayNumber");
+  });
+
+  it("freezes a strict read-only mobile Trip response without owner or write fields", () => {
+    expect(
+      MobileTripListResponseSchema.parse({ ok: true, trips: [{ trip: shanghaiTrip, version: 1 }] }),
+    ).toEqual({ ok: true, trips: [{ trip: TripStateSchema.parse(shanghaiTrip), version: 1 }] });
+    expect(() =>
+      MobileTripListResponseSchema.parse({
+        ok: true,
+        trips: [{ trip: shanghaiTrip, version: 1, owner: "must-not-cross-the-boundary" }],
+      }),
+    ).toThrow();
   });
 });
 

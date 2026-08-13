@@ -14,11 +14,13 @@
     "lint": "prettier --check App.tsx app.json src"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.110.2",
     "@visepanda/domain": "workspace:*",
     "@visepanda/ui": "workspace:*",
     "expo": "~55.0.0",
     "expo-clipboard": "~55.0.15",
     "expo-file-system": "~55.0.24",
+    "expo-secure-store": "~55.0.16",
     "expo-speech": "~55.0.16",
     "react": "19.2.7",
     "react-native": "0.83.0"

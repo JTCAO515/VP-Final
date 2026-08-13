@@ -8,6 +8,7 @@
     "ios": {
       "supportsTablet": true
     },
-    "android": {}
+    "android": {},
+    "plugins": ["expo-secure-store"]
   }
 }

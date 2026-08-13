@@ -50,6 +50,27 @@ export type TripBlock = z.infer<typeof TripBlockSchema>;
 export type TripDay = z.infer<typeof TripDaySchema>;
 export type TripState = z.infer<typeof TripStateSchema>;
 
+/**
+ * The read-only Trip projection shared by the Web-to-mobile sync boundary.
+ * It deliberately contains no ownership, event history, or write capability.
+ */
+export const ReadOnlyTripSnapshotSchema = z
+  .object({
+    trip: TripStateSchema,
+    version: z.number().int().positive(),
+  })
+  .strict();
+
+export const MobileTripListResponseSchema = z
+  .object({
+    ok: z.literal(true),
+    trips: z.array(ReadOnlyTripSnapshotSchema),
+  })
+  .strict();
+
+export type ReadOnlyTripSnapshot = z.infer<typeof ReadOnlyTripSnapshotSchema>;
+export type MobileTripListResponse = z.infer<typeof MobileTripListResponseSchema>;
+
 const TripStateFieldsSchema = TripStateSchema.omit({ id: true, days: true }).partial().strict();
 const TripDayFieldsSchema = TripDaySchema.omit({ id: true, blocks: true }).partial().strict();
 const TripBlockFieldsSchema = TripBlockSchema.omit({ id: true }).partial().strict();

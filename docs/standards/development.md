@@ -61,6 +61,13 @@ the repository.
   offline cache. These modules do not authorize network translation, model-authored Chinese, a
   high-risk fallback, server synchronization, or a live language-service claim. Reverting their sole
   mobile consumers permits removing them.
+- `expo-secure-store` is the accepted Expo SDK 55 storage owner for a mobile Supabase session. Its
+  only accepted use is platform-secure access/refresh-token persistence; tokens MUST NOT enter the
+  FileSystem offline cache, telemetry, logs, URLs, or screenshots. `@supabase/supabase-js` may use
+  only the public `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY` configuration to
+  obtain that session and verify it through the server-owned mobile read path. Neither dependency
+  authorizes direct Postgres, a service-role credential, or a mobile Trip write. Reverting the
+  read-only mobile sync consumer permits removing both dependencies and the Expo SecureStore plugin.
 
 ## Completion
 
