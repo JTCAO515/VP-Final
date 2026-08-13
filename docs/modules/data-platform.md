@@ -35,7 +35,7 @@ the same migration, and validation also checks the issuer's current Ops permissi
 | Copilot dialogue  | `copilot_conversation_turns`                                                                 |
 | Knowledge         | `pois`, `poi_facts`, `poi_fact_editorial_audit`, `knowledge_gaps`, `poi_commercial_links`    |
 | Safety phrases    | `safe_phrases` (private operator-verified fixed-expression editorial records)                |
-| VisePod Studio    | `visepod_device_bindings`, `visepod_binding_idempotency` (private assignment/replay history) |
+| VisePod Studio    | `visepod_device_bindings`, `visepod_binding_idempotency`, `visepod_provisioning_grants` (private assignment/replay/grant history) |
 | Commerce          | `partners`, `outbound_clicks`                                                                |
 | Telemetry         | `events`, `trust_funnel_daily`, private Phase 0 funnel/outbound/Human Help live views        |
 | Human operations  | `human_tasks`, `human_task_transitions`, `human_task_evidence`                               |

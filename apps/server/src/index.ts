@@ -24,6 +24,7 @@ export { createDbTelemetryService } from "./db/telemetryService.js";
 export { createDbOpsAuthorizationService } from "./db/opsAuthorizationService.js";
 export { createDbOpsCostSummaryService } from "./db/opsCostSummaryService.js";
 export { createDbVisePodProvisioningService } from "./db/visePodProvisioningService.js";
+export { createDbVisePodBindingService } from "./db/visePodBindingService.js";
 export { createDbVersionedTripService } from "./db/versionedTripService.js";
 export { createDbCompletionJobService } from "./db/completionJobService.js";
 export {
@@ -143,6 +144,19 @@ export {
   VisePodProvisioningAccessDeniedError,
 } from "./modules/visepod/provisioning.js";
 export {
+  asVisePodBindingReadResponse,
+  canonicalVisePodBindingCommand,
+  createVisePodKnownDeviceCatalog,
+  digestVisePodBindingCommand,
+  requireVisePodBindingProvisioningAccess,
+  resolveVisePodKnownDeviceCatalog,
+  VisePodBindingDeviceNotFoundError,
+  VisePodBindingIdempotencyConflictError,
+  VisePodBindingProvisioningAccessDeniedError,
+  VisePodBindingStateConflictError,
+  VisePodBindingUserNotFoundError,
+} from "./modules/visepod/binding.js";
+export {
   costWindow,
   privateIdentityReference,
   requireCostRead,
@@ -258,6 +272,10 @@ export type {
   RecordOpsAuditInput,
 } from "./modules/opsAuthorization/service.js";
 export type { VisePodProvisioningService } from "./modules/visepod/provisioning.js";
+export type {
+  VisePodBindingService,
+  VisePodKnownDeviceCatalog,
+} from "./modules/visepod/binding.js";
 export type {
   CopilotCostDailySummary,
   CopilotCostIdentitySummary,

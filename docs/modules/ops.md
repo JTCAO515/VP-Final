@@ -46,20 +46,18 @@ the public Web application and protected by server-side role checks.
   identity from the verified session and enforce the same server-side permission matrix as pages.
 - `ops_memberships` is the sole role authority; client metadata, user metadata, email addresses, and
   navigation visibility are never authorization inputs.
-- VisePod Studio has no parallel authorization or desktop-held service secret. Its accepted contract
-  reserves one explicit `visepod.provision` permission for a later server implementation; no current
-  role silently receives it, and no Studio endpoint, provisioning-token issuer, or user-browsing
-  surface exists. Private binding history and 30-day idempotency persistence exist only as a
-  server-side schema: one device can have one active assignment, rebind retains a revoked historical
-  row, user deletion cascades the binding relationship, and idempotency retains only a command
-  digest rather than free-text reason content. The later runtime must recheck the
-  existing Ops permission on every short-lived grant use and write accepted binding mutations to
-  `ops_audit_events` only. See
-  [Studio Binding Contract v1](../visepod/studio-binding-contract-v1.md).
-- The explicit `visepod.provision` permission is assigned only to Admin. The server issues an
-  eight-hour development-or-production grant after server-side session and permission checks, stores
-  only its SHA-256 digest, and rechecks current membership on every validation. Removing the
-  permission or explicitly revoking the grant invalidates it immediately.
+- VisePod Studio has no parallel authorization or desktop-held service secret. The explicit
+  `visepod.provision` permission is assigned only to Admin. The server issues an eight-hour
+  development-or-production grant after server-side session and permission checks, stores only its
+  SHA-256 digest, and rechecks current membership on every validation. Removing the permission or
+  explicitly revoking the grant invalidates it immediately.
+- `GET`, `PUT`, and `DELETE` binding endpoints consume that grant instead of an Ops session. Validation
+  occurs before any protected lookup. They expose only a private server-side binding projection, require
+  an operator reason only inside the command digest, retain replay receipts for 30 days, and atomically
+  append one bounded audit event for the first create/rebind/revoke. The finite deployment allowlist
+  `VISEPOD_STUDIO_DEVICE_IDS` decides which controlled demonstration devices exist; it never contains a
+  device secret, Wi-Fi credential, or user data. Exact user resolution and all browsing/search remain
+  absent. See [Studio Binding Contract v1](../visepod/studio-binding-contract-v1.md).
 - Role changes write membership and audit evidence atomically. Knowledge and Human Task reads use
   durable server adapters. P0-14 exposes only the canonical status transition API: every change
   records actor, reason, and timestamp; arbitrary status writes and terminal recovery are rejected.

@@ -20,6 +20,9 @@ Status: active
 - A durable bulk-write path MUST include its Postgres integration test in the Database contracts job;
   unit parsing tests and a migration replay alone do not prove atomicity, concurrent idempotency, or
   downstream read visibility.
+- A private device/identity mutation path MUST likewise be listed explicitly in the Database contracts
+  job. Its test must prove that authorization precedes protected reads and that an audit-write failure
+  rolls back both the state mutation and any idempotency receipt.
 - The Database contracts gate MUST execute a nonzero pgTAP file and test count. `Result: NOTESTS` is
   a failed verification state even if the CLI process exits successfully.
 - A database test that temporarily creates or removes a shared DDL object for failure injection MUST
