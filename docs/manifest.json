@@ -909,6 +909,21 @@
         "infra/supabase/"
       ]
     },
+    {
+      "path": "docs/adr/ADR-0020-creator-attribution-contract.md",
+      "title": "ADR-0020: Creator Attribution Contract",
+      "category": "decisions",
+      "type": "decision",
+      "status": "accepted",
+      "owner": "commercial architecture / data platform",
+      "summary": "Freezes creator referrals as private server-resolved acquisition sources and keeps them separate from OTA outbound links.",
+      "sourcePrefixes": [
+        "packages/domain/src/commerce/",
+        "apps/server/src/db/",
+        "apps/server/src/modules/commerce/",
+        "infra/supabase/"
+      ]
+    },
 
     {
       "path": "docs/runbooks/README.md",

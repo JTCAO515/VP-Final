@@ -60,6 +60,7 @@ describe("Partner administration", () => {
 
     await expect(service.createPartner(admin, configuration)).resolves.toMatchObject({
       key: "example_partner",
+      kind: "ota",
       status: "pending",
     });
     await expect(
@@ -133,5 +134,24 @@ describe("Partner administration", () => {
     });
     expect(JSON.stringify(audit)).not.toContain("www.travel.example.com");
     expect(JSON.stringify(audit)).not.toContain("vp_click_id");
+  });
+
+  it("retains creator type as audited configuration without activating or exposing a link", async () => {
+    const audit: PartnerAuditInput[] = [];
+    const service = createInMemoryPartnerAdministrationService({
+      seed: [],
+      onAudit: (event) => audit.push(event),
+    });
+
+    await expect(
+      service.createPartner(admin, { ...configuration, key: "creator_partner", kind: "creator" }),
+    ).resolves.toMatchObject({ key: "creator_partner", kind: "creator", status: "pending" });
+
+    expect(audit).toEqual([
+      expect.objectContaining({
+        action: "partner.created",
+        metadata: { changedFields: ["hosts", "categories", "cities", "trackingParam", "kind"] },
+      }),
+    ]);
   });
 });

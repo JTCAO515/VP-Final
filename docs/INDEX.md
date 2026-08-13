@@ -212,6 +212,7 @@ Append-only records of accepted and superseded binding decisions.
 | [ADR-0017: VisePod Studio Provisioning](adr/ADR-0017-vise-pod-studio-provisioning.md) | decision | accepted | VisePod architecture / identity | Freezes scoped online Ops provisioning and server-side VisePod user/device bindings while rejecting user browsing and desktop-held secrets. |
 | [ADR-0018: Multi-Meter Voice Call Cost Accounting](adr/ADR-0018-voice-call-cost-accounting.md) | decision | accepted | AI platform / data platform | Extends the retained cost ledger for token, audio-second, and character calls without activating voice providers. |
 | [ADR-0019: Authenticated Mobile Telemetry Observation](adr/ADR-0019-mobile-telemetry-observation.md) | decision | accepted | mobile / telemetry | Freezes authenticated, closed-set mobile observations with a bounded local retry queue and server-owned privacy controls. |
+| [ADR-0020: Creator Attribution Contract](adr/ADR-0020-creator-attribution-contract.md) | decision | accepted | commercial architecture / data platform | Freezes creator referrals as private server-resolved acquisition sources and keeps them separate from OTA outbound links. |
 
 ## Runbooks
 

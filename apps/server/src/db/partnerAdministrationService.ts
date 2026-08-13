@@ -63,6 +63,7 @@ export function createDbPartnerAdministrationService(
             categories: partner.categories,
             cities: partner.cities,
             trackingParam: partner.trackingParam,
+            kind: partner.kind,
             updatedAt: now(),
           })
           .where(eq(partners.key, partner.key))
@@ -135,6 +136,7 @@ function toPartnerValues(partner: Partner, timestamp: Date) {
     categories: partner.categories,
     cities: partner.cities,
     trackingParam: partner.trackingParam,
+    kind: partner.kind,
     status: partner.status,
     createdAt: timestamp,
     updatedAt: timestamp,
@@ -148,6 +150,7 @@ function parsePartner(row: typeof partners.$inferSelect): Partner {
     categories: row.categories,
     cities: row.cities,
     trackingParam: row.trackingParam,
+    kind: row.kind,
     status: row.status,
   });
   if (!parsed.success) throw new Error("Stored partner configuration is invalid.");

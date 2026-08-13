@@ -64,7 +64,7 @@ describe("/api/partners", () => {
     expect(created.status).toBe(201);
     await expect(created.json()).resolves.toMatchObject({
       ok: true,
-      partner: { key: "route_partner", status: "pending" },
+      partner: { key: "route_partner", kind: "ota", status: "pending" },
     });
 
     const updated = await handlePartnerUpdate(

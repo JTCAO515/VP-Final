@@ -80,6 +80,7 @@ describeDatabase("database PartnerAdministrationService", () => {
 
   it("creates and updates pending configuration with bounded atomic audit evidence", async () => {
     await expect(service.createPartner(admin, configuration)).resolves.toMatchObject({
+      kind: "ota",
       status: "pending",
     });
     await expect(service.getPartner(admin, configuration.key)).resolves.toMatchObject({
@@ -99,7 +100,9 @@ describeDatabase("database PartnerAdministrationService", () => {
     expect(audits).toEqual([
       expect.objectContaining({
         action: "partner.created",
-        metadata_jsonb: { changedFields: ["hosts", "categories", "cities", "trackingParam"] },
+        metadata_jsonb: {
+          changedFields: ["hosts", "categories", "cities", "trackingParam", "kind"],
+        },
       }),
       expect.objectContaining({
         action: "partner.updated",

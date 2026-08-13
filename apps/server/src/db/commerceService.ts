@@ -112,6 +112,7 @@ function parsePartner(row: typeof partners.$inferSelect): Partner {
     categories: row.categories,
     cities: row.cities,
     trackingParam: row.trackingParam,
+    kind: row.kind,
     status: row.status,
   });
   if (!parsed.success) throw new PartnerUnavailableError();
