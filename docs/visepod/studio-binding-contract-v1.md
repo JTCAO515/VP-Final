@@ -166,8 +166,30 @@ unbound device; it is not a `DEVICE_NOT_FOUND` substitute.
 ## Audit contract
 
 The only audit sink is the existing server-only `ops_audit_events` relation.
-For the first committed state mutation, the server derives the existing actor
-and timestamp and writes:
+Each successful provisioning-token issuance and explicit grant revocation must
+write one event atomically with the grant state change. The server derives the
+issuing or revoking Ops actor and timestamp. The non-secret persisted grant id
+is the target id; it is not a raw token, token fragment, or token digest. A
+token-issuance event has this form:
+
+```json
+{
+  "action": "visepod.provision.token_issued",
+  "targetType": "visepod_provisioning_grant",
+  "targetId": "00000000-0000-4000-8000-000000000004",
+  "metadata": {
+    "environment": "development",
+    "result": "succeeded"
+  }
+}
+```
+
+`visepod.provision.token_revoked` uses the same target and bounded metadata
+shape. A failed issuance or revocation writes neither a successful grant state
+nor one of these committed-action events.
+
+For the first committed binding mutation, the server derives the existing
+actor and timestamp and writes:
 
 ```json
 {
@@ -183,11 +205,12 @@ and timestamp and writes:
 }
 ```
 
-The permitted actions are `visepod.binding.created`,
+The permitted actions are `visepod.provision.token_issued`,
+`visepod.provision.token_revoked`, `visepod.binding.created`,
 `visepod.binding.rebound`, and `visepod.binding.revoked`. Audit metadata is
-strict: it excludes full email, password, raw token, device secret, Wi-Fi
-password, user credentials, session data, chat, and audio. Replays write no
-second audit event.
+strict: it excludes full email, password, raw token, token fragment or digest,
+device secret, Wi-Fi password, user credentials, session data, chat, and
+audio. Replayed binding commands write no second audit event.
 
 ## Versioning and implementation gate
 
