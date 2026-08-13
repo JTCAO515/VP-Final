@@ -19,6 +19,7 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
 | `rescue`        | Deterministic incident routing definitions, fail-closed reviewed-target availability, and bounded Human Help offer state                                      |
 | `safe-phrases`  | Private operator-verified high-risk fixed-expression contract, exact severity selection, and freshness eligibility                                            |
 | `task`          | Human Task input, lifecycle, transition commands, private outcome evidence, and non-status updates                                                            |
+| `tools`         | Versioned local-only preparation pack for eight execution-tool categories; deterministic action ids, no real-time API, partner URL, or live availability claim |
 | `commerce`      | Validated partner configuration, trusted-identity outbound records, active-only HTTPS host validation, and tracking construction                              |
 | `events`        | Telemetry event contract                                                                                                                                      |
 | `observability` | Redacted Copilot turn, per-attempt cost, product-event action, and forbidden-persistence contracts                                                            |
@@ -84,6 +85,9 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
   incident narrative. Unreviewed target ids fail closed. Health/safety always routes to the official
   emergency boundary and never offers Human Help, while a Human Help offer requires a matching
   configured city/category and retains the best-effort/no-SLA boundary.
+- Tools content is a versioned local preparation pack. It uses local action identifiers rather than
+  URLs and contains no partner/booking promise, real-time rate, inventory, or external API call.
+  A future consumer must separately prove an action target is available before exposing it.
 - `events` has two related contracts: a stored telemetry event requires exactly one trusted identity,
   registered action, allowlisted object properties, and a future retention deadline; browser capture
   is a smaller client-safe action union with no persistence metadata or attribution authority. The
