@@ -1226,9 +1226,202 @@ button:disabled {
   color: var(--red) !important;
 }
 
+.rescuePage {
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--red-soft), transparent 28%),
+      transparent 31rem
+    ),
+    var(--app);
+}
+
+.rescueHero,
+.rescueContent {
+  margin: 0 auto;
+  max-width: 1360px;
+  padding-left: clamp(20px, 5vw, 76px);
+  padding-right: clamp(20px, 5vw, 76px);
+}
+
+.rescueHero {
+  align-items: end;
+  border-bottom: 1px solid var(--line);
+  display: grid;
+  gap: 40px;
+  grid-template-columns: minmax(0, 1fr) minmax(270px, 0.42fr);
+  padding-bottom: 46px;
+  padding-top: clamp(54px, 9vw, 110px);
+}
+
+.rescueHero h1,
+.rescueSectionHeading h2,
+.rescueResult h2 {
+  letter-spacing: 0;
+  line-height: 1.02;
+  margin: 0;
+}
+
+.rescueHero h1 {
+  font-size: clamp(42px, 6.1vw, 78px);
+}
+
+.rescueHero > div > p:not(.pageEyebrow) {
+  color: var(--ink-soft);
+  font-size: 18px;
+  line-height: 1.65;
+  margin: 22px 0 0;
+  max-width: 700px;
+}
+
+.rescueBoundary {
+  background: var(--surface);
+  border: 1px solid color-mix(in srgb, var(--red), var(--line) 67%);
+  border-top: 3px solid var(--red);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  padding: 20px;
+}
+
+.rescueBoundary b,
+.rescuePrivacyNote b {
+  color: var(--red);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.rescueBoundary p,
+.rescuePrivacyNote p {
+  color: var(--ink-soft);
+  font-size: 13px;
+  line-height: 1.55;
+  margin: 10px 0 14px;
+}
+
+.rescueBoundary a,
+.textAction {
+  color: var(--red);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.rescueContent {
+  align-items: start;
+  display: grid;
+  gap: clamp(36px, 5vw, 80px);
+  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.76fr);
+  padding-bottom: 92px;
+  padding-top: 52px;
+}
+
+.rescueSectionHeading {
+  align-items: flex-end;
+  display: flex;
+  gap: 20px;
+  justify-content: space-between;
+  margin-bottom: 26px;
+}
+
+.rescueSectionHeading h2,
+.rescueResult h2 {
+  font-size: clamp(28px, 3vw, 40px);
+}
+
+.rescueSectionHeading > span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+  padding-bottom: 6px;
+  white-space: nowrap;
+}
+
+.rescueCategories {
+  display: grid;
+  gap: 10px;
+}
+
+.rescueCategories button {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--ink);
+  display: grid;
+  gap: 4px 16px;
+  grid-template-columns: 34px minmax(0, 1fr);
+  min-height: 96px;
+  padding: 18px;
+  text-align: left;
+}
+
+.rescueCategories button:hover,
+.rescueCategories button.selected {
+  border-color: var(--red);
+}
+
+.rescueCategories button.selected {
+  background: var(--red-soft);
+  box-shadow: inset 3px 0 var(--red);
+}
+
+.rescueCategories button > span {
+  color: var(--gold-dark);
+  font-size: 12px;
+  font-weight: 900;
+  grid-row: span 2;
+  padding-top: 2px;
+}
+
+.rescueCategories b {
+  font-size: 16px;
+}
+
+.rescueCategories small {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.rescueResult {
+  background: color-mix(in srgb, var(--surface), var(--gold-soft) 18%);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  min-height: 380px;
+  padding: clamp(20px, 3vw, 34px);
+  position: sticky;
+  top: 92px;
+}
+
+.rescueResult > div > p:not(.pageEyebrow),
+.rescuePrivacyNote p {
+  color: var(--ink-soft);
+  font-size: 15px;
+  line-height: 1.6;
+  margin: 16px 0;
+}
+
+.rescueOfficialResult .pageAction {
+  display: inline-flex;
+  margin-top: 8px;
+}
+
+.rescueUnavailableResult {
+  border-left: 3px solid var(--gold);
+  padding-left: 16px;
+}
+
+.rescuePrivacyNote {
+  border-top: 1px solid var(--line);
+  margin-top: 34px;
+  padding-top: 20px;
+}
+
 @media (max-width: 960px) {
   .readinessHero,
-  .readinessContent {
+  .readinessContent,
+  .rescueHero,
+  .rescueContent {
     grid-template-columns: 1fr;
   }
 
@@ -1238,6 +1431,10 @@ button:disabled {
   }
 
   .readinessResults {
+    position: static;
+  }
+
+  .rescueResult {
     position: static;
   }
 
@@ -1261,6 +1458,31 @@ button:disabled {
     gap: 32px;
     padding-bottom: 56px;
     padding-top: 36px;
+  }
+
+  .rescueHero {
+    gap: 28px;
+    padding-bottom: 34px;
+    padding-top: 54px;
+  }
+
+  .rescueHero > div > p:not(.pageEyebrow) {
+    font-size: 16px;
+  }
+
+  .rescueContent {
+    gap: 32px;
+    padding-bottom: 56px;
+    padding-top: 36px;
+  }
+
+  .rescueSectionHeading {
+    align-items: start;
+    display: grid;
+  }
+
+  .rescueCategories button {
+    min-height: 104px;
   }
 
   .readinessSectionHeading {
@@ -3440,14 +3662,14 @@ summary:active {
   .siteNav {
     display: grid;
     gap: 3px;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     width: 100%;
   }
 
   .siteNav a {
-    font-size: 11px;
+    font-size: 10px;
     justify-content: center;
-    min-height: 38px;
+    min-height: 44px;
     padding: 0 4px;
     text-align: center;
   }
