@@ -1,6 +1,8 @@
 import { z } from "zod";
 import { CopilotIntentSchema } from "../copilot/index.js";
 import { RescueCategorySchema, RescuePrimaryActionKindSchema } from "../rescue/index.js";
+import { ShowToLocalCategorySchema } from "../show-to-local/index.js";
+import { ToolContentPackIdSchema } from "../tools/index.js";
 
 export const ExistingCopilotEventActionSchema = z.enum([
   "session_started",
@@ -49,11 +51,21 @@ export const ArrivalPackTelemetryActionSchema = z.enum([
   "arrival_pack_regenerated",
 ]);
 
+export const MobileTelemetryActionSchema = z.enum([
+  "app_opened",
+  "trip_opened",
+  "offline_content_used",
+  "tool_opened",
+  "show_to_local_used",
+  "human_help_submitted",
+]);
+
 export const TelemetryActionSchema = z.union([
   ExistingCopilotEventActionSchema,
   PhaseZeroTelemetryActionSchema,
   RescueTelemetryActionSchema,
   ArrivalPackTelemetryActionSchema,
+  MobileTelemetryActionSchema,
 ]);
 
 export const ClientTelemetryActionSchema = z.enum([
@@ -149,6 +161,10 @@ const ArrivalPackPropsSchema = z
     readinessIncluded: z.boolean(),
   })
   .strict();
+const MobileTripOpenedPropsSchema = z.object({ version: z.number().int().positive() }).strict();
+const MobileOfflineContentPropsSchema = z.object({ cacheVersion: z.literal(1) }).strict();
+const MobileToolOpenedPropsSchema = z.object({ tool: ToolContentPackIdSchema }).strict();
+const MobileShowToLocalPropsSchema = z.object({ category: ShowToLocalCategorySchema }).strict();
 
 const TelemetryPropsSchemas = {
   session_started: EmptyPropsSchema,
@@ -186,6 +202,12 @@ const TelemetryPropsSchemas = {
   arrival_pack_generated: ArrivalPackPropsSchema,
   arrival_pack_downloaded: ArrivalPackPropsSchema,
   arrival_pack_regenerated: ArrivalPackPropsSchema,
+  app_opened: EmptyPropsSchema,
+  trip_opened: MobileTripOpenedPropsSchema,
+  offline_content_used: MobileOfflineContentPropsSchema,
+  tool_opened: MobileToolOpenedPropsSchema,
+  show_to_local_used: MobileShowToLocalPropsSchema,
+  human_help_submitted: EmptyPropsSchema,
 } satisfies Record<z.infer<typeof TelemetryActionSchema>, z.ZodType<Record<string, unknown>>>;
 
 const RESTRICTED_KEY =
@@ -313,9 +335,25 @@ export const TelemetryCaptureInputSchema = z
   .strict()
   .superRefine((event, ctx) => requireActionContract(event, ctx));
 
+/**
+ * Native telemetry carries a client-generated UUID only for idempotent offline retry. The server
+ * still derives identity, surface, timestamps, and retention after online session validation.
+ */
+export const MobileTelemetryCaptureInputSchema = z
+  .object({
+    id: z.string().uuid(),
+    action: MobileTelemetryActionSchema,
+    entity_type: IdentifierSchema,
+    entity_id: IdentifierSchema.optional(),
+    props_jsonb: z.record(z.unknown()).default({}),
+  })
+  .strict()
+  .superRefine((event, ctx) => requireActionContract(event, ctx));
+
 export const TelemetryEventInputSchema = TelemetryCaptureInputSchema;
 
 export type TelemetryAction = z.infer<typeof TelemetryActionSchema>;
 export type ClientTelemetryAction = z.infer<typeof ClientTelemetryActionSchema>;
 export type TelemetryCaptureInput = z.infer<typeof TelemetryCaptureInputSchema>;
+export type MobileTelemetryCaptureInput = z.infer<typeof MobileTelemetryCaptureInputSchema>;
 export type TelemetryEvent = z.infer<typeof TelemetryEventSchema>;

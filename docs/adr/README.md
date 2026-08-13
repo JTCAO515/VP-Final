@@ -23,6 +23,7 @@ New ADRs are append-only and use the next numeric prefix.
 | [ADR-0016](ADR-0016-execution-fact-safety.md)                          | Accepted | Freezes that execution facts need current eligible evidence and high-risk expressions use verified fixed wording or an honest fallback.    |
 | [ADR-0017](ADR-0017-vise-pod-studio-provisioning.md)                   | Accepted | Uses scoped, online-validated Ops provisioning for server-side VisePod user/device bindings and rejects user browsing.                     |
 | [ADR-0018](ADR-0018-voice-call-cost-accounting.md)                     | Accepted | Extends the retained cost ledger for token, audio-second, and character calls without activating voice providers.                          |
+| [ADR-0019](ADR-0019-mobile-telemetry-observation.md)                   | Accepted | Freezes authenticated, closed-set mobile observations with a bounded local retry queue and server-owned privacy controls.                  |
 
 ## When to Add an ADR
 

@@ -35,6 +35,18 @@ that result; refresh rebuilds from the app's bundled content and is not represen
 Today separately labels its authenticated Trip load and always requires the traveler to choose a
 snapshot before replacing the local Trip.
 
+After a verified mobile sign-in, the shell records a bounded, privacy-safe mobile observation queue.
+The only registered actions are `app_opened`, `trip_opened`, `offline_content_used`, `tool_opened`,
+`show_to_local_used`, and `human_help_submitted`; the current shell emits only actions for behavior
+that actually exists. It never records an input draft, message, Trip snapshot, email, token, contact,
+or phrase text. Each queued observation has a client-generated UUID solely for retry idempotency;
+the server derives the account owner, timestamp, surface, and retention deadline after online session
+validation. The app stores at most 100 observations in a separate disposable FileSystem file, retries
+in order every 30 seconds while a verified session remains available, and removes an item only after
+the server returns HTTP 202. A malformed queue is cleared rather than guessed. Sign-out clears unsent
+observations before another account can use the device; existing offline Tool and Trip content follows
+its separate cache policy.
+
 ## Start Trigger
 
 Mobile implementation begins only after Phase 1 quality and demand triggers are met: meaningful
@@ -56,7 +68,8 @@ for public capability claims until the relevant live dependencies and lifecycle 
   configuration only, never database/service-role credentials; missing or malformed values disable
   the corresponding path honestly.
 - Separate digital entitlements from real-world service payments.
-- Queue privacy-safe telemetry offline and flush after reconnect.
+- Queue privacy-safe telemetry offline and flush after reconnect only through `POST /api/mobile/telemetry`.
+  The queue is authenticated-account-only, bounded to 100 entries, and must be cleared on sign-out.
 - Consume `TOOLS_CONTENT_PACK` as local preparation content only. It does not establish live booking,
   exchange, emergency, partner, or translation-service availability; a future UI must hide a target
   it cannot resolve honestly.
