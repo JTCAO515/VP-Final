@@ -1,6 +1,6 @@
 # VisePod Studio Binding Contract v1
 
-Status: Draft
+Status: Accepted
 
 Owner: VisePod architecture / identity
 

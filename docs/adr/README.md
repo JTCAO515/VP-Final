@@ -21,7 +21,7 @@ New ADRs are append-only and use the next numeric prefix.
 | [ADR-0014](ADR-0014-vise-pod-https-turn-transport.md)                  | Accepted | VisePod v1 uses one signed HTTPS request per Wi-Fi push-to-talk turn rather than a persistent WebSocket transport.                         |
 | [ADR-0015](ADR-0015-public-runtime-safety-control.md)                  | Accepted | Freezes the bounded, truthful public-runtime control plane for P0-20 without duplicating existing owners.                                 |
 | [ADR-0016](ADR-0016-execution-fact-safety.md)                           | Accepted | Freezes that execution facts need current eligible evidence and high-risk expressions use verified fixed wording or an honest fallback.  |
-| [ADR-0017](ADR-0017-vise-pod-studio-provisioning.md)                   | Draft    | Proposes scoped, online-validated Ops provisioning for server-side VisePod user/device bindings and rejects user browsing.                 |
+| [ADR-0017](ADR-0017-vise-pod-studio-provisioning.md)                   | Accepted | Uses scoped, online-validated Ops provisioning for server-side VisePod user/device bindings and rejects user browsing.                     |
 
 ## When to Add an ADR
 

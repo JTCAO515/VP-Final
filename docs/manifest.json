@@ -201,9 +201,9 @@
       "title": "VisePod Studio Binding Contract v1",
       "category": "architecture",
       "type": "reference",
-      "status": "draft",
+      "status": "accepted",
       "owner": "VisePod architecture / identity",
-      "summary": "Draft server-side binding, short-lived provisioning-grant, exact-user-resolution, idempotency, and audit contract for VisePod Studio.",
+      "summary": "Accepted server-side binding, short-lived provisioning-grant, exact-user-resolution, idempotency, and audit contract for VisePod Studio.",
       "sourcePrefixes": ["packages/domain/src/visepod/"]
     },
     {
@@ -863,9 +863,9 @@
       "title": "ADR-0017: VisePod Studio Provisioning",
       "category": "decisions",
       "type": "decision",
-      "status": "draft",
+      "status": "accepted",
       "owner": "VisePod architecture / identity",
-      "summary": "Drafts scoped online Ops provisioning and server-side VisePod user/device bindings while rejecting user browsing and desktop-held secrets.",
+      "summary": "Freezes scoped online Ops provisioning and server-side VisePod user/device bindings while rejecting user browsing and desktop-held secrets.",
       "sourcePrefixes": ["packages/domain/src/visepod/"]
     },
 

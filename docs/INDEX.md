@@ -112,7 +112,7 @@ Current system shape, boundaries, data flows, and overall design controls.
 | [System Overview](architecture/system-overview.md) | explanation | active | architecture | Product-to-system view of the modular monolith and user surfaces. |
 | [VisePod Device Protocol v1](visepod/device-protocol-v1.md) | reference | accepted | VisePod architecture | Frozen HTTPS turn, signed PCM, indexed segment, error, and compatibility contract for VisePod v1. |
 | [VisePod Documentation](visepod/README.md) | reference | active | VisePod architecture | Reading order and boundaries for the Wi-Fi VisePod companion-device contract. |
-| [VisePod Studio Binding Contract v1](visepod/studio-binding-contract-v1.md) | reference | draft | VisePod architecture / identity | Draft server-side binding, short-lived provisioning-grant, exact-user-resolution, idempotency, and audit contract for VisePod Studio. |
+| [VisePod Studio Binding Contract v1](visepod/studio-binding-contract-v1.md) | reference | accepted | VisePod architecture / identity | Accepted server-side binding, short-lived provisioning-grant, exact-user-resolution, idempotency, and audit contract for VisePod Studio. |
 
 ## Modules
 
@@ -200,7 +200,7 @@ Append-only records of accepted and superseded binding decisions.
 | [ADR-0014: VisePod HTTPS Turn Transport](adr/ADR-0014-vise-pod-https-turn-transport.md) | decision | accepted | VisePod architecture | Freezes one signed HTTPS request per Wi-Fi VisePod turn instead of a persistent WebSocket transport. |
 | [ADR-0015: Public Runtime Safety Control](adr/ADR-0015-public-runtime-safety-control.md) | decision | accepted | runtime safety / privacy | Freezes a bounded, truthful P0-20 public-runtime control plane that reuses accepted identity, rate, model, and Human Help owners. |
 | [ADR-0016: Execution-Fact Safety and High-Risk Fixed Expressions](adr/ADR-0016-execution-fact-safety.md) | decision | accepted | AI and knowledge safety | Freezes fail-closed evidence and fixed-expression rules before Show to Local or other high-risk execution output is implemented. |
-| [ADR-0017: VisePod Studio Provisioning](adr/ADR-0017-vise-pod-studio-provisioning.md) | decision | draft | VisePod architecture / identity | Drafts scoped online Ops provisioning and server-side VisePod user/device bindings while rejecting user browsing and desktop-held secrets. |
+| [ADR-0017: VisePod Studio Provisioning](adr/ADR-0017-vise-pod-studio-provisioning.md) | decision | accepted | VisePod architecture / identity | Freezes scoped online Ops provisioning and server-side VisePod user/device bindings while rejecting user browsing and desktop-held secrets. |
 
 ## Runbooks
 

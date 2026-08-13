@@ -2,13 +2,13 @@
 
 Date: 2026-08-11
 
-Status: Draft
+Status: Accepted
 
-Decider: architecture owner through Issue #335
+Decider: architecture owner through Issue #335; accepted 2026-08-13
 
 Owner: VisePod architecture / identity
 
-Review date: Before Issue #336 or #337 implements a Studio route, token store, or binding store
+Review date: Before public device rollout or any expansion beyond the controlled VisePod Studio scope
 
 ## Context
 
@@ -159,5 +159,6 @@ credential, session, chat, or audio.
 
 This is a contract-only decision with no deployed Studio route or token issuer.
 Do not bypass it with a desktop-held secret or a direct database client. If the
-contract proves unsuitable before implementation, supersede this draft through a
-new reviewed ADR and revise the executable schema before consumer work begins.
+contract proves unsuitable before implementation, supersede this accepted ADR
+through a new reviewed ADR and revise the executable schema before consumer work
+begins.
