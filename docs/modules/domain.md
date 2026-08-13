@@ -14,6 +14,7 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
 | `trip`          | TripState, TripPatch operations, `applyPatch`, `diffTrips`, generation progress                                                                               |
 | `copilot`       | Intent, message, citations, tool cards, commercial actions, Human Help handoff, envelope, completion-job contract                                             |
 | `knowledge`     | POI, execution facts, knowledge gaps, scene-tag derivation, reviewed seed data, and ADR-0006 fact eligibility                                                 |
+| `offline`       | Versioned read-only Trip package, local-storage/AsyncStorage serialization, expiry, and credential-free offline boundary                                       |
 | `safe-phrases`  | Private operator-verified high-risk fixed-expression contract, exact severity selection, and freshness eligibility                                            |
 | `task`          | Human Task input, lifecycle, transition commands, private outcome evidence, and non-status updates                                                            |
 | `commerce`      | Validated partner configuration, trusted-identity outbound records, active-only HTTPS host validation, and tracking construction                              |
@@ -69,6 +70,10 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
   cached tokens cannot exceed total input tokens. Cache-miss and cache-hit input prices are separate
   immutable snapshots. `cost_pricing_missing` is a retained product event, not permission to invent
   a price or silently treat a zero-price row as reconciled.
+- Offline Trip packages are a read-only, versioned snapshot of the Trip plus tool and phrase-pack
+  versions, cities, and explicit expiry. The snapshot omits arbitrary Trip block metadata and
+  rejects authorization/credential-shaped strings before serialization, so it can enter platform
+  local storage without becoming a token cache.
 - `events` has two related contracts: a stored telemetry event requires exactly one trusted identity,
   registered action, allowlisted object properties, and a future retention deadline; browser capture
   is a smaller client-safe action union with no persistence metadata or attribution authority. The
