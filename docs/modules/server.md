@@ -112,7 +112,13 @@ Next.js runtimes rather than deployed as an independent service.
   provider's opaque Checkout session id for idempotency. A future webhook consumer may transition to
   `paid` only after signature verification and a ledger update carrying the provider payment-intent
   and event ids. No client route, task status, redirect, or raw provider payload is payment proof on
-  its own. Missing runtime configuration must remain an honest unavailable response.
+  its own. Missing runtime configuration must remain an honest unavailable response. The first
+  server-only Stripe Checkout adapter is an explicit opt-in (`VISEPANDA_HUMAN_TASK_PAYMENTS_ENABLED`
+  must equal `true`) and requires an HTTPS success URL, HTTPS cancel URL, retention-days value, and
+  `STRIPE_SECRET_KEY`; otherwise it returns no gateway. It requests only a hosted one-time Checkout
+  session with the task id as opaque provider metadata and a server-authorized cents amount. It does
+  not write the ledger, change task status, expose raw provider errors, or accept card data; the
+  authorized writer and signed webhook consumer remain separate boundaries.
 - P0-19d protects the public browser capture route before `TelemetryService.track` with two atomic
   Upstash sliding windows: a HMAC-derived verified-identity window (`60/minute`, `300/hour` by
   default) and a separate HMAC-derived Vercel trusted-network window (`180/minute`, `900/hour`).
