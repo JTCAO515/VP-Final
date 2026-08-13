@@ -16,6 +16,7 @@ import {
   VisePodStudioProvisioningGrantSchema,
   VisePodStudioProvisioningTokenIssueResponseSchema,
   VisePodStudioRevokeRequestSchema,
+  VisePodUserLookupAuditMetadataSchema,
 } from "./studio.js";
 
 const actorId = "00000000-0000-4000-8000-000000000001";
@@ -232,6 +233,8 @@ describe("VisePod Studio provisioning contract", () => {
     for (const code of [
       "INVALID_REQUEST",
       "PROVISIONING_ACCESS_DENIED",
+      "USER_LOOKUP_RATE_LIMITED",
+      "USER_LOOKUP_UNAVAILABLE",
       "DEVICE_NOT_FOUND",
       "USER_NOT_FOUND",
       "IDEMPOTENCY_KEY_CONFLICT",
@@ -244,6 +247,22 @@ describe("VisePod Studio provisioning contract", () => {
     expect(
       VisePodStudioErrorResponseSchema.safeParse({
         error: { code: "DEVICE_NOT_FOUND", token: "must-not-echo" },
+      }).success,
+    ).toBe(false);
+
+    expect(
+      VisePodUserLookupAuditMetadataSchema.parse({
+        identifierKind: "email",
+        identifierDigest: "a".repeat(64),
+        result: "found",
+      }),
+    ).toMatchObject({ identifierKind: "email", result: "found" });
+    expect(
+      VisePodUserLookupAuditMetadataSchema.safeParse({
+        identifierKind: "email",
+        identifierDigest: "a".repeat(64),
+        result: "found",
+        email: "must-not-persist@example.test",
       }).success,
     ).toBe(false);
   });

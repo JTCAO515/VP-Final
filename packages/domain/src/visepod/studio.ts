@@ -159,6 +159,8 @@ export const VisePodBindingMutationResponseSchema = z
 export const VisePodStudioErrorCodeSchema = z.enum([
   "INVALID_REQUEST",
   "PROVISIONING_ACCESS_DENIED",
+  "USER_LOOKUP_RATE_LIMITED",
+  "USER_LOOKUP_UNAVAILABLE",
   "DEVICE_NOT_FOUND",
   "USER_NOT_FOUND",
   "IDEMPOTENCY_KEY_CONFLICT",
@@ -192,6 +194,14 @@ export const VisePodBindingAuditMetadataSchema = z
   })
   .strict();
 
+export const VisePodUserLookupAuditMetadataSchema = z
+  .object({
+    identifierKind: z.enum(["email", "user_id"]),
+    identifierDigest: z.string().regex(/^[a-f0-9]{64}$/),
+    result: z.enum(["found", "not_found"]),
+  })
+  .strict();
+
 export type VisePodStudioProvisioningTokenIssueResponse = z.infer<
   typeof VisePodStudioProvisioningTokenIssueResponseSchema
 >;
@@ -205,6 +215,7 @@ export type VisePodDeviceBindingHistory = z.infer<typeof VisePodDeviceBindingHis
 export type VisePodBindingCommand = z.infer<typeof VisePodBindingCommandSchema>;
 export type VisePodBindingMutationResponse = z.infer<typeof VisePodBindingMutationResponseSchema>;
 export type VisePodBindingAuditMetadata = z.infer<typeof VisePodBindingAuditMetadataSchema>;
+export type VisePodUserLookupAuditMetadata = z.infer<typeof VisePodUserLookupAuditMetadataSchema>;
 
 export function isVisePodStudioProvisioningGrantUsable(
   grant: VisePodStudioProvisioningGrant,

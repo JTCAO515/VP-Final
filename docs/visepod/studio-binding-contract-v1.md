@@ -86,7 +86,12 @@ On a match, the minimal response is:
 ```
 
 `emailHint` is optional and always masked. A full email never appears in a
-response or URL.
+response, URL, audit row, or rate-limit key. The server validates the opaque
+grant and current `visepod.provision` permission before it reads the requested
+user record. It then applies a per-grant-issuer, Upstash-backed 6/minute and
+30/hour default lookup window. The Redis key is a domain-separated HMAC digest
+of the Ops actor; a missing/invalid limiter dependency fails closed. Deployment
+may set only the documented positive-integer limits.
 
 ### `GET /api/ops/visepod/devices/{deviceId}/binding`
 
@@ -159,13 +164,15 @@ no additional diagnostic values, raw credentials, or user data.
 
 | Situation                                                                | HTTP  | Response                                                 | Audit result                         |
 | ------------------------------------------------------------------------ | ----- | -------------------------------------------------------- | ------------------------------------ |
-| Malformed path, body, or bearer form                                     | `400` | `{ error: { code: "INVALID_REQUEST" } }`               | No binding mutation.                 |
+| Malformed path, body, or bearer form                                     | `400` | `{ error: { code: "INVALID_REQUEST" } }`                 | No binding mutation.                 |
 | First binding                                                            | `201` | `{ outcome: "created", idempotencyHit: false, binding }` | One `visepod.binding.created` event. |
 | Same write replay                                                        | `200` | Original outcome/projection with `idempotencyHit: true`. | No new event.                        |
 | Explicit rebind                                                          | `200` | `{ outcome: "rebound", idempotencyHit: false, binding }` | One `visepod.binding.rebound` event. |
 | Device absent                                                            | `404` | `{ error: { code: "DEVICE_NOT_FOUND" } }`                | No binding mutation.                 |
 | User absent                                                              | `404` | `{ error: { code: "USER_NOT_FOUND" } }`                  | No binding mutation.                 |
 | Missing, expired, revoked, mismatched-environment, or unauthorized grant | `403` | `{ error: { code: "PROVISIONING_ACCESS_DENIED" } }`      | No binding mutation.                 |
+| Exact-user lookup window exhausted                                       | `429` | `{ error: { code: "USER_LOOKUP_RATE_LIMITED" } }`        | `Retry-After`; no user read.         |
+| Exact-user lookup limiter unavailable                                    | `503` | `{ error: { code: "USER_LOOKUP_UNAVAILABLE" } }`         | Fail closed; no user read.           |
 | Same idempotency key, changed canonical payload                          | `409` | `{ error: { code: "IDEMPOTENCY_KEY_CONFLICT" } }`        | No binding mutation.                 |
 | A new command cannot apply to the current binding state                  | `409` | `{ error: { code: "BINDING_STATE_CONFLICT" } }`          | No binding mutation.                 |
 
@@ -214,9 +221,15 @@ actor and timestamp and writes:
 }
 ```
 
+Exact-user resolution writes one private `visepod.user.resolve` event even for
+a miss. Its target and metadata contain only a SHA-256 digest of the exact
+identifier, its identifier kind (`email` or `user_id`), and `found` or
+`not_found`; no full email or raw identifier enters audit evidence.
+
 The permitted actions are `visepod.provision.token_issued`,
 `visepod.provision.token_revoked`, `visepod.binding.created`,
-`visepod.binding.rebound`, and `visepod.binding.revoked`. Audit metadata is
+`visepod.binding.rebound`, `visepod.binding.revoked`, and
+`visepod.user.resolve`. Audit metadata is
 strict: it excludes full email, password, raw token, token fragment or digest,
 device secret, Wi-Fi password, user credentials, session data, chat, and
 audio. Replayed binding commands write no second audit event.

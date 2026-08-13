@@ -23,6 +23,9 @@ Status: active
 - A private device/identity mutation path MUST likewise be listed explicitly in the Database contracts
   job. Its test must prove that authorization precedes protected reads and that an audit-write failure
   rolls back both the state mutation and any idempotency receipt.
+- A private identity-read path MUST likewise be listed explicitly in the Database contracts job. Its
+  test must prove grant authorization and fail-closed rate admission precede an exact read, and that
+  a found or absent lookup produces only a privacy-safe audit record.
 - The Database contracts gate MUST execute a nonzero pgTAP file and test count. `Result: NOTESTS` is
   a failed verification state even if the CLI process exits successfully.
 - A database test that temporarily creates or removes a shared DDL object for failure injection MUST
