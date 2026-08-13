@@ -21,7 +21,8 @@ import {
 } from "../_server";
 import { runtimeUnavailableResponse } from "../_runtimeError";
 import { applyIdentityCookies, resolveRequestIdentity } from "../../../lib/requestIdentity";
-import { findModelFailure, summarizeModelFailure } from "./modelFailure";
+import { reportSafeRouteFailure } from "../_safeFailure";
+import { findModelFailure } from "./modelFailure";
 import {
   resolveTrustedCopilotClientAddress,
   TrustedClientAddressUnavailableError,
@@ -134,8 +135,10 @@ export async function POST(request: Request) {
   } catch (error) {
     const publicRuntimePolicyUnavailable = findError(error, PublicRuntimePolicyUnavailableError);
     if (publicRuntimePolicyUnavailable) {
-      console.warn("copilot_public_runtime_policy_unavailable", {
-        reason: publicRuntimePolicyUnavailable.reason,
+      reportSafeRouteFailure({
+        route: "/api/copilot",
+        capability: "copilot",
+        failureClass: "runtime_policy_unavailable",
       });
       return applyIdentityCookies(
         NextResponse.json(
@@ -156,11 +159,10 @@ export async function POST(request: Request) {
     );
     const trustedAddressUnavailable = findError(error, TrustedClientAddressUnavailableError);
     if (rateLimitUnavailable || authenticatedRateLimitUnavailable || trustedAddressUnavailable) {
-      console.warn("copilot_rate_limit_unavailable", {
-        reason:
-          rateLimitUnavailable?.reason ??
-          authenticatedRateLimitUnavailable?.reason ??
-          trustedAddressUnavailable?.reason,
+      reportSafeRouteFailure({
+        route: "/api/copilot",
+        capability: "copilot",
+        failureClass: "request_protection_unavailable",
       });
       return applyIdentityCookies(
         NextResponse.json(
@@ -208,7 +210,11 @@ export async function POST(request: Request) {
     }
     const turnControl = findError(error, AnonymousTurnControlUnavailableError);
     if (turnControl) {
-      console.warn("anonymous_turn_control_unavailable", { reason: turnControl.reason });
+      reportSafeRouteFailure({
+        route: "/api/copilot",
+        capability: "copilot",
+        failureClass: "anonymous_turn_control_unavailable",
+      });
       return applyIdentityCookies(
         NextResponse.json(
           {
@@ -223,11 +229,21 @@ export async function POST(request: Request) {
       );
     }
     const unavailable = runtimeUnavailableResponse(error);
-    if (unavailable) return applyIdentityCookies(unavailable, cookieResponse);
+    if (unavailable) {
+      reportSafeRouteFailure({
+        route: "/api/copilot",
+        capability: "copilot",
+        failureClass: "runtime_unavailable",
+      });
+      return applyIdentityCookies(unavailable, cookieResponse);
+    }
     const modelFailure = findModelFailure(error);
     if (modelFailure) {
-      const diagnostic = summarizeModelFailure(error);
-      if (diagnostic) console.warn("copilot_model_provider_failure", diagnostic);
+      reportSafeRouteFailure({
+        route: "/api/copilot",
+        capability: "copilot",
+        failureClass: "model_provider_failure",
+      });
       return applyIdentityCookies(
         NextResponse.json(
           {
@@ -244,11 +260,13 @@ export async function POST(request: Request) {
       );
     }
     const conflict = findTripConflict(error);
-    if (!conflict) {
-      console.error("copilot_unexpected_failure", {
-        failureClass: "unexpected_error",
-      });
-    }
+    const correlationId = conflict
+      ? null
+      : reportSafeRouteFailure({
+          route: "/api/copilot",
+          capability: "copilot",
+          failureClass: "unexpected_error",
+        });
     return applyIdentityCookies(
       NextResponse.json(
         {
@@ -258,6 +276,7 @@ export async function POST(request: Request) {
             ? "This trip changed in another session. Reload it before trying again."
             : "Copilot is temporarily unavailable. Try again later.",
           ...(conflict ? { code: conflict.code, currentVersion: conflict.currentVersion } : {}),
+          ...(correlationId ? { correlationId } : {}),
         },
         { status: conflict ? 409 : 502 },
       ),

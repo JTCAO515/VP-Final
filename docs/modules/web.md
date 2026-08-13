@@ -166,6 +166,13 @@ server-authoritative wait interval without an immediate retry control; model fai
 no answer was generated and may offer retry. These messages never imply a booking, fallback answer,
 provider-health guarantee, or successful model call.
 
+The App Router error boundary supplies a separate recovery state for an unexpected rendering failure.
+It shows no raw error, stack, prompt, cookie, token, credential, provider body, or Trip data: only a
+fresh opaque correlation id, a retry action, and a return-to-Copilot link. The Copilot route's generic
+unexpected 502 response may include the same kind of safe correlation id for support. Sentry is not
+required for either behavior; OA-008 must be explicitly configured before any third-party reporter is
+treated as active.
+
 Human Help now writes through the durable P0-13 adapter. `/api/human-help` derives owner identity from
 the verified session or signed anonymous cookie, requires an idempotency key, and returns only the
 task id, `requested` status, and creation time. It never echoes contact or description and never

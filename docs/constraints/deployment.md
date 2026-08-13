@@ -55,6 +55,12 @@ Status: active
   identity and `VISEPANDA_IP_HASH_SALT`; raw user ids, addresses, cookies, and salts MUST NOT be sent
   to Redis or logs. Missing Redis or hashing configuration fails the authenticated request closed with
   a typed unavailable result rather than falling back to process-local accounting.
+- Public Web recovery uses the built-in error boundary and safe structured route logs before any
+  optional monitoring adapter. The boundary may show only a generated correlation id and recovery
+  actions; route logs may contain only that id, route, capability, and normalized failure class.
+  Sentry is not a required dependency or live-service claim: it may be enabled only after OA-008
+  records its account, region, sampling, retention, privacy, and alert ownership. Missing Sentry
+  configuration MUST leave the same safe local behavior running and MUST NOT crash a deploy.
 - Public telemetry capture MUST use the same approved Upstash Redis service and Vercel-only trusted
   address resolver before the telemetry database write. It MUST require both a HMAC-derived verified
   identity window and a HMAC-derived trusted-network window; raw identity, address, salt, cookie,

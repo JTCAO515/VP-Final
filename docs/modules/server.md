@@ -59,7 +59,9 @@ Next.js runtimes rather than deployed as an independent service.
   any request-protection or model composition work. A verified account then passes a separate
   domain-separated-HMAC authenticated identity window after the trusted-network guard; a missing
   dependency returns an honest unavailable response and never falls back to process-local enforcement.
-  The per-identity Human Task daily cap remains a separate P0-20 integration boundary.
+  The Human Task service independently accepts at most one new controlled-preview request per verified
+  identity and China day; a safe idempotency replay is not a new submission, while the global
+  Shanghai five-task capacity remains a final separate guard.
 - The deployed DEMO-01 path is dialogue-only. It rejects Trip actions, tools, commerce, Human Help,
   and citations before any state-changing branch can run. Real provider evidence remains blocked on
   OA-005 and is not claimed by this repository change.
@@ -78,6 +80,11 @@ Next.js runtimes rather than deployed as an independent service.
   raw IP or salt and expires each bucket after one hour. Tests and explicit `local-demo` share one
   fixed local identity; any other non-Vercel runtime, missing salt/configuration, invalid trusted
   header, Redis failure, or invalid response fails closed before model execution under OA-013.
+- The Copilot route's unexpected and unavailable failures report only a generated correlation id,
+  route (`/api/copilot`), capability (`copilot`), and normalized failure class through the safe
+  server logger. It never hands the logger an error object, request body, identity, address, cookie,
+  secret, signature, model payload, or cost record. Sentry remains an optional OA-008-owned reporter;
+  no Sentry setting or package is required for the safe local log path.
 - Knowledge, Human Task, and Telemetry routers require a service selected by the composition root;
   omitted capabilities return typed `SERVICE_UNAVAILABLE` and never construct memory internally.
 - P0-19 makes the generic telemetry capture router a narrow browser boundary rather than a generic

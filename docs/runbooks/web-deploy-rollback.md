@@ -39,7 +39,10 @@ ownership or topology changes.
 - Public URL serves the expected commit, not a bootstrap placeholder.
 - No horizontal overflow or broken primary navigation on desktop/mobile.
 - Missing backend/provider configuration is reported honestly.
-- Sentry/logging receives a controlled test error when observability is active.
+- A controlled render failure shows the recovery page with a fresh correlation id and no diagnostic
+  content. Record only the correlation id and deployment SHA in evidence.
+- If OA-008 has explicitly activated a monitoring adapter, its sanitized controlled-test event may be
+  checked too. Its absence is not a deployment failure and must not be described as active monitoring.
 
 ## Rollback
 

@@ -350,17 +350,25 @@ describe("POST /api/copilot anonymous turn wall", () => {
     const body = await response.json();
 
     expect(response.status).toBe(502);
-    expect(body).toEqual({
+    expect(body).toMatchObject({
       ok: false,
       code: "COPILOT_REQUEST_FAILED",
       error: "Copilot is temporarily unavailable. Try again later.",
+      correlationId: expect.stringMatching(
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[47][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+      ),
     });
     expect(JSON.stringify(body)).not.toContain("poi_facts");
     expect(JSON.stringify(body)).not.toContain("cookie");
     expect(JSON.stringify(body)).not.toContain("signature");
-    expect(errorLog).toHaveBeenCalledWith("copilot_unexpected_failure", {
-      failureClass: "unexpected_error",
-    });
+    expect(errorLog).toHaveBeenCalledWith(
+      "web_route_failure",
+      expect.objectContaining({
+        route: "/api/copilot",
+        capability: "copilot",
+        failureClass: "unexpected_error",
+      }),
+    );
     expect(JSON.stringify(errorLog.mock.calls)).not.toContain(internalFailure);
   });
 
