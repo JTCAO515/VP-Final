@@ -110,6 +110,7 @@ Current system shape, boundaries, data flows, and overall design controls.
 | [Runtime and Data Flows](architecture/runtime-data-flows.md) | explanation | active | architecture | Copilot, Trip, knowledge, commerce, identity, task, and telemetry flows. |
 | [Runtime Mode and Adapter Inventory](architecture/runtime-adapter-inventory.md) | reference | active | server / platform | Explicit runtime modes, safe adapter diagnostics, durable object owners, and canonical follow-ups. |
 | [System Overview](architecture/system-overview.md) | explanation | active | architecture | Product-to-system view of the modular monolith and user surfaces. |
+| [VisePod Device Domain v1](visepod/device-domain-v1.md) | reference | accepted | VisePod architecture | Portable lifecycle, binding-presence, session, heartbeat, audio-format, and private control-error contract without credentials or runtime activation. |
 | [VisePod Device Protocol v1](visepod/device-protocol-v1.md) | reference | accepted | VisePod architecture | Frozen HTTPS turn, signed PCM, indexed segment, error, and compatibility contract for VisePod v1. |
 | [VisePod Documentation](visepod/README.md) | reference | active | VisePod architecture | Reading order and boundaries for the Wi-Fi VisePod companion-device contract. |
 | [VisePod Studio Binding Contract v1](visepod/studio-binding-contract-v1.md) | reference | accepted | VisePod architecture / identity | Accepted server-side binding, short-lived provisioning-grant, exact-user-resolution, idempotency, and audit contract for VisePod Studio. |

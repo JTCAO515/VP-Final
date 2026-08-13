@@ -13,12 +13,15 @@ live device turn is enabled.
    to use one HTTPS request per push-to-talk turn instead of a persistent socket.
 3. `packages/domain/src/visepod/index.ts` for the executable Zod contract and
    cross-language signing fixture.
-4. [VisePod Studio Binding Contract v1](studio-binding-contract-v1.md) for the
+4. [VisePod Device Domain v1](device-domain-v1.md) for portable lifecycle,
+   binding-presence, session, heartbeat, audio-format, and private control-error
+   semantics. It has no credential or runtime implementation.
+5. [VisePod Studio Binding Contract v1](studio-binding-contract-v1.md) for the
    separate, server-side user/device provisioning boundary.
-5. [ADR-0017](../adr/ADR-0017-vise-pod-studio-provisioning.md) for why Studio
+6. [ADR-0017](../adr/ADR-0017-vise-pod-studio-provisioning.md) for why Studio
    reuses Ops authorization, issues a short-lived grant, and forbids user
    browsing.
-6. [Studio OpenAPI v1](studio-openapi-v1.json) and the
+7. [Studio OpenAPI v1](studio-openapi-v1.json) and the
    [seven synthetic response fixtures](fixtures/studio-binding-v1.json) for a
    Studio consumer. Both are versioned companion artifacts: Zod remains the
    executable source of truth, while `studioPublication.test.ts` rejects

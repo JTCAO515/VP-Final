@@ -11,8 +11,25 @@ export const VISEPOD_RESPONSE_TEXT_MAX_BYTES = 256 as const;
 export const VISEPOD_RESPONSE_AUDIO_MAX_BYTES = 192 as const;
 export const VISEPOD_RESPONSE_MAX_DURATION_MS = 120_000 as const;
 
+/** The only audio format accepted by the frozen HTTPS turn contract. */
+export const VISEPOD_AUDIO_FORMAT = {
+  encoding: "pcm_s16le",
+  sampleRateHz: VISEPOD_AUDIO_SAMPLE_RATE_HZ,
+  bitsPerSample: VISEPOD_AUDIO_BITS_PER_SAMPLE,
+  channels: VISEPOD_AUDIO_CHANNELS,
+} as const;
+
 const UNRESERVED_TOKEN = /^[A-Za-z0-9._~-]+$/;
 const LOWERCASE_SHA256_HEX = /^[a-f0-9]{64}$/;
+
+export const VisePodAudioFormatSchema = z
+  .object({
+    encoding: z.literal(VISEPOD_AUDIO_FORMAT.encoding),
+    sampleRateHz: z.literal(VISEPOD_AUDIO_FORMAT.sampleRateHz),
+    bitsPerSample: z.literal(VISEPOD_AUDIO_FORMAT.bitsPerSample),
+    channels: z.literal(VISEPOD_AUDIO_FORMAT.channels),
+  })
+  .strict();
 
 export const VisePodDeviceIdSchema = z
   .string()
@@ -183,6 +200,202 @@ export const VisePodHealthResponseSchema = z
     }
   });
 
+/**
+ * Device lifecycle is intentionally separate from a user binding. A revoked
+ * device may retain historical binding records elsewhere, but cannot return to
+ * an operational lifecycle state.
+ */
+export const VisePodDeviceLifecycleSchema = z.enum([
+  "inventory",
+  "provisioned",
+  "active",
+  "suspended",
+  "revoked",
+  "retired",
+]);
+
+export const VisePodDeviceBindingStatusSchema = z.enum(["unbound", "bound"]);
+export const VisePodClientTypeSchema = z.literal("visepod");
+
+export const VISEPOD_DEVICE_LIFECYCLE_TRANSITIONS: Readonly<
+  Record<VisePodDeviceLifecycle, readonly VisePodDeviceLifecycle[]>
+> = {
+  inventory: ["provisioned", "retired"],
+  provisioned: ["active", "suspended", "revoked", "retired"],
+  active: ["suspended", "revoked", "retired"],
+  suspended: ["active", "revoked", "retired"],
+  revoked: ["retired"],
+  retired: [],
+};
+
+/** Shared by simulator and firmware tests; it contains no device-specific data. */
+export const VisePodDeviceLifecycleTestVector = {
+  accepted: [
+    ["inventory", "provisioned"],
+    ["provisioned", "active"],
+    ["active", "suspended"],
+    ["suspended", "active"],
+    ["active", "revoked"],
+    ["revoked", "retired"],
+  ],
+  rejected: [
+    ["inventory", "active"],
+    ["revoked", "active"],
+    ["retired", "inventory"],
+  ],
+} as const satisfies Readonly<{
+  accepted: readonly (readonly [VisePodDeviceLifecycle, VisePodDeviceLifecycle])[];
+  rejected: readonly (readonly [VisePodDeviceLifecycle, VisePodDeviceLifecycle])[];
+}>;
+
+export const VisePodDeviceSchema = z
+  .object({
+    deviceId: VisePodDeviceIdSchema,
+    lifecycle: VisePodDeviceLifecycleSchema,
+    bindingStatus: VisePodDeviceBindingStatusSchema,
+    clientType: VisePodClientTypeSchema,
+    createdAt: z.string().datetime(),
+    provisionedAt: z.string().datetime().nullable(),
+    updatedAt: z.string().datetime(),
+  })
+  .strict()
+  .superRefine((device, context) => {
+    const requiresProvisionedAt = ["provisioned", "active", "suspended", "revoked"].includes(
+      device.lifecycle,
+    );
+    if (requiresProvisionedAt && device.provisionedAt === null) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["provisionedAt"],
+        message: "provisionedAt must be present for an operational or revoked device",
+      });
+    }
+    if (Date.parse(device.updatedAt) < Date.parse(device.createdAt)) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["updatedAt"],
+        message: "updatedAt cannot precede createdAt",
+      });
+    }
+  });
+
+/** No secret, user id, or credential material belongs in this request. */
+export const VisePodDeviceProvisioningRequestSchema = z
+  .object({
+    deviceId: VisePodDeviceIdSchema,
+    clientType: VisePodClientTypeSchema,
+  })
+  .strict();
+
+/**
+ * A transport-neutral session descriptor. Authentication/token semantics stay
+ * with the later device-authentication runtime and are deliberately absent.
+ */
+export const VisePodDeviceSessionSchema = z
+  .object({
+    sessionId: z.string().uuid(),
+    deviceId: VisePodDeviceIdSchema,
+    clientType: VisePodClientTypeSchema,
+    openedAt: z.string().datetime(),
+    expiresAt: z.string().datetime(),
+    closedAt: z.string().datetime().nullable(),
+  })
+  .strict()
+  .superRefine((session, context) => {
+    const openedAt = Date.parse(session.openedAt);
+    const expiresAt = Date.parse(session.expiresAt);
+    const closedAt = session.closedAt === null ? null : Date.parse(session.closedAt);
+    if (expiresAt <= openedAt) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["expiresAt"],
+        message: "expiresAt must be after openedAt",
+      });
+    }
+    if (closedAt !== null && (closedAt < openedAt || closedAt > expiresAt)) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["closedAt"],
+        message: "closedAt must be within the session lifetime",
+      });
+    }
+  });
+
+/** A heartbeat carries device-local timing only; it never carries a user id. */
+export const VisePodDeviceHeartbeatSchema = z
+  .object({
+    deviceId: VisePodDeviceIdSchema,
+    clientType: VisePodClientTypeSchema,
+    sessionId: z.string().uuid().nullable(),
+    reportedAt: z.string().datetime(),
+  })
+  .strict();
+
+/** Control-plane errors are private and must not replace the public v1 turn error shape. */
+export const VisePodDeviceControlErrorCodeSchema = z.enum([
+  "DEVICE_NOT_FOUND",
+  "DEVICE_NOT_PROVISIONED",
+  "DEVICE_NOT_ACTIVE",
+  "DEVICE_REVOKED",
+  "DEVICE_RETIRED",
+  "DEVICE_UNBOUND",
+  "DEVICE_ALREADY_BOUND",
+  "SESSION_NOT_FOUND",
+  "SESSION_EXPIRED",
+]);
+
+export function canTransitionVisePodDeviceLifecycle(
+  current: VisePodDeviceLifecycle,
+  next: VisePodDeviceLifecycle,
+): boolean {
+  return VISEPOD_DEVICE_LIFECYCLE_TRANSITIONS[current].includes(next);
+}
+
+export function transitionVisePodDeviceLifecycle(
+  device: VisePodDevice,
+  next: VisePodDeviceLifecycle,
+  now = new Date(),
+): VisePodDevice {
+  if (!canTransitionVisePodDeviceLifecycle(device.lifecycle, next)) {
+    throw new VisePodDeviceLifecycleTransitionError(device.lifecycle, next);
+  }
+  const timestamp = now.toISOString();
+  return VisePodDeviceSchema.parse({
+    ...device,
+    lifecycle: next,
+    provisionedAt:
+      next === "provisioned" ? (device.provisionedAt ?? timestamp) : device.provisionedAt,
+    updatedAt: timestamp,
+  });
+}
+
+export function isVisePodDeviceTurnEligible(
+  device: Pick<VisePodDevice, "lifecycle" | "bindingStatus">,
+): boolean {
+  return device.lifecycle === "active" && device.bindingStatus === "bound";
+}
+
+/**
+ * No control-plane condition is resolved by retrying the same request. The
+ * public turn protocol retains its own retry-after semantics for transient
+ * upstream/rate-limit conditions.
+ */
+export function isVisePodDeviceControlErrorRetryable(_code: VisePodDeviceControlErrorCode): false {
+  return false;
+}
+
+export class VisePodDeviceLifecycleTransitionError extends Error {
+  readonly code = "INVALID_DEVICE_LIFECYCLE_TRANSITION";
+
+  constructor(
+    readonly from: VisePodDeviceLifecycle,
+    readonly to: VisePodDeviceLifecycle,
+  ) {
+    super(`VisePod device cannot transition from ${from} to ${to}.`);
+    this.name = "VisePodDeviceLifecycleTransitionError";
+  }
+}
+
 export const VisePodSignatureVector = {
   signingVersion: VISEPOD_SIGNING_VERSION,
   keyHex: "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
@@ -328,3 +541,14 @@ export type VisePodTurnResponse = z.infer<typeof VisePodTurnResponseSchema>;
 export type VisePodErrorCode = z.infer<typeof VisePodErrorCodeSchema>;
 export type VisePodErrorResponse = z.infer<typeof VisePodErrorResponseSchema>;
 export type VisePodHealthResponse = z.infer<typeof VisePodHealthResponseSchema>;
+export type VisePodAudioFormat = z.infer<typeof VisePodAudioFormatSchema>;
+export type VisePodDeviceLifecycle = z.infer<typeof VisePodDeviceLifecycleSchema>;
+export type VisePodDeviceBindingStatus = z.infer<typeof VisePodDeviceBindingStatusSchema>;
+export type VisePodClientType = z.infer<typeof VisePodClientTypeSchema>;
+export type VisePodDevice = z.infer<typeof VisePodDeviceSchema>;
+export type VisePodDeviceProvisioningRequest = z.infer<
+  typeof VisePodDeviceProvisioningRequestSchema
+>;
+export type VisePodDeviceSession = z.infer<typeof VisePodDeviceSessionSchema>;
+export type VisePodDeviceHeartbeat = z.infer<typeof VisePodDeviceHeartbeatSchema>;
+export type VisePodDeviceControlErrorCode = z.infer<typeof VisePodDeviceControlErrorCodeSchema>;

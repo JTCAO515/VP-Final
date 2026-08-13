@@ -20,7 +20,7 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
 | `events`        | Telemetry event contract                                                                                                                                      |
 | `observability` | Redacted Copilot turn, per-attempt cost, product-event action, and forbidden-persistence contracts                                                            |
 | `errors`        | Shared typed error shapes                                                                                                                                     |
-| `visepod`       | Signed Wi-Fi device-turn metadata, raw PCM bounds, indexed playback segments, health/errors, HMAC vector, sentence splitting, and the Studio binding contract |
+| `visepod`       | Signed Wi-Fi device-turn metadata, raw PCM bounds, indexed playback segments, health/errors, HMAC vector, sentence splitting, portable device lifecycle/control records, and the Studio binding contract |
 
 ## Invariants
 
@@ -95,6 +95,10 @@ fulfilling -> done`, with explicit cancellation edges and no terminal recovery. 
   free-text reason. It does not implement a Studio route, token store, or device
   registry. See
   [Studio Binding Contract v1](../visepod/studio-binding-contract-v1.md).
+- VisePod device lifecycle is portable domain state only: `inventory`, `provisioned`, `active`,
+  `suspended`, `revoked`, and `retired`. It remains independent of `unbound`/`bound` presence;
+  only `active + bound` is turn-eligible. The domain records carry no user id, credential, token,
+  audio, or authentication semantics. See [Device Domain v1](../visepod/device-domain-v1.md).
 
 ## Change Workflow
 
