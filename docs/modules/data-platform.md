@@ -156,6 +156,13 @@ bounded city/category/kind dimensions only, never raw identity, content, credent
 signature columns. Payment action names are contract-only until the separate payment boundary is
 accepted. See [ADR-0012](../adr/ADR-0012-phase0-telemetry-observation-contract.md).
 
+Rescue extends the registered event vocabulary only with fixed category and deterministic routing
+metadata: `rescue_started`, `rescue_route_selected`, and server-owned Human Help/resolution lifecycle
+actions. The ledger accepts no Rescue narrative, contact, location, health detail, or free-form outcome.
+Browser capture remains limited to the first two actions; an unavailable rendered route must not emit a
+Human Help offer, confirmation, or resolution event. The additive migration only expands the existing
+action allowlist and leaves the identity, property, retention, and server-derived write boundaries intact.
+
 ADR-0011 enforces the existing retention deadlines with three staggered database-local Supabase Cron
 jobs. Each job calls a restricted target through `internal.run_retention_purge(text)`; successful and
 failed executions retain only target, timestamps, non-negative deletion counts, and normalized

@@ -86,6 +86,11 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
   incident narrative. Unreviewed target ids fail closed. Health/safety always routes to the official
   emergency boundary and never offers Human Help, while a Human Help offer requires a matching
   configured city/category and retains the best-effort/no-SLA boundary.
+- Rescue telemetry is a separate fixed-metadata extension: browser capture may emit only
+  `rescue_started` and `rescue_route_selected` with the enumerated category and deterministic route
+  kind. Human Help offer/confirmation and resolution actions remain registered server-only lifecycle
+  events until an operational consumer is accepted. No Rescue action accepts narrative, contact,
+  location, health detail, or free-form outcome text.
 - Tools content is a versioned local preparation pack. It uses local action identifiers rather than
   URLs and contains no partner/booking promise, real-time rate, inventory, or external API call.
   A future consumer must separately prove an action target is available before exposing it.

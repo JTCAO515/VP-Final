@@ -87,6 +87,12 @@ the associated authoritative Copilot result, outbound click-ledger commit, or Hu
 they cannot delay the answer, redirect, or task receipt. `partner_redirected` means that VisePanda
 issued a durable approved redirect, not that a partner accepted a booking or conversion.
 
+The Rescue consumer may similarly emit only `rescue_started` and `rescue_route_selected` through the
+strict browser endpoint. They carry a fixed Rescue category and deterministic primary-action kind,
+not an incident narrative, location, contact, health detail, or free-form outcome. Availability,
+Human Help offer/confirmation, and resolution lifecycle events remain server-owned and must not be
+emitted merely because a disabled or unavailable Rescue route rendered.
+
 Before the endpoint delegates to the telemetry service, it requires both the verified signed-session
 or account identity and Vercel's trusted client address to pass independent Upstash sliding windows.
 The current default allows a generous real browsing burst: `60/minute` and `300/hour` per identity,

@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(18);
+select plan(20);
 
 select ok(
   exists (select 1 from pg_constraint where conname = 'events_exactly_one_identity_check'),
@@ -40,6 +40,26 @@ select throws_ok(
   '23514',
   null,
   'outbound events cannot omit partner and click id'
+);
+select lives_ok(
+  $$insert into public.events (
+      anon_id, surface, action, entity_type, entity_id, props_jsonb, retention_expires_at
+    ) values (
+      'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'web', 'rescue_route_selected', 'rescue_route',
+      'payment_problem', '{"category":"payment_problem","primaryActionKind":"unavailable"}'::jsonb,
+      now() + interval '180 days'
+    )$$,
+  'registered Rescue route metadata may enter the durable ledger'
+);
+select throws_ok(
+  $$insert into public.events (
+      anon_id, surface, action, entity_type, retention_expires_at
+    ) values (
+      'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'web', 'rescue_freeform_narrative', 'rescue_route', now() + interval '180 days'
+    )$$,
+  '23514',
+  null,
+  'unregistered Rescue narrative actions cannot enter the durable ledger'
 );
 
 insert into public.events (
