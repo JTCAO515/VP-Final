@@ -197,6 +197,16 @@
       "sourcePrefixes": ["packages/domain/src/visepod/"]
     },
     {
+      "path": "docs/visepod/device-domain-v1.md",
+      "title": "VisePod Device Domain v1",
+      "category": "architecture",
+      "type": "reference",
+      "status": "accepted",
+      "owner": "VisePod architecture",
+      "summary": "Portable lifecycle, binding-presence, session, heartbeat, audio-format, and private control-error contract without credentials or runtime activation.",
+      "sourcePrefixes": ["packages/domain/src/visepod/"]
+    },
+    {
       "path": "docs/visepod/studio-binding-contract-v1.md",
       "title": "VisePod Studio Binding Contract v1",
       "category": "architecture",

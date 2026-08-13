@@ -4,7 +4,16 @@ import { describe, expect, it } from "vitest";
 
 import {
   buildVisePodCanonicalSigningString,
+  canTransitionVisePodDeviceLifecycle,
+  isVisePodDeviceControlErrorRetryable,
+  isVisePodDeviceTurnEligible,
   splitVisePodSentences,
+  transitionVisePodDeviceLifecycle,
+  VisePodAudioFormatSchema,
+  VisePodDeviceHeartbeatSchema,
+  VisePodDeviceSchema,
+  VisePodDeviceSessionSchema,
+  VisePodDeviceLifecycleTestVector,
   VisePodHealthResponseSchema,
   VisePodSignatureVector,
   VisePodTurnMetadataSchema,
@@ -167,5 +176,91 @@ describe("VisePod sentence splitting", () => {
       "请出示护照。",
       "Then take Metro Line 10?",
     ]);
+  });
+});
+
+describe("VisePod device control domain", () => {
+  const inventoryDevice = {
+    deviceId: "device-001",
+    lifecycle: "inventory" as const,
+    bindingStatus: "unbound" as const,
+    clientType: "visepod" as const,
+    createdAt: "2026-08-13T00:00:00.000Z",
+    provisionedAt: null,
+    updatedAt: "2026-08-13T00:00:00.000Z",
+  };
+
+  it("freezes the PCM format and lifecycle transitions without a user field", () => {
+    expect(
+      VisePodAudioFormatSchema.parse({
+        encoding: "pcm_s16le",
+        sampleRateHz: 16_000,
+        bitsPerSample: 16,
+        channels: 1,
+      }),
+    ).toBeTruthy();
+    expect(
+      VisePodAudioFormatSchema.safeParse({
+        encoding: "pcm_s16le",
+        sampleRateHz: 8_000,
+        bitsPerSample: 16,
+        channels: 1,
+      }).success,
+    ).toBe(false);
+    expect(
+      VisePodDeviceSchema.safeParse({ ...inventoryDevice, userId: "not-allowed" }).success,
+    ).toBe(false);
+
+    const provisioned = transitionVisePodDeviceLifecycle(
+      VisePodDeviceSchema.parse(inventoryDevice),
+      "provisioned",
+      new Date("2026-08-13T00:01:00.000Z"),
+    );
+    expect(provisioned.provisionedAt).toBe("2026-08-13T00:01:00.000Z");
+    expect(canTransitionVisePodDeviceLifecycle("revoked", "active")).toBe(false);
+    for (const [from, to] of VisePodDeviceLifecycleTestVector.accepted) {
+      expect(canTransitionVisePodDeviceLifecycle(from, to)).toBe(true);
+    }
+    for (const [from, to] of VisePodDeviceLifecycleTestVector.rejected) {
+      expect(canTransitionVisePodDeviceLifecycle(from, to)).toBe(false);
+    }
+    expect(() =>
+      transitionVisePodDeviceLifecycle({ ...provisioned, lifecycle: "revoked" }, "active"),
+    ).toThrow("cannot transition");
+  });
+
+  it("keeps binding presence independent while making only active bound devices turn eligible", () => {
+    const revokedButBound = VisePodDeviceSchema.parse({
+      ...inventoryDevice,
+      lifecycle: "revoked",
+      bindingStatus: "bound",
+      provisionedAt: "2026-08-13T00:01:00.000Z",
+      updatedAt: "2026-08-13T00:02:00.000Z",
+    });
+    expect(isVisePodDeviceTurnEligible(revokedButBound)).toBe(false);
+    expect(isVisePodDeviceTurnEligible({ lifecycle: "active", bindingStatus: "bound" })).toBe(true);
+  });
+
+  it("keeps session and heartbeat correlations credential-free and control errors non-retryable", () => {
+    expect(
+      VisePodDeviceSessionSchema.safeParse({
+        sessionId: "29800000-0000-4000-8000-000000000001",
+        deviceId: "device-001",
+        clientType: "visepod",
+        openedAt: "2026-08-13T00:00:00.000Z",
+        expiresAt: "2026-08-13T00:05:00.000Z",
+        closedAt: null,
+        token: "not-allowed",
+      }).success,
+    ).toBe(false);
+    expect(
+      VisePodDeviceHeartbeatSchema.parse({
+        deviceId: "device-001",
+        clientType: "visepod",
+        sessionId: null,
+        reportedAt: "2026-08-13T00:00:00.000Z",
+      }),
+    ).toBeTruthy();
+    expect(isVisePodDeviceControlErrorRetryable("DEVICE_NOT_FOUND")).toBe(false);
   });
 });
