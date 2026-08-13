@@ -56,8 +56,11 @@ the public Web application and protected by server-side role checks.
   an operator reason only inside the command digest, retain replay receipts for 30 days, and atomically
   append one bounded audit event for the first create/rebind/revoke. The finite deployment allowlist
   `VISEPOD_STUDIO_DEVICE_IDS` decides which controlled demonstration devices exist; it never contains a
-  device secret, Wi-Fi credential, or user data. Exact user resolution and all browsing/search remain
-  absent. See [Studio Binding Contract v1](../visepod/studio-binding-contract-v1.md).
+  device secret, Wi-Fi credential, or user data. `POST /api/ops/visepod/users/resolve` consumes the
+  same grant and supports only one full email or UUID equality lookup. It rate-limits the grant issuer
+  through a private Upstash HMAC key before reading a user; every found/missing lookup writes only a
+  one-way identifier-digest audit record. Browsing, prefix, fuzzy, pagination, cursor, and list paths
+  remain absent. See [Studio Binding Contract v1](../visepod/studio-binding-contract-v1.md).
 - Role changes write membership and audit evidence atomically. Knowledge and Human Task reads use
   durable server adapters. P0-14 exposes only the canonical status transition API: every change
   records actor, reason, and timestamp; arbitrary status writes and terminal recovery are rejected.

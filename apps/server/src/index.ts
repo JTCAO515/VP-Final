@@ -25,6 +25,7 @@ export { createDbOpsAuthorizationService } from "./db/opsAuthorizationService.js
 export { createDbOpsCostSummaryService } from "./db/opsCostSummaryService.js";
 export { createDbVisePodProvisioningService } from "./db/visePodProvisioningService.js";
 export { createDbVisePodBindingService } from "./db/visePodBindingService.js";
+export { createDbVisePodUserResolutionService } from "./db/visePodUserResolutionService.js";
 export { createDbVersionedTripService } from "./db/versionedTripService.js";
 export { createDbCompletionJobService } from "./db/completionJobService.js";
 export {
@@ -157,6 +158,24 @@ export {
   VisePodBindingUserNotFoundError,
 } from "./modules/visepod/binding.js";
 export {
+  asVisePodResolvedUser,
+  digestVisePodUserLookupIdentifier,
+  exactUserLookupIdentifier,
+  maskVisePodUserLookupEmail,
+  requireVisePodUserLookupAccess,
+  VisePodUserLookupNotFoundError,
+  VisePodUserLookupRateLimitedError,
+} from "./modules/visepod/userResolution.js";
+export {
+  DEFAULT_VISEPOD_STUDIO_USER_LOOKUP_HOUR_LIMIT,
+  DEFAULT_VISEPOD_STUDIO_USER_LOOKUP_MINUTE_LIMIT,
+  VISEPOD_STUDIO_USER_LOOKUP_RATE_LIMIT_TTL_SECONDS,
+  VisePodStudioUserLookupRateLimitUnavailableError,
+  createInMemoryVisePodStudioUserLookupRateLimiter,
+  createUpstashVisePodStudioUserLookupRateLimiter,
+  resolveUpstashVisePodStudioUserLookupRateLimiterConfig,
+} from "./modules/visepod/userLookupLimiter.js";
+export {
   costWindow,
   privateIdentityReference,
   requireCostRead,
@@ -217,6 +236,12 @@ export type {
   CopilotIpRateLimiter,
   UpstashCopilotIpRateLimiterConfig,
 } from "./modules/copilot/ipRateLimiter.js";
+export type {
+  VisePodStudioUserLookupRateLimitAdmission,
+  VisePodStudioUserLookupRateLimiter,
+  UpstashVisePodStudioUserLookupRateLimiterConfig,
+} from "./modules/visepod/userLookupLimiter.js";
+export type { VisePodUserResolutionService } from "./modules/visepod/userResolution.js";
 export type {
   AuthenticatedCopilotRateLimitAdmission,
   AuthenticatedCopilotRateLimiter,

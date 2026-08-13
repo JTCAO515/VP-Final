@@ -146,8 +146,11 @@ Next.js runtimes rather than deployed as an independent service.
   It then atomically commits a create/rebind/revoke, 30-day replay receipt, and bounded
   `ops_audit_events` row. Audit failure rolls the entire mutation back. The controlled Studio scope
   recognizes only the server-owned `VISEPOD_STUDIO_DEVICE_IDS` allowlist; it is a finite device catalog,
-  not a device registry, and contains no secret or user data. Exact user resolution remains a separate
-  unimplemented endpoint.
+  not a device registry, and contains no secret or user data. Exact user resolution validates an online
+  provisioning grant before it rate-admits the grant issuer through an Upstash HMAC-keyed window, then
+  performs only an exact email/UUID equality read and atomically records a non-reversible
+  identifier-digest audit row. It has no browse, list, cursor, prefix, or fuzzy-match path; an unavailable
+  limiter fails closed before a user read.
 - After Zod envelope validation, the Copilot pipeline scans all user-presentable envelope fields for
   concrete address, route/line, time, and price values. Each such value must be present in a cited,
   currently retrieved fact value; an unsupported value throws before any Trip patch can be applied.
