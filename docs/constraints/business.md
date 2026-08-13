@@ -29,6 +29,13 @@ Human Help. Human Help may be offered only from real, matching operational confi
 category, hours, and a named owner; it remains best-effort with no SLA and requires a separate user
 confirmation before any task submission.
 
+### Offline Tools Content
+
+An offline Tools pack MAY provide local preparation steps and local action identifiers. It MUST NOT
+claim current price, exchange rate, inventory, booking, partner availability, or emergency response.
+Before a user-visible CTA resolves to an external or operational capability, its consumer MUST use
+the corresponding verified availability boundary; otherwise the action is unavailable.
+
 ## Human Help and Payments
 
 - Human Help MUST require user confirmation before task creation or payment.

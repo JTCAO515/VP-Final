@@ -33,6 +33,9 @@ need, and no open P0 security or fulfilment risk.
 - Keep authentication tokens in platform-secure storage.
 - Separate digital entitlements from real-world service payments.
 - Queue privacy-safe telemetry offline and flush after reconnect.
+- Consume `TOOLS_CONTENT_PACK` as local preparation content only. It does not establish live booking,
+  exchange, emergency, partner, or translation-service availability; a future UI must hide a target
+  it cannot resolve honestly.
 
 ## Current Verification
 
