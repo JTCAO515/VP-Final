@@ -55,10 +55,12 @@ the repository.
 - An Expo shell MUST pin an Expo SDK-compatible React and React Native pair and keep its `app.json`
   explicit. A TypeScript or JS bundle check is not evidence of an iOS/Android simulator run; record
   missing Xcode/Android tooling honestly instead of labelling an unrun device check as passed.
-- `expo-clipboard` and `expo-speech` are the accepted Expo SDK 55 dependencies for the current
-  local Show to Local shell. They may copy or speak only an already-eligible ordinary fixed phrase;
-  they do not authorize network translation, model-authored Chinese, a high-risk fallback, or a
-  live language-service claim. Reverting their sole mobile consumer permits removing both packages.
+- `expo-clipboard`, `expo-speech`, and `expo-file-system` are the accepted Expo SDK 55 dependencies
+  for the current local mobile shell. Clipboard and Speech may copy or speak only an already-eligible
+  ordinary fixed phrase; FileSystem may hold only a domain-validated, credential-free disposable
+  offline cache. These modules do not authorize network translation, model-authored Chinese, a
+  high-risk fallback, server synchronization, or a live language-service claim. Reverting their sole
+  mobile consumers permits removing them.
 
 ## Completion
 

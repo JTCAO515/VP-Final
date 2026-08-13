@@ -1,8 +1,11 @@
 import { z } from "zod";
 
+import { ShowToLocalPhrasePackSchema } from "../show-to-local/index.js";
 import { TripBlockSchema, TripDaySchema, TripStateSchema } from "../trip/index.js";
+import { ToolsContentPackSchema } from "../tools/index.js";
 
 export const OFFLINE_TRIP_PACKAGE_VERSION = 1 as const;
+export const OFFLINE_MOBILE_CACHE_VERSION = 1 as const;
 
 const OfflineAssetVersionSchema = z.string().trim().min(1).max(80);
 const OfflineCitySchema = z.string().trim().min(1).max(100);
@@ -54,6 +57,18 @@ export const OfflineTripPackageSchema = z
 export type OfflineTripSnapshot = z.infer<typeof OfflineTripSnapshotSchema>;
 export type OfflineTripPackage = z.infer<typeof OfflineTripPackageSchema>;
 
+export const OfflineMobileCacheSchema = z
+  .object({
+    version: z.literal(OFFLINE_MOBILE_CACHE_VERSION),
+    refreshedAt: z.string().datetime(),
+    tripPackage: OfflineTripPackageSchema.nullable(),
+    toolsContent: ToolsContentPackSchema,
+    phrasePack: ShowToLocalPhrasePackSchema,
+  })
+  .strict();
+
+export type OfflineMobileCache = z.infer<typeof OfflineMobileCacheSchema>;
+
 export function createOfflineTripPackage(input: {
   trip: z.input<typeof TripStateSchema>;
   toolContentVersion: string;
@@ -96,6 +111,33 @@ export function isOfflineTripPackageCurrent(
   now = new Date(),
 ): boolean {
   return Date.parse(OfflineTripPackageSchema.parse(tripPackage).expiresAt) > now.getTime();
+}
+
+/**
+ * Creates the device-local snapshot used by the Expo shell. A missing trip is represented as null;
+ * callers must not invent one while the read-only sync consumer is unavailable.
+ */
+export function createOfflineMobileCache(input: {
+  refreshedAt: Date;
+  tripPackage: OfflineTripPackage | null;
+  toolsContent: z.input<typeof ToolsContentPackSchema>;
+  phrasePack: z.input<typeof ShowToLocalPhrasePackSchema>;
+}): OfflineMobileCache {
+  return OfflineMobileCacheSchema.parse({
+    version: OFFLINE_MOBILE_CACHE_VERSION,
+    refreshedAt: input.refreshedAt.toISOString(),
+    tripPackage: input.tripPackage,
+    toolsContent: input.toolsContent,
+    phrasePack: input.phrasePack,
+  });
+}
+
+export function serializeOfflineMobileCache(cache: OfflineMobileCache): string {
+  return JSON.stringify(OfflineMobileCacheSchema.parse(cache));
+}
+
+export function deserializeOfflineMobileCache(serialized: string): OfflineMobileCache {
+  return OfflineMobileCacheSchema.parse(JSON.parse(serialized) as unknown);
 }
 
 function containsOfflineCredential(value: unknown): boolean {
