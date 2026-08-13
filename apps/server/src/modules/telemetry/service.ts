@@ -53,6 +53,8 @@ export function createInMemoryTelemetryService(options: TelemetryServiceOptions 
   return {
     async track(input: TelemetryInput) {
       const event = prepareTelemetryEvent(input, options);
+      const existing = events.find((candidate) => candidate.id === event.id);
+      if (existing) return structuredClone(existing);
       events.push(event);
       await deliverPostHogSafely(event, options);
       return event;

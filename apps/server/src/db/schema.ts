@@ -837,7 +837,11 @@ export const telemetryEvents = pgTable(
         'skeleton_received', 'details_completed', 'patch_applied', 'copilot_failed',
         'human_help_suggested', 'guide_viewed', 'poi_viewed', 'scene_filter_used',
         'outbound_clicked', 'partner_redirected', 'human_help_viewed', 'task_started',
-        'task_submitted', 'quote_created', 'payment_link_clicked', 'task_paid', 'task_done'
+        'task_submitted', 'quote_created', 'payment_link_clicked', 'task_paid', 'task_done',
+        'rescue_started', 'rescue_route_selected', 'human_help_offered',
+        'human_help_confirmed', 'resolution_outcome', 'arrival_pack_generated',
+        'arrival_pack_downloaded', 'arrival_pack_regenerated', 'app_opened', 'trip_opened',
+        'offline_content_used', 'tool_opened', 'show_to_local_used', 'human_help_submitted'
       )`,
     ),
     propsObjectCheck: check(

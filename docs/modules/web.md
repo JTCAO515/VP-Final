@@ -82,6 +82,16 @@ header, shares a browser cookie, exposes Trip events, or permits a write. Missin
 configuration and durable Trip failures return a generic 503; an absent or invalid mobile session
 returns 401. The endpoint never logs access tokens.
 
+`POST /api/mobile/telemetry` is a separate authenticated-native observation boundary. Its strict
+`MobileTelemetryCaptureInputSchema` accepts only a client-generated UUID, one registered closed-set
+mobile action, bounded entity identifiers, and action-specific non-text metadata. Online Supabase
+Auth derives the user; the client cannot choose an owner, timestamp, surface, retention deadline, or
+commercial attribution. The same trusted-address and authenticated-user Upstash guard used by public
+telemetry runs before storage. Success is HTTP 202 and is idempotent by event UUID, so the native
+queue may retry in order after reconnect. Invalid payloads are 400, absent or invalid sessions are
+401, rate admission is 429 with `Retry-After`, and unavailable Auth/Redis/trusted-address/runtime
+dependencies are 503. The route never logs a bearer token, raw traveler text, or a Trip snapshot.
+
 Explore renders a commercial CTA only when the durable Knowledge service returns an active
 `poi_commercial_links` row. The CTA contains that row's disclosure and routes to same-origin
 `/outbound` with bounded `explore` attribution; it never exposes a raw partner destination as the

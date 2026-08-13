@@ -15,17 +15,19 @@ export function createDbTelemetryService(
   return {
     async track(input) {
       const event = prepareTelemetryEvent(input, options);
+      let inserted = false;
       await db.transaction(async (tx) => {
         if (event.user_id) {
           await tx.insert(users).values({ id: event.user_id }).onConflictDoNothing();
         }
-        const [inserted] = await tx
+        const [stored] = await tx
           .insert(telemetryEvents)
           .values(toTelemetryInsert(event))
+          .onConflictDoNothing({ target: telemetryEvents.id })
           .returning({ id: telemetryEvents.id });
-        if (!inserted) throw new Error("Telemetry insert returned no record");
+        inserted = Boolean(stored);
       });
-      await deliverPostHogSafely(event, options);
+      if (inserted) await deliverPostHogSafely(event, options);
       return event;
     },
   };

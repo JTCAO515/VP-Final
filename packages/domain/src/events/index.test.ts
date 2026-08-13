@@ -3,6 +3,7 @@ import {
   TelemetryActionSchema,
   TelemetryCaptureInputSchema,
   TelemetryEventSchema,
+  MobileTelemetryCaptureInputSchema,
 } from "./index.js";
 
 const eventId = "00000000-0000-4000-8000-000000000101";
@@ -15,6 +16,7 @@ describe("TelemetryEventSchema", () => {
     expect(TelemetryActionSchema.parse("task_paid")).toBe("task_paid");
     expect(TelemetryActionSchema.parse("rescue_route_selected")).toBe("rescue_route_selected");
     expect(TelemetryActionSchema.parse("arrival_pack_downloaded")).toBe("arrival_pack_downloaded");
+    expect(TelemetryActionSchema.parse("offline_content_used")).toBe("offline_content_used");
     expect(() => TelemetryActionSchema.parse("arbitrary_event")).toThrow();
   });
 
@@ -104,6 +106,39 @@ describe("TelemetryEventSchema", () => {
         props_jsonb: { city: "traveler@example.com" },
         created_at: "2026-07-27T12:00:00.000Z",
         retention_expires_at: "2027-01-23T12:00:00.000Z",
+      }),
+    ).toThrow();
+  });
+});
+
+describe("MobileTelemetryCaptureInputSchema", () => {
+  it("accepts only idempotent, bounded mobile observations", () => {
+    expect(
+      MobileTelemetryCaptureInputSchema.parse({
+        id: eventId,
+        action: "tool_opened",
+        entity_type: "tool",
+        entity_id: "translation",
+        props_jsonb: { tool: "translation" },
+      }),
+    ).toMatchObject({ action: "tool_opened", props_jsonb: { tool: "translation" } });
+  });
+
+  it("rejects mobile content, identity, and unregistered dimensions", () => {
+    expect(() =>
+      MobileTelemetryCaptureInputSchema.parse({
+        id: eventId,
+        action: "show_to_local_used",
+        entity_type: "show_to_local",
+        props_jsonb: { category: "restaurant", message: "Please help me order food" },
+      }),
+    ).toThrow();
+    expect(() =>
+      MobileTelemetryCaptureInputSchema.parse({
+        id: eventId,
+        user_id: "00000000-0000-4000-8000-000000000103",
+        action: "app_opened",
+        entity_type: "mobile_app",
       }),
     ).toThrow();
   });

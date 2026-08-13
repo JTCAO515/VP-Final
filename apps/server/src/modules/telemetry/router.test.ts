@@ -50,4 +50,33 @@ describe("telemetryRouter", () => {
       caller.telemetry.track({ action: "guide_viewed", entity_type: "guide" }),
     ).rejects.toMatchObject({ code: "UNAUTHORIZED" });
   });
+
+  it("accepts an idempotent mobile event only for an authenticated identity", async () => {
+    const telemetryService = createInMemoryTelemetryService();
+    const caller = appRouter.createCaller({
+      tripService: createVersionedInMemoryTripService(),
+      telemetryService,
+      identity: { kind: "authenticated", userId: "00000000-0000-4000-8000-000000000101" },
+    });
+    const input = {
+      id: "00000000-0000-4000-8000-000000000102",
+      action: "tool_opened" as const,
+      entity_type: "tool",
+      entity_id: "translation",
+      props_jsonb: { tool: "translation" },
+    };
+
+    await caller.telemetry.trackMobile(input);
+    await caller.telemetry.trackMobile(input);
+
+    await expect(telemetryService.list()).resolves.toHaveLength(1);
+    const anonymousCaller = appRouter.createCaller({
+      tripService: createVersionedInMemoryTripService(),
+      telemetryService,
+      identity: { kind: "anonymous", anonId: "a".repeat(43) },
+    });
+    await expect(anonymousCaller.telemetry.trackMobile(input)).rejects.toMatchObject({
+      code: "UNAUTHORIZED",
+    });
+  });
 });

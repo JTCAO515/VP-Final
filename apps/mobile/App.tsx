@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as Clipboard from "expo-clipboard";
 import * as Speech from "expo-speech";
 import {
@@ -34,15 +34,25 @@ import {
   MobileTripSyncError,
   readMobileWebBaseUrl,
 } from "./src/mobile-trip-sync";
+import {
+  createMobileTelemetryEvent,
+  createMobileTelemetryQueue,
+  enqueueMobileTelemetry,
+  flushMobileTelemetryQueue,
+  MobileTelemetryQueueFullError,
+  type MobileTelemetryQueue,
+} from "./src/mobile-telemetry";
+import { createNativeMobileTelemetryQueueStore } from "./src/mobile-telemetry-store.native";
 import { MOBILE_TAB_LABELS, MOBILE_TABS, type MobileTab } from "./src/shell";
 import { canCopyOrSpeakShowToLocalCard, showToLocalAccessibilityLabel } from "./src/show-to-local";
 
 const offlineCacheStore = createNativeOfflineCacheStore();
+const mobileTelemetryQueueStore = createNativeMobileTelemetryQueueStore();
 const mobileAuthConfig = readMobileAuthConfig(process.env);
 const mobileAuthClient = mobileAuthConfig ? createMobileAuthClient(mobileAuthConfig) : null;
 const mobileWebBaseUrl = readMobileWebBaseUrl(process.env);
 
-type MobileSession = { accessToken: string; email: string | null };
+type MobileSession = { accessToken: string; email: string | null; userId: string };
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<MobileTab>("today");
@@ -53,9 +63,17 @@ export default function App() {
   const [mobileTrips, setMobileTrips] = useState<ReadonlyArray<ReadOnlyTripSnapshot>>([]);
   const [tripSyncNotice, setTripSyncNotice] = useState<string | null>(null);
   const [tripSyncing, setTripSyncing] = useState(false);
+  const [mobileTelemetryQueue, setMobileTelemetryQueue] = useState<MobileTelemetryQueue>(
+    createMobileTelemetryQueue(),
+  );
+  const [mobileTelemetryReady, setMobileTelemetryReady] = useState(false);
+  const [openedSessionUserId, setOpenedSessionUserId] = useState<string | null>(null);
+  const mobileTelemetryQueueRef = useRef(mobileTelemetryQueue);
+  mobileTelemetryQueueRef.current = mobileTelemetryQueue;
 
   useEffect(() => {
     void loadOfflineCache();
+    void loadMobileTelemetryQueue();
   }, []);
 
   useEffect(() => {
@@ -78,12 +96,42 @@ export default function App() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!mobileSession) {
+      if (openedSessionUserId) setOpenedSessionUserId(null);
+      return;
+    }
+    if (!mobileTelemetryReady || openedSessionUserId === mobileSession.userId) return;
+    setOpenedSessionUserId(mobileSession.userId);
+    void queueMobileTelemetry({ action: "app_opened", entity_type: "mobile_app" });
+  }, [mobileSession?.userId, mobileTelemetryReady, openedSessionUserId]);
+
+  useEffect(() => {
+    if (!mobileSession || !mobileWebBaseUrl || mobileTelemetryQueue.events.length === 0) return;
+    void flushMobileTelemetry();
+    const retry = setInterval(() => void flushMobileTelemetry(), 30_000);
+    return () => clearInterval(retry);
+  }, [mobileSession?.accessToken, mobileTelemetryQueue.events.length]);
+
   async function loadOfflineCache() {
     const result = await offlineCacheStore.load();
     setOfflineCache(result);
     if (result.kind === "corrupted_cleared") {
       setOfflineCacheNotice(
         "A corrupted local cache was cleared. Refresh to save this build again.",
+      );
+    }
+  }
+
+  async function loadMobileTelemetryQueue() {
+    const result = await mobileTelemetryQueueStore.load();
+    const queue = result.kind === "ready" ? result.queue : createMobileTelemetryQueue();
+    mobileTelemetryQueueRef.current = queue;
+    setMobileTelemetryQueue(queue);
+    setMobileTelemetryReady(true);
+    if (result.kind === "corrupted_cleared") {
+      setOfflineCacheNotice(
+        "A corrupted local telemetry queue was cleared. No Trip or Tool content changed.",
       );
     }
   }
@@ -119,6 +167,50 @@ export default function App() {
       setOfflineCacheNotice("Local cache cleared.");
     } catch {
       setOfflineCacheNotice("Local cache could not be cleared. Try again before relying on it.");
+    }
+  }
+
+  async function queueMobileTelemetry(input: Parameters<typeof createMobileTelemetryEvent>[0]) {
+    try {
+      const nextQueue = enqueueMobileTelemetry(
+        mobileTelemetryQueueRef.current,
+        createMobileTelemetryEvent(input),
+      );
+      await mobileTelemetryQueueStore.save(nextQueue);
+      mobileTelemetryQueueRef.current = nextQueue;
+      setMobileTelemetryQueue(nextQueue);
+      if (mobileSession && mobileWebBaseUrl) void flushMobileTelemetry(nextQueue);
+    } catch (error) {
+      if (error instanceof MobileTelemetryQueueFullError) {
+        setOfflineCacheNotice(
+          "Mobile telemetry storage is full. Product actions continue without recording a new observation.",
+        );
+      } else {
+        setOfflineCacheNotice(
+          "Mobile telemetry could not be saved locally. Product actions continue without recording a new observation.",
+        );
+      }
+    }
+  }
+
+  async function flushMobileTelemetry(queue = mobileTelemetryQueueRef.current) {
+    if (!mobileSession || !mobileWebBaseUrl || queue.events.length === 0) return;
+    try {
+      const nextQueue = await flushMobileTelemetryQueue({
+        accessToken: mobileSession.accessToken,
+        baseUrl: mobileWebBaseUrl,
+        queue,
+      });
+      if (
+        nextQueue.events.length !== queue.events.length &&
+        mobileTelemetryQueueRef.current === queue
+      ) {
+        await mobileTelemetryQueueStore.save(nextQueue);
+        mobileTelemetryQueueRef.current = nextQueue;
+        setMobileTelemetryQueue(nextQueue);
+      }
+    } catch {
+      // Retry is scheduled only while a verified session and queued event remain available.
     }
   }
 
@@ -170,6 +262,12 @@ export default function App() {
       setOfflineCache({ kind: "ready", cache });
       setOfflineCacheNotice("Read-only Trip saved for offline access for seven days.");
       setTripSyncNotice(`Saved ${snapshot.trip.title} for offline access.`);
+      void queueMobileTelemetry({
+        action: "trip_opened",
+        entity_type: "trip",
+        entity_id: snapshot.trip.id,
+        props_jsonb: { version: snapshot.version },
+      });
     } catch {
       setTripSyncNotice("The Trip could not be saved. Your existing offline Trip was not changed.");
     }
@@ -184,11 +282,23 @@ export default function App() {
   async function signOut(): Promise<void> {
     if (!mobileAuthClient) return;
     const { error } = await mobileAuthClient.auth.signOut();
-    if (!error) setMobileTrips([]);
+    if (!error) {
+      setMobileTrips([]);
+      const emptyQueue = createMobileTelemetryQueue();
+      mobileTelemetryQueueRef.current = emptyQueue;
+      setMobileTelemetryQueue(emptyQueue);
+      try {
+        await mobileTelemetryQueueStore.save(emptyQueue);
+      } catch {
+        setOfflineCacheNotice(
+          "Unsent mobile telemetry was cleared from this session, but local storage could not be confirmed.",
+        );
+      }
+    }
     setTripSyncNotice(
       error
         ? "Sign-out could not be completed. Try again."
-        : "Signed out. Offline content remains on this device.",
+        : "Signed out. Offline content remains on this device; unsent product observations were cleared.",
     );
   }
 
@@ -219,14 +329,33 @@ export default function App() {
             />
           ) : null}
           {activeTab === "tools" && showToLocalOpen ? (
-            <ShowToLocalView onBack={() => setShowToLocalOpen(false)} phrasePack={phrasePack} />
+            <ShowToLocalView
+              onBack={() => setShowToLocalOpen(false)}
+              onSelectCard={(category) =>
+                void queueMobileTelemetry({
+                  action: "show_to_local_used",
+                  entity_type: "show_to_local",
+                  entity_id: category,
+                  props_jsonb: { category },
+                })
+              }
+              phrasePack={phrasePack}
+            />
           ) : null}
           {activeTab === "tools" && !showToLocalOpen ? (
             <ToolsView
               cache={offlineCache}
               notice={offlineCacheNotice}
               onClearCache={() => void clearOfflineCache()}
-              onOpenShowToLocal={() => setShowToLocalOpen(true)}
+              onOpenShowToLocal={() => {
+                void queueMobileTelemetry({
+                  action: "tool_opened",
+                  entity_type: "tool",
+                  entity_id: "translation",
+                  props_jsonb: { tool: "translation" },
+                });
+                setShowToLocalOpen(true);
+              }}
               onRefreshCache={() => void refreshOfflineCache()}
               toolsContent={toolsContent}
             />
@@ -254,6 +383,13 @@ export default function App() {
                 onPress={() => {
                   setActiveTab(tab);
                   setShowToLocalOpen(false);
+                  if (tab === "tools") {
+                    void queueMobileTelemetry({
+                      action: "offline_content_used",
+                      entity_type: "offline_content",
+                      props_jsonb: { cacheVersion: 1 },
+                    });
+                  }
                 }}
                 style={[styles.tab, selected ? styles.tabSelected : null]}
               >
@@ -452,9 +588,11 @@ function ToolsView({
 
 function ShowToLocalView({
   onBack,
+  onSelectCard,
   phrasePack,
 }: {
   onBack: () => void;
+  onSelectCard: (category: ShowToLocalPhraseCard["category"]) => void;
   phrasePack: ShowToLocalPhrasePack;
 }) {
   const [selectedCard, setSelectedCard] = useState<ShowToLocalPhraseCard>(phrasePack.cards[0]!);
@@ -497,6 +635,7 @@ function ShowToLocalView({
               onPress={() => {
                 setSelectedCard(card);
                 setCopyStatus(null);
+                onSelectCard(card.category);
               }}
               style={[styles.phraseChoice, selected ? styles.phraseChoiceSelected : null]}
             >
@@ -675,10 +814,16 @@ function offlineCacheSummary(cache: OfflineCacheLoadResult | null): string {
 function sessionForMobile(
   session: {
     access_token: string;
-    user: { email?: string | null };
+    user: { email?: string | null; id: string };
   } | null,
 ): MobileSession | null {
-  return session ? { accessToken: session.access_token, email: session.user.email ?? null } : null;
+  return session
+    ? {
+        accessToken: session.access_token,
+        email: session.user.email ?? null,
+        userId: session.user.id,
+      }
+    : null;
 }
 
 function formatOfflineTimestamp(value: string): string {

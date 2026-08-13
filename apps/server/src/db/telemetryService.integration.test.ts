@@ -6,7 +6,11 @@ import { createDbTelemetryService } from "./telemetryService.js";
 
 const databaseUrl = process.env.DATABASE_URL;
 const integration = databaseUrl ? describe : describe.skip;
-const eventIds = ["00000000-0000-4000-8000-000000000211", "00000000-0000-4000-8000-000000000212"];
+const eventIds = [
+  "00000000-0000-4000-8000-000000000211",
+  "00000000-0000-4000-8000-000000000212",
+  "00000000-0000-4000-8000-000000000214",
+];
 const userId = "00000000-0000-4000-8000-000000000213";
 
 integration("DbTelemetryService", () => {
@@ -93,6 +97,30 @@ integration("DbTelemetryService", () => {
         props_jsonb: { contact: "traveler@example.com" },
       }),
     ).rejects.toThrow();
+  });
+
+  it("treats a repeated mobile event id as one durable observation", async () => {
+    const service = createDbTelemetryService(db, {
+      now: () => new Date("2026-08-14T12:00:00.000Z"),
+      randomId: () => eventIds[2]!,
+    });
+    const input = {
+      user_id: userId,
+      surface: "mobile" as const,
+      action: "tool_opened" as const,
+      entity_type: "tool",
+      entity_id: "translation",
+      props_jsonb: { tool: "translation" },
+    };
+
+    await service.track(input);
+    await service.track(input);
+
+    const [row] = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(telemetryEvents)
+      .where(eq(telemetryEvents.id, eventIds[2]!));
+    expect(row?.count).toBe(1);
   });
 
   async function cleanup() {

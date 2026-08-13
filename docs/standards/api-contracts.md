@@ -83,6 +83,19 @@ returns 503. The response has no owner, event, share token, patch, or write capa
 consumers keep credentials in platform-secure storage and do not persist them with an offline Trip
 package.
 
+`POST /api/mobile/telemetry` accepts only the strict domain
+`MobileTelemetryCaptureInputSchema`: `{ id, action, entity_type, entity_id?, props_jsonb }`. `id` is
+a client-generated UUID used only as an idempotency key for the bounded offline queue. The server
+validates the Bearer token online, derives the authenticated owner, server timestamp, mobile surface,
+and telemetry retention deadline, then applies the shared trusted-Vercel-address and authenticated-user
+rate guard before the durable write. It accepts only `app_opened`, `trip_opened`,
+`offline_content_used`, `tool_opened`, `show_to_local_used`, or `human_help_submitted` with their
+registered fixed properties; it rejects raw messages, phrase text, emails, contacts, tokens, Trip
+snapshots, client identity, and arbitrary properties. `202 { ok: true }` means one durable event
+exists for the UUID; a repeat is safe. Invalid payloads return 400, missing or invalid sessions 401,
+rate limits 429 with `Retry-After`, and unavailable Auth/rate/runtime dependencies 503. No response
+contains stored event data.
+
 Background completion provenance is internal authority, never client identity. A completion Patch may
 append `completion_job_id` plus a positive `completion_attempt` to its Trip event only when both are
 provided and the source is `ai_copilot`. The pair is unique. Normal Trip writes leave both null, and a
