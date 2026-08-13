@@ -163,6 +163,11 @@ Browser capture remains limited to the first two actions; an unavailable rendere
 Human Help offer, confirmation, or resolution event. The additive migration only expands the existing
 action allowlist and leaves the identity, property, retention, and server-derived write boundaries intact.
 
+Arrival Pack adds three fixed lifecycle action names to the same ledger: generated, downloaded, and
+regenerated. Their permitted metadata is a pack version, bounded first-day and reviewed-address counts,
+and a readiness-presence boolean. Pack text, local addresses, rendered HTML, bytes, and download
+contents are never telemetry properties or database event columns.
+
 ADR-0011 enforces the existing retention deadlines with three staggered database-local Supabase Cron
 jobs. Each job calls a restricted target through `internal.run_retention_purge(text)`; successful and
 failed executions retain only target, timestamps, non-negative deletion counts, and normalized

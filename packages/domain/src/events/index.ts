@@ -43,10 +43,17 @@ export const RescueTelemetryActionSchema = z.enum([
   "resolution_outcome",
 ]);
 
+export const ArrivalPackTelemetryActionSchema = z.enum([
+  "arrival_pack_generated",
+  "arrival_pack_downloaded",
+  "arrival_pack_regenerated",
+]);
+
 export const TelemetryActionSchema = z.union([
   ExistingCopilotEventActionSchema,
   PhaseZeroTelemetryActionSchema,
   RescueTelemetryActionSchema,
+  ArrivalPackTelemetryActionSchema,
 ]);
 
 export const ClientTelemetryActionSchema = z.enum([
@@ -57,6 +64,9 @@ export const ClientTelemetryActionSchema = z.enum([
   "task_started",
   "rescue_started",
   "rescue_route_selected",
+  "arrival_pack_generated",
+  "arrival_pack_downloaded",
+  "arrival_pack_regenerated",
 ]);
 
 const IdentifierSchema = z
@@ -131,6 +141,14 @@ const RescueOutcomePropsSchema = RescueRouteSelectedPropsSchema.extend({
     "show_to_local",
   ]),
 }).strict();
+const ArrivalPackPropsSchema = z
+  .object({
+    packVersion: z.literal(1),
+    firstDayBlockCount: z.number().int().nonnegative().max(50),
+    reviewedAddressCount: z.number().int().nonnegative().max(20),
+    readinessIncluded: z.boolean(),
+  })
+  .strict();
 
 const TelemetryPropsSchemas = {
   session_started: EmptyPropsSchema,
@@ -165,6 +183,9 @@ const TelemetryPropsSchemas = {
   human_help_offered: RescueCategoryPropsSchema,
   human_help_confirmed: RescueCategoryPropsSchema,
   resolution_outcome: RescueOutcomePropsSchema,
+  arrival_pack_generated: ArrivalPackPropsSchema,
+  arrival_pack_downloaded: ArrivalPackPropsSchema,
+  arrival_pack_regenerated: ArrivalPackPropsSchema,
 } satisfies Record<z.infer<typeof TelemetryActionSchema>, z.ZodType<Record<string, unknown>>>;
 
 const RESTRICTED_KEY =

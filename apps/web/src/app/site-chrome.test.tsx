@@ -31,6 +31,7 @@ describe("shared site chrome", () => {
     expect(html).toContain('aria-label="Trust and legal links"');
     for (const href of [
       "/visepanda",
+      "/arrival-pack",
       "/explore",
       "/guides/payment",
       "/rescue",

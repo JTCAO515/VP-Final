@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(20);
+select plan(22);
 
 select ok(
   exists (select 1 from pg_constraint where conname = 'events_exactly_one_identity_check'),
@@ -60,6 +60,26 @@ select throws_ok(
   '23514',
   null,
   'unregistered Rescue narrative actions cannot enter the durable ledger'
+);
+select lives_ok(
+  $$insert into public.events (
+      anon_id, surface, action, entity_type, entity_id, props_jsonb, retention_expires_at
+    ) values (
+      'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'web', 'arrival_pack_downloaded', 'arrival_pack',
+      'trip-123', '{"packVersion":1,"firstDayBlockCount":2,"reviewedAddressCount":0,"readinessIncluded":true}'::jsonb,
+      now() + interval '180 days'
+    )$$,
+  'registered Arrival Pack counters may enter the durable ledger'
+);
+select throws_ok(
+  $$insert into public.events (
+      anon_id, surface, action, entity_type, retention_expires_at
+    ) values (
+      'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'web', 'arrival_pack_full_contents', 'arrival_pack', now() + interval '180 days'
+    )$$,
+  '23514',
+  null,
+  'unregistered Arrival Pack content actions cannot enter the durable ledger'
 );
 
 insert into public.events (

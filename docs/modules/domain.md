@@ -15,7 +15,7 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
 | `copilot`       | Intent, message, citations, tool cards, commercial actions, Human Help handoff, envelope, completion-job contract                                                                                        |
 | `knowledge`     | POI, execution facts, knowledge gaps, scene-tag derivation, reviewed seed data, and ADR-0006 fact eligibility                                                                                            |
 | `offline`       | Versioned read-only Trip package, local-storage/AsyncStorage serialization, expiry, and credential-free offline boundary                                                                                 |
-| `arrival`       | Versioned privacy-minimized Arrival Pack projection: first-day execution summary, verified-address receipts, fixed Readiness result, content versions, and print/offline eligibility                      |
+| `arrival`       | Versioned privacy-minimized Arrival Pack projection: first-day execution summary, verified-address receipts, fixed Readiness result, content versions, and print/offline eligibility                     |
 | `readiness`     | Versioned, deterministic China preparation questions, explainable self-reported results, and consented persistence request/result contracts; no score, LLM scoring, or commercial CTA                    |
 | `rescue`        | Deterministic incident routing definitions, fail-closed reviewed-target availability, and bounded Human Help offer state                                                                                 |
 | `safe-phrases`  | Private operator-verified high-risk fixed-expression contract, exact severity selection, and freshness eligibility                                                                                       |
@@ -100,6 +100,9 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
   version timestamps. It deliberately excludes raw block addresses, descriptions, notes, metadata,
   conversation, credentials, payment data, and passport content. Missing reviewed addresses, phrase
   packs, readiness, or first-day data remain explicit null/empty fields rather than inferred content.
+- Arrival Pack telemetry is fixed pack metadata only: generated/downloaded/regenerated actions may
+  carry the schema version plus bounded block/address counts and a readiness-presence boolean. It
+  must not carry the pack's Trip text, local address, raw HTML, download bytes, or any free-form field.
 - `events` has two related contracts: a stored telemetry event requires exactly one trusted identity,
   registered action, allowlisted object properties, and a future retention deadline; browser capture
   is a smaller client-safe action union with no persistence metadata or attribution authority. The
