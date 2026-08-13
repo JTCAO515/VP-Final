@@ -134,17 +134,20 @@ Next.js runtimes rather than deployed as an independent service.
   rather than a model-authored substitute. The public chat route does not accept arbitrary phrase
   selections, so until a separately governed controlled surface supplies one, high-risk chat input
   remains on that unavailable path.
-- ADR-0017's accepted VisePod Studio schema maps private device-assignment history and a bounded
-  idempotency replay carrier only. A device has at most one active assignment through a database
-  partial unique index; rebind creates a new active row after revoking the old row, while account
-  deletion cascades its bindings and their dependent replay records. The replay carrier stores only a
-  canonical-command SHA-256 digest and the bounded result projection, never free-text reasons,
-  provisioning tokens, device secrets, Wi-Fi credentials, or user credentials. No Studio router,
-  provisioning-grant store, exact-user resolver, or device runtime is composed yet.
-- The private provisioning service now issues, validates, and explicitly revokes opaque eight-hour
-  `visepod.provision` grants. It stores only a SHA-256 digest and rechecks the issuer's current Ops
-  permission on every use. The Ops issuance route authorizes before constructing this service; no
-  device binding or user lookup endpoint consumes a grant yet.
+- ADR-0017's accepted VisePod Studio data path stores private device-assignment history and a bounded
+  idempotency replay carrier. A device has at most one active assignment through a database partial
+  unique index; rebind revokes the old row before creating the new active row, while account deletion
+  cascades bindings and their dependent replay records. The replay carrier stores only a canonical
+  command SHA-256 digest and bounded result projection, never free-text reasons, provisioning tokens,
+  device secrets, Wi-Fi credentials, or user credentials.
+- The private provisioning service issues, validates, and explicitly revokes opaque eight-hour
+  `visepod.provision` grants. The Studio binding service validates that grant online before it reads a
+  device, binding, user, or idempotency receipt; every validation rechecks current Ops permission.
+  It then atomically commits a create/rebind/revoke, 30-day replay receipt, and bounded
+  `ops_audit_events` row. Audit failure rolls the entire mutation back. The controlled Studio scope
+  recognizes only the server-owned `VISEPOD_STUDIO_DEVICE_IDS` allowlist; it is a finite device catalog,
+  not a device registry, and contains no secret or user data. Exact user resolution remains a separate
+  unimplemented endpoint.
 - After Zod envelope validation, the Copilot pipeline scans all user-presentable envelope fields for
   concrete address, route/line, time, and price values. Each such value must be present in a cited,
   currently retrieved fact value; an unsupported value throws before any Trip patch can be applied.

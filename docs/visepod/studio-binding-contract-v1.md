@@ -15,6 +15,13 @@ tool. It lets a verified Ops user bind a known VisePanda user to a known VisePod
 only its device identity, device key, and venue Wi-Fi credentials; it does not
 receive user identity, credentials, tokens, conversations, or recordings.
 
+For the controlled 3–5-device Studio scope, a known device is one exact ID in
+the server-only deployment catalog `VISEPOD_STUDIO_DEVICE_IDS`. This finite
+allowlist is not a fleet registry and must contain no device key, Wi-Fi
+credential, user data, token, or free-text reason. A syntactically valid but
+unlisted ID is `DEVICE_NOT_FOUND`; a listed unbound device is `200` with a null
+binding. A future registry requires an additive reviewed decision.
+
 This document freezes a contract only. It does not implement a Studio app,
 route, database table, token issuer, device registry, firmware update, speech
 pipeline, or direct database connection from macOS.
@@ -152,6 +159,7 @@ no additional diagnostic values, raw credentials, or user data.
 
 | Situation                                                                | HTTP  | Response                                                 | Audit result                         |
 | ------------------------------------------------------------------------ | ----- | -------------------------------------------------------- | ------------------------------------ |
+| Malformed path, body, or bearer form                                     | `400` | `{ error: { code: "INVALID_REQUEST" } }`               | No binding mutation.                 |
 | First binding                                                            | `201` | `{ outcome: "created", idempotencyHit: false, binding }` | One `visepod.binding.created` event. |
 | Same write replay                                                        | `200` | Original outcome/projection with `idempotencyHit: true`. | No new event.                        |
 | Explicit rebind                                                          | `200` | `{ outcome: "rebound", idempotencyHit: false, binding }` | One `visepod.binding.rebound` event. |
@@ -159,6 +167,7 @@ no additional diagnostic values, raw credentials, or user data.
 | User absent                                                              | `404` | `{ error: { code: "USER_NOT_FOUND" } }`                  | No binding mutation.                 |
 | Missing, expired, revoked, mismatched-environment, or unauthorized grant | `403` | `{ error: { code: "PROVISIONING_ACCESS_DENIED" } }`      | No binding mutation.                 |
 | Same idempotency key, changed canonical payload                          | `409` | `{ error: { code: "IDEMPOTENCY_KEY_CONFLICT" } }`        | No binding mutation.                 |
+| A new command cannot apply to the current binding state                  | `409` | `{ error: { code: "BINDING_STATE_CONFLICT" } }`          | No binding mutation.                 |
 
 The regular binding-read response is `200 { "binding": null }` for a present,
 unbound device; it is not a `DEVICE_NOT_FOUND` substitute.

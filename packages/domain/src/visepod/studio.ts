@@ -157,10 +157,12 @@ export const VisePodBindingMutationResponseSchema = z
   .strict();
 
 export const VisePodStudioErrorCodeSchema = z.enum([
+  "INVALID_REQUEST",
   "PROVISIONING_ACCESS_DENIED",
   "DEVICE_NOT_FOUND",
   "USER_NOT_FOUND",
   "IDEMPOTENCY_KEY_CONFLICT",
+  "BINDING_STATE_CONFLICT",
 ]);
 
 export const VisePodStudioErrorResponseSchema = z

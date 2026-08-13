@@ -230,10 +230,12 @@ describe("VisePod Studio provisioning contract", () => {
 
   it("freezes the published error codes without accepting secret-bearing fields", () => {
     for (const code of [
+      "INVALID_REQUEST",
       "PROVISIONING_ACCESS_DENIED",
       "DEVICE_NOT_FOUND",
       "USER_NOT_FOUND",
       "IDEMPOTENCY_KEY_CONFLICT",
+      "BINDING_STATE_CONFLICT",
     ] as const) {
       expect(VisePodStudioErrorResponseSchema.parse({ error: { code } })).toEqual({
         error: { code },
