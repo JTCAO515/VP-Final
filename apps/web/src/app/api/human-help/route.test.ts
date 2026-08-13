@@ -3,6 +3,7 @@ import {
   createInMemoryHumanTaskService,
   createInMemoryKnowledgeService,
   createVersionedInMemoryTripService,
+  HumanTaskIdentityCapacityError,
   type HumanTaskService,
 } from "@visepanda/app-server";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -89,6 +90,39 @@ describe("POST /api/human-help", () => {
     inject(createInMemoryHumanTaskService());
     const response = await POST(postRequest({ ...requestBody, city: "Beijing" }));
     expect(response.status).toBe(400);
+  });
+
+  it("returns an honest retry-tomorrow response for the verified identity daily cap", async () => {
+    inject({
+      create: async () => {
+        throw new HumanTaskIdentityCapacityError();
+      },
+      listForOwner: async () => [],
+      listForOps: async () => [],
+      getForOps: async () => {
+        throw new Error("not used");
+      },
+      updateOperatorNote: async () => {
+        throw new Error("not used");
+      },
+      appendEvidence: async () => {
+        throw new Error("not used");
+      },
+      listEvidence: async () => [],
+      transition: async () => {
+        throw new Error("not used");
+      },
+      listTransitions: async () => [],
+    });
+
+    const response = await POST(postRequest(requestBody));
+
+    expect(response.status).toBe(429);
+    await expect(response.json()).resolves.toEqual({
+      ok: false,
+      error:
+        "Human Help accepts one new request per verified traveler each China day. Please try again tomorrow.",
+    });
   });
 });
 

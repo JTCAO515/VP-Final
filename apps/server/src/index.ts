@@ -39,6 +39,7 @@ export {
   HUMAN_TASK_PREVIEW_CITY,
   HUMAN_TASK_TERMINAL_RETENTION_DAYS,
   HumanTaskCapacityError,
+  HumanTaskIdentityCapacityError,
   HumanTaskIdempotencyConflictError,
   HumanTaskNotFoundError,
   HumanTaskPreviewScopeError,

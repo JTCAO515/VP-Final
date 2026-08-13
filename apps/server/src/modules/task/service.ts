@@ -76,6 +76,15 @@ export class HumanTaskCapacityError extends Error {
   }
 }
 
+export class HumanTaskIdentityCapacityError extends Error {
+  readonly code = "HUMAN_TASK_IDENTITY_CAPACITY_REACHED";
+
+  constructor() {
+    super("This verified traveler has already submitted a Human Help request today.");
+    this.name = "HumanTaskIdentityCapacityError";
+  }
+}
+
 export class HumanTaskPreviewScopeError extends Error {
   readonly code = "HUMAN_TASK_OUTSIDE_PREVIEW";
 
@@ -155,6 +164,19 @@ export function createInMemoryHumanTaskService(options?: { now?: () => Date }): 
 
       const requestedAt = now();
       const requestDay = chinaDayKey(requestedAt);
+      const authenticatedUserId =
+        input.identity.kind === "authenticated" ? input.identity.userId : null;
+      if (
+        authenticatedUserId &&
+        records.some(
+          (record) =>
+            record.identity.kind === "authenticated" &&
+            record.identity.userId === authenticatedUserId &&
+            chinaDayKey(new Date(record.task.created_at)) === requestDay,
+        )
+      ) {
+        throw new HumanTaskIdentityCapacityError();
+      }
       if (
         records.filter((record) => chinaDayKey(new Date(record.task.created_at)) === requestDay)
           .length >= HUMAN_TASK_DAILY_CAPACITY

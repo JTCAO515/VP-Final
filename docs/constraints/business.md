@@ -15,6 +15,10 @@ Status: active
 
 - Human Help MUST require user confirmation before task creation or payment.
 - Human Help MUST follow the accepted [controlled-preview launch policy](../commercial/human-help-launch-policy.md).
+- During the controlled preview, a verified traveler MAY create at most one new Human Help request per
+  China day. A safe replay of the same idempotency key returns the original request and MUST NOT consume
+  another slot; a distinct same-day request MUST receive an honest availability response, not a fake
+  receipt or a promise of tomorrow's service.
 - A Human Help request MUST NOT be represented as accepted work, a guaranteed response, a booking,
   an emergency service, or a paid service before its policy and durable implementation gates are met.
 - Human Task UI MUST distinguish request, quote, payment pending, paid, fulfilling, done, and cancelled.

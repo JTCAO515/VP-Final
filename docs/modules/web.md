@@ -169,9 +169,12 @@ provider-health guarantee, or successful model call.
 Human Help now writes through the durable P0-13 adapter. `/api/human-help` derives owner identity from
 the verified session or signed anonymous cookie, requires an idempotency key, and returns only the
 task id, `requested` status, and creation time. It never echoes contact or description and never
-returns a quote or payment claim. The public page states the Shanghai/English/capacity and safety
-limits; database or runtime failure returns an honest error and no receipt. Outbound remains unavailable
-until P0-18 implements its durable owner.
+returns a quote or payment claim. A verified traveler may create one new request per China day;
+replaying the same idempotency key returns the original receipt, while a different same-day request
+returns HTTP 429 with an honest try-again-tomorrow notice. Signed-anonymous users remain subject only
+to the separate Shanghai preview-wide capacity. The public page states the Shanghai/English/capacity
+and safety limits; database or runtime failure returns an honest error and no receipt. Outbound remains
+unavailable until P0-18 implements its durable owner.
 
 P0-14 adds the Human Task lifecycle contract behind that intake path, but does not change the public
 receipt or expose a public status mutation. Web test fixtures inject the complete service interface so

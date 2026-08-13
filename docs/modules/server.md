@@ -132,12 +132,16 @@ Next.js runtimes rather than deployed as an independent service.
   currently retrieved fact value; an unsupported value throws before any Trip patch can be applied.
   This is intentionally stricter than prompt grounding and has no model/fallback bypass.
 - Human Task creation accepts only a trusted authenticated or signed-anonymous identity, a UUID
-  idempotency key, and the minimized controlled-preview request. The Postgres adapter serializes the
-  daily Shanghai capacity check, stores exactly one owner, and replays a successful retry without a
-  duplicate row. P0-14 adds one transition service used by memory and Postgres adapters: it derives the
-  actor from trusted Ops access, validates the domain edge, enforces the controlled-preview policy,
-  and writes status plus append-only actor/reason evidence in one transaction. The preview permits
-  triage and pre-payment cancellation only; quote/payment/fulfilment states remain policy-gated.
+  idempotency key, and the minimized controlled-preview request. A successful idempotency replay is
+  returned before capacity checks and never consumes another slot. For a verified identity, the
+  Postgres adapter serializes one new request per China day under a per-identity transaction lock;
+  a distinct same-day request returns a typed capacity error. It then serializes the separate daily
+  Shanghai global capacity check. The lock input is transient and no raw identity reaches logs or
+  public diagnostics. The adapter stores exactly one owner and never creates a duplicate row. P0-14
+  adds one transition service used by memory and Postgres adapters: it derives the actor from trusted
+  Ops access, validates the domain edge, enforces the controlled-preview policy, and writes status
+  plus append-only actor/reason evidence in one transaction. The preview permits triage and
+  pre-payment cancellation only; quote/payment/fulfilment states remain policy-gated.
 - P0-15 extends the same Human Task service with Ops-only detail reads and operator-note updates.
   Detail reads require `task.contact.read`; note writes require `task.write`. The Postgres adapter
   commits the note update and a PII-free `human_task.note.updated` audit event in one transaction.
@@ -288,6 +292,7 @@ pnpm --filter @visepanda/app-server build
 ```
 
 Security-sensitive changes also require database or API-level ownership tests.
+
 ### Deterministic execution-safety eval gate
 
 `pnpm evals` invokes the server-owned `executionSafety.evals.test.ts` suite in addition to the

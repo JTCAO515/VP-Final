@@ -3,7 +3,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import * as schema from "./schema.js";
 import { createDbHumanTaskService } from "./humanTaskService.js";
-import { HumanTaskCapacityError } from "../modules/task/service.js";
+import { HumanTaskCapacityError, HumanTaskIdentityCapacityError } from "../modules/task/service.js";
 
 const databaseUrl = process.env.DATABASE_URL;
 const describeDatabase = databaseUrl ? describe : describe.skip;
@@ -103,6 +103,32 @@ describeDatabase("database HumanTaskService", () => {
 
     await sql`delete from public.users where id = ${userId}`;
     await expect(service.listForOwner(identity)).resolves.toEqual([]);
+  });
+
+  it("enforces one new authenticated request per China day but replays the same idempotency key", async () => {
+    await sql`
+      insert into auth.users (
+        id, aud, role, email, encrypted_password, raw_app_meta_data, raw_user_meta_data,
+        created_at, updated_at
+      ) values (
+        ${userId}, 'authenticated', 'authenticated', 'verified@example.com', '',
+        '{}'::jsonb, '{}'::jsonb, now(), now()
+      )
+    `;
+    const service = createDbHumanTaskService(db, {
+      now: () => new Date("2099-01-03T04:00:00.000Z"),
+    });
+    const first = {
+      identity: { kind: "authenticated" as const, userId },
+      idempotencyKey: crypto.randomUUID(),
+      request,
+    };
+
+    const created = await service.create(first);
+    await expect(service.create(first)).resolves.toEqual(created);
+    await expect(
+      service.create({ ...first, idempotencyKey: crypto.randomUUID() }),
+    ).rejects.toBeInstanceOf(HumanTaskIdentityCapacityError);
   });
 
   it("serializes and enforces the five-request China-day capacity", async () => {
