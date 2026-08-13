@@ -1417,11 +1417,269 @@ button:disabled {
   padding-top: 20px;
 }
 
+.arrivalPackPage {
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--gold-soft), transparent 35%),
+      transparent 34rem
+    ),
+    var(--app);
+}
+
+.arrivalPackHero,
+.arrivalPackContent {
+  margin: 0 auto;
+  max-width: 1360px;
+  padding-left: clamp(20px, 5vw, 76px);
+  padding-right: clamp(20px, 5vw, 76px);
+}
+
+.arrivalPackHero {
+  align-items: end;
+  border-bottom: 1px solid var(--line);
+  display: grid;
+  gap: 40px;
+  grid-template-columns: minmax(0, 1fr) minmax(270px, 0.42fr);
+  padding-bottom: 46px;
+  padding-top: clamp(54px, 9vw, 110px);
+}
+
+.arrivalPackHero h1,
+.arrivalPackGenerator h2,
+.arrivalPackPreview h2 {
+  letter-spacing: 0;
+  line-height: 1.02;
+  margin: 0;
+}
+
+.arrivalPackHero h1 {
+  font-size: clamp(42px, 6.1vw, 78px);
+}
+
+.arrivalPackHero > div > p:not(.pageEyebrow) {
+  color: var(--ink-soft);
+  font-size: 18px;
+  line-height: 1.65;
+  margin: 22px 0 0;
+  max-width: 700px;
+}
+
+.arrivalPackBoundary {
+  background: var(--surface);
+  border: 1px solid color-mix(in srgb, var(--gold), var(--line) 68%);
+  border-top: 3px solid var(--gold);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  padding: 20px;
+}
+
+.arrivalPackBoundary b {
+  color: var(--gold-dark);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.arrivalPackBoundary p,
+.arrivalPackHint,
+.arrivalPackMeta,
+.arrivalPackPreview p {
+  color: var(--ink-soft);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.arrivalPackBoundary p {
+  margin: 10px 0 0;
+}
+
+.arrivalPackContent {
+  align-items: start;
+  display: grid;
+  gap: clamp(36px, 5vw, 80px);
+  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.76fr);
+  padding-bottom: 92px;
+  padding-top: 52px;
+}
+
+.arrivalPackGenerator,
+.arrivalPackPreview {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  padding: clamp(20px, 3vw, 34px);
+}
+
+.arrivalPackGenerator {
+  min-height: 300px;
+}
+
+.arrivalPackPreview {
+  min-height: 380px;
+  position: sticky;
+  top: 92px;
+}
+
+.arrivalPackGenerator h2,
+.arrivalPackPreview h2 {
+  font-size: clamp(26px, 3vw, 38px);
+}
+
+.arrivalPackEmpty,
+.arrivalPackTripSummary,
+.arrivalPackPreviewEmpty {
+  display: grid;
+  gap: 16px;
+}
+
+.arrivalPackEmpty p,
+.arrivalPackTripSummary > p,
+.arrivalPackPreviewEmpty p {
+  color: var(--ink-soft);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.arrivalPackTripSummary dl {
+  border-bottom: 1px solid var(--line);
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 0;
+  margin: 8px 0;
+}
+
+.arrivalPackTripSummary dl > div {
+  align-items: baseline;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  gap: 20px;
+  justify-content: space-between;
+  padding: 14px 0;
+}
+
+.arrivalPackTripSummary dl > div:last-child {
+  border-bottom: 0;
+}
+
+.arrivalPackTripSummary dt {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.arrivalPackTripSummary dd {
+  font-size: 14px;
+  font-weight: 800;
+  margin: 0;
+  text-align: right;
+}
+
+.arrivalPackGenerator button,
+.arrivalPackActions button {
+  align-items: center;
+  background: var(--red);
+  border: 1px solid var(--red);
+  border-radius: 8px;
+  color: var(--vp-on-primary);
+  display: inline-flex;
+  font-weight: 800;
+  justify-content: center;
+  min-height: 46px;
+  padding: 0 17px;
+  width: fit-content;
+}
+
+.arrivalPackGenerator button:hover,
+.arrivalPackActions button:hover {
+  background: var(--vp-china-red-hover);
+}
+
+.arrivalPackActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.arrivalPackActions button + button {
+  background: transparent;
+  border-color: var(--vp-line-strong);
+  color: var(--ink);
+}
+
+.arrivalPackActions button + button:hover {
+  border-color: var(--gold-dark);
+}
+
+.arrivalPackPreview section {
+  border-top: 1px solid var(--line);
+  margin-top: 24px;
+  padding-top: 18px;
+}
+
+.arrivalPackPreview h3 {
+  font-size: 14px;
+  margin: 0;
+}
+
+.arrivalPackPreview ol {
+  display: grid;
+  gap: 10px;
+  list-style: decimal;
+  margin: 14px 0 0;
+  padding-left: 22px;
+}
+
+.arrivalPackPreview li {
+  padding-left: 4px;
+}
+
+.arrivalPackPreview li b,
+.arrivalPackPreview li span {
+  display: block;
+}
+
+.arrivalPackPreview li span {
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 3px;
+}
+
+.arrivalPackTools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+}
+
+.arrivalPackTools li {
+  background: var(--gold-soft);
+  border-radius: 999px;
+  color: var(--gold-dark);
+  font-size: 12px;
+  font-weight: 800;
+  padding: 7px 10px;
+}
+
+.arrivalPackMessage {
+  background: var(--jade-soft);
+  border-left: 3px solid var(--jade);
+  color: var(--jade) !important;
+  margin: 20px 0 0 !important;
+  padding: 11px 12px;
+}
+
 @media (max-width: 960px) {
   .readinessHero,
   .readinessContent,
   .rescueHero,
-  .rescueContent {
+  .rescueContent,
+  .arrivalPackHero,
+  .arrivalPackContent {
     grid-template-columns: 1fr;
   }
 
@@ -1435,6 +1693,10 @@ button:disabled {
   }
 
   .rescueResult {
+    position: static;
+  }
+
+  .arrivalPackPreview {
     position: static;
   }
 
@@ -1468,6 +1730,32 @@ button:disabled {
 
   .rescueHero > div > p:not(.pageEyebrow) {
     font-size: 16px;
+  }
+
+  .arrivalPackHero {
+    gap: 28px;
+    padding-bottom: 34px;
+    padding-top: 54px;
+  }
+
+  .arrivalPackHero > div > p:not(.pageEyebrow) {
+    font-size: 16px;
+  }
+
+  .arrivalPackContent {
+    gap: 32px;
+    padding-bottom: 56px;
+    padding-top: 36px;
+  }
+
+  .arrivalPackTripSummary dl > div {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .arrivalPackTripSummary dd {
+    text-align: left;
   }
 
   .rescueContent {

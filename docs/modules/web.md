@@ -95,7 +95,17 @@ emitted merely because a disabled or unavailable Rescue route rendered.
 
 Arrival Pack browser observations are likewise closed-set: generated, downloaded, and regenerated may
 send only fixed version/count metadata. They never send the printable Trip text, local address, Readiness
-answers, rendered HTML, or any download payload; a failed local download does not produce a success event.
+answers, rendered HTML, or any download payload. `arrival_pack_downloaded` means that the browser was
+asked to initiate a download; it does not prove a file reached disk or cloud storage, and a failed local
+download does not produce a success event.
+
+`/arrival-pack` is a browser-local, explicitly generated projection of the current Trip. It reads the
+owner-scoped Trip and any consented Readiness self-report, then uses the domain `ArrivalPack` projection
+to exclude raw conversation, notes, raw block addresses, passport, payment, and credential content. The
+page offers offline HTML and the browser's own print/save-as-PDF workflow only; it does not create a
+storage URL or imply that a file has been durably saved. Chinese address text may render only when the
+projection carries a current reviewed fact receipt. Until a Trip-to-fact binding exists, the consumer
+states that no reviewed Chinese address is included rather than inferring one from the Trip.
 
 Before the endpoint delegates to the telemetry service, it requires both the verified signed-session
 or account identity and Vercel's trusted client address to pass independent Upstash sliding windows.
