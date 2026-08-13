@@ -48,6 +48,7 @@ describeDatabase("database OpsAuthorizationService", () => {
         "partner.read",
         "partner.write",
         "cost.read",
+        "visepod.provision",
       ],
     });
 

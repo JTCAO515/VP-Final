@@ -56,6 +56,10 @@ the public Web application and protected by server-side role checks.
   existing Ops permission on every short-lived grant use and write accepted binding mutations to
   `ops_audit_events` only. See
   [Studio Binding Contract v1](../visepod/studio-binding-contract-v1.md).
+- The explicit `visepod.provision` permission is assigned only to Admin. The server issues an
+  eight-hour development-or-production grant after server-side session and permission checks, stores
+  only its SHA-256 digest, and rechecks current membership on every validation. Removing the
+  permission or explicitly revoking the grant invalidates it immediately.
 - Role changes write membership and audit evidence atomically. Knowledge and Human Task reads use
   durable server adapters. P0-14 exposes only the canonical status transition API: every change
   records actor, reason, and timestamp; arbitrary status writes and terminal recovery are rejected.

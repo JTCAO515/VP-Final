@@ -43,6 +43,7 @@ describe("Ops authorization", () => {
         "partner.read",
         "partner.write",
         "cost.read",
+        "visepod.provision",
       ],
     });
 
@@ -62,6 +63,7 @@ describe("Ops authorization", () => {
       "partner.read",
       "partner.write",
       "cost.read",
+      "visepod.provision",
     ] as const;
     for (const permission of permissions) {
       expect(matrix.editor.permissions.includes(permission)).toBe(
@@ -71,7 +73,8 @@ describe("Ops authorization", () => {
       expect(matrix.admin.permissions.includes(permission)).toBe(
         permission.startsWith("membership.") ||
           permission.startsWith("partner.") ||
-          permission.startsWith("cost."),
+          permission.startsWith("cost.") ||
+          permission === "visepod.provision",
       );
     }
   });
