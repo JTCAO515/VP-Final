@@ -10,7 +10,14 @@ describe("shared site chrome", () => {
     expect(html).toContain('href="#page-content"');
     expect(html).toContain('id="page-content"');
     expect(html).toContain('aria-label="Primary navigation"');
-    for (const href of ["/visepanda", "/explore", "/guides/payment", "/human-help", "/account"]) {
+    for (const href of [
+      "/visepanda",
+      "/explore",
+      "/guides/payment",
+      "/rescue",
+      "/human-help",
+      "/account",
+    ]) {
       expect(html).toContain(`href="${href}"`);
     }
     expect(html).toContain('aria-current="page" href="/guides/payment"');
@@ -26,6 +33,7 @@ describe("shared site chrome", () => {
       "/visepanda",
       "/explore",
       "/guides/payment",
+      "/rescue",
       "/human-help",
       "/account",
       "/privacy",

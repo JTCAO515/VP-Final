@@ -1,4 +1,4 @@
-type SiteSection = "copilot" | "explore" | "guides" | "help" | "account";
+type SiteSection = "copilot" | "explore" | "guides" | "rescue" | "help" | "account";
 
 type SiteHeaderProps = Readonly<{
   active?: SiteSection;
@@ -9,6 +9,7 @@ const NAV_ITEMS: ReadonlyArray<Readonly<{ section: SiteSection; href: string; la
   { section: "copilot", href: "/visepanda", label: "VisePanda" },
   { section: "explore", href: "/explore", label: "Explore" },
   { section: "guides", href: "/guides/payment", label: "Guides" },
+  { section: "rescue", href: "/rescue", label: "Rescue" },
   { section: "help", href: "/human-help", label: "Human Help" },
 ];
 
@@ -67,6 +68,7 @@ export function SiteFooter() {
           <a href="/readiness">Readiness check</a>
           <a href="/explore">Explore</a>
           <a href="/guides/payment">Guides</a>
+          <a href="/rescue">Rescue</a>
           <a href="/human-help">Human Help</a>
           <a href="/account">Account</a>
         </nav>

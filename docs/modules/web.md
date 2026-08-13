@@ -269,8 +269,11 @@ and truthful; retries are offered only for retryable jobs within the server-owne
 - The canonical visual source is the Red Gold Design System.
 - Public product routes share one navigation and footer rhythm. Floating navigation may use a
   translucent material, but content hierarchy and legibility take priority over decoration.
-- The shared header exposes four primary destinations in one stable order: VisePanda, Explore,
-  Guides, and Human Help. Account uses the same ordinary, hover, and selected navigation treatment.
+- The shared header exposes five primary destinations in one stable order: VisePanda, Explore,
+  Guides, Rescue, and Human Help. Account uses the same ordinary, hover, and selected navigation
+  treatment. Rescue is a fixed-category, deterministic routing chooser: its default route is
+  unavailable unless a reviewed target is explicitly available; health/safety always directs to the
+  official emergency boundary and never offers Human Help.
   The shared footer repeats those product destinations and every accepted trust/legal route.
 - On narrow screens the VisePanda workspace uses a visible Trip/VisePanda switch rather than a
   forced two-column view. This is composition only; response, Trip, and completion behavior remain
@@ -284,7 +287,7 @@ and truthful; retries are offered only for retryable jobs within the server-owne
 - A disabled or unavailable action is hidden or clearly disabled; inert controls are not allowed.
 - Commercial actions show disclosure and use `/outbound`.
 - Responsive behavior is verified at 375, 768, 1280, and 1440 pixel widths.
-- At narrow widths, primary navigation uses four equal tracks and prompt cards wrap their text; no
+- At narrow widths, primary navigation uses five equal tracks and prompt cards wrap their text; no
   VisePanda element may force horizontal page scrolling.
 
 ## Public Trust and Legal Pages
