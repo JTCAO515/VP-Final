@@ -64,6 +64,7 @@ export function SiteFooter() {
       <div className="siteFooterLinks">
         <nav aria-label="Product links">
           <a href="/visepanda">VisePanda</a>
+          <a href="/readiness">Readiness check</a>
           <a href="/explore">Explore</a>
           <a href="/guides/payment">Guides</a>
           <a href="/human-help">Human Help</a>
