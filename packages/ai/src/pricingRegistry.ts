@@ -1,6 +1,7 @@
 import { assertUsdPerMillion } from "./costAccounting.js";
 
 export type ModelPricingProvider = "dashscope" | "deepseek" | "moonshot" | "zhipu";
+export type MeteringUnit = "token" | "audio_second" | "character";
 
 export type ModelPricingRegistryEntry = Readonly<{
   provider: ModelPricingProvider;
@@ -8,6 +9,17 @@ export type ModelPricingRegistryEntry = Readonly<{
   inputMissPerMillionUsd: string;
   inputHitPerMillionUsd: string;
   outputPerMillionUsd: string;
+  currency: "USD";
+  effectiveFrom: string;
+  sourceUrl: string;
+  retrievedAt: string;
+}>;
+
+export type MeteredPricingRegistryEntry = Readonly<{
+  provider: string;
+  model: string;
+  meteringUnit: MeteringUnit;
+  unitPricePerMillionUsd: string;
   currency: "USD";
   effectiveFrom: string;
   sourceUrl: string;
@@ -52,6 +64,9 @@ export const MODEL_PRICING_REGISTRY: readonly ModelPricingRegistryEntry[] = Obje
   }),
 ]);
 
+/** No STT/TTS provider is activated yet; entries are added only with real published pricing evidence. */
+export const METERED_PRICING_REGISTRY: readonly MeteredPricingRegistryEntry[] = Object.freeze([]);
+
 validateModelPricingRegistry(MODEL_PRICING_REGISTRY);
 
 export function resolveModelPricing(
@@ -61,6 +76,19 @@ export function resolveModelPricing(
   return (
     MODEL_PRICING_REGISTRY.find((entry) => entry.provider === provider && entry.model === model) ??
     null
+  );
+}
+
+export function resolveMeteredPricing(
+  provider: string,
+  model: string,
+  meteringUnit: MeteringUnit,
+): MeteredPricingRegistryEntry | null {
+  return (
+    METERED_PRICING_REGISTRY.find(
+      (entry) =>
+        entry.provider === provider && entry.model === model && entry.meteringUnit === meteringUnit,
+    ) ?? null
   );
 }
 

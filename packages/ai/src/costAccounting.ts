@@ -16,6 +16,23 @@ export type LlmCostCalculation = {
   costUsd: string;
 };
 
+export type MeteredCostCalculationInput = {
+  quantity: string;
+  unitPricePerMillionUsd: string;
+};
+
+/** Calculates one non-token metered line without floating-point arithmetic. */
+export function calculateMeteredCostUsd(input: MeteredCostCalculationInput): string {
+  const quantity = parseQuantity(input.quantity);
+  const price = parseUsdPerMillion(input.unitPricePerMillionUsd);
+  const scaledCost =
+    (quantity * price + (TOKENS_PER_MILLION * PRICE_SCALE) / 2n) /
+    (TOKENS_PER_MILLION * PRICE_SCALE);
+  if (scaledCost > MAX_NUMERIC_14_8_SCALED)
+    throw new Error("Calculated cost exceeds numeric(14,8)");
+  return formatScaledUsd(scaledCost);
+}
+
 export function calculateLlmCostUsd(input: LlmCostCalculationInput): LlmCostCalculation {
   const inputTokens = parseTokenCount(input.inputTokens, "inputTokens");
   const cachedInputTokens = parseTokenCount(input.cachedInputTokens, "cachedInputTokens");
@@ -53,6 +70,14 @@ function parseTokenCount(value: number, field: string): bigint {
     throw new Error(`${field} must be a nonnegative safe integer`);
   }
   return BigInt(value);
+}
+
+function parseQuantity(value: string): bigint {
+  const match = /^(\d+)(?:\.(\d+))?$/.exec(value);
+  if (!match || (match[2]?.length ?? 0) > 8) {
+    throw new Error("Quantity must be a nonnegative decimal with at most eight decimal places");
+  }
+  return BigInt(match[1]!) * PRICE_SCALE + BigInt((match[2] ?? "").padEnd(8, "0") || "0");
 }
 
 function parseUsdPerMillion(value: string): bigint {

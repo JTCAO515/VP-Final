@@ -201,6 +201,7 @@ Append-only records of accepted and superseded binding decisions.
 | [ADR-0015: Public Runtime Safety Control](adr/ADR-0015-public-runtime-safety-control.md) | decision | accepted | runtime safety / privacy | Freezes a bounded, truthful P0-20 public-runtime control plane that reuses accepted identity, rate, model, and Human Help owners. |
 | [ADR-0016: Execution-Fact Safety and High-Risk Fixed Expressions](adr/ADR-0016-execution-fact-safety.md) | decision | accepted | AI and knowledge safety | Freezes fail-closed evidence and fixed-expression rules before Show to Local or other high-risk execution output is implemented. |
 | [ADR-0017: VisePod Studio Provisioning](adr/ADR-0017-vise-pod-studio-provisioning.md) | decision | accepted | VisePod architecture / identity | Freezes scoped online Ops provisioning and server-side VisePod user/device bindings while rejecting user browsing and desktop-held secrets. |
+| [ADR-0018: Multi-Meter Voice Call Cost Accounting](adr/ADR-0018-voice-call-cost-accounting.md) | decision | accepted | AI platform / data platform | Extends the retained cost ledger for token, audio-second, and character calls without activating voice providers. |
 
 ## Runbooks
 
