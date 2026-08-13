@@ -18,6 +18,7 @@ export * from "./readiness/index.js";
 export * from "./rescue/index.js";
 export * from "./safe-phrases/index.js";
 export * from "./seo/index.js";
+export * from "./seo/editorial.js";
 export * from "./task/index.js";
 export * from "./tools/index.js";
 export * from "./trip/index.js";

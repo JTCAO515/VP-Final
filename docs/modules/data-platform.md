@@ -34,7 +34,7 @@ the same migration, and validation also checks the issuer's current Ops permissi
 | Readiness         | `readiness_assessments` (private, consented fixed-answer self-reports and deterministic results)                                  |
 | AI trace          | `agent_runs`, `tool_calls`, `llm_call_costs`                                                                                      |
 | Copilot dialogue  | `copilot_conversation_turns`                                                                                                      |
-| Knowledge         | `pois`, `poi_facts`, `poi_fact_editorial_audit`, `knowledge_gaps`, `poi_commercial_links`                                         |
+| Knowledge         | `pois`, `poi_facts`, `poi_fact_editorial_audit`, `knowledge_gaps`, `poi_commercial_links`, `seo_editorial_overrides`              |
 | Safety phrases    | `safe_phrases` (private operator-verified fixed-expression editorial records)                                                     |
 | VisePod Studio    | `visepod_device_bindings`, `visepod_binding_idempotency`, `visepod_provisioning_grants` (private assignment/replay/grant history) |
 | Commerce          | `partners`, `outbound_clicks`                                                                                                     |
@@ -92,6 +92,11 @@ the same migration, and validation also checks the issuer's current Ops permissi
   content digest, researcher/reviewer handles, actual evidence-review time, and internal review notes.
   RLS is enabled and no `anon` or `authenticated` grant exists. It must not be joined into any public
   POI, Explore, Copilot, or SEO response.
+- `seo_editorial_overrides` is server-only presentation data. One Ops-authored row may exist for a
+  POI/intent pair and must replace at least one bounded title, summary, or emphasis field. RLS is
+  enabled and all direct client grants are revoked. It deliberately has no fact, source, evidence,
+  or review columns: the public consumer first requires an eligible SEO candidate, then may apply
+  this copy-only layer without changing POI facts or extending the candidate's lifetime.
 - A Human Task has exactly one authenticated or signed-anonymous owner and a globally unique UUID
   idempotency key. Direct `anon` and `authenticated` Data API reads are revoked. The initial status is
   `requested`. Status updates follow the database-guarded canonical edge map and the server writes an

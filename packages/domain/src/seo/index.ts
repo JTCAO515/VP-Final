@@ -1,13 +1,9 @@
 import { z } from "zod";
 import { PoiSchema, isEligiblePoiFact, type Poi, type PoiFact } from "../knowledge/index.js";
+import { SeoPageIntentSchema, type SeoPageIntent } from "./intents.js";
 
-export const SeoPageIntentSchema = z.enum([
-  "payment",
-  "transport",
-  "ticket",
-  "first_timer",
-  "rainy_day",
-]);
+export { SeoPageIntentSchema } from "./intents.js";
+export type { SeoPageIntent } from "./intents.js";
 
 export const SeoPageCandidateSchema = z
   .object({
@@ -48,7 +44,6 @@ export const SeoPageMatrixSchema = z
     }
   });
 
-export type SeoPageIntent = z.infer<typeof SeoPageIntentSchema>;
 export type SeoPageCandidate = z.infer<typeof SeoPageCandidateSchema>;
 export type SeoPageGap = z.infer<typeof SeoPageGapSchema>;
 export type SeoPageMatrix = z.infer<typeof SeoPageMatrixSchema>;

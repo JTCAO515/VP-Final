@@ -535,6 +535,56 @@ export const poiFacts = pgTable(
   }),
 );
 
+// Editorial SEO copy is a private presentation layer. It does not alter POIs or facts and can be
+// applied only after the shared evidence-gated candidate exists.
+export const seoEditorialOverrides = pgTable(
+  "seo_editorial_overrides",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    poiId: uuid("poi_id")
+      .notNull()
+      .references(() => pois.id, { onDelete: "cascade" }),
+    intent: text("intent").notNull(),
+    title: text("title"),
+    summary: text("summary"),
+    emphasis: text("emphasis"),
+    createdBy: uuid("created_by")
+      .notNull()
+      .references(() => opsMemberships.userId, { onDelete: "restrict" }),
+    updatedBy: uuid("updated_by")
+      .notNull()
+      .references(() => opsMemberships.userId, { onDelete: "restrict" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    selectionUnique: uniqueIndex("seo_editorial_overrides_poi_intent_unique").on(
+      table.poiId,
+      table.intent,
+    ),
+    intentCheck: check(
+      "seo_editorial_overrides_intent_check",
+      sql`${table.intent} in ('payment', 'transport', 'ticket', 'first_timer', 'rainy_day')`,
+    ),
+    nonemptyCheck: check(
+      "seo_editorial_overrides_nonempty_check",
+      sql`${table.title} is not null or ${table.summary} is not null or ${table.emphasis} is not null`,
+    ),
+    titleCheck: check(
+      "seo_editorial_overrides_title_check",
+      sql`${table.title} is null or (btrim(${table.title}) <> '' and char_length(btrim(${table.title})) <= 140)`,
+    ),
+    summaryCheck: check(
+      "seo_editorial_overrides_summary_check",
+      sql`${table.summary} is null or (btrim(${table.summary}) <> '' and char_length(btrim(${table.summary})) <= 240)`,
+    ),
+    emphasisCheck: check(
+      "seo_editorial_overrides_emphasis_check",
+      sql`${table.emphasis} is null or (btrim(${table.emphasis}) <> '' and char_length(btrim(${table.emphasis})) <= 600)`,
+    ),
+  }),
+);
+
 // Editorial identity and notes never belong on the public POI-fact read model.
 // Keep them in a private, one-to-one audit relation instead.
 export const poiFactEditorialAudit = pgTable(
