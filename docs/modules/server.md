@@ -125,7 +125,13 @@ Next.js runtimes rather than deployed as an independent service.
   by an Ops actor with `task.write`, only while a task is `quoted`, and only with a configured
   gateway injected by a later composition boundary. A provider success followed by database rollback
   may leave an unreachable provider session, but cannot leave a payment-pending task or user-visible
-  link without the matching ledger row. No public/Ops HTTP route or webhook consumer exists yet.
+  link without the matching ledger row. The webhook verifier separately authenticates the exact raw
+  request body using Stripe's `t.payload` HMAC-SHA256 signature, one bounded timestamp, and one or
+  more constant-time `v1` signatures before it parses JSON. It accepts only a paid USD Checkout
+  completion whose signed client reference exactly matches its signed task metadata, then returns a
+  minimal provider-event/session/intent/task/amount projection. It neither stores nor returns the
+  raw payload, signature, secret, or non-payment event fields. No public/Ops HTTP route or webhook
+  consumer exists yet.
 - P0-19d protects the public browser capture route before `TelemetryService.track` with two atomic
   Upstash sliding windows: a HMAC-derived verified-identity window (`60/minute`, `300/hour` by
   default) and a separate HMAC-derived Vercel trusted-network window (`180/minute`, `900/hour`).

@@ -27,6 +27,12 @@ export {
   resolveStripeCheckoutConfig,
   StripeCheckoutProviderError,
 } from "./modules/task/stripeCheckout.js";
+export {
+  resolveStripeWebhookConfig,
+  StripeWebhookPayloadError,
+  StripeWebhookSignatureError,
+  verifyStripeCheckoutCompletedEvent,
+} from "./modules/task/stripeWebhook.js";
 export { createDbCommerceService } from "./db/commerceService.js";
 export { createDbPartnerAdministrationService } from "./db/partnerAdministrationService.js";
 export { createDbAgentTraceService } from "./db/agentTraceService.js";
@@ -314,6 +320,10 @@ export type {
   StripeCheckoutGateway,
   StripeCheckoutSession,
 } from "./modules/task/stripeCheckout.js";
+export type {
+  StripeWebhookConfig,
+  VerifiedStripeCheckoutCompletedEvent,
+} from "./modules/task/stripeWebhook.js";
 export type {
   AgentAttemptTrace,
   AgentTraceService,
