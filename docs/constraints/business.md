@@ -20,6 +20,15 @@ Readiness schema and derivation MUST NOT emit, rank, or imply an affiliate actio
 consumer may show a partner action only after it has confirmed matching explicit user intent and an
 active approved partner through the existing outbound controls.
 
+### Rescue Mode
+
+Rescue Mode MUST use deterministic category routing and MUST NOT use an LLM as its sole safety
+router. A route whose reviewed target is absent MUST be shown as unavailable, never as successful.
+Health and safety escalation MUST go to the official emergency boundary first and MUST NOT offer
+Human Help. Human Help may be offered only from real, matching operational configuration for city,
+category, hours, and a named owner; it remains best-effort with no SLA and requires a separate user
+confirmation before any task submission.
+
 ## Human Help and Payments
 
 - Human Help MUST require user confirmation before task creation or payment.
