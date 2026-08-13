@@ -118,7 +118,14 @@ Next.js runtimes rather than deployed as an independent service.
   `STRIPE_SECRET_KEY`; otherwise it returns no gateway. It requests only a hosted one-time Checkout
   session with the task id as opaque provider metadata and a server-authorized cents amount. It does
   not write the ledger, change task status, expose raw provider errors, or accept card data; the
-  authorized writer and signed webhook consumer remain separate boundaries.
+  authorized writer and signed webhook consumer remain separate boundaries. The private Checkout
+  writer locks one task before it asks the provider for a session, replays the existing matching
+  ledger row without a second provider call, and commits the ledger row, task price/link,
+  `payment_pending` transition, and non-sensitive Ops audit metadata together. It is callable only
+  by an Ops actor with `task.write`, only while a task is `quoted`, and only with a configured
+  gateway injected by a later composition boundary. A provider success followed by database rollback
+  may leave an unreachable provider session, but cannot leave a payment-pending task or user-visible
+  link without the matching ledger row. No public/Ops HTTP route or webhook consumer exists yet.
 - P0-19d protects the public browser capture route before `TelemetryService.track` with two atomic
   Upstash sliding windows: a HMAC-derived verified-identity window (`60/minute`, `300/hour` by
   default) and a separate HMAC-derived Vercel trusted-network window (`180/minute`, `900/hour`).

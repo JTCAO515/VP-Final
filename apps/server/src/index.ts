@@ -18,6 +18,11 @@ export {
 } from "./db/knowledgeBulkImportService.js";
 export { createDbHumanTaskService } from "./db/humanTaskService.js";
 export {
+  createDbHumanTaskPaymentCheckoutService,
+  HumanTaskPaymentAmountConflictError,
+  HumanTaskPaymentStateError,
+} from "./db/humanTaskPaymentService.js";
+export {
   createStripeCheckoutGateway,
   resolveStripeCheckoutConfig,
   StripeCheckoutProviderError,
@@ -298,6 +303,11 @@ export type {
   UpdateHumanTaskNoteCommand,
   AppendHumanTaskEvidenceCommand,
 } from "./modules/task/service.js";
+export type {
+  CreateHumanTaskCheckoutCommand,
+  HumanTaskPaymentCheckoutResult,
+  HumanTaskPaymentCheckoutService,
+} from "./db/humanTaskPaymentService.js";
 export type {
   CreateStripeCheckoutSessionRequest,
   StripeCheckoutConfig,
