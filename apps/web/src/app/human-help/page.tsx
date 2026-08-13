@@ -95,8 +95,8 @@ export default function HumanHelpPage() {
           <h1>Human Help</h1>
           <p>Submit a limited Shanghai request for manual review during the Phase 0 preview.</p>
         </div>
-        <a className="pageAction" href="/">
-          Back to Copilot
+        <a className="pageAction" href="/visepanda?context=human-help">
+          Back to VisePanda
         </a>
       </section>
 
