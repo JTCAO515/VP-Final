@@ -1,21 +1,23 @@
 import type { MetadataRoute } from "next";
+import { getServerCaller } from "./api/_server";
 import { GUIDES } from "./guides/data";
-import { poiEntries } from "./poiSeo";
+import { buildEvidenceGatedSitemapEntries, PUBLIC_SITE_URL } from "./seo-index-model";
 
-const baseUrl = "https://visepanda.com";
+export const dynamic = "force-dynamic";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const pois = await getServerCaller().knowledge.listPois();
   return [
     url("/"),
     url("/explore"),
     ...GUIDES.map((guide) => url(`/guides/${guide.slug}`)),
-    ...poiEntries().map((entry) => url(`/${entry.citySlug}/${entry.poiSlug}`)),
+    ...buildEvidenceGatedSitemapEntries(pois),
   ];
 }
 
 function url(path: string): MetadataRoute.Sitemap[number] {
   return {
-    url: `${baseUrl}${path}`,
+    url: `${PUBLIC_SITE_URL}${path}`,
     lastModified: new Date("2026-07-09"),
     changeFrequency: "weekly",
   };

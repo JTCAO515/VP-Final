@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "pnpm --filter @visepanda/app-server build && next build",
+    "build": "pnpm --filter @visepanda/app-server build && next build && node scripts/verify-seo-index.mjs",
     "dev": "next dev",
     "test": "vitest run --passWithNoTests",
     "typecheck": "tsc -p tsconfig.json --noEmit",

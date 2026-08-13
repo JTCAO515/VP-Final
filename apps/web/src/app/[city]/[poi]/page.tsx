@@ -26,6 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `${entry.poi.nameEn} guide | ${entry.poi.city}`,
     description: poiDescription(entry.poi),
+    robots: { index: false, follow: true },
     openGraph: {
       title: `${entry.poi.nameEn} in ${entry.poi.city}`,
       description: poiDescription(entry.poi),

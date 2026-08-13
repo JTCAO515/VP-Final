@@ -117,6 +117,15 @@ optional editor note. Missing or deleted override rows leave generated copy inta
 make a route exist, extend candidate freshness, alter facts, or affect the JSON-LD evidence boundary.
 Sitemap and noindex aggregation remain the separate #86 consumer of this same authority.
 
+`/sitemap.xml` loads the same current matrix and includes only its canonical POI/intent candidates,
+alongside the fixed public home, Explore, and guide pages. The legacy two-segment POI page is excluded
+from the sitemap and explicitly `noindex`; it may remain an application navigation surface but is not
+an evidence-backed SEO authority. `robots.txt` blocks account, workspace, readiness, Arrival Pack,
+Human Help, share, outbound, and API paths. The checked-in fixture runs a duplicate-canonical-path
+build guard, while runtime matrix validation keeps durable knowledge changes from silently producing
+duplicate public SEO URLs. Private Trip shares also carry response metadata `noindex` regardless of
+token validity.
+
 Before the endpoint delegates to the telemetry service, it requires both the verified signed-session
 or account identity and Vercel's trusted client address to pass independent Upstash sliding windows.
 The current default allows a generous real browsing burst: `60/minute` and `300/hour` per identity,
