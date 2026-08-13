@@ -108,9 +108,10 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
   supporting fact ids, unique canonical path, and last verification timestamp. The matrix is not a
   content generator: unsupported POI/intent pairs are represented as gaps and cannot become a public
   candidate, sitemap entry, or fallback page.
-- An SEO editorial override is private, Ops-authored presentation data keyed by POI and intent. It
-  can replace only bounded title, summary, and emphasis text after a candidate is eligible; it has no
-  fact/evidence fields and cannot create, promote, or keep a public candidate alive.
+- An SEO editorial override is private, Ops-authored presentation data keyed by POI and intent. Its
+  mutation contract requires at least one bounded title, summary, or emphasis replacement, while the
+  stored projection adds only an update timestamp. It has no fact/evidence fields and cannot create,
+  promote, or keep a public candidate alive.
 - `events` has two related contracts: a stored telemetry event requires exactly one trusted identity,
   registered action, allowlisted object properties, and a future retention deadline; browser capture
   is a smaller client-safe action union with no persistence metadata or attribution authority. The

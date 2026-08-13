@@ -125,9 +125,11 @@ Next.js runtimes rather than deployed as an independent service.
   and records private editorial provenance separately from public fact reads. `local-demo` and test
   compositions do not pretend a persistent import occurred.
 - SEO editorial overrides are a separate private presentation relation, keyed by POI and frozen
-  intent. The server/ops writer must derive the current evidence-gated candidate before it may read
-  or apply one; an override has no POI-fact write path, carries no provenance fields, and cannot
-  restore a candidate whose supporting facts have expired or become ineligible.
+  intent. Its durable and in-memory services expose only get/save/delete of bounded title, summary,
+  and emphasis fields. The server/ops writer derives the current evidence-gated candidate before it
+  may read or save one; the Web consumer resolves the same candidate before it reads and applies one.
+  An override has no POI-fact write path, carries no provenance fields, and cannot restore a candidate
+  whose supporting facts have expired or become ineligible.
 - Local-facing Chinese POI values use the durable `poi_facts` lifecycle rather than promoting legacy
   `pois.name_zh` or `pois.address` strings. The Drizzle mapping mirrors the database constraint for
   five bounded local-presentation fact types; current eligible values are derived only in the domain

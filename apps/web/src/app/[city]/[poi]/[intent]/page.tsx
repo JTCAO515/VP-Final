@@ -1,8 +1,12 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getServerCaller } from "../../../api/_server";
+import { getSeoEditorialOverrideService, getServerCaller } from "../../../api/_server";
 import { SiteFooter, SiteHeader } from "../../../site-chrome";
-import { resolvePublicSeoPage, type PublicSeoPage } from "../../../seo-page-model";
+import {
+  applyPublicSeoEditorialOverride,
+  resolvePublicSeoPage,
+  type PublicSeoPage,
+} from "../../../seo-page-model";
 
 export const dynamic = "force-dynamic";
 
@@ -61,6 +65,12 @@ export default async function PublicSeoPoiPage({ params }: Props) {
       </section>
 
       <article className="guideArticle">
+        {page.editorialEmphasis ? (
+          <section>
+            <h2>Editor&apos;s note</h2>
+            <p>{page.editorialEmphasis}</p>
+          </section>
+        ) : null}
         <section>
           <h2>Current reviewed facts</h2>
           <div className="publicFactList">
@@ -101,9 +111,16 @@ async function loadSeoPage(input: {
   intent: string;
 }): Promise<PublicSeoPage | null> {
   const pois = await getServerCaller().knowledge.listPois();
-  return resolvePublicSeoPage(pois, {
+  const page = resolvePublicSeoPage(pois, {
     citySlug: input.city,
     poiSlug: input.poi,
     intentSegment: input.intent,
   });
+  if (!page) return null;
+
+  const override = await getSeoEditorialOverrideService()?.get({
+    poiId: page.candidate.poiId,
+    intent: page.candidate.intent,
+  });
+  return applyPublicSeoEditorialOverride(page, override ?? null);
 }

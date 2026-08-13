@@ -11,11 +11,17 @@ the public Web application and protected by server-side role checks.
 ## Current Routes
 
 - `/facts`: list, create, update, renew, and deprecate execution facts.
+- `/seo`: Editor-authorized bounded SEO title, summary, and editor-note overrides for an already
+  eligible POI/intent candidate. It is presentation-only and offers a delete action that restores
+  generated copy.
 - `/gaps`: inspect and resolve knowledge gaps.
 - `/tasks`: inspect the durable Human Task intake queue.
 - `/tasks/:taskId`: inspect one authorized task, save a minimized internal note, review transition
   history, and apply only the controlled-preview transitions returned by the server.
 - `/api/knowledge/*`: server-side knowledge operations.
+- `/api/knowledge/seo-overrides`: server-side private override read/save/delete route. GET and POST
+  recalculate the current evidence-gated candidate; POST and DELETE require `knowledge.write` and
+  derive the actor from the verified Ops session.
 - `/api/knowledge/import`: Editor-authorized CSV `dry-run` and atomic `commit` endpoint; no public
   upload surface exists.
 - `/api/tasks`: permission-protected task list endpoint.
@@ -117,6 +123,13 @@ row before any write. `commit` refuses a file with any validation/conflict error
 facts transactionally, leaves all facts `draft`, preserves reviewer provenance in the private audit
 relation, and uses collection-row digest plus fact identity to make replay idempotent. `missing`,
 `conflict`, and `rejected` collection rows are reported as skipped rather than treated as evidence.
+
+SEO overrides are intentionally not an alternate knowledge store. The route accepts only the frozen
+POI/intent selection and bounded presentation strings. It derives the current public candidate before
+reading or saving, so no operator can use copy to publish an unsupported, expired, or incomplete page.
+Deletion remains available for stale private rows and restores the generated fallback once the candidate
+is otherwise eligible. The UI does not expose POI fact, source, confidence, evidence, or review edits
+from this route.
 
 ## Verification
 

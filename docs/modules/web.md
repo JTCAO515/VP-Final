@@ -111,8 +111,11 @@ Public POI/intent SEO pages at `/[city]/[poi]/[intent]` load POIs from the curre
 each request and resolve the shared domain SEO matrix before rendering. An unsupported, expired, or
 incomplete candidate is a 404, not a conservative-looking fallback. The page publishes only the fact
 receipts named by its candidate, the public-safe source label, verification date, canonical path, and a
-minimal `Place` JSON-LD record without a legacy address. Sitemap and noindex aggregation remain the
-separate #86 consumer of this same authority.
+minimal `Place` JSON-LD record without a legacy address. Only after that candidate resolves may the
+composition root read a private SEO editorial override and replace its bounded title, summary, or
+optional editor note. Missing or deleted override rows leave generated copy intact; an override cannot
+make a route exist, extend candidate freshness, alter facts, or affect the JSON-LD evidence boundary.
+Sitemap and noindex aggregation remain the separate #86 consumer of this same authority.
 
 Before the endpoint delegates to the telemetry service, it requires both the verified signed-session
 or account identity and Vercel's trusted client address to pass independent Upstash sliding windows.
