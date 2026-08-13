@@ -9,6 +9,14 @@ export {
   type StripeCheckoutSession,
 } from "./stripeCheckout.js";
 export {
+  resolveStripeWebhookConfig,
+  StripeWebhookPayloadError,
+  StripeWebhookSignatureError,
+  verifyStripeCheckoutCompletedEvent,
+  type StripeWebhookConfig,
+  type VerifiedStripeCheckoutCompletedEvent,
+} from "./stripeWebhook.js";
+export {
   HUMAN_TASK_DAILY_CAPACITY,
   HUMAN_TASK_PREVIEW_CITY,
   HumanTaskCapacityError,
