@@ -5,6 +5,7 @@ import {
   DemoModelResponseError,
   DemoModelUnavailableError,
   createDemoCopilotModelDependencies,
+  reportDemoProviderReadiness,
 } from "./modelRuntime.js";
 
 afterEach(() => {
@@ -12,6 +13,39 @@ afterEach(() => {
 });
 
 describe("demo model runtime", () => {
+  it("logs only provider configuration names when a durable route is incomplete", () => {
+    const warn = vi.fn();
+    reportDemoProviderReadiness(
+      {
+        DASHSCOPE_API_KEY: "test-dashscope-key",
+        VISEPANDA_MODEL_ROUTER_PRIMARY: "catalog-confirmed-qwen",
+        MOONSHOT_API_KEY: "test-moonshot-key",
+      },
+      warn,
+    );
+
+    expect(warn).toHaveBeenCalledWith(
+      "copilot_provider_configuration_degraded",
+      expect.objectContaining({
+        routes: expect.arrayContaining([
+          expect.objectContaining({
+            route: "router_fallback",
+            provider: "deepseek",
+            keyEnvironment: "DEEPSEEK_API_KEY",
+            status: "missing_model",
+          }),
+          expect.objectContaining({
+            route: "concierge_primary",
+            provider: "moonshot",
+            keyEnvironment: "MOONSHOT_API_KEY",
+            status: "missing_model",
+          }),
+        ]),
+      }),
+    );
+    expect(JSON.stringify(warn.mock.calls)).not.toMatch(/test-dashscope-key|test-moonshot-key/i);
+  });
+
   it("clamps every provider attempt to the accepted public output ceiling", async () => {
     const requestedTokenLimits: number[] = [];
     vi.stubGlobal(
