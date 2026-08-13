@@ -19,6 +19,7 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
 | `readiness`     | Versioned, deterministic China preparation questions, explainable self-reported results, and consented persistence request/result contracts; no score, LLM scoring, or commercial CTA                    |
 | `rescue`        | Deterministic incident routing definitions, fail-closed reviewed-target availability, and bounded Human Help offer state                                                                                 |
 | `safe-phrases`  | Private operator-verified high-risk fixed-expression contract, exact severity selection, and freshness eligibility                                                                                       |
+| `show-to-local` | Versioned offline phrase cards: ordinary fixed cards plus ADR-0016 unavailable states for high-risk categories until reviewed expressions are synced                                                     |
 | `seo`           | Deterministic evidence-gated POI/intent matrix plus private presentation-only editorial override schema for later public page, metadata, and sitemap consumers; it emits gaps instead of thin pages      |
 | `task`          | Human Task input, lifecycle, transition commands, private outcome evidence, and non-status updates                                                                                                       |
 | `tools`         | Versioned local-only preparation pack for eight execution-tool categories; deterministic action ids, no real-time API, partner URL, or live availability claim                                           |
@@ -63,6 +64,11 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
   operator-verified expression selected by exact category, scene, intent key, variant key, and
   severity is eligible. A standard and severe variant are never interchangeable; no match or an
   ambiguous match returns unavailable. This schema creates no public display or model-generation path.
+- Show to Local is a separately versioned, local-only phrase-card pack. Its three ordinary cards
+  (restaurant, taxi, hotel) may expose their fixed Chinese text to local copy and text-to-speech.
+  Allergy/dietary, symptom/medical, and emergency cards do not ship a plausible static Chinese
+  substitute: until a future consumer syncs a current exact `safe-phrases` match, they present the
+  ADR-0016 fixed English unavailable fallback and expose no copy or speech action.
 - A completion job carries only a Trip reference, base version, idempotency key, bounded attempt state, and safe error code. Its pure state-transition rule permits idempotent reads, `queued -> running`, a running terminal result, and `partial`/`failed -> queued` retry only. It never carries a prompt, model credential, or replacement Trip snapshot.
 - Copilot observability records require exactly one trusted identity, a future retention deadline,
   normalized success/failure fields, and pre-persistence redaction. Domain validation rejects direct

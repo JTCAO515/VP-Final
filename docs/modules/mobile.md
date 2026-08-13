@@ -19,6 +19,13 @@ local-storage/AsyncStorage consumer, but no mobile synchronization, download, ac
 Help submission, or write path exists. This is a controlled pre-production boundary, not a public
 offline-product claim.
 
+The Translation item opens a local Show to Local phrase-card view. Restaurant, taxi, and hotel cards
+have fixed ordinary Chinese wording and support on-device copy plus local `expo-speech` playback.
+Allergy/dietary, symptom/medical, and emergency categories intentionally show ADR-0016's fixed
+English unavailable state until a current operator-reviewed expression is supplied through a future
+controlled sync; they do not expose a Chinese value, copy button, or speech button. This is a safety
+boundary, not a missing-network fallback, and the shell makes no translation-service claim.
+
 ## Start Trigger
 
 Mobile implementation begins only after Phase 1 quality and demand triggers are met: meaningful
