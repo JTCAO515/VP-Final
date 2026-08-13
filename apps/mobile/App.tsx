@@ -21,6 +21,9 @@ import {
   type ShowToLocalPhrasePack,
   type ShowToLocalPhraseCard,
   type ToolsContentPack,
+  type HumanTaskCreate,
+  type HumanTaskKind,
+  type HumanTaskReceipt,
 } from "@visepanda/domain";
 
 import { mobileTheme } from "./src/index";
@@ -34,6 +37,11 @@ import {
   MobileTripSyncError,
   readMobileWebBaseUrl,
 } from "./src/mobile-trip-sync";
+import {
+  createMobileHumanHelpIdempotencyKey,
+  MobileHumanHelpError,
+  submitMobileHumanHelp,
+} from "./src/mobile-human-help";
 import {
   createMobileTelemetryEvent,
   createMobileTelemetryQueue,
@@ -53,6 +61,22 @@ const mobileAuthClient = mobileAuthConfig ? createMobileAuthClient(mobileAuthCon
 const mobileWebBaseUrl = readMobileWebBaseUrl(process.env);
 
 type MobileSession = { accessToken: string; email: string | null; userId: string };
+type MobileHumanHelpDraft = HumanTaskCreate;
+
+const EMPTY_HUMAN_HELP_DRAFT: MobileHumanHelpDraft = {
+  city: "Shanghai",
+  kind: "other",
+  description: "",
+  contact: "",
+};
+
+const HUMAN_HELP_KIND_OPTIONS: ReadonlyArray<{ kind: HumanTaskKind; label: string }> = [
+  { kind: "transport_help", label: "Transport" },
+  { kind: "translation_help", label: "Translation" },
+  { kind: "ticket_help", label: "Tickets" },
+  { kind: "call_restaurant", label: "Restaurant" },
+  { kind: "other", label: "Other" },
+];
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<MobileTab>("today");
@@ -68,6 +92,11 @@ export default function App() {
   );
   const [mobileTelemetryReady, setMobileTelemetryReady] = useState(false);
   const [openedSessionUserId, setOpenedSessionUserId] = useState<string | null>(null);
+  const [humanHelpDraft, setHumanHelpDraft] =
+    useState<MobileHumanHelpDraft>(EMPTY_HUMAN_HELP_DRAFT);
+  const [humanHelpIdempotencyKey, setHumanHelpIdempotencyKey] = useState(
+    createMobileHumanHelpIdempotencyKey,
+  );
   const mobileTelemetryQueueRef = useRef(mobileTelemetryQueue);
   mobileTelemetryQueueRef.current = mobileTelemetryQueue;
 
@@ -112,6 +141,13 @@ export default function App() {
     const retry = setInterval(() => void flushMobileTelemetry(), 30_000);
     return () => clearInterval(retry);
   }, [mobileSession?.accessToken, mobileTelemetryQueue.events.length]);
+
+  useEffect(() => {
+    if (!mobileSession?.email) return;
+    setHumanHelpDraft((draft) =>
+      draft.contact ? draft : { ...draft, contact: mobileSession.email! },
+    );
+  }, [mobileSession?.email]);
 
   async function loadOfflineCache() {
     const result = await offlineCacheStore.load();
@@ -302,6 +338,46 @@ export default function App() {
     );
   }
 
+  function openHumanHelp(description = "") {
+    setHumanHelpDraft((draft) => ({
+      ...draft,
+      ...(description && !draft.description.trim() ? { description } : {}),
+      ...(!draft.contact && mobileSession?.email ? { contact: mobileSession.email } : {}),
+    }));
+    setActiveTab("help");
+  }
+
+  async function submitHumanHelp(): Promise<HumanTaskReceipt | null> {
+    if (!mobileSession) {
+      setActiveTab("me");
+      return null;
+    }
+    if (!mobileWebBaseUrl) return null;
+    try {
+      const receipt = await submitMobileHumanHelp({
+        accessToken: mobileSession.accessToken,
+        baseUrl: mobileWebBaseUrl,
+        request: humanHelpDraft,
+        idempotencyKey: humanHelpIdempotencyKey,
+      });
+      void queueMobileTelemetry({
+        action: "human_help_submitted",
+        entity_type: "human_task",
+      });
+      setHumanHelpDraft((draft) => ({ ...EMPTY_HUMAN_HELP_DRAFT, contact: draft.contact }));
+      setHumanHelpIdempotencyKey(createMobileHumanHelpIdempotencyKey());
+      return receipt;
+    } catch (error) {
+      if (
+        error instanceof MobileHumanHelpError &&
+        error.code === "MOBILE_HUMAN_HELP_SESSION_INVALID"
+      ) {
+        await mobileAuthClient?.auth.signOut();
+      }
+      throw error;
+    }
+  }
+
   const cachedContent = offlineCache?.kind === "ready" ? offlineCache.cache : null;
   const toolsContent = cachedContent?.toolsContent ?? TOOLS_CONTENT_PACK;
   const phrasePack = cachedContent?.phrasePack ?? SHOW_TO_LOCAL_PHRASE_PACK;
@@ -323,6 +399,7 @@ export default function App() {
               canSync={Boolean(mobileSession && mobileWebBaseUrl)}
               notice={tripSyncNotice}
               onSaveTrip={(snapshot) => void saveReadOnlyTrip(snapshot)}
+              onRequestHumanHelp={openHumanHelp}
               onSyncTrips={() => void syncTrips()}
               syncing={tripSyncing}
               trips={mobileTrips}
@@ -360,7 +437,16 @@ export default function App() {
               toolsContent={toolsContent}
             />
           ) : null}
-          {activeTab === "help" ? <HelpView /> : null}
+          {activeTab === "help" ? (
+            <HelpView
+              canSubmit={Boolean(mobileSession && mobileWebBaseUrl)}
+              draft={humanHelpDraft}
+              onDraftChange={setHumanHelpDraft}
+              onRequireSignIn={() => setActiveTab("me")}
+              onSubmit={submitHumanHelp}
+              signedIn={Boolean(mobileSession)}
+            />
+          ) : null}
           {activeTab === "me" ? (
             <MeView
               accountEmail={mobileSession?.email ?? null}
@@ -410,6 +496,7 @@ function TodayView({
   canSync,
   notice,
   onSaveTrip,
+  onRequestHumanHelp,
   onSyncTrips,
   syncing,
   trips,
@@ -418,6 +505,7 @@ function TodayView({
   canSync: boolean;
   notice: string | null;
   onSaveTrip: (snapshot: ReadOnlyTripSnapshot) => void;
+  onRequestHumanHelp: (description?: string) => void;
   onSyncTrips: () => void;
   syncing: boolean;
   trips: ReadonlyArray<ReadOnlyTripSnapshot>;
@@ -480,6 +568,14 @@ function TodayView({
           <Text style={styles.cardAction}>
             Last refreshed {formatOfflineTimestamp(cache?.refreshedAt ?? cachedTrip.savedAt)}
           </Text>
+          <Pressable
+            accessibilityLabel="Ask Human Help about this Trip"
+            accessibilityRole="button"
+            onPress={() => onRequestHumanHelp(humanHelpPrefillForTrip(cachedTrip.trip))}
+            style={styles.secondaryButton}
+          >
+            <Text style={styles.secondaryButtonText}>Ask Human Help about this Trip</Text>
+          </Pressable>
         </View>
       ) : (
         <>
@@ -694,7 +790,54 @@ function ShowToLocalView({
   );
 }
 
-function HelpView() {
+function HelpView({
+  canSubmit,
+  draft,
+  onDraftChange,
+  onRequireSignIn,
+  onSubmit,
+  signedIn,
+}: {
+  canSubmit: boolean;
+  draft: MobileHumanHelpDraft;
+  onDraftChange: (draft: MobileHumanHelpDraft) => void;
+  onRequireSignIn: () => void;
+  onSubmit: () => Promise<HumanTaskReceipt | null>;
+  signedIn: boolean;
+}) {
+  const [notice, setNotice] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  async function submit() {
+    if (!signedIn) {
+      setNotice("Sign in in Me before requesting Human Help.");
+      onRequireSignIn();
+      return;
+    }
+    if (!canSubmit) {
+      setNotice("Human Help is unavailable in this build. Your request was not submitted.");
+      return;
+    }
+    setSubmitting(true);
+    setNotice(null);
+    try {
+      const receipt = await onSubmit();
+      setNotice(
+        receipt
+          ? `Request submitted. Keep this receipt: ${receipt.id}.`
+          : "Sign in in Me before requesting Human Help.",
+      );
+    } catch (error) {
+      setNotice(
+        error instanceof MobileHumanHelpError
+          ? error.message
+          : "Human Help is temporarily unavailable. Your request was not submitted.",
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
   return (
     <View style={styles.section}>
       <Text accessibilityRole="header" style={styles.title}>
@@ -706,8 +849,79 @@ function HelpView() {
       </Text>
       <View style={styles.warning}>
         <Text style={styles.warningText}>
-          Human Help availability is not connected in this build. No request has been submitted.
+          Shanghai preview only. Human Help is a best-effort, non-emergency request. It does not
+          guarantee a response or replace local emergency services.
         </Text>
+      </View>
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Request Human Help</Text>
+        <Text style={styles.cardBody}>Your contact and request are sent only when you submit.</Text>
+        <Text style={styles.inputLabel}>Request type</Text>
+        <View style={styles.phraseList}>
+          {HUMAN_HELP_KIND_OPTIONS.map((option) => {
+            const selected = draft.kind === option.kind;
+            return (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityState={{ selected }}
+                key={option.kind}
+                onPress={() => onDraftChange({ ...draft, kind: option.kind })}
+                style={[styles.phraseChoice, selected ? styles.phraseChoiceSelected : null]}
+              >
+                <Text
+                  style={[
+                    styles.phraseChoiceTitle,
+                    selected ? styles.phraseChoiceTitleSelected : null,
+                  ]}
+                >
+                  {option.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+        <Text style={styles.inputLabel}>What do you need help with?</Text>
+        <TextInput
+          accessibilityLabel="Human Help request"
+          multiline
+          onChangeText={(description) => onDraftChange({ ...draft, description })}
+          placeholder="Describe the situation and what you need."
+          placeholderTextColor={colors.muted}
+          style={[styles.input, styles.multilineInput]}
+          value={draft.description}
+        />
+        <Text style={styles.inputLabel}>Contact email or phone</Text>
+        <TextInput
+          accessibilityLabel="Human Help contact"
+          autoCapitalize="none"
+          onChangeText={(contact) => onDraftChange({ ...draft, contact })}
+          placeholder="How can the team reach you?"
+          placeholderTextColor={colors.muted}
+          style={styles.input}
+          value={draft.contact}
+        />
+        <Pressable
+          accessibilityRole="button"
+          disabled={
+            submitting || draft.description.trim().length < 10 || draft.contact.trim().length < 3
+          }
+          onPress={() => void submit()}
+          style={[
+            styles.primaryButton,
+            submitting || draft.description.trim().length < 10 || draft.contact.trim().length < 3
+              ? styles.buttonDisabled
+              : null,
+          ]}
+        >
+          <Text style={styles.primaryButtonText}>
+            {submitting ? "Submitting…" : "Submit request"}
+          </Text>
+        </Pressable>
+        {notice ? (
+          <Text accessibilityLiveRegion="polite" style={styles.warningText}>
+            {notice}
+          </Text>
+        ) : null}
       </View>
     </View>
   );
@@ -809,6 +1023,14 @@ function offlineCacheSummary(cache: OfflineCacheLoadResult | null): string {
   }
   if (cache.kind === "corrupted_cleared") return "A corrupted cache was cleared.";
   return "No local cache saved yet.";
+}
+
+function humanHelpPrefillForTrip(trip: ReadOnlyTripSnapshot["trip"]): string {
+  const dayWithBlock = trip.days.find((day) => day.blocks.length > 0);
+  const block = dayWithBlock?.blocks[0];
+  if (!block) return `I need help with my saved Trip: ${trip.title}.`;
+  const city = dayWithBlock?.city ? ` in ${dayWithBlock.city}` : "";
+  return `I need help with ${block.title} on Day ${dayWithBlock?.dayNumber ?? 1}${city}.`;
 }
 
 function sessionForMobile(
@@ -972,5 +1194,7 @@ const styles = StyleSheet.create({
     minHeight: components.button.minHeight,
     paddingHorizontal: spacing[3],
   },
+  inputLabel: { color: colors.ink, fontSize: typography.sizes.sm, fontWeight: "600" },
+  multilineInput: { minHeight: 108, paddingTop: spacing[3], textAlignVertical: "top" },
   copyStatus: { color: components.status.info.color, fontSize: typography.sizes.sm },
 });

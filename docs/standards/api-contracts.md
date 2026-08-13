@@ -83,6 +83,15 @@ returns 503. The response has no owner, event, share token, patch, or write capa
 consumers keep credentials in platform-secure storage and do not persist them with an offline Trip
 package.
 
+`POST /api/mobile/human-help` is the corresponding authenticated native submission boundary. It accepts
+the existing strict `HumanTaskSubmissionSchema` over HTTPS with a Bearer Supabase access token, verifies
+the token online, and derives an authenticated Human Task owner. It does not accept browser anonymous
+cookies, caller-selected owners, an arbitrary identity header, or a Trip snapshot. Success returns only
+`{ ok: true, task: HumanTaskReceipt }`; it never returns a contact, description, provider detail, or
+payment record. Invalid input is 400, missing/invalid session is 401, idempotency conflict is 409,
+controlled-preview capacity is 429, and unavailable Auth/runtime is 503. Native callers do not queue
+this write offline: any non-success response means no receipt was confirmed.
+
 `POST /api/mobile/telemetry` accepts only the strict domain
 `MobileTelemetryCaptureInputSchema`: `{ id, action, entity_type, entity_id?, props_jsonb }`. `id` is
 a client-generated UUID used only as an idempotency key for the bounded offline queue. The server

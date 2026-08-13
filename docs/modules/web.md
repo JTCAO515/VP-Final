@@ -92,6 +92,16 @@ header, shares a browser cookie, exposes Trip events, or permits a write. Missin
 configuration and durable Trip failures return a generic 503; an absent or invalid mobile session
 returns 401. The endpoint never logs access tokens.
 
+`POST /api/mobile/human-help` is a separate native write boundary. It validates the same bounded
+Bearer token online, derives an authenticated Human Task owner, and accepts only the existing strict
+`HumanTaskSubmissionSchema`. It never accepts a browser anonymous cookie, caller-selected identity,
+Trip snapshot, or block metadata. The success projection is only `HumanTaskReceipt`; contact and
+description remain behind the durable Human Task privacy/retention boundary. Missing/invalid sessions
+return 401, invalid controlled-preview input returns 400, idempotency conflict returns 409, capacity
+returns 429, and Auth/runtime failures return an honest 503. The endpoint never logs the Bearer token,
+contact, or request description. Native callers must not queue this request offline: absence of a
+receipt means the request was not confirmed.
+
 `POST /api/mobile/telemetry` is a separate authenticated-native observation boundary. Its strict
 `MobileTelemetryCaptureInputSchema` accepts only a client-generated UUID, one registered closed-set
 mobile action, bounded entity identifiers, and action-specific non-text metadata. Online Supabase
