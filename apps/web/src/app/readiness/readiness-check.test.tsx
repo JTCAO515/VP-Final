@@ -1,0 +1,38 @@
+import * as React from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { describe, expect, it } from "vitest";
+import { answerLabel, ReadinessCheck, statusLabel } from "./readiness-check";
+
+describe("China Readiness Check", () => {
+  it("does not create a percentage score or commercial CTA", () => {
+    const html = renderWithReact(React.createElement(ReadinessCheck));
+
+    expect(html).toContain("China Readiness Check");
+    expect(html).toContain("10 fixed checks");
+    expect(html).toContain("No percentage score");
+    expect(html).toContain("Unknown stays unknown");
+    expect(html).toContain("Save this self-report");
+    expect(html).toContain("Not answered (unknown)");
+    expect(html).not.toContain("% ready");
+    expect(html).not.toContain("Book now");
+    expect(html).not.toContain("Partner");
+  });
+
+  it("labels missing values as unknown instead of silently treating them as ready", () => {
+    expect(answerLabel("unknown", true)).toBe("Not answered (unknown)");
+    expect(answerLabel("confirmed", false)).toBe("Confirmed");
+    expect(answerLabel("not_confirmed", false)).toBe("Not yet");
+    expect(statusLabel("unknown")).toBe("Unknown");
+    expect(statusLabel("action_required")).toBe("Action needed");
+  });
+});
+
+function renderWithReact(element: React.ReactElement) {
+  const runtimeGlobal = globalThis as typeof globalThis & { React?: typeof React };
+  runtimeGlobal.React = React;
+  try {
+    return renderToStaticMarkup(element);
+  } finally {
+    delete runtimeGlobal.React;
+  }
+}

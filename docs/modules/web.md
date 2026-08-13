@@ -15,6 +15,7 @@ the outbound gateway.
 | `/`                              | Product home with an illustrative, non-interactive VisePanda workspace preview |
 | `/visepanda`                     | Canonical VisePanda workspace and Trip Canvas                                  |
 | `/copilot`                       | Legacy redirect to `/visepanda`                                                |
+| `/readiness`                     | Explainable, fixed-answer China preparation self-check                         |
 | `/explore`                       | Execution-fact discovery                                                       |
 | `/guides/[slug]`                 | Editorial execution guides                                                     |
 | `/[city]/[poi]`                  | Programmatic POI page                                                          |
@@ -51,6 +52,14 @@ not a browser table-access path: a later traveler UI uses only server procedures
 consent, and the existing verified-account or signed-anonymous-Trip identity boundary. Deployed
 retention defaults to 180 days and `VISEPANDA_READINESS_RETENTION_DAYS` may only shorten it; invalid
 configuration fails composition rather than silently retaining data longer.
+
+`/readiness` is the traveler-facing consumer of that fixed contract. It is an explainable self-check,
+not a percentage score, recommendation engine, booking surface, or externally verified record. It
+renders all ten versioned questions and their rule ids, observed answer, evidence status, and next
+action; unanswered inputs remain explicit `unknown`. Its browser route accepts only the domain's
+fixed enum payload, resolves ownership server-side, and requires a separate opt-in before persistence.
+No partner CTA is rendered by this core flow, and no free-form text, passport data, or travel narrative
+is submitted through it.
 
 [ADR-0005](../adr/ADR-0005-runtime-modes-and-production-adapter-ownership.md) requires explicit mode
 selection: only `local-demo` may use labelled fixtures/memory; deployed modes return honest
