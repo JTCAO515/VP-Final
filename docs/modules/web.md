@@ -137,6 +137,12 @@ configured limit from the domain-validated response. Missing Upstash configurati
 `ANONYMOUS_TURN_CONTROL_UNAVAILABLE`; no browser value can raise or reset the server count. Verified
 authenticated users bypass this anonymous-only wall.
 
+Before the network guard, model composition, or anonymous-turn reservation, the Copilot route applies
+the accepted server-owned input ceiling. It returns HTTP 413 `COPILOT_INPUT_TOO_LARGE` with the active
+code-unit maximum when a valid message exceeds the default 8,000 or a stricter deployment setting.
+Invalid safety-policy configuration returns the typed honest 503 unavailable response instead of
+silently ignoring the configured boundary.
+
 The separate network guard applies to both anonymous and authenticated Copilot requests before the
 model pipeline. On Vercel it reads only the first valid `x-vercel-forwarded-for` address and ignores
 client-controlled `x-forwarded-for`. Exceeding either configured sliding window returns HTTP 429

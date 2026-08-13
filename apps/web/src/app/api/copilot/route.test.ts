@@ -18,6 +18,7 @@ const originalEnvironment = {
   supabaseUrl: process.env.SUPABASE_URL,
   supabaseAnonKey: process.env.SUPABASE_ANON_KEY,
   vercel: process.env.VERCEL,
+  maxInputCodeUnits: process.env.VISEPANDA_COPILOT_MAX_INPUT_CODE_UNITS,
 };
 
 beforeEach(() => {
@@ -36,9 +37,61 @@ afterEach(() => {
   restoreEnv("SUPABASE_URL", originalEnvironment.supabaseUrl);
   restoreEnv("SUPABASE_ANON_KEY", originalEnvironment.supabaseAnonKey);
   restoreEnv("VERCEL", originalEnvironment.vercel);
+  restoreEnv("VISEPANDA_COPILOT_MAX_INPUT_CODE_UNITS", originalEnvironment.maxInputCodeUnits);
 });
 
 describe("POST /api/copilot anonymous turn wall", () => {
+  it("rejects an oversized message before request protection or model composition", async () => {
+    setTestWebServerServices({
+      anonymousTurnCounter: createInMemoryAnonymousTurnCounter({ limit: 3 }),
+      copilotIpRateLimiter: {
+        async check() {
+          throw new Error("the IP limiter must not run for oversized input");
+        },
+      },
+      humanTaskService: createInMemoryHumanTaskService(),
+      knowledgeService: createInMemoryKnowledgeService(),
+      traceService: createInMemoryAgentTraceService(),
+      tripService: createVersionedInMemoryTripService(),
+    });
+
+    const response = await POST(request("a".repeat(8_001)));
+
+    expect(response.status).toBe(413);
+    await expect(response.json()).resolves.toEqual({
+      ok: false,
+      code: "COPILOT_INPUT_TOO_LARGE",
+      error:
+        "Copilot messages must be 8000 characters or fewer. Shorten your message and try again.",
+      maxInputCodeUnits: 8_000,
+    });
+  });
+
+  it("uses the stricter deployment input ceiling at the public boundary", async () => {
+    process.env.VISEPANDA_COPILOT_MAX_INPUT_CODE_UNITS = "4";
+    setTestWebServerServices({
+      anonymousTurnCounter: createInMemoryAnonymousTurnCounter({ limit: 3 }),
+      copilotIpRateLimiter: {
+        async check() {
+          throw new Error("the IP limiter must not run for oversized input");
+        },
+      },
+      humanTaskService: createInMemoryHumanTaskService(),
+      knowledgeService: createInMemoryKnowledgeService(),
+      traceService: createInMemoryAgentTraceService(),
+      tripService: createVersionedInMemoryTripService(),
+    });
+
+    const response = await POST(request("hello"));
+
+    expect(response.status).toBe(413);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: false,
+      code: "COPILOT_INPUT_TOO_LARGE",
+      maxInputCodeUnits: 4,
+    });
+  });
+
   it("returns usage after three successful turns and blocks the fourth", async () => {
     setTestWebServerServices({
       anonymousTurnCounter: createInMemoryAnonymousTurnCounter({ limit: 3 }),

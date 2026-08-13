@@ -5,6 +5,8 @@ import {
   AnonymousTurnLimitExceededError,
   CopilotIpRateLimitUnavailableError,
   opaqueCopilotSessionId,
+  PublicRuntimePolicyUnavailableError,
+  resolvePublicRuntimePolicy,
   TripVersionConflictError,
   type TripIdentity,
 } from "@visepanda/app-server";
@@ -41,6 +43,21 @@ export async function POST(request: Request) {
   }
 
   try {
+    const publicRuntimePolicy = resolvePublicRuntimePolicy(process.env);
+    if (parsed.data.message.length > publicRuntimePolicy.maxInputCodeUnits) {
+      return applyIdentityCookies(
+        NextResponse.json(
+          {
+            ok: false,
+            code: "COPILOT_INPUT_TOO_LARGE",
+            error: `Copilot messages must be ${publicRuntimePolicy.maxInputCodeUnits} characters or fewer. Shorten your message and try again.`,
+            maxInputCodeUnits: publicRuntimePolicy.maxInputCodeUnits,
+          },
+          { status: 413 },
+        ),
+        cookieResponse,
+      );
+    }
     const clientAddress = resolveTrustedCopilotClientAddress(request.headers, process.env);
     const limiter = getCopilotIpRateLimiter();
     if (!limiter) throw new CopilotIpRateLimitUnavailableError("limiter_not_configured");
@@ -87,6 +104,23 @@ export async function POST(request: Request) {
       cookieResponse,
     );
   } catch (error) {
+    const publicRuntimePolicyUnavailable = findError(error, PublicRuntimePolicyUnavailableError);
+    if (publicRuntimePolicyUnavailable) {
+      console.warn("copilot_public_runtime_policy_unavailable", {
+        reason: publicRuntimePolicyUnavailable.reason,
+      });
+      return applyIdentityCookies(
+        NextResponse.json(
+          {
+            ok: false,
+            code: publicRuntimePolicyUnavailable.code,
+            error: "Copilot request safety is temporarily unavailable. Try again later.",
+          },
+          { status: 503 },
+        ),
+        cookieResponse,
+      );
+    }
     const rateLimitUnavailable = findError(error, CopilotIpRateLimitUnavailableError);
     const trustedAddressUnavailable = findError(error, TrustedClientAddressUnavailableError);
     if (rateLimitUnavailable || trustedAddressUnavailable) {
