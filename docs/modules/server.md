@@ -307,3 +307,10 @@ trip-generation golden set. The suite uses the real Copilot pipeline to lock hig
 expressions, honest unavailable behavior, and rejection of unsupported executable facts. It is a CI
 gate, not a provider-quality sample; no safety regression may be waived by changing a prompt or
 replacing fixtures with model output.
+
+### Deterministic Copilot policy eval gate
+
+`pnpm evals` also invokes `policyRegression.evals.test.ts`. It locks the commerce-intent gate,
+review-before-submit Human Help handoff, malformed and business-rule-invalid TripPatch rejection,
+no-evidence honesty, and medical/passport fixed-unavailable paths. It uses only deterministic local
+fixtures and cannot make a provider, payment, task-creation, or public-policy claim.

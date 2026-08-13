@@ -84,6 +84,10 @@ Copilot-specific provider composition belong in their owning runtime module.
 - Retrieval context contains only currently eligible reviewed POI facts. Model citations are validated
   against that per-request allowlist; labels and sources are derived from facts, never trusted from
   model output. A no-evidence answer remains explicit rather than speculative.
+- `pnpm evals` includes a deterministic Copilot policy regression gate for the commerce-intent
+  boundary, review-before-submit Human Help handoff, malformed and business-rule-invalid TripPatch
+  rejection, no-evidence honesty, and the fixed unavailable path for medical and passport/visa
+  requests. It uses no provider, credential, or production content fixture.
 - Copilot retrieval resolves a unique known POI before fetching its facts. An explicit city-only query
   retains the existing city/category filter; an unresolved or cross-city-ambiguous place query retrieves
   no facts rather than silently widening to the whole catalog. The resolver is deterministic and has no
@@ -95,4 +99,5 @@ Copilot-specific provider composition belong in their owning runtime module.
 pnpm --filter @visepanda/ai typecheck
 pnpm --filter @visepanda/ai test
 pnpm evals
+pnpm evals:copilot_policy
 ```
