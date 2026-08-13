@@ -128,6 +128,35 @@ input {
   min-width: 150px;
 }
 
+.stackForm {
+  display: grid;
+  gap: 14px;
+  max-width: 760px;
+  padding: 18px;
+}
+
+.stackForm label {
+  color: var(--muted);
+  display: grid;
+  gap: 7px;
+}
+
+.stackForm input,
+.stackForm textarea {
+  color: var(--text);
+  min-width: 0;
+  width: 100%;
+}
+
+.stackForm textarea {
+  background: var(--vp-surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  min-height: 88px;
+  padding: 8px 10px;
+  resize: vertical;
+}
+
 select {
   background: var(--vp-surface);
   border: 1px solid var(--line);

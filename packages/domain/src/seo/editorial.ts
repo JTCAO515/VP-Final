@@ -3,25 +3,36 @@ import { SeoPageIntentSchema } from "./intents.js";
 
 const EditorialTextSchema = z.string().trim().min(1).max(600);
 
-export const SeoEditorialOverrideSchema = z
+const SeoEditorialOverrideMutationBaseSchema = z
   .object({
     poiId: z.string().uuid(),
     intent: SeoPageIntentSchema,
     title: z.string().trim().min(1).max(140).nullable(),
     summary: z.string().trim().min(1).max(240).nullable(),
     emphasis: EditorialTextSchema.nullable(),
-    updatedAt: z.string().datetime(),
   })
-  .strict()
-  .superRefine((override, context) => {
-    if (override.title === null && override.summary === null && override.emphasis === null) {
-      context.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "An editorial override must replace at least one presentation field",
-      });
-    }
-  });
+  .strict();
 
+function requireEditorialPresentation(
+  override: z.infer<typeof SeoEditorialOverrideMutationBaseSchema>,
+  context: z.RefinementCtx,
+) {
+  if (override.title === null && override.summary === null && override.emphasis === null) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "An editorial override must replace at least one presentation field",
+    });
+  }
+}
+
+export const SeoEditorialOverrideMutationSchema =
+  SeoEditorialOverrideMutationBaseSchema.superRefine(requireEditorialPresentation);
+
+export const SeoEditorialOverrideSchema = SeoEditorialOverrideMutationBaseSchema.extend({
+  updatedAt: z.string().datetime(),
+}).superRefine(requireEditorialPresentation);
+
+export type SeoEditorialOverrideMutation = z.infer<typeof SeoEditorialOverrideMutationSchema>;
 export type SeoEditorialOverride = z.infer<typeof SeoEditorialOverrideSchema>;
 
 /** Presentation-only merge. It cannot create a candidate, add a fact, or modify POI source data. */

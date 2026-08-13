@@ -7,6 +7,7 @@ import {
   createDbReadinessService,
   createDbCommerceService,
   createDbKnowledgeService,
+  createDbSeoEditorialOverrideService,
   createDbSafePhraseResolver,
   createDbTelemetryService,
   createDbVersionedTripService,
@@ -18,6 +19,7 @@ import {
   createInMemoryCopilotIpRateLimiter,
   createInMemoryCompletionJobService,
   createInMemoryKnowledgeService,
+  createInMemorySeoEditorialOverrideService,
   createInMemoryHumanTaskService,
   createInMemoryAgentTraceService,
   createInMemoryTelemetryService,
@@ -53,6 +55,7 @@ import {
   type RequestIdentity,
   type ReadinessService,
   type SafePhraseResolver,
+  type SeoEditorialOverrideService,
   type VersionedTripService,
 } from "@visepanda/app-server";
 
@@ -75,6 +78,7 @@ type WebServerServices = {
   commerceService?: CommerceService;
   telemetryService?: TelemetryService;
   safePhraseResolver?: SafePhraseResolver;
+  seoEditorialOverrideService?: SeoEditorialOverrideService;
 };
 
 const store = globalThis as typeof globalThis & {
@@ -133,6 +137,7 @@ export function createWebServerServices(environment: Environment): WebServerServ
     return {
       humanTaskService: createInMemoryHumanTaskService(),
       knowledgeService: createInMemoryKnowledgeService(),
+      seoEditorialOverrideService: createInMemorySeoEditorialOverrideService(),
       traceService,
       productEventService: traceService,
       telemetryService,
@@ -163,6 +168,7 @@ export function createWebServerServices(environment: Environment): WebServerServ
     humanTaskService: createDbHumanTaskService(db),
     commerceService: createDbCommerceService(db, { telemetryService }),
     knowledgeService: createDbKnowledgeService(db),
+    seoEditorialOverrideService: createDbSeoEditorialOverrideService(db),
     traceService,
     productEventService: traceService,
     telemetryService,
@@ -253,6 +259,10 @@ export function getAuthenticatedCopilotRateLimiter(): AuthenticatedCopilotRateLi
 
 export function getTelemetryRateLimiter(): TelemetryRateLimiter | undefined {
   return getWebServerServices(process.env).telemetryRateLimiter;
+}
+
+export function getSeoEditorialOverrideService(): SeoEditorialOverrideService | undefined {
+  return getWebServerServices(process.env).seoEditorialOverrideService;
 }
 
 export function getCopilotProductEventService(

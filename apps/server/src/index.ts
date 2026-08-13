@@ -10,6 +10,7 @@ export { appRouter } from "./router.js";
 export type { AppRouter } from "./router.js";
 export { createDb } from "./db/client.js";
 export { createDbKnowledgeService } from "./db/knowledgeService.js";
+export { createDbSeoEditorialOverrideService } from "./db/seoEditorialOverrideService.js";
 export { createDbSafePhraseResolver } from "./db/safePhraseResolver.js";
 export {
   createDbKnowledgeBulkImportService,
@@ -37,6 +38,10 @@ export {
 } from "./runtime/runtimeMode.js";
 export { requireService } from "./runtime/requireService.js";
 export { createInMemoryKnowledgeService } from "./modules/knowledge/service.js";
+export {
+  createInMemorySeoEditorialOverrideService,
+  type SeoEditorialOverrideService,
+} from "./modules/seo/editorialOverrideService.js";
 export type { SafePhraseResolver } from "./modules/copilot/executionSafety.js";
 export {
   HUMAN_TASK_DAILY_CAPACITY,

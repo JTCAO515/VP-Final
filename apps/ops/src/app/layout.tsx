@@ -30,6 +30,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
               <Link href="/facts">Facts</Link>
             ) : null}
             {access?.permissions.includes("knowledge.read") ? <Link href="/gaps">Gaps</Link> : null}
+            {access?.permissions.includes("knowledge.read") ? <Link href="/seo">SEO</Link> : null}
             {access?.permissions.includes("membership.read") ? (
               <Link href="/roles">Roles</Link>
             ) : null}

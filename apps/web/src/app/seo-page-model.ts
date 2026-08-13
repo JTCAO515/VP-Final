@@ -1,7 +1,9 @@
 import {
+  applySeoEditorialOverride,
   SeoPageIntentSchema,
   deriveSeoPageMatrix,
   type Poi,
+  type SeoEditorialOverride,
   type SeoPageCandidate,
 } from "@visepanda/domain";
 import { toPublicPoiFact, type PublicPoiFactPresentation } from "./publicPoiFactPresentation";
@@ -10,6 +12,7 @@ export type PublicSeoPage = Readonly<{
   candidate: SeoPageCandidate;
   poi: Poi;
   facts: readonly PublicPoiFactPresentation[];
+  editorialEmphasis: string | null;
 }>;
 
 /**
@@ -44,5 +47,22 @@ export function resolvePublicSeoPage(
   });
   if (facts.length !== candidate.supportingFactIds.length) return null;
 
-  return { candidate, poi, facts };
+  return { candidate, poi, facts, editorialEmphasis: null };
+}
+
+/** A saved override is applied only to an already-resolved evidence-gated public page. */
+export function applyPublicSeoEditorialOverride(
+  page: PublicSeoPage,
+  override: SeoEditorialOverride | null,
+): PublicSeoPage {
+  const presentation = applySeoEditorialOverride(page.candidate, override);
+  return {
+    ...page,
+    candidate: {
+      ...page.candidate,
+      title: presentation.title,
+      summary: presentation.summary,
+    },
+    editorialEmphasis: presentation.emphasis,
+  };
 }
