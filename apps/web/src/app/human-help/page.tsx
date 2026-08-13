@@ -4,6 +4,11 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import type { HumanTaskReceipt } from "@visepanda/domain";
 import { SiteFooter, SiteHeader } from "../site-chrome";
 import { captureClientTelemetry } from "../../lib/clientTelemetry";
+import {
+  selectPendingPaymentTasks,
+  type PendingPaymentTask,
+  type TravelerHumanTask,
+} from "./paymentTasks";
 
 type SubmitState = "idle" | "submitting" | "sent" | "error";
 
@@ -13,6 +18,7 @@ export default function HumanHelpPage() {
   const [kind, setKind] = useState("other");
   const [description, setDescription] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [paymentTasks, setPaymentTasks] = useState<PendingPaymentTask[]>([]);
   const idempotencyKey = useRef<string | null>(null);
   const taskStarted = useRef(false);
 
@@ -20,6 +26,16 @@ export default function HumanHelpPage() {
     const params = new URLSearchParams(window.location.search);
     setKind(params.get("kind") ?? "other");
     setDescription(params.get("description") ?? "");
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    void loadPendingPayments().then((tasks) => {
+      if (!cancelled) setPaymentTasks(tasks);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -80,6 +96,7 @@ export default function HumanHelpPage() {
       setDescription("");
       setState("sent");
       formElement.reset();
+      void loadPendingPayments().then(setPaymentTasks);
     } catch {
       setError("Human Help is offline. Your request was not submitted.");
       setState("error");
@@ -170,9 +187,30 @@ export default function HumanHelpPage() {
           ) : (
             <div className="confirmation mutedBox">No request submitted yet.</div>
           )}
+          {paymentTasks.map((paymentTask) => (
+            <section className="confirmation" key={paymentTask.id}>
+              <b>Payment request ready</b>
+              <span>USD {paymentTask.price_usd.toFixed(2)}</span>
+              <a href={paymentTask.payment_link} rel="noreferrer">
+                Review secure payment
+              </a>
+              <small>Payment is not marked received until the provider confirms it.</small>
+            </section>
+          ))}
         </aside>
       </section>
       <SiteFooter />
     </main>
   );
+}
+
+async function loadPendingPayments(): Promise<PendingPaymentTask[]> {
+  try {
+    const response = await fetch("/api/human-help/tasks", { cache: "no-store" });
+    const data = (await response.json()) as { tasks?: TravelerHumanTask[] };
+    if (!response.ok || !data.tasks) return [];
+    return selectPendingPaymentTasks(data.tasks);
+  } catch {
+    return [];
+  }
 }
