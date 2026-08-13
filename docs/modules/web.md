@@ -86,6 +86,11 @@ fixture text. The API route returns only a dialogue envelope for DEMO-01: Trip m
 Human Help, tool cards, and citations are intentionally absent until their separately governed work
 is complete.
 
+When durable Web services are composed, an incomplete DEMO-01 provider route emits one private
+`copilot_provider_configuration_degraded` warning containing only route/provider, model-variable name,
+key-variable name, and missing class. It never includes an environment value or creates a public
+provider-health response; the affected capability continues to return its typed unavailable result.
+
 The durable composition also injects the server-only, exact-key Safe Phrase resolver for ADR-0016.
 The browser route does not accept phrase-selection keys, so public high-risk chat input cannot choose
 or enumerate editorial expressions. A later controlled surface may pass an exact server-validated
