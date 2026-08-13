@@ -9,12 +9,14 @@ Trip access, Tools, Show to Local, Human Help, and account state.
 
 ## Current State
 
-The package is a TypeScript compilation placeholder importing the domain version. It is intentionally
-not an Expo application yet. It now imports `mobileTheme` from `@visepanda/ui`: a React Native-ready
-projection of the canonical red/gold token record, including accessible semantic states, 44pt button
-minimums, cards, type scale, spacing, and radii. The portable `OfflineTripPackage` domain contract
-is also available for a future local-storage/AsyncStorage consumer, but no mobile synchronization,
-download, or write path exists. This is a controlled pre-production boundary, not a public
+The package is an Expo SDK 55 shell with four static Execute-stage tabs: Today, Tools, Help, and Me.
+It imports `mobileTheme` from `@visepanda/ui`: a React Native-ready projection of the canonical
+red/gold token record, including accessible semantic states, 44pt button minimums, cards, type scale,
+spacing, and radii. The shell imports shared domain content but makes no real API call. Its Today,
+Help, and Me surfaces explicitly report their unavailable state; Tools displays local preparation
+content only. The portable `OfflineTripPackage` domain contract is available for a future
+local-storage/AsyncStorage consumer, but no mobile synchronization, download, account state, Human
+Help submission, or write path exists. This is a controlled pre-production boundary, not a public
 offline-product claim.
 
 ## Start Trigger
@@ -22,6 +24,9 @@ offline-product claim.
 Mobile implementation begins only after Phase 1 quality and demand triggers are met: meaningful
 weekly usage or Human Task volume, acceptable Copilot success, repeat visits, a concentrated city
 need, and no open P0 security or fulfilment risk.
+
+The shell exists under the controlled pre-production implementation override. It MUST remain disabled
+for public capability claims until the relevant live dependencies and lifecycle trigger are recorded.
 
 ## Future Boundaries
 
@@ -43,4 +48,8 @@ need, and no open P0 security or fulfilment risk.
 pnpm --filter @visepanda/app-mobile typecheck
 pnpm --filter @visepanda/app-mobile test
 pnpm --filter @visepanda/app-mobile build
+pnpm --filter @visepanda/app-mobile export
 ```
+
+`pnpm --filter @visepanda/app-mobile ios` requires Xcode and an installed iOS Simulator on the local
+machine. It was not treated as verified when those developer tools are absent.

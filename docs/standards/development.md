@@ -52,6 +52,9 @@ the repository.
 - A workspace package may depend on another accepted workspace package when it consumes an existing
   contract; update `pnpm-lock.yaml` in the same PR and rebuild the provider package before checking
   a consumer, so stale generated declarations cannot hide or invent an export.
+- An Expo shell MUST pin an Expo SDK-compatible React and React Native pair and keep its `app.json`
+  explicit. A TypeScript or JS bundle check is not evidence of an iOS/Android simulator run; record
+  missing Xcode/Android tooling honestly instead of labelling an unrun device check as passed.
 
 ## Completion
 
