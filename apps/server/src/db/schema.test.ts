@@ -18,6 +18,7 @@ import {
   poiFactEditorialAudit,
   poiFacts,
   pois,
+  readinessAssessments,
   safePhrases,
   telemetryEvents,
   toolCalls,
@@ -99,6 +100,18 @@ describe("database schema", () => {
     expect(
       getTableConfig(copilotCompletionJobs).checks.map((constraint) => constraint.name),
     ).toContain("copilot_completion_jobs_state_check");
+  });
+
+  it("maps consented Readiness records with bounded retention", () => {
+    expect(readinessAssessments.assessmentJsonb.name).toBe("assessment_jsonb");
+    expect(readinessAssessments.resultJsonb.name).toBe("result_jsonb");
+    expect(readinessAssessments.retentionExpiresAt.name).toBe("retention_expires_at");
+    expect(
+      getTableConfig(readinessAssessments).checks.map((constraint) => constraint.name),
+    ).toContain("readiness_assessments_user_or_trip_check");
+    expect(
+      getTableConfig(readinessAssessments).checks.map((constraint) => constraint.name),
+    ).toContain("readiness_assessments_retention_check");
   });
 
   it("maps the Ops authorization and audit tables", () => {

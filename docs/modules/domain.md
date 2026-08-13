@@ -9,21 +9,21 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
 
 ## Public Areas
 
-| Area            | Owns                                                                                                                                                          |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `trip`          | TripState, TripPatch operations, `applyPatch`, `diffTrips`, generation progress                                                                               |
-| `copilot`       | Intent, message, citations, tool cards, commercial actions, Human Help handoff, envelope, completion-job contract                                             |
-| `knowledge`     | POI, execution facts, knowledge gaps, scene-tag derivation, reviewed seed data, and ADR-0006 fact eligibility                                                 |
-| `offline`       | Versioned read-only Trip package, local-storage/AsyncStorage serialization, expiry, and credential-free offline boundary                                       |
-| `readiness`     | Versioned, deterministic China preparation questions and explainable self-reported results; no score, LLM scoring, or commercial CTA                          |
-| `rescue`        | Deterministic incident routing definitions, fail-closed reviewed-target availability, and bounded Human Help offer state                                      |
-| `safe-phrases`  | Private operator-verified high-risk fixed-expression contract, exact severity selection, and freshness eligibility                                            |
-| `task`          | Human Task input, lifecycle, transition commands, private outcome evidence, and non-status updates                                                            |
-| `tools`         | Versioned local-only preparation pack for eight execution-tool categories; deterministic action ids, no real-time API, partner URL, or live availability claim |
-| `commerce`      | Validated partner configuration, trusted-identity outbound records, active-only HTTPS host validation, and tracking construction                              |
-| `events`        | Telemetry event contract                                                                                                                                      |
-| `observability` | Redacted Copilot turn, per-attempt cost, product-event action, and forbidden-persistence contracts                                                            |
-| `errors`        | Shared typed error shapes                                                                                                                                     |
+| Area            | Owns                                                                                                                                                                                                     |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `trip`          | TripState, TripPatch operations, `applyPatch`, `diffTrips`, generation progress                                                                                                                          |
+| `copilot`       | Intent, message, citations, tool cards, commercial actions, Human Help handoff, envelope, completion-job contract                                                                                        |
+| `knowledge`     | POI, execution facts, knowledge gaps, scene-tag derivation, reviewed seed data, and ADR-0006 fact eligibility                                                                                            |
+| `offline`       | Versioned read-only Trip package, local-storage/AsyncStorage serialization, expiry, and credential-free offline boundary                                                                                 |
+| `readiness`     | Versioned, deterministic China preparation questions, explainable self-reported results, and consented persistence request/result contracts; no score, LLM scoring, or commercial CTA                    |
+| `rescue`        | Deterministic incident routing definitions, fail-closed reviewed-target availability, and bounded Human Help offer state                                                                                 |
+| `safe-phrases`  | Private operator-verified high-risk fixed-expression contract, exact severity selection, and freshness eligibility                                                                                       |
+| `task`          | Human Task input, lifecycle, transition commands, private outcome evidence, and non-status updates                                                                                                       |
+| `tools`         | Versioned local-only preparation pack for eight execution-tool categories; deterministic action ids, no real-time API, partner URL, or live availability claim                                           |
+| `commerce`      | Validated partner configuration, trusted-identity outbound records, active-only HTTPS host validation, and tracking construction                                                                         |
+| `events`        | Telemetry event contract                                                                                                                                                                                 |
+| `observability` | Redacted Copilot turn, per-attempt cost, product-event action, and forbidden-persistence contracts                                                                                                       |
+| `errors`        | Shared typed error shapes                                                                                                                                                                                |
 | `visepod`       | Signed Wi-Fi device-turn metadata, raw PCM bounds, indexed playback segments, health/errors, HMAC vector, sentence splitting, portable device lifecycle/control records, and the Studio binding contract |
 
 ## Invariants
@@ -79,8 +79,9 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
   local storage without becoming a token cache.
 - China Readiness is a versioned deterministic assessment. Every one of its ten items records a
   rule id, observed self-report, explicit next action, and evidence status. Unanswered questions
-  remain `unknown`; it does not calculate a percentage, infer an answer with an LLM, save data,
-  or expose a commercial action at the domain layer.
+  remain `unknown`; it does not calculate a percentage, infer an answer with an LLM, or expose a
+  commercial action. Its portable persistence request rejects anything but explicit `granted`
+  consent; server adapters separately enforce ownership, retention, and storage.
 - Rescue routing carries category and availability metadata only; it deliberately excludes free-form
   incident narrative. Unreviewed target ids fail closed. Health/safety always routes to the official
   emergency boundary and never offers Human Help, while a Human Help offer requires a matching

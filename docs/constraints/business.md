@@ -19,6 +19,10 @@ engine. It MUST use only versioned deterministic rules; it MUST preserve missing
 Readiness schema and derivation MUST NOT emit, rank, or imply an affiliate action. A later UI
 consumer may show a partner action only after it has confirmed matching explicit user intent and an
 active approved partner through the existing outbound controls.
+Persisting a Readiness result requires separate explicit consent. The stored payload MUST remain the
+fixed assessment and deterministic result only: no free-form explanation, Copilot output, provider
+claim, partner offer, or pricing may enter the record. An anonymous traveler may save only to their
+currently owned Trip; a deployment MAY shorten, but MUST NOT extend, the 180-day maximum retention.
 
 ### Rescue Mode
 

@@ -28,18 +28,19 @@ It stores a SHA-256 token digest, issuer reference, bounded environment, expiry,
 revocation reference; raw bearer material is never persisted. RLS and Data API revocation are part of
 the same migration, and validation also checks the issuer's current Ops permission at runtime.
 
-| Area              | Relations                                                                                    |
-| ----------------- | -------------------------------------------------------------------------------------------- |
-| Identity and Trip | `users`, `trips`, `trip_events`, `copilot_completion_jobs`                                   |
-| AI trace          | `agent_runs`, `tool_calls`, `llm_call_costs`                                                 |
-| Copilot dialogue  | `copilot_conversation_turns`                                                                 |
-| Knowledge         | `pois`, `poi_facts`, `poi_fact_editorial_audit`, `knowledge_gaps`, `poi_commercial_links`    |
-| Safety phrases    | `safe_phrases` (private operator-verified fixed-expression editorial records)                |
+| Area              | Relations                                                                                                                         |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Identity and Trip | `users`, `trips`, `trip_events`, `copilot_completion_jobs`                                                                        |
+| Readiness         | `readiness_assessments` (private, consented fixed-answer self-reports and deterministic results)                                  |
+| AI trace          | `agent_runs`, `tool_calls`, `llm_call_costs`                                                                                      |
+| Copilot dialogue  | `copilot_conversation_turns`                                                                                                      |
+| Knowledge         | `pois`, `poi_facts`, `poi_fact_editorial_audit`, `knowledge_gaps`, `poi_commercial_links`                                         |
+| Safety phrases    | `safe_phrases` (private operator-verified fixed-expression editorial records)                                                     |
 | VisePod Studio    | `visepod_device_bindings`, `visepod_binding_idempotency`, `visepod_provisioning_grants` (private assignment/replay/grant history) |
-| Commerce          | `partners`, `outbound_clicks`                                                                |
-| Telemetry         | `events`, `trust_funnel_daily`, private Phase 0 funnel/outbound/Human Help live views        |
-| Human operations  | `human_tasks`, `human_task_transitions`, `human_task_evidence`                               |
-| Ops authorization | `ops_memberships`, `ops_audit_events`                                                        |
+| Commerce          | `partners`, `outbound_clicks`                                                                                                     |
+| Telemetry         | `events`, `trust_funnel_daily`, private Phase 0 funnel/outbound/Human Help live views                                             |
+| Human operations  | `human_tasks`, `human_task_transitions`, `human_task_evidence`                                                                    |
+| Ops authorization | `ops_memberships`, `ops_audit_events`                                                                                             |
 
 ## Migration Rules
 
@@ -70,6 +71,13 @@ the same migration, and validation also checks the issuer's current Ops permissi
   Copilot, Explore, SEO, or local-facing display source. An operator must independently verify a value
   and create a reviewed `local_address_zh` fact through the normal review workflow.
 - Traveler-owned data requires verified identity and owner policies.
+- `readiness_assessments` is server-only with RLS enabled and all Data API privileges revoked. It
+  contains only a fixed-enum readiness assessment, its deterministic result, explicit consent time,
+  one authenticated account or owned Trip reference, and an enforced retention deadline. Anonymous
+  persistence is valid only through an owned anonymous Trip. Account or Trip deletion cascades the
+  assessment; the server stops reads at expiry and `internal.purge_expired_readiness_assessments()`
+  deletes expired rows through the existing private daily retention wrapper. The default maximum is
+  180 days, and deployment configuration may only shorten it.
 - Trip rows require one exclusive authenticated or signed-anonymous owner. Owner-scoped conditional
   writes and event append occur in one transaction; public share tokens are revocable read-only
   capabilities. See [ADR-0004](../adr/ADR-0004-identity-trip-ownership-security.md).

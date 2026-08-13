@@ -4,6 +4,7 @@ import {
   createDbAgentTraceService,
   createDbCompletionJobService,
   createDbHumanTaskService,
+  createDbReadinessService,
   createDbCommerceService,
   createDbKnowledgeService,
   createDbSafePhraseResolver,
@@ -11,6 +12,7 @@ import {
   createDbVersionedTripService,
   createDemoCopilotModelDependencies,
   reportDemoProviderReadiness,
+  resolveReadinessRetentionDays,
   createInMemoryAnonymousTurnCounter,
   createInMemoryAuthenticatedCopilotRateLimiter,
   createInMemoryCopilotIpRateLimiter,
@@ -20,6 +22,7 @@ import {
   createInMemoryAgentTraceService,
   createInMemoryTelemetryService,
   createInMemoryTelemetryRateLimiter,
+  createInMemoryReadinessService,
   createVersionedInMemoryTripService,
   createModelCompleteDay,
   createQStashCompletionQueue,
@@ -48,6 +51,7 @@ import {
   type TelemetryService,
   type TelemetryRateLimiter,
   type RequestIdentity,
+  type ReadinessService,
   type SafePhraseResolver,
   type VersionedTripService,
 } from "@visepanda/app-server";
@@ -60,6 +64,7 @@ type WebServerServices = {
   traceService: AgentTraceService;
   productEventService?: CopilotProductEventService;
   tripService: VersionedTripService;
+  readinessService?: ReadinessService;
   completionJobService?: CompletionJobService;
   completionQueue?: CompletionQueue;
   completionDay?: CompleteDay;
@@ -132,6 +137,7 @@ export function createWebServerServices(environment: Environment): WebServerServ
       productEventService: traceService,
       telemetryService,
       tripService,
+      readinessService: createInMemoryReadinessService({ tripService }),
       completionJobService: createInMemoryCompletionJobService(tripService),
       anonymousTurnCounter: createInMemoryAnonymousTurnCounter(),
       authenticatedCopilotRateLimiter: createInMemoryAuthenticatedCopilotRateLimiter(),
@@ -143,6 +149,7 @@ export function createWebServerServices(environment: Environment): WebServerServ
   const databaseUrl = environment.DATABASE_URL;
   if (!databaseUrl) throw new WebRuntimeUnavailableError("database_url_missing");
   const db = createDb(databaseUrl);
+  const readinessRetentionDays = resolveReadinessRetentionDays(environment);
   reportDemoProviderReadiness(environment);
   const traceService = createDbAgentTraceService(db);
   const telemetryService = createDbTelemetryService(db, { environment });
@@ -151,6 +158,7 @@ export function createWebServerServices(environment: Environment): WebServerServ
   const authenticatedCopilotRateLimiter = resolveAuthenticatedCopilotRateLimiter(environment);
   const copilotIpRateLimiter = resolveCopilotIpRateLimiter(environment);
   const telemetryRateLimiter = resolveTelemetryRateLimiter(environment);
+  const tripService = createDbVersionedTripService(db);
   return {
     humanTaskService: createDbHumanTaskService(db),
     commerceService: createDbCommerceService(db, { telemetryService }),
@@ -159,7 +167,10 @@ export function createWebServerServices(environment: Environment): WebServerServ
     productEventService: traceService,
     telemetryService,
     safePhraseResolver: createDbSafePhraseResolver(db),
-    tripService: createDbVersionedTripService(db),
+    tripService,
+    readinessService: createDbReadinessService(db, {
+      retentionDays: readinessRetentionDays,
+    }),
     completionJobService: createDbCompletionJobService(db),
     ...(completionQueue ? { completionQueue } : {}),
     ...(anonymousTurnCounter ? { anonymousTurnCounter } : {}),
