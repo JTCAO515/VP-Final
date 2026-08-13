@@ -6,6 +6,10 @@ import {
   createDbHumanTaskPaymentCheckoutService,
   HumanTaskPaymentStateError,
 } from "./humanTaskPaymentService.js";
+import {
+  createDbHumanTaskPaymentWebhookService,
+  HumanTaskPaymentWebhookMismatchError,
+} from "./humanTaskPaymentWebhookService.js";
 import { HumanTaskTransitionForbiddenError } from "../modules/task/service.js";
 
 const databaseUrl = process.env.DATABASE_URL;
@@ -146,6 +150,111 @@ describeDatabase("database HumanTask payment Checkout writer", () => {
       }),
     ).rejects.toBeInstanceOf(HumanTaskTransitionForbiddenError);
     expect(createSession).not.toHaveBeenCalled();
+  });
+
+  it("applies one matching verified completion atomically and replays only the same provider event", async () => {
+    await insertQuotedTask(sql);
+    const checkout = createDbHumanTaskPaymentCheckoutService(db, {
+      gateway: {
+        createSession: async () => ({
+          id: "cs_test_human_task_paid_001",
+          url: "https://checkout.stripe.com/c/pay/cs_test_human_task_paid_001",
+        }),
+      },
+      retentionDays: 400,
+      now: () => new Date("2099-01-10T00:00:00.000Z"),
+    });
+    const created = await checkout.createCheckout({
+      taskId,
+      amountCents: 1499,
+      actor: { ...actor, permissions: [...actor.permissions] },
+    });
+    const webhook = createDbHumanTaskPaymentWebhookService(db, {
+      now: () => new Date("2099-01-11T00:00:00.000Z"),
+    });
+    const event = {
+      providerEventId: "evt_test_human_task_paid_001",
+      providerCheckoutSessionId: created.payment.provider_checkout_session_id,
+      providerPaymentIntentId: "pi_test_human_task_paid_001",
+      taskId,
+      amountCents: 1499,
+      currency: "usd" as const,
+    };
+
+    const applied = await webhook.consumeVerifiedCheckout(event);
+    const replay = await webhook.consumeVerifiedCheckout(event);
+
+    expect(applied).toMatchObject({
+      replayed: false,
+      task: { status: "paid" },
+      payment: {
+        status: "paid",
+        provider_event_id: event.providerEventId,
+        provider_payment_intent_id: event.providerPaymentIntentId,
+      },
+    });
+    expect(replay).toMatchObject({ replayed: true, payment: { id: applied.payment.id } });
+    const [transition] = await sql`
+      select actor_id, from_status, to_status, reason from public.human_task_transitions
+      where task_id = ${taskId} and to_status = 'paid'
+    `;
+    expect(transition).toMatchObject({
+      actor_id: operatorId,
+      from_status: "payment_pending",
+      to_status: "paid",
+    });
+    const [audit] = await sql`
+      select metadata_jsonb from public.ops_audit_events
+      where target_id = ${applied.payment.id} and action = 'human_task.payment.webhook_paid'
+    `;
+    expect(audit?.metadata_jsonb).toEqual({
+      taskId,
+      provider: "stripe",
+      eventType: "checkout.session.completed",
+    });
+    expect(JSON.stringify(audit)).not.toContain(event.providerEventId);
+    expect(JSON.stringify(audit)).not.toContain(event.providerPaymentIntentId);
+  });
+
+  it("rejects a verified event whose amount does not match the private Checkout ledger", async () => {
+    await insertQuotedTask(sql);
+    const checkout = createDbHumanTaskPaymentCheckoutService(db, {
+      gateway: {
+        createSession: async () => ({
+          id: "cs_test_human_task_mismatch_001",
+          url: "https://checkout.stripe.com/c/pay/cs_test_human_task_mismatch_001",
+        }),
+      },
+      retentionDays: 400,
+    });
+    const created = await checkout.createCheckout({
+      taskId,
+      amountCents: 1499,
+      actor: { ...actor, permissions: [...actor.permissions] },
+    });
+    const webhook = createDbHumanTaskPaymentWebhookService(db);
+
+    await expect(
+      webhook.consumeVerifiedCheckout({
+        providerEventId: "evt_test_human_task_mismatch_001",
+        providerCheckoutSessionId: created.payment.provider_checkout_session_id,
+        providerPaymentIntentId: "pi_test_human_task_mismatch_001",
+        taskId,
+        amountCents: 1500,
+        currency: "usd",
+      }),
+    ).rejects.toBeInstanceOf(HumanTaskPaymentWebhookMismatchError);
+    const [payment] = await sql`
+      select status, provider_event_id, provider_payment_intent_id
+      from public.human_task_payments where task_id = ${taskId}
+    `;
+    expect(payment).toEqual({
+      status: "checkout_open",
+      provider_event_id: null,
+      provider_payment_intent_id: null,
+    });
+    const [task] = await sql`select status from public.human_tasks where id = ${taskId}`;
+    expect(task).toEqual({ status: "payment_pending" });
   });
 });
 

@@ -10,33 +10,34 @@ the outbound gateway.
 
 ## Routes
 
-| Route                            | Purpose                                                                        |
-| -------------------------------- | ------------------------------------------------------------------------------ |
-| `/`                              | Product home with an illustrative, non-interactive VisePanda workspace preview |
-| `/visepanda`                     | Canonical VisePanda workspace and Trip Canvas                                  |
-| `/copilot`                       | Legacy redirect to `/visepanda`                                                |
-| `/readiness`                     | Explainable, fixed-answer China preparation self-check                         |
-| `/explore`                       | Execution-fact discovery                                                       |
-| `/guides/[slug]`                 | Editorial execution guides                                                     |
-| `/[city]/[poi]`                  | Programmatic POI page                                                          |
-| `/human-help`                    | Human Task request surface                                                     |
-| `/account`                       | Server-verified traveler session and email/password registration/sign-in       |
-| `/privacy`                       | Public Privacy Policy                                                          |
-| `/terms`                         | Public Terms of Use                                                            |
-| `/affiliate-disclosure`          | Public affiliate relationship disclosure                                       |
-| `/human-help-disclaimer`         | Full Human Help controlled-preview limits                                      |
-| `/emergency-disclaimer`          | Official emergency-channel guidance and product limits                         |
-| `/share/trips/[token]`           | Public read-only Trip share                                                    |
-| `/outbound`                      | Validated partner redirect gateway                                             |
-| `/api/copilot`                   | First-pass Copilot request                                                     |
-| `/api/copilot/complete`          | Silent second-pass completion                                                  |
-| `/api/copilot/complete/callback` | Signed QStash completion delivery callback                                     |
-| `/api/auth/login`                | Supabase email/password sign-in and SSR cookie issuance                        |
-| `/api/auth/logout`               | Supabase sign-out and SSR cookie clearing                                      |
-| `/api/auth/session`              | Verified display-safe session status and cookie refresh                        |
-| `/api/telemetry`                 | Strict privacy-safe browser telemetry capture                                  |
-| `/api/mobile/trips`              | Verified mobile-session read-only Trip list                                    |
-| `/api/trips/*`                   | Trip read, claim, and share handlers                                           |
+| Route                                     | Purpose                                                                        |
+| ----------------------------------------- | ------------------------------------------------------------------------------ |
+| `/`                                       | Product home with an illustrative, non-interactive VisePanda workspace preview |
+| `/visepanda`                              | Canonical VisePanda workspace and Trip Canvas                                  |
+| `/copilot`                                | Legacy redirect to `/visepanda`                                                |
+| `/readiness`                              | Explainable, fixed-answer China preparation self-check                         |
+| `/explore`                                | Execution-fact discovery                                                       |
+| `/guides/[slug]`                          | Editorial execution guides                                                     |
+| `/[city]/[poi]`                           | Programmatic POI page                                                          |
+| `/human-help`                             | Human Task request surface                                                     |
+| `/api/human-help/payments/stripe/webhook` | Provider-only signed Checkout completion consumer                              |
+| `/account`                                | Server-verified traveler session and email/password registration/sign-in       |
+| `/privacy`                                | Public Privacy Policy                                                          |
+| `/terms`                                  | Public Terms of Use                                                            |
+| `/affiliate-disclosure`                   | Public affiliate relationship disclosure                                       |
+| `/human-help-disclaimer`                  | Full Human Help controlled-preview limits                                      |
+| `/emergency-disclaimer`                   | Official emergency-channel guidance and product limits                         |
+| `/share/trips/[token]`                    | Public read-only Trip share                                                    |
+| `/outbound`                               | Validated partner redirect gateway                                             |
+| `/api/copilot`                            | First-pass Copilot request                                                     |
+| `/api/copilot/complete`                   | Silent second-pass completion                                                  |
+| `/api/copilot/complete/callback`          | Signed QStash completion delivery callback                                     |
+| `/api/auth/login`                         | Supabase email/password sign-in and SSR cookie issuance                        |
+| `/api/auth/logout`                        | Supabase sign-out and SSR cookie clearing                                      |
+| `/api/auth/session`                       | Verified display-safe session status and cookie refresh                        |
+| `/api/telemetry`                          | Strict privacy-safe browser telemetry capture                                  |
+| `/api/mobile/trips`                       | Verified mobile-session read-only Trip list                                    |
+| `/api/trips/*`                            | Trip read, claim, and share handlers                                           |
 
 ## Data Access
 
@@ -74,6 +75,15 @@ partner with an exact allowlisted HTTPS host can redirect, and the click row mus
 Pending, inactive, unknown, malformed, or unrecordable actions return an honest non-redirect
 response. A newly issued anonymous cookie is preserved on both success and failure. No partner is
 active by repository default, and partner management remains an authorized Ops follow-up.
+
+`POST /api/human-help/payments/stripe/webhook` is not a browser or traveler payment endpoint. It
+reads the raw request body exactly once, requires the explicit payment webhook configuration, and
+verifies Stripe's signature before parsing any provider JSON or touching durable state. The consumer
+passes only the verifier's minimal event projection to the private payment ledger writer. A success
+returns only `{ received: true }`; an invalid signature, unsupported event, ledger mismatch, or
+unavailable dependency returns an honest non-success response without a task, payment link, provider
+identifier, raw body, signature, key, card, or paid-status projection. This code path does not render
+a traveler Checkout entry point or payment-success page.
 
 `GET /api/mobile/trips` is a narrow native-app boundary. It accepts only a syntactically bounded
 Bearer token, validates that token online through Supabase Auth, derives the authenticated owner

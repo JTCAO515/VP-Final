@@ -4,6 +4,7 @@ import {
   createDbAgentTraceService,
   createDbCompletionJobService,
   createDbHumanTaskService,
+  createDbHumanTaskPaymentWebhookService,
   createDbReadinessService,
   createDbCommerceService,
   createDbKnowledgeService,
@@ -39,6 +40,7 @@ import {
   resolveUpstashTelemetryRateLimiterConfig,
   resolveDatabaseAdapter,
   resolveRuntimeMode,
+  resolveStripeWebhookConfig,
   type AgentTraceService,
   type AnonymousTurnCounter,
   type AuthenticatedCopilotRateLimiter,
@@ -48,6 +50,7 @@ import {
   type CompletionJobService,
   type CompletionQueue,
   type HumanTaskService,
+  type HumanTaskPaymentWebhookService,
   type CommerceService,
   type KnowledgeService,
   type TelemetryService,
@@ -79,6 +82,7 @@ type WebServerServices = {
   telemetryService?: TelemetryService;
   safePhraseResolver?: SafePhraseResolver;
   seoEditorialOverrideService?: SeoEditorialOverrideService;
+  humanTaskPaymentWebhookService?: HumanTaskPaymentWebhookService;
 };
 
 const store = globalThis as typeof globalThis & {
@@ -166,6 +170,9 @@ export function createWebServerServices(environment: Environment): WebServerServ
   const tripService = createDbVersionedTripService(db);
   return {
     humanTaskService: createDbHumanTaskService(db),
+    ...(resolveStripeWebhookConfig(environment)
+      ? { humanTaskPaymentWebhookService: createDbHumanTaskPaymentWebhookService(db) }
+      : {}),
     commerceService: createDbCommerceService(db, { telemetryService }),
     knowledgeService: createDbKnowledgeService(db),
     seoEditorialOverrideService: createDbSeoEditorialOverrideService(db),
@@ -263,6 +270,13 @@ export function getTelemetryRateLimiter(): TelemetryRateLimiter | undefined {
 
 export function getSeoEditorialOverrideService(): SeoEditorialOverrideService | undefined {
   return getWebServerServices(process.env).seoEditorialOverrideService;
+}
+
+/** Only a durable, explicitly payment-enabled runtime may receive provider webhooks. */
+export function getHumanTaskPaymentWebhookService(): HumanTaskPaymentWebhookService {
+  const service = getWebServerServices(process.env).humanTaskPaymentWebhookService;
+  if (!service) throw new WebRuntimeUnavailableError("payment_webhook_unavailable");
+  return service;
 }
 
 export function getCopilotProductEventService(
