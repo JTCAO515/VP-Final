@@ -17,6 +17,11 @@ export {
   KnowledgeImportValidationError,
 } from "./db/knowledgeBulkImportService.js";
 export { createDbHumanTaskService } from "./db/humanTaskService.js";
+export {
+  createStripeCheckoutGateway,
+  resolveStripeCheckoutConfig,
+  StripeCheckoutProviderError,
+} from "./modules/task/stripeCheckout.js";
 export { createDbCommerceService } from "./db/commerceService.js";
 export { createDbPartnerAdministrationService } from "./db/partnerAdministrationService.js";
 export { createDbAgentTraceService } from "./db/agentTraceService.js";
@@ -293,6 +298,12 @@ export type {
   UpdateHumanTaskNoteCommand,
   AppendHumanTaskEvidenceCommand,
 } from "./modules/task/service.js";
+export type {
+  CreateStripeCheckoutSessionRequest,
+  StripeCheckoutConfig,
+  StripeCheckoutGateway,
+  StripeCheckoutSession,
+} from "./modules/task/stripeCheckout.js";
 export type {
   AgentAttemptTrace,
   AgentTraceService,
