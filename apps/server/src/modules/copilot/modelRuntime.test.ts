@@ -12,6 +12,68 @@ afterEach(() => {
 });
 
 describe("demo model runtime", () => {
+  it("clamps every provider attempt to the accepted public output ceiling", async () => {
+    const requestedTokenLimits: number[] = [];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn<typeof fetch>(async (_input, init) => {
+        const body = JSON.parse(String(init?.body)) as { max_tokens: number };
+        requestedTokenLimits.push(body.max_tokens);
+        return new Response("provider unavailable", { status: 503 });
+      }),
+    );
+    const runtime = createDemoModelRuntime({
+      MOONSHOT_API_KEY: "test-moonshot-key",
+      ZHIPU_API_KEY: "test-zhipu-key",
+      DEEPSEEK_API_KEY: "test-deepseek-key",
+      VISEPANDA_MODEL_CONCIERGE_PRIMARY: "kimi-k2.6",
+      VISEPANDA_MODEL_CONCIERGE_FALLBACK: "glm-5.2",
+      VISEPANDA_MODEL_CONCIERGE_TERTIARY: "deepseek-v4-pro",
+    });
+
+    await expect(
+      runtime.generate("concierge", {
+        task: "knowledge_qa",
+        prompt: "Answer",
+        effort: "medium",
+        maxTokens: 4_000,
+      }),
+    ).rejects.toBeInstanceOf(DemoModelExecutionError);
+    expect(requestedTokenLimits).toEqual([1_600, 1_600, 1_600]);
+  });
+
+  it("lets deployment configuration lower but never raise the output ceiling", async () => {
+    const requestedTokenLimits: number[] = [];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn<typeof fetch>(async (_input, init) => {
+        const body = JSON.parse(String(init?.body)) as { max_tokens: number };
+        requestedTokenLimits.push(body.max_tokens);
+        return new Response(
+          JSON.stringify({ choices: [{ message: { content: '{"intent":"chat_only"}' } }] }),
+          { status: 200 },
+        );
+      }),
+    );
+    const runtime = createDemoModelRuntime({
+      MOONSHOT_API_KEY: "test-moonshot-key",
+      ZHIPU_API_KEY: "test-zhipu-key",
+      DEEPSEEK_API_KEY: "test-deepseek-key",
+      VISEPANDA_MODEL_CONCIERGE_PRIMARY: "kimi-k2.6",
+      VISEPANDA_MODEL_CONCIERGE_FALLBACK: "glm-5.2",
+      VISEPANDA_MODEL_CONCIERGE_TERTIARY: "deepseek-v4-pro",
+      VISEPANDA_COPILOT_MAX_OUTPUT_TOKENS: "700",
+    });
+
+    await runtime.generate("concierge", {
+      task: "knowledge_qa",
+      prompt: "Answer",
+      effort: "medium",
+      maxTokens: 1_600,
+    });
+    expect(requestedTokenLimits).toEqual([700]);
+  });
+
   it("fails honestly when a route lacks its configured provider credentials", async () => {
     const runtime = createDemoModelRuntime({
       VISEPANDA_MODEL_ROUTER_PRIMARY: "catalog-confirmed-qwen",

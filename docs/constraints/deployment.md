@@ -43,6 +43,13 @@ Status: active
   explicit `local-demo` may use the fixed local limiter identity.
   The Vercel system marker `VERCEL` is part of the Turborepo env contract; it is platform evidence,
   not a substitute for the explicit `VISEPANDA_RUNTIME_MODE` runtime selection.
+- Public Copilot numeric safety policy MUST follow accepted ADR-0015. The optional server-only
+  `VISEPANDA_COPILOT_MAX_INPUT_CODE_UNITS` and `VISEPANDA_COPILOT_MAX_OUTPUT_TOKENS` settings default
+  to `8000` and `1600`; `VISEPANDA_AUTHENTICATED_RATE_LIMIT_MINUTE` and
+  `VISEPANDA_AUTHENTICATED_RATE_LIMIT_HOUR` default to `20` and `120`. Each setting may lower but
+  MUST NOT exceed its default hard ceiling. Invalid values fail closed. Every model attempt,
+  including fallback attempts, MUST use the stricter of the public output ceiling and its own
+  provider/request limit.
 - Public telemetry capture MUST use the same approved Upstash Redis service and Vercel-only trusted
   address resolver before the telemetry database write. It MUST require both a HMAC-derived verified
   identity window and a HMAC-derived trusted-network window; raw identity, address, salt, cookie,

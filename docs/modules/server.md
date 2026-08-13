@@ -50,6 +50,13 @@ Next.js runtimes rather than deployed as an independent service.
   Copilot message object, forwards provider-specific compatibility body fields from the AI inventory,
   and fails with a typed configuration-unavailable error when a required route lacks a trusted model
   name or credential.
+- The accepted ADR-0015 public-runtime policy has one server-owned parser for its numeric ceilings.
+  Copilot input defaults to at most 8,000 JavaScript string code units, every model attempt defaults to
+  at most 1,600 output tokens, and authenticated rate limits default to 20 requests/minute and
+  120/hour. Deployment settings may only lower these hard ceilings and invalid values fail closed.
+  The model runtime already clamps primary and fallback attempts to the stricter request/provider and
+  public output-token bound. Request input rejection, the authenticated limiter, and the per-identity
+  Human Task daily cap remain separate P0-20 integration boundaries and are not implied by this slice.
 - The deployed DEMO-01 path is dialogue-only. It rejects Trip actions, tools, commerce, Human Help,
   and citations before any state-changing branch can run. Real provider evidence remains blocked on
   OA-005 and is not claimed by this repository change.
