@@ -19,6 +19,65 @@ export const HumanTaskStatusSchema = z.enum([
   "cancelled",
 ]);
 
+/**
+ * Payment evidence is a private server-side ledger. It is intentionally separate from the
+ * Human Task lifecycle so a mutable task status can never be the only proof of collection.
+ */
+export const HumanTaskPaymentProviderSchema = z.literal("stripe");
+export const HumanTaskPaymentStatusSchema = z.enum(["checkout_open", "paid", "expired"]);
+
+const StripeCheckoutSessionIdSchema = z
+  .string()
+  .trim()
+  .regex(/^cs_[A-Za-z0-9_]+$/);
+const StripePaymentIntentIdSchema = z
+  .string()
+  .trim()
+  .regex(/^pi_[A-Za-z0-9_]+$/);
+const StripeEventIdSchema = z
+  .string()
+  .trim()
+  .regex(/^evt_[A-Za-z0-9_]+$/);
+
+export const HumanTaskPaymentSchema = z
+  .object({
+    id: z.string().uuid(),
+    task_id: z.string().uuid(),
+    provider: HumanTaskPaymentProviderSchema,
+    provider_checkout_session_id: StripeCheckoutSessionIdSchema,
+    provider_payment_intent_id: StripePaymentIntentIdSchema.nullable(),
+    provider_event_id: StripeEventIdSchema.nullable(),
+    amount_cents: z.number().int().positive(),
+    currency: z.literal("usd"),
+    checkout_url: z.string().url().startsWith("https://"),
+    status: HumanTaskPaymentStatusSchema,
+    paid_at: z.string().datetime().nullable(),
+    retention_expires_at: z.string().datetime(),
+    created_at: z.string().datetime(),
+    updated_at: z.string().datetime(),
+  })
+  .strict()
+  .superRefine((payment, context) => {
+    const paidEvidencePresent =
+      payment.provider_payment_intent_id !== null &&
+      payment.provider_event_id !== null &&
+      payment.paid_at !== null;
+    if (payment.status === "paid" && !paidEvidencePresent) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "A paid Human Task payment requires verified provider evidence.",
+        path: ["status"],
+      });
+    }
+    if (payment.status !== "paid" && paidEvidencePresent) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Unpaid Human Task payments cannot carry paid provider evidence.",
+        path: ["status"],
+      });
+    }
+  });
+
 export const HumanTaskSchema = z.object({
   id: z.string().min(1),
   city: z.string().min(1),
@@ -255,6 +314,9 @@ export class InvalidHumanTaskTransitionError extends Error {
 export type HumanTaskKind = z.infer<typeof HumanTaskKindSchema>;
 export type HumanTaskStatus = z.infer<typeof HumanTaskStatusSchema>;
 export type HumanTask = z.infer<typeof HumanTaskSchema>;
+export type HumanTaskPaymentProvider = z.infer<typeof HumanTaskPaymentProviderSchema>;
+export type HumanTaskPaymentStatus = z.infer<typeof HumanTaskPaymentStatusSchema>;
+export type HumanTaskPayment = z.infer<typeof HumanTaskPaymentSchema>;
 export type HumanTaskCreate = z.infer<typeof HumanTaskCreateSchema>;
 export type HumanTaskSubmission = z.infer<typeof HumanTaskSubmissionSchema>;
 export type HumanTaskReceipt = z.infer<typeof HumanTaskReceiptSchema>;
