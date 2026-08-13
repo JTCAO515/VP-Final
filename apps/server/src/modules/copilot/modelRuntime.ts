@@ -16,6 +16,7 @@ import type {
   CopilotRequest,
   GeneratedEnvelope,
 } from "./service.js";
+import { resolvePublicRuntimePolicy } from "../runtimeSafety/publicRuntimePolicy.js";
 
 type Environment = Readonly<Record<string, string | undefined>>;
 
@@ -62,6 +63,8 @@ export function createDemoModelRuntime(environment: Environment) {
       content: string;
       attempts: ModelAttempt[];
     }> {
+      const policy = resolvePublicRuntimePolicy(environment);
+      const maxTokens = Math.min(request.maxTokens ?? 1_200, policy.maxOutputTokens);
       const routes = CHAINS[chain];
       const configurations = routes.map((route) => resolveDemoModelRoute(environment, route));
       const missingRoutes = routes.filter((_, index) => !configurations[index]);
@@ -77,13 +80,13 @@ export function createDemoModelRuntime(environment: Environment) {
             apiKey: configuration.apiKey,
             model: configuration.model,
             timeoutMs: 20_000,
-            maxTokens: request.maxTokens ?? 1_200,
+            maxTokens,
             ...(configuration.extraBody ? { extraBody: configuration.extraBody } : {}),
           });
         }),
       });
       try {
-        const result = await router.generate(request);
+        const result = await router.generate({ ...request, maxTokens });
         return { content: result.content, attempts: result.attempts };
       } catch (error) {
         if (error instanceof ModelRoutingError) {

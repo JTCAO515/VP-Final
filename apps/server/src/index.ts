@@ -58,6 +58,16 @@ export {
   retentionDeadline,
 } from "./modules/observability/copilotPersistence.js";
 export { resolveDailyLlmBudgetUsd } from "./modules/observability/dailyBudget.js";
+export {
+  DEFAULT_AUTHENTICATED_RATE_LIMIT_HOUR,
+  DEFAULT_AUTHENTICATED_RATE_LIMIT_MINUTE,
+  DEFAULT_COPILOT_MAX_INPUT_CODE_UNITS,
+  DEFAULT_COPILOT_MAX_OUTPUT_TOKENS,
+  HUMAN_TASK_DAILY_IDENTITY_LIMIT,
+  PublicRuntimePolicyUnavailableError,
+  resolvePublicRuntimePolicy,
+} from "./modules/runtimeSafety/publicRuntimePolicy.js";
+export type { PublicRuntimePolicy } from "./modules/runtimeSafety/publicRuntimePolicy.js";
 export { createInMemoryCompletionJobService } from "./modules/copilot/completionJobService.js";
 export {
   ANONYMOUS_TURN_TTL_SECONDS,
