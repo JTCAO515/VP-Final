@@ -10,9 +10,12 @@ Trip access, Tools, Show to Local, Human Help, and account state.
 ## Current State
 
 The package is a TypeScript compilation placeholder importing the domain version. It is intentionally
-not an Expo application yet. The portable `OfflineTripPackage` domain contract is available for a
-future local-storage/AsyncStorage consumer, but no mobile synchronization, download, or write path
-exists. This is a controlled pre-production boundary, not a public offline-product claim.
+not an Expo application yet. It now imports `mobileTheme` from `@visepanda/ui`: a React Native-ready
+projection of the canonical red/gold token record, including accessible semantic states, 44pt button
+minimums, cards, type scale, spacing, and radii. The portable `OfflineTripPackage` domain contract
+is also available for a future local-storage/AsyncStorage consumer, but no mobile synchronization,
+download, or write path exists. This is a controlled pre-production boundary, not a public
+offline-product claim.
 
 ## Start Trigger
 

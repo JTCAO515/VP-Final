@@ -26,6 +26,9 @@ importers:
       '@visepanda/domain':
         specifier: workspace:*
         version: link:../../packages/domain
+      '@visepanda/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
     devDependencies:
       prettier:
         specifier: ^3.4.2

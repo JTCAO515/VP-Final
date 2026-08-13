@@ -199,6 +199,98 @@ export const designTokenCss = `:root{color-scheme:light;${Object.entries(designT
   .map(([name, value]) => `${cssVariableNames[name as DesignTokenName]}:${value};`)
   .join("")}}`;
 
+/**
+ * React Native-ready token values derived from the canonical web token record. Keep this as a
+ * projection, rather than a second palette, so Web and future Expo surfaces cannot drift by color,
+ * spacing, type scale, or semantic state.
+ */
+export const nativeDesignTokens = {
+  colors: {
+    background: designTokens.background,
+    app: designTokens.app,
+    surface: designTokens.surface,
+    surfaceWarm: designTokens.surfaceWarm,
+    surfaceRed: designTokens.surfaceRed,
+    surfaceGold: designTokens.surfaceGold,
+    ink: designTokens.ink,
+    inkSoft: designTokens.inkSoft,
+    muted: designTokens.muted,
+    faint: designTokens.faint,
+    line: designTokens.line,
+    lineStrong: designTokens.lineStrong,
+    primary: designTokens.primary,
+    primaryHover: designTokens.primaryHover,
+    onPrimary: designTokens.onPrimary,
+    success: designTokens.success,
+    successSoft: designTokens.successSoft,
+    warning: designTokens.warning,
+    warningSoft: designTokens.warningSoft,
+    danger: designTokens.danger,
+    dangerSoft: designTokens.dangerSoft,
+    info: designTokens.info,
+    infoSoft: designTokens.infoSoft,
+    focus: designTokens.focus,
+    foilGold: designTokens.foilGold,
+    foilGoldDark: designTokens.foilGoldDark,
+    foilGoldSoft: designTokens.foilGoldSoft,
+    jade: designTokens.jade,
+    jadeSoft: designTokens.jadeSoft,
+    river: designTokens.river,
+    riverSoft: designTokens.riverSoft,
+  },
+  spacing: {
+    1: pixelToken(designTokens.space1),
+    2: pixelToken(designTokens.space2),
+    3: pixelToken(designTokens.space3),
+    4: pixelToken(designTokens.space4),
+    5: pixelToken(designTokens.space5),
+    6: pixelToken(designTokens.space6),
+    8: pixelToken(designTokens.space8),
+    10: pixelToken(designTokens.space10),
+    12: pixelToken(designTokens.space12),
+    16: pixelToken(designTokens.space16),
+  },
+  radii: {
+    xs: pixelToken(designTokens.radiusXs),
+    sm: pixelToken(designTokens.radiusSm),
+    md: pixelToken(designTokens.radiusMd),
+    pill: pixelToken(designTokens.radiusPill),
+  },
+  typography: {
+    fontFamily: undefined as string | undefined,
+    monoFontFamily: undefined as string | undefined,
+    sizes: {
+      xs: pixelToken(designTokens.textXs),
+      sm: pixelToken(designTokens.textSm),
+      md: pixelToken(designTokens.textMd),
+      lg: pixelToken(designTokens.textLg),
+      xl: pixelToken(designTokens.textXl),
+      "2xl": pixelToken(designTokens.text2xl),
+      "3xl": pixelToken(designTokens.text3xl),
+    },
+  },
+  components: {
+    button: {
+      backgroundColor: designTokens.primary,
+      color: designTokens.onPrimary,
+      borderRadius: pixelToken(designTokens.radiusSm),
+      minHeight: 44,
+    },
+    card: {
+      backgroundColor: designTokens.surface,
+      borderColor: designTokens.line,
+      borderRadius: pixelToken(designTokens.radiusMd),
+    },
+    status: {
+      ready: { color: designTokens.success, backgroundColor: designTokens.successSoft },
+      attention: { color: designTokens.foilGoldDark, backgroundColor: designTokens.warningSoft },
+      unavailable: { color: designTokens.inkSoft, backgroundColor: designTokens.surfaceWarm },
+      danger: { color: designTokens.danger, backgroundColor: designTokens.dangerSoft },
+      info: { color: designTokens.info, backgroundColor: designTokens.infoSoft },
+    },
+  },
+} as const;
+
 export function contrastRatio(foreground: string, background: string): number {
   const foregroundLuminance = relativeLuminance(foreground);
   const backgroundLuminance = relativeLuminance(background);
@@ -223,4 +315,10 @@ function relativeLuminance(hex: string): number {
   const blue =
     blueChannel <= 0.04045 ? blueChannel / 12.92 : ((blueChannel + 0.055) / 1.055) ** 2.4;
   return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+}
+
+function pixelToken(value: string): number {
+  const match = /^(\d+(?:\.\d+)?)px$/.exec(value);
+  if (!match) throw new Error(`Expected a pixel token, received ${value}.`);
+  return Number(match[1]);
 }

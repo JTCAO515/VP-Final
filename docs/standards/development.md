@@ -49,6 +49,9 @@ the repository.
 - Add a dependency only when it removes meaningful risk or complexity and has an owner.
 - New runtime dependencies require license, maintenance, bundle/runtime cost, and rollback review.
 - Never add a second library for a capability already owned by an accepted dependency without an ADR.
+- A workspace package may depend on another accepted workspace package when it consumes an existing
+  contract; update `pnpm-lock.yaml` in the same PR and rebuild the provider package before checking
+  a consumer, so stale generated declarations cannot hide or invent an export.
 
 ## Completion
 
