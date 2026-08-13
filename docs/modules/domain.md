@@ -19,6 +19,7 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
 | `readiness`     | Versioned, deterministic China preparation questions, explainable self-reported results, and consented persistence request/result contracts; no score, LLM scoring, or commercial CTA                    |
 | `rescue`        | Deterministic incident routing definitions, fail-closed reviewed-target availability, and bounded Human Help offer state                                                                                 |
 | `safe-phrases`  | Private operator-verified high-risk fixed-expression contract, exact severity selection, and freshness eligibility                                                                                       |
+| `seo`           | Deterministic evidence-gated POI/intent matrix for later public page, metadata, and sitemap consumers; it emits gaps instead of thin pages                                                               |
 | `task`          | Human Task input, lifecycle, transition commands, private outcome evidence, and non-status updates                                                                                                       |
 | `tools`         | Versioned local-only preparation pack for eight execution-tool categories; deterministic action ids, no real-time API, partner URL, or live availability claim                                           |
 | `commerce`      | Validated partner configuration, trusted-identity outbound records, active-only HTTPS host validation, and tracking construction                                                                         |
@@ -103,6 +104,10 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
 - Arrival Pack telemetry is fixed pack metadata only: generated/downloaded/regenerated actions may
   carry the schema version plus bounded block/address counts and a readiness-presence boolean. It
   must not carry the pack's Trip text, local address, raw HTML, download bytes, or any free-form field.
+- SEO candidates are derived only from current ADR-0006-eligible POI facts and carry the exact
+  supporting fact ids, unique canonical path, and last verification timestamp. The matrix is not a
+  content generator: unsupported POI/intent pairs are represented as gaps and cannot become a public
+  candidate, sitemap entry, or fallback page.
 - `events` has two related contracts: a stored telemetry event requires exactly one trusted identity,
   registered action, allowlisted object properties, and a future retention deadline; browser capture
   is a smaller client-safe action union with no persistence metadata or attribution authority. The
