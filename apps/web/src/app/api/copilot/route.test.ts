@@ -78,7 +78,7 @@ describe("POST /api/copilot anonymous turn wall", () => {
       ok: false,
       code: "COPILOT_INPUT_TOO_LARGE",
       error:
-        "Copilot messages must be 8000 characters or fewer. Shorten your message and try again.",
+        "VisePanda messages must be 8000 characters or fewer. Shorten your message and try again.",
       maxInputCodeUnits: 8_000,
     });
   });
@@ -135,7 +135,7 @@ describe("POST /api/copilot anonymous turn wall", () => {
     await expect(blocked.json()).resolves.toEqual({
       ok: false,
       code: "COPILOT_AUTHENTICATED_RATE_LIMITED",
-      error: "Your Copilot account has sent too many requests. Try again in 60 seconds.",
+      error: "Your VisePanda account has sent too many requests. Try again in 60 seconds.",
       retryAfterSeconds: 60,
     });
   });
@@ -158,7 +158,7 @@ describe("POST /api/copilot anonymous turn wall", () => {
     await expect(response.json()).resolves.toEqual({
       ok: false,
       code: "COPILOT_AUTHENTICATED_RATE_LIMIT_UNAVAILABLE",
-      error: "Copilot account request protection is temporarily unavailable. Try again later.",
+      error: "VisePanda account request protection is temporarily unavailable. Try again later.",
     });
   });
 
@@ -186,7 +186,7 @@ describe("POST /api/copilot anonymous turn wall", () => {
     await expect(blocked.json()).resolves.toEqual({
       ok: false,
       code: "ANONYMOUS_TURN_LIMIT_REACHED",
-      error: "Sign in to continue using the Copilot.",
+      error: "Sign in to continue using VisePanda.",
       anonymousUsage: { completedTurns: 3, limit: 3, remaining: 0 },
     });
   });
@@ -205,7 +205,7 @@ describe("POST /api/copilot anonymous turn wall", () => {
     await expect(response.json()).resolves.toEqual({
       ok: false,
       code: "ANONYMOUS_TURN_CONTROL_UNAVAILABLE",
-      error: "Anonymous Copilot access is temporarily unavailable. Sign in or try again later.",
+      error: "Anonymous VisePanda access is temporarily unavailable. Sign in or try again later.",
     });
   });
 
@@ -256,7 +256,7 @@ describe("POST /api/copilot anonymous turn wall", () => {
     await expect(response.json()).resolves.toEqual({
       ok: false,
       code: "ANONYMOUS_TURN_IN_PROGRESS",
-      error: "Another anonymous Copilot question is still finishing. Try again shortly.",
+      error: "Another anonymous VisePanda question is still finishing. Try again shortly.",
       anonymousUsage: { completedTurns: 1, limit: 3, remaining: 2 },
     });
   });
@@ -284,7 +284,7 @@ describe("POST /api/copilot anonymous turn wall", () => {
     await expect(blocked.json()).resolves.toEqual({
       ok: false,
       code: "COPILOT_IP_RATE_LIMITED",
-      error: "This network has sent too many Copilot requests. Try again in 60 seconds.",
+      error: "This network has sent too many VisePanda requests. Try again in 60 seconds.",
       retryAfterSeconds: 60,
     });
 
@@ -323,7 +323,7 @@ describe("POST /api/copilot anonymous turn wall", () => {
     await expect(response.json()).resolves.toEqual({
       ok: false,
       code: "COPILOT_IP_RATE_LIMIT_UNAVAILABLE",
-      error: "Copilot request protection is temporarily unavailable. Try again later.",
+      error: "VisePanda request protection is temporarily unavailable. Try again later.",
     });
   });
 
@@ -353,7 +353,7 @@ describe("POST /api/copilot anonymous turn wall", () => {
     expect(body).toMatchObject({
       ok: false,
       code: "COPILOT_REQUEST_FAILED",
-      error: "Copilot is temporarily unavailable. Try again later.",
+      error: "VisePanda is temporarily unavailable. Try again later.",
       correlationId: expect.stringMatching(
         /^[0-9a-f]{8}-[0-9a-f]{4}-[47][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
       ),
