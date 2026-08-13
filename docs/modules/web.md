@@ -98,6 +98,15 @@ not an incident narrative, location, contact, health detail, or free-form outcom
 Human Help offer/confirmation, and resolution lifecycle events remain server-owned and must not be
 emitted merely because a disabled or unavailable Rescue route rendered.
 
+`/rescue` obtains a server-only runtime configuration before rendering its fixed-category chooser.
+Reviewed self-service actions are exposed only when their exact route id is explicitly configured and
+has a first-party destination; unknown ids never turn into a link. Human Help is available only when
+all bounded scope fields are configured and the current `Asia/Shanghai` hour falls within the
+configured window. Otherwise the domain receives `unavailable`, so the public surface does not offer
+a task, price, payment, response-time, or service promise. The client carries no Trip, block,
+location, or incident narrative into the optional Human Help handoff; it may only preselect an
+editable task kind.
+
 Arrival Pack browser observations are likewise closed-set: generated, downloaded, and regenerated may
 send only fixed version/count metadata. They never send the printable Trip text, local address, Readiness
 answers, rendered HTML, or any download payload. `arrival_pack_downloaded` means that the browser was
