@@ -23,6 +23,15 @@ export const HUMAN_TASK_PREVIEW_CITY = "Shanghai";
 export const HUMAN_TASK_DAILY_CAPACITY = 5;
 export const HUMAN_TASK_TERMINAL_RETENTION_DAYS = 90;
 
+export type HumanTaskServiceOptions = {
+  now?: () => Date;
+  /**
+   * P0-17's first state transition stays unavailable until Ops has the complete server-only
+   * Checkout and webhook configuration. A quoted task alone is never payment proof.
+   */
+  allowPaymentPreparation?: boolean;
+};
+
 export type HumanTaskIdentity = Exclude<RequestIdentity, { kind: "none" }>;
 
 export type CreateHumanTaskCommand = {
@@ -145,8 +154,11 @@ type OwnedTask = {
   idempotencyKey: string;
 };
 
-export function createInMemoryHumanTaskService(options?: { now?: () => Date }): HumanTaskService {
+export function createInMemoryHumanTaskService(
+  options?: HumanTaskServiceOptions,
+): HumanTaskService {
   const now = options?.now ?? (() => new Date());
+  const allowPaymentPreparation = options?.allowPaymentPreparation ?? false;
   let records: OwnedTask[] = [];
   const transitions: HumanTaskTransition[] = [];
   const evidenceRecords: HumanTaskEvidence[] = [];
@@ -251,7 +263,9 @@ export function createInMemoryHumanTaskService(options?: { now?: () => Date }): 
       const index = records.findIndex((record) => record.task.id === input.taskId);
       if (index < 0) throw new HumanTaskNotFoundError();
       const record = records[index]!;
-      const { task, transition } = prepareHumanTaskTransition(record.task, input, now());
+      const { task, transition } = prepareHumanTaskTransition(record.task, input, now(), {
+        allowPaymentPreparation,
+      });
       records[index] = { ...record, task };
       transitions.push(transition);
       return { task, transition };
@@ -267,13 +281,14 @@ export function prepareHumanTaskTransition(
   current: HumanTask,
   input: TransitionHumanTaskCommand,
   now: Date,
+  options?: Pick<HumanTaskServiceOptions, "allowPaymentPreparation">,
 ): HumanTaskTransitionResult {
   assertTaskPermission(input.actor, "task.write");
   const command = HumanTaskTransitionCommandSchema.parse({
     to_status: input.toStatus,
     reason: input.reason,
   });
-  const task = applyHumanTaskTransition(current, command.to_status, now);
+  const task = applyHumanTaskTransition(current, command.to_status, now, options);
   const transition = HumanTaskTransitionSchema.parse({
     id: crypto.randomUUID(),
     task_id: task.id,
@@ -290,9 +305,10 @@ export function applyHumanTaskTransition(
   task: HumanTask,
   next: HumanTaskStatus,
   now: Date,
+  options?: Pick<HumanTaskServiceOptions, "allowPaymentPreparation">,
 ): HumanTask {
   const transitioned = transitionHumanTask(task, next, now);
-  if (!isPreviewTransitionEnabled(task.status, next)) {
+  if (!isPreviewTransitionEnabled(task.status, next, options?.allowPaymentPreparation ?? false)) {
     throw new HumanTaskTransitionPolicyError();
   }
   return HumanTaskSchema.parse({
@@ -304,10 +320,14 @@ export function applyHumanTaskTransition(
   });
 }
 
-function isPreviewTransitionEnabled(from: HumanTaskStatus, to: HumanTaskStatus): boolean {
+function isPreviewTransitionEnabled(
+  from: HumanTaskStatus,
+  to: HumanTaskStatus,
+  allowPaymentPreparation: boolean,
+): boolean {
   return (
     (from === "requested" && (to === "triaged" || to === "cancelled")) ||
-    (from === "triaged" && to === "cancelled")
+    (from === "triaged" && (to === "cancelled" || (to === "quoted" && allowPaymentPreparation)))
   );
 }
 

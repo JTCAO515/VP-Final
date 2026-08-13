@@ -13,9 +13,10 @@ const operator = {
   permissions: ["task.read", "task.contact.read", "task.write"] as const,
 };
 
-async function fixture() {
+async function fixture(paymentPreparationAvailable = false) {
   const service = createInMemoryHumanTaskService({
     now: () => new Date("2026-07-16T06:00:00.000Z"),
+    allowPaymentPreparation: paymentPreparationAvailable,
   });
   const task = await service.create({
     identity: { kind: "anonymous", anonId: "a".repeat(43) },
@@ -38,6 +39,7 @@ async function fixture() {
     dependencies: {
       authorize: async () => authorization,
       getService: () => service,
+      isPaymentPreparationAvailable: () => paymentPreparationAvailable,
     },
   };
 }
@@ -99,6 +101,39 @@ describe("PATCH /api/tasks/:taskId/status", () => {
       gated.dependencies,
     );
     expect(gatedResponse.status).toBe(409);
+  });
+
+  it("accepts a configured Ops quote and keeps price and payment link absent", async () => {
+    const configured = await fixture(true);
+    await configured.service.transition({
+      taskId: configured.task.id,
+      actor: { ...operator, permissions: [...operator.permissions] },
+      toStatus: "triaged",
+      reason: "Scope and capacity were reviewed before preparing a non-binding quote.",
+    });
+
+    const response = await handleTaskStatusPatch(
+      request({
+        to_status: "quoted",
+        reason: "A non-binding quote is ready for the configured payment preparation path.",
+      }),
+      { params: Promise.resolve({ taskId: configured.task.id }) },
+      configured.dependencies,
+    );
+
+    const payload = await response.json();
+    expect(response.status).toBe(200);
+    expect(payload).toMatchObject({
+      ok: true,
+      task: { status: "quoted" },
+      transition: { from_status: "triaged", to_status: "quoted" },
+    });
+    await expect(
+      configured.service.getForOps(configured.task.id, {
+        ...operator,
+        permissions: [...operator.permissions],
+      }),
+    ).resolves.toMatchObject({ price_usd: null, payment_link: null });
   });
 
   it("returns authorization failures before reading request state", async () => {

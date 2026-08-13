@@ -71,9 +71,11 @@ the public Web application and protected by server-side role checks.
   durable server adapters. P0-14 exposes only the canonical status transition API: every change
   records actor, reason, and timestamp; arbitrary status writes and terminal recovery are rejected.
   P0-15 adds an authorized task-detail and notes workflow. The server remains authoritative for the
-  available transition list; controlled preview exposes only `requested -> triaged/cancelled` and
-  `triaged -> cancelled`. Quote/payment activation, assignment, and fulfilment controls remain absent
-  until their separately accepted boundaries.
+  available transition list. It exposes `requested -> triaged/cancelled` and `triaged -> cancelled`
+  by default. The internal `triaged -> quoted` preparation transition appears only when both the
+  server-only Checkout and signed-webhook configurations resolve; it sets neither price nor payment
+  link, is not payment evidence, and never appears to travelers. Checkout, payment confirmation,
+  assignment, and fulfilment controls remain absent until their separately accepted boundaries.
 - P0-16 shows private evidence only inside the authorized detail. Append controls remain unavailable
   until `done` or `cancelled`; Operators can propose a gap but cannot publish a fact or bypass Editor
   review.

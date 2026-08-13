@@ -39,6 +39,7 @@ async function fixture() {
     dependencies: {
       authorize: async () => authorization,
       getService: () => service,
+      isPaymentPreparationAvailable: () => false,
       now: () => now,
     },
     setNow(value: Date) {
@@ -61,6 +62,27 @@ describe("/api/tasks/:taskId", () => {
     expect(payload.task).toMatchObject({ id: task.id, contact: "traveler@example.com" });
     expect(payload.transitions).toEqual([]);
     expect(payload.allowed_transitions).toEqual(["triaged", "cancelled"]);
+  });
+
+  it("offers quote preparation only when the full payment runtime is available", async () => {
+    const { service, task, dependencies } = await fixture();
+    await service.transition({
+      taskId: task.id,
+      actor: { ...operator, permissions: [...operator.permissions] },
+      toStatus: "triaged",
+      reason: "Scope and capacity were reviewed before preparing a non-binding quote.",
+    });
+
+    const response = await handleTaskDetailGet(
+      new Request(`https://ops.example.com/api/tasks/${task.id}`),
+      { params: Promise.resolve({ taskId: task.id }) },
+      { ...dependencies, isPaymentPreparationAvailable: () => true },
+    );
+
+    await expect(response.json()).resolves.toMatchObject({
+      task: { status: "triaged" },
+      allowed_transitions: ["quoted", "cancelled"],
+    });
   });
 
   it("persists and clears an internal note without changing status", async () => {

@@ -82,16 +82,16 @@ availability, and safety review can delay or prevent fulfilment. User-facing cop
 
 ### State mapping
 
-| Task state        | Policy meaning                                               | Operator rule                                                                    |
-| ----------------- | ------------------------------------------------------------ | -------------------------------------------------------------------------------- |
-| `requested`       | User submitted a triage request.                             | Acknowledge or decline; do not promise fulfilment.                               |
-| `triaged`         | Scope, safety, capacity, and data sufficiency were reviewed. | Record supported/declined decision and reason.                                   |
-| `quoted`          | A non-binding proposed price/scope exists.                   | Only available after a future approved payment route.                            |
-| `payment_pending` | Awaiting verified provider payment.                          | Not used during controlled preview.                                              |
-| `paid`            | Provider payment evidence verified.                          | Not used until P0-17 is accepted.                                                |
-| `fulfilling`      | Operator is performing approved, paid work.                  | Record only truthful actions and evidence.                                       |
-| `done`            | Agreed work outcome was communicated.                        | Record what was done, what remains third-party dependent, and user notification. |
-| `cancelled`       | Work did not proceed or stopped.                             | Record initiator, reason, and any applicable refund outcome.                     |
+| Task state        | Policy meaning                                               | Operator rule                                                                                                                        |
+| ----------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `requested`       | User submitted a triage request.                             | Acknowledge or decline; do not promise fulfilment.                                                                                   |
+| `triaged`         | Scope, safety, capacity, and data sufficiency were reviewed. | Record supported/declined decision and reason.                                                                                       |
+| `quoted`          | A non-binding proposed price/scope exists.                   | Ops-only preparation; disabled unless the complete configured payment path exists. It is not payment evidence or a traveler promise. |
+| `payment_pending` | Awaiting verified provider payment.                          | Not used during controlled preview.                                                                                                  |
+| `paid`            | Provider payment evidence verified.                          | Not used until P0-17 is accepted.                                                                                                    |
+| `fulfilling`      | Operator is performing approved, paid work.                  | Record only truthful actions and evidence.                                                                                           |
+| `done`            | Agreed work outcome was communicated.                        | Record what was done, what remains third-party dependent, and user notification.                                                     |
+| `cancelled`       | Work did not proceed or stopped.                             | Record initiator, reason, and any applicable refund outcome.                                                                         |
 
 ### Future paid-service rules
 
@@ -163,8 +163,11 @@ owner, and a new review date.
   delegated OA-007 instruction.
 - 2026-07-16: P0-13 durable owner/idempotency/capacity intake boundary implemented for review.
 - 2026-07-20: P0-15 authorized task detail, minimized internal-note persistence, PII-free note audit,
-  and controlled-preview triage UI implemented for review. Quote, payment, assignment, and paid
-  fulfilment controls remain unavailable.
+  and controlled-preview triage UI implemented for review. Payment, assignment, and paid fulfilment
+  controls remain unavailable.
+- 2026-08-14: P0-17 preparation permits only an internally authorized `triaged -> quoted` transition
+  when both Checkout and webhook configuration resolve. It exposes no payment link to travelers and
+  does not mark collection or fulfilment as active.
 - 2026-07-20: P0-16 private terminal evidence and sanitized evidence-to-gap proposal boundary
   implemented for review. No transcript is public and no fact is automatically created or reviewed.
 - Required before a public paid launch: payment/entity/legal decision, verified provider integration,

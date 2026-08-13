@@ -18,7 +18,7 @@ import {
   isAuthorizedOpsRequest,
   type AuthorizedOpsRequest,
 } from "../../../../lib/opsAccess";
-import { getHumanTaskService } from "../store";
+import { getHumanTaskService, isHumanTaskPaymentPreparationAvailable } from "../store";
 
 type RouteContext = { params: Promise<{ taskId: string }> };
 type Dependencies = {
@@ -27,12 +27,14 @@ type Dependencies = {
     permission: "task.contact.read" | "task.write",
   ) => Promise<AuthorizedOpsRequest | NextResponse>;
   getService: typeof getHumanTaskService;
+  isPaymentPreparationAvailable?: () => boolean;
   now?: () => Date;
 };
 
 const defaultDependencies: Dependencies = {
   authorize: authorizeOpsRequest,
   getService: getHumanTaskService,
+  isPaymentPreparationAvailable: isHumanTaskPaymentPreparationAvailable,
   now: () => new Date(),
 };
 
@@ -62,7 +64,10 @@ export async function handleTaskDetailGet(
           task,
           dependencies.now?.() ?? new Date(),
         ),
-        allowed_transitions: previewTransitions(task.status),
+        allowed_transitions: previewTransitions(
+          task.status,
+          dependencies.isPaymentPreparationAvailable?.() ?? false,
+        ),
       }),
       authorization.cookieResponse,
     );
@@ -123,9 +128,14 @@ export async function handleTaskNotePatch(
   }
 }
 
-function previewTransitions(status: HumanTaskStatus): HumanTaskStatus[] {
+function previewTransitions(
+  status: HumanTaskStatus,
+  paymentPreparationAvailable: boolean,
+): HumanTaskStatus[] {
   if (status === "requested") return ["triaged", "cancelled"];
-  if (status === "triaged") return ["cancelled"];
+  if (status === "triaged") {
+    return paymentPreparationAvailable ? ["quoted", "cancelled"] : ["cancelled"];
+  }
   return [];
 }
 
