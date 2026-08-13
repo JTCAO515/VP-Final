@@ -10,7 +10,8 @@
     "lint": "prettier --check src"
   },
   "dependencies": {
-    "@visepanda/domain": "workspace:*"
+    "@visepanda/domain": "workspace:*",
+    "@visepanda/ui": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.7.2",

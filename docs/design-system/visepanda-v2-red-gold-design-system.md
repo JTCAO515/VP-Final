@@ -187,6 +187,14 @@ Master tokens use OKLCH. Hex fallback is included for implementation convenience
 
 If red exceeds 15% of the viewport, the UI will feel aggressive. If gold exceeds 10%, it will feel decorative instead of premium.
 
+### 4.2 Native Projection
+
+`packages/ui` is the only token authority. Future React Native surfaces consume the exported
+`nativeDesignTokens` projection rather than copying values into an app theme. The projection carries
+the same color semantics, pixel-number spacing/radii/type values, a 44pt primary-button minimum, and
+ready/attention/unavailable/danger/info state pairs. Native uses its platform default sans and mono
+families until licensed fonts are explicitly introduced; no font file is implied by this token layer.
+
 ---
 
 ## 5. Typography
