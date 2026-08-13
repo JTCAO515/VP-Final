@@ -2352,6 +2352,20 @@ summary:active {
   white-space: nowrap;
 }
 
+.pageActionGroup {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.secondaryPageAction {
+  background: var(--surface);
+  border: 1px solid var(--vp-line-strong);
+  box-shadow: none;
+  color: var(--ink);
+}
+
 .previewBadge {
   align-items: center;
   background: var(--gold-soft);
@@ -3133,5 +3147,271 @@ summary:active {
   .pageHero > div > p:last-child,
   .accountPanel > p {
     color: var(--ink);
+  }
+}
+
+/* VisePanda public-home and dedicated-workspace navigation contract. */
+.skipLink {
+  background: var(--ink);
+  border-radius: 8px;
+  color: var(--vp-on-primary);
+  font-size: 14px;
+  font-weight: 750;
+  left: 16px;
+  padding: 10px 14px;
+  position: fixed;
+  text-decoration: none;
+  top: 12px;
+  transform: translateY(-180%);
+  transition: transform var(--vp-motion-fast) var(--vp-ease-standard);
+  z-index: 100;
+}
+
+.skipLink:focus-visible {
+  transform: translateY(0);
+}
+
+.siteUtilities {
+  align-items: center;
+  display: flex;
+  gap: 14px;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+.siteAccountLink {
+  align-items: center;
+  border-radius: 9px;
+  color: var(--muted);
+  display: inline-flex;
+  font-size: 14px;
+  font-weight: 720;
+  min-height: 42px;
+  padding: 0 15px;
+  text-decoration: none;
+}
+
+.siteAccountLink:hover {
+  background: color-mix(in srgb, var(--surface-warm) 82%, transparent);
+  color: var(--ink);
+}
+
+.siteAccountLink[aria-current="page"] {
+  background: var(--ink);
+  box-shadow: 0 5px 14px rgba(33, 23, 20, 0.16);
+  color: var(--vp-on-primary);
+}
+
+.previewCopilot a {
+  align-items: center;
+  align-self: end;
+  background: var(--gold);
+  border-radius: 7px;
+  color: var(--ink);
+  display: inline-flex;
+  font-size: 14px;
+  font-weight: 850;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 14px;
+  text-decoration: none;
+}
+
+.viseWorkspace {
+  background: var(--bg);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+}
+
+.viseWorkspace > .homeHero,
+.viseWorkspace > .scenarioSection,
+.viseWorkspace > .ecosystemSection {
+  display: none;
+}
+
+.viseWorkspace .copilotWorkbench {
+  max-width: none;
+  min-height: calc(100vh - 88px);
+  padding: 0;
+  width: 100%;
+}
+
+.viseWorkspace .workbenchIntro {
+  display: none;
+}
+
+.viseWorkspace .copilotLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 13fr) minmax(360px, 7fr);
+  grid-template-rows: minmax(0, 1fr) auto;
+  min-height: calc(100vh - 88px);
+}
+
+.viseWorkspace .tripCanvas {
+  background: var(--surface-warm);
+  border-bottom: 1px solid var(--line);
+  border-right: 1px solid var(--line);
+  display: grid;
+  grid-column: 1;
+  grid-row: 1 / 3;
+  grid-template-rows: auto minmax(0, 1fr);
+  min-height: 0;
+  overflow: auto;
+}
+
+.viseWorkspace .conversationPanel {
+  border-bottom: 1px solid var(--line);
+  border-right: 0;
+  grid-column: 2;
+  grid-row: 1;
+  min-height: 0;
+}
+
+.viseWorkspace .copilotRail {
+  border-right: 0;
+  grid-column: 2;
+  grid-row: 2;
+  min-height: 0;
+}
+
+.viseWorkspace .conversationPanel .railMessages {
+  max-height: calc(100vh - 360px);
+  padding-bottom: 32px;
+}
+
+.viseWorkspace .tripPreview {
+  align-content: start;
+  display: grid;
+  gap: 22px;
+  padding: 32px 28px 56px;
+}
+
+.viseWorkspace .tripPreviewDays {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.tripCanvasEmpty {
+  align-content: center;
+  display: grid;
+  justify-items: start;
+  max-width: 560px;
+  padding: 48px 28px;
+}
+
+.tripCanvasEmpty p {
+  font-size: clamp(24px, 3vw, 38px);
+  font-weight: 740;
+  letter-spacing: 0;
+  line-height: 1.12;
+  margin: 0;
+}
+
+.tripCanvasEmpty span {
+  color: var(--ink-soft);
+  font-size: 15px;
+  line-height: 1.6;
+  margin-top: 16px;
+  max-width: 470px;
+}
+
+.mobileWorkspaceTabs {
+  display: none;
+}
+
+@media (max-width: 980px) {
+  .siteUtilities {
+    gap: 8px;
+  }
+
+  .siteAccountLink {
+    font-size: 13px;
+    min-height: 38px;
+    padding: 0 10px;
+  }
+
+  .viseWorkspace .copilotWorkbench,
+  .viseWorkspace .copilotLayout {
+    min-height: calc(100vh - 132px);
+  }
+
+  .viseWorkspace .copilotLayout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+  }
+
+  .mobileWorkspaceTabs {
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+    display: grid;
+    gap: 6px;
+    grid-column: 1;
+    grid-template-columns: 1fr 1fr;
+    padding: 8px 12px;
+  }
+
+  .mobileWorkspaceTabs button {
+    background: transparent;
+    border: 0;
+    border-radius: 8px;
+    color: var(--muted);
+    font-weight: 760;
+    min-height: 40px;
+  }
+
+  .mobileWorkspaceTabs button[aria-pressed="true"] {
+    background: var(--ink);
+    color: var(--vp-on-primary);
+  }
+
+  .viseWorkspace .tripCanvas,
+  .viseWorkspace .conversationPanel,
+  .viseWorkspace .copilotRail {
+    grid-column: 1;
+  }
+
+  .viseWorkspace .tripCanvas {
+    grid-row: 2 / 4;
+  }
+
+  .viseWorkspace .conversationPanel {
+    grid-row: 2;
+  }
+
+  .viseWorkspace .copilotRail {
+    grid-row: 3;
+  }
+
+  .viseWorkspace .copilotLayout[data-mobile-panel="trip"] .conversationPanel,
+  .viseWorkspace .copilotLayout[data-mobile-panel="trip"] .copilotRail,
+  .viseWorkspace .copilotLayout[data-mobile-panel="chat"] .tripCanvas {
+    display: none;
+  }
+
+  .viseWorkspace .conversationPanel .railMessages {
+    max-height: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .siteContext {
+    display: none;
+  }
+
+  .siteHeader {
+    grid-template-columns: 1fr auto;
+  }
+
+  .viseWorkspace .copilotWorkbench,
+  .viseWorkspace .copilotLayout {
+    min-height: calc(100vh - 162px);
+  }
+
+  .viseWorkspace .tripPreview,
+  .tripCanvasEmpty {
+    padding-left: 18px;
+    padding-right: 18px;
   }
 }
