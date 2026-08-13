@@ -45,8 +45,8 @@ export default async function GuidePage({ params }: Props) {
           <h1>{guide.title}</h1>
           <p>{guide.description}</p>
         </div>
-        <a className="pageAction" href="/">
-          Ask Copilot
+        <a className="pageAction" href="/visepanda?context=guide">
+          Ask VisePanda
         </a>
       </section>
 
