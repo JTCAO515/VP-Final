@@ -74,6 +74,11 @@ Pending, inactive, unknown, malformed, or unrecordable actions return an honest 
 response. A newly issued anonymous cookie is preserved on both success and failure. No partner is
 active by repository default, and partner management remains an authorized Ops follow-up.
 
+Explore renders a commercial CTA only when the durable Knowledge service returns an active
+`poi_commercial_links` row. The CTA contains that row's disclosure and routes to same-origin
+`/outbound` with bounded `explore` attribution; it never exposes a raw partner destination as the
+link target. An absent, pending, inactive, or unavailable link renders nothing.
+
 `POST /api/telemetry` is a deliberately narrow, best-effort observation endpoint. Its request body
 accepts only client-safe Explore and Human Help pre-submit actions with bounded dimensions; it rejects
 client-supplied identity, id, timestamp, expiry, commercial attribution, and unrestricted payloads.

@@ -3137,6 +3137,24 @@ summary:active {
   width: fit-content;
 }
 
+.poiCommercialLinks {
+  display: grid;
+  gap: 10px;
+}
+
+.poiCommercialLink {
+  align-items: flex-start;
+  display: grid;
+  gap: 6px;
+}
+
+.poiCommercialLink small {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+  max-width: 36rem;
+}
+
 .siteHeader .brandMark span,
 .siteFooter .brandMark span {
   background: var(--red);
