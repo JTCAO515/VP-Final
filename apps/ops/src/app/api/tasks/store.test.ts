@@ -1,8 +1,13 @@
-import { createInMemoryHumanTaskService } from "@visepanda/app-server";
+import {
+  createInMemoryHumanTaskService,
+  type HumanTaskPaymentCheckoutService,
+} from "@visepanda/app-server";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
+  getHumanTaskPaymentCheckoutService,
   getHumanTaskService,
   isHumanTaskPaymentPreparationAvailable,
+  setTestOpsHumanTaskPaymentCheckoutService,
   setTestOpsHumanTaskService,
 } from "./store";
 
@@ -13,6 +18,7 @@ beforeEach(() => {
 afterEach(() => {
   delete process.env.VISEPANDA_RUNTIME_MODE;
   setTestOpsHumanTaskService(null);
+  setTestOpsHumanTaskPaymentCheckoutService(null);
 });
 
 describe("ops human task store", () => {
@@ -55,5 +61,22 @@ describe("ops human task store", () => {
         STRIPE_WEBHOOK_SECRET: "test_webhook_secret",
       }),
     ).toBe(true);
+  });
+
+  it("fails closed when payment checkout test composition is not injected", () => {
+    setTestOpsHumanTaskPaymentCheckoutService(null);
+    expect(() => getHumanTaskPaymentCheckoutService()).toThrow(
+      "Ops test payment checkout is not injected.",
+    );
+  });
+
+  it("returns only an explicitly injected payment checkout service in test mode", () => {
+    const service = {
+      createCheckout: async () => {
+        throw new Error("not exercised by this composition test");
+      },
+    } satisfies HumanTaskPaymentCheckoutService;
+    setTestOpsHumanTaskPaymentCheckoutService(service);
+    expect(getHumanTaskPaymentCheckoutService()).toBe(service);
   });
 });
