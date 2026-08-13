@@ -132,6 +132,11 @@ fulfilling -> done`, with explicit cancellation edges and no terminal recovery. 
 - Human Task evidence is typed as `outcome` or `transcript_excerpt` and is eligible only after
   `done` or `cancelled`. Email/phone data is replaced before persistence; credential, payment, OTP,
   and travel-document content is rejected.
+- Human Task payment evidence is an independent strict Stripe Checkout ledger object. It carries
+  positive integer USD cents, opaque provider references, an HTTPS Checkout URL, a retention deadline,
+  and one of `checkout_open`, `paid`, or `expired`. A `paid` object requires a payment-intent id,
+  verified provider-event id, and paid timestamp; an open or expired object must not carry that paid
+  evidence. It never carries card data, provider secrets, raw webhook payloads, or signatures.
 - VisePod v1 validates one HTTPS push-to-talk turn as strict metadata plus raw PCM and validates
   response segments by explicit, contiguous index rather than array order. Device ids and nonces
   accept only RFC 3986 unreserved characters, and the canonical HMAC string, signing vector, audio

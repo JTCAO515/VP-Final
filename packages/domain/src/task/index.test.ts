@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  HumanTaskPaymentSchema,
   HUMAN_TASK_TRANSITIONS,
   HumanTaskSchema,
   InvalidHumanTaskTransitionError,
@@ -72,6 +73,39 @@ describe("human task domain", () => {
 
     expect(updated.status).toBe("requested");
     expect(updated.payment_link).toBe("https://buy.stripe.com/test");
+  });
+
+  it("requires immutable verified evidence before a payment can be marked paid", () => {
+    const basePayment = {
+      id: "00000000-0000-4000-8000-000000000001",
+      task_id: "00000000-0000-4000-8000-000000000002",
+      provider: "stripe" as const,
+      provider_checkout_session_id: "cs_test_checkout_123",
+      provider_payment_intent_id: null,
+      provider_event_id: null,
+      amount_cents: 2499,
+      currency: "usd" as const,
+      checkout_url: "https://checkout.stripe.com/c/pay/cs_test_checkout_123",
+      status: "checkout_open" as const,
+      paid_at: null,
+      retention_expires_at: "2027-07-16T02:00:00.000Z",
+      created_at: "2026-07-16T02:00:00.000Z",
+      updated_at: "2026-07-16T02:00:00.000Z",
+    };
+
+    expect(HumanTaskPaymentSchema.parse(basePayment).status).toBe("checkout_open");
+    expect(HumanTaskPaymentSchema.safeParse({ ...basePayment, status: "paid" }).success).toBe(
+      false,
+    );
+    expect(
+      HumanTaskPaymentSchema.parse({
+        ...basePayment,
+        status: "paid",
+        provider_payment_intent_id: "pi_test_payment_123",
+        provider_event_id: "evt_test_completed_123",
+        paid_at: "2026-07-16T02:05:00.000Z",
+      }).status,
+    ).toBe("paid");
   });
 
   it("accepts every declared lifecycle edge and records the transition time", () => {

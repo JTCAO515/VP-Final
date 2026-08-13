@@ -106,6 +106,13 @@ Next.js runtimes rather than deployed as an independent service.
   trusted identity, registered action, entity, optional intent, and allowlisted dimensions. Ops
   triage/cancellation emits no product telemetry, and `quote_created`, `payment_link_clicked`,
   `task_paid`, and `task_done` remain contract-only until their owning boundaries are accepted.
+- P0-17 introduces the private `human_task_payments` ledger contract before any Stripe runtime is
+  enabled. A future authorized Ops-only Checkout writer must create exactly one record for a quoted
+  task, transition it to `payment_pending` only after that durable record exists, and use the
+  provider's opaque Checkout session id for idempotency. A future webhook consumer may transition to
+  `paid` only after signature verification and a ledger update carrying the provider payment-intent
+  and event ids. No client route, task status, redirect, or raw provider payload is payment proof on
+  its own. Missing runtime configuration must remain an honest unavailable response.
 - P0-19d protects the public browser capture route before `TelemetryService.track` with two atomic
   Upstash sliding windows: a HMAC-derived verified-identity window (`60/minute`, `300/hour` by
   default) and a separate HMAC-derived Vercel trusted-network window (`180/minute`, `900/hour`).

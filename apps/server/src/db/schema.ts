@@ -919,6 +919,74 @@ export const humanTasks = pgTable(
   }),
 );
 
+/**
+ * Private provider payment evidence. This is a ledger, not a client-readable checkout surface and
+ * not a substitute for a signature-verified provider event.
+ */
+export const humanTaskPayments = pgTable(
+  "human_task_payments",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    taskId: uuid("task_id")
+      .notNull()
+      .references(() => humanTasks.id, { onDelete: "cascade" }),
+    provider: text("provider").notNull(),
+    providerCheckoutSessionId: text("provider_checkout_session_id").notNull(),
+    providerPaymentIntentId: text("provider_payment_intent_id"),
+    providerEventId: text("provider_event_id"),
+    amountCents: integer("amount_cents").notNull(),
+    currency: text("currency").notNull().default("usd"),
+    checkoutUrl: text("checkout_url").notNull(),
+    status: text("status").notNull().default("checkout_open"),
+    paidAt: timestamp("paid_at", { withTimezone: true }),
+    retentionExpiresAt: timestamp("retention_expires_at", { withTimezone: true }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    taskUnique: uniqueIndex("human_task_payments_task_id_unique").on(table.taskId),
+    providerCheckoutSessionUnique: uniqueIndex(
+      "human_task_payments_provider_checkout_session_unique",
+    ).on(table.provider, table.providerCheckoutSessionId),
+    providerEventUnique: uniqueIndex("human_task_payments_provider_event_unique")
+      .on(table.provider, table.providerEventId)
+      .where(sql`${table.providerEventId} is not null`),
+    statusCreatedIdx: index("human_task_payments_status_created_idx").on(
+      table.status,
+      table.createdAt,
+    ),
+    providerCheck: check("human_task_payments_provider_check", sql`${table.provider} = 'stripe'`),
+    amountCheck: check("human_task_payments_amount_cents_check", sql`${table.amountCents} > 0`),
+    currencyCheck: check("human_task_payments_currency_check", sql`${table.currency} = 'usd'`),
+    checkoutUrlCheck: check(
+      "human_task_payments_checkout_url_check",
+      sql`${table.checkoutUrl} ~ '^https://'`,
+    ),
+    statusCheck: check(
+      "human_task_payments_status_check",
+      sql`${table.status} in ('checkout_open', 'paid', 'expired')`,
+    ),
+    paidEvidenceCheck: check(
+      "human_task_payments_paid_evidence_check",
+      sql`(
+        ${table.status} = 'paid'
+        and ${table.providerPaymentIntentId} is not null
+        and ${table.providerEventId} is not null
+        and ${table.paidAt} is not null
+      ) or (
+        ${table.status} <> 'paid'
+        and ${table.providerPaymentIntentId} is null
+        and ${table.providerEventId} is null
+        and ${table.paidAt} is null
+      )`,
+    ),
+    retentionCheck: check(
+      "human_task_payments_retention_check",
+      sql`${table.retentionExpiresAt} > ${table.createdAt}`,
+    ),
+  }),
+);
+
 export const humanTaskTransitions = pgTable(
   "human_task_transitions",
   {

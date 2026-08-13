@@ -7,6 +7,7 @@ import {
   copilotConversationTurns,
   humanTaskTransitions,
   humanTaskEvidence,
+  humanTaskPayments,
   humanTasks,
   knowledgeGaps,
   llmCallCosts,
@@ -253,5 +254,14 @@ describe("database schema", () => {
     expect(
       getTableConfig(humanTaskTransitions).checks.map((constraint) => constraint.name),
     ).toContain("human_task_transitions_reason_length_check");
+    expect(humanTaskPayments.providerCheckoutSessionId.name).toBe("provider_checkout_session_id");
+    expect(humanTaskPayments.amountCents.name).toBe("amount_cents");
+    expect(humanTaskPayments.providerEventId.name).toBe("provider_event_id");
+    expect(getTableConfig(humanTaskPayments).checks.map((constraint) => constraint.name)).toContain(
+      "human_task_payments_paid_evidence_check",
+    );
+    expect(getTableConfig(humanTaskPayments).indexes.map((index) => index.config.name)).toContain(
+      "human_task_payments_provider_checkout_session_unique",
+    );
   });
 });

@@ -202,6 +202,14 @@ evidence and a database trigger that rejects non-canonical status edges even for
 writes. The actor references verified `auth.users`; deletion is restricted while evidence remains,
 while task deletion cascades its transition history to honor task retention/account deletion.
 
+P0-17 begins with a separate private `human_task_payments` ledger. Each task can have one Stripe
+Checkout record containing only the provider session/payment/event references, integer USD cents,
+HTTPS Checkout URL, status, timestamps, and an explicit retention deadline. It stores no card data,
+provider key, raw webhook payload, or webhook signature. RLS is enabled with no direct Data API
+grants. A record cannot be marked `paid` unless its provider payment-intent id, verified provider
+event id, and paid timestamp are all present; `human_tasks.status` is therefore never the sole proof
+of collection. The runtime writer and webhook consumer remain a separate follow-up boundary.
+
 P0-05 adds a non-hierarchical `operator` / `editor` / `admin` membership table and append-only Ops
 audit evidence. The migration references verified `auth.users` ids, denies direct client access, and
 requires OA-010 for the first Admin bootstrap. Runtime code contains no default administrator.
