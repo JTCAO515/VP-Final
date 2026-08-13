@@ -7,6 +7,10 @@ Owner: VisePod architecture / identity
 Source of truth: Issue #335, [ADR-0017](../adr/ADR-0017-vise-pod-studio-provisioning.md),
 and `packages/domain/src/visepod/studio.ts`.
 
+Published Studio companion artifacts: [OpenAPI v1](studio-openapi-v1.json) and
+[seven synthetic response fixtures](fixtures/studio-binding-v1.json). These
+artifacts are tested against the Zod schemas; Zod remains authoritative.
+
 ## Purpose and boundary
 
 This is the server-side contract for an internal VisePod Studio administrator

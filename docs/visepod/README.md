@@ -18,6 +18,32 @@ live device turn is enabled.
 5. [ADR-0017](../adr/ADR-0017-vise-pod-studio-provisioning.md) for why Studio
    reuses Ops authorization, issues a short-lived grant, and forbids user
    browsing.
+6. [Studio OpenAPI v1](studio-openapi-v1.json) and the
+   [seven synthetic response fixtures](fixtures/studio-binding-v1.json) for a
+   Studio consumer. Both are versioned companion artifacts: Zod remains the
+   executable source of truth, while `studioPublication.test.ts` rejects
+   fixture/schema drift.
+
+## Studio publication and environments
+
+The Studio contract is private and versioned as `1.0.0`. It exposes four
+operations: issuance, exact user resolution, binding read, and binding mutation
+(`PUT`/`DELETE`). The seven fixtures cover the business response shapes: token
+issued, exact user resolved, unbound read, active read, created, rebound, and
+revoked. They contain only reserved `.invalid` email hints and `fixture-`
+identifiers; they are not usable credentials or production records.
+
+The OpenAPI `servers` entries are deliberately `.invalid` deployment
+placeholders. Studio selects its configured development or production Ops base
+URL at deployment time. Development and production must use separate Supabase
+projects, grant records, tokens, device allowlists, and Keychain entries. A
+development token is rejected in production and the reverse is also true.
+
+`1.x` changes may only add optional fields, response variants, or endpoints
+without altering existing semantics. Any removed/renamed field, changed status
+meaning, authorization change, or incompatible schema requires a new major
+OpenAPI file and contract version. Do not point Studio directly at internal
+database tables or invent an unlisted endpoint.
 
 ## Boundary
 
