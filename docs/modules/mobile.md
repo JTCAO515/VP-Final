@@ -26,6 +26,12 @@ English unavailable state until a current operator-reviewed expression is suppli
 controlled sync; they do not expose a Chinese value, copy button, or speech button. This is a safety
 boundary, not a missing-network fallback, and the shell makes no translation-service claim.
 
+The shell also uses Expo FileSystem to persist one validated `OfflineMobileCache` in the app document
+directory. It contains the versioned local Tools and Show to Local packs, a refresh timestamp, and an
+optional sanitized `OfflineTripPackage`; it never contains an auth token or an invented Trip. Tools
+offers a manual local refresh and clear action. A failed parse deletes the disposable cache and reports
+that result; refresh rebuilds from the app's bundled content and is not represented as a server sync.
+
 ## Start Trigger
 
 Mobile implementation begins only after Phase 1 quality and demand triggers are met: meaningful

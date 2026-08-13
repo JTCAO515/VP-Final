@@ -1,12 +1,17 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  createOfflineMobileCache,
   createOfflineTripPackage,
+  deserializeOfflineMobileCache,
   deserializeOfflineTripPackage,
   isOfflineTripPackageCurrent,
   OfflineTripPackageSchema,
+  serializeOfflineMobileCache,
   serializeOfflineTripPackage,
 } from "./index.js";
+import { SHOW_TO_LOCAL_PHRASE_PACK } from "../show-to-local/index.js";
+import { TOOLS_CONTENT_PACK } from "../tools/index.js";
 
 const savedAt = new Date("2026-08-13T00:00:00.000Z");
 const expiresAt = new Date("2026-08-20T00:00:00.000Z");
@@ -84,5 +89,38 @@ describe("OfflineTripPackage", () => {
       expiresAt,
     });
     expect(isOfflineTripPackageCurrent(tripPackage, expiresAt)).toBe(false);
+  });
+
+  it("stores the static Tools and Show to Local packs alongside an optional sanitized Trip", () => {
+    const tripPackage = createOfflineTripPackage({
+      trip,
+      toolContentVersion: TOOLS_CONTENT_PACK.version.toString(),
+      phrasePackVersion: SHOW_TO_LOCAL_PHRASE_PACK.version,
+      cities: ["Shanghai"],
+      savedAt,
+      expiresAt,
+    });
+    const cache = createOfflineMobileCache({
+      refreshedAt: savedAt,
+      tripPackage,
+      toolsContent: TOOLS_CONTENT_PACK,
+      phrasePack: SHOW_TO_LOCAL_PHRASE_PACK,
+    });
+
+    expect(deserializeOfflineMobileCache(serializeOfflineMobileCache(cache))).toEqual(cache);
+    expect(cache.tripPackage?.trip.days[0]?.blocks[0]).not.toHaveProperty("metadata");
+    expect(cache.toolsContent.items).toHaveLength(8);
+    expect(cache.phrasePack.cards).toHaveLength(6);
+  });
+
+  it("keeps a missing Trip explicit while still allowing local preparation content", () => {
+    const cache = createOfflineMobileCache({
+      refreshedAt: savedAt,
+      tripPackage: null,
+      toolsContent: TOOLS_CONTENT_PACK,
+      phrasePack: SHOW_TO_LOCAL_PHRASE_PACK,
+    });
+
+    expect(cache.tripPackage).toBeNull();
   });
 });

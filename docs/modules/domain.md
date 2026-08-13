@@ -84,7 +84,9 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
 - Offline Trip packages are a read-only, versioned snapshot of the Trip plus tool and phrase-pack
   versions, cities, and explicit expiry. The snapshot omits arbitrary Trip block metadata and
   rejects authorization/credential-shaped strings before serialization, so it can enter platform
-  local storage without becoming a token cache.
+  local storage without becoming a token cache. `OfflineMobileCache` additionally persists the
+  validated Tools and Show to Local packs plus an explicit refresh time; its Trip remains nullable
+  until a separate read-only sync supplies one.
 - China Readiness is a versioned deterministic assessment. Every one of its ten items records a
   rule id, observed self-report, explicit next action, and evidence status. Unanswered questions
   remain `unknown`; it does not calculate a percentage, infer an answer with an LLM, or expose a

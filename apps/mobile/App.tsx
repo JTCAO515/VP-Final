@@ -1,21 +1,84 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import * as Clipboard from "expo-clipboard";
 import * as Speech from "expo-speech";
 import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
 import {
   isAvailableShowToLocalPhrase,
+  createOfflineMobileCache,
+  isOfflineTripPackageCurrent,
   SHOW_TO_LOCAL_PHRASE_PACK,
   TOOLS_CONTENT_PACK,
+  type OfflineMobileCache,
+  type ShowToLocalPhrasePack,
   type ShowToLocalPhraseCard,
+  type ToolsContentPack,
 } from "@visepanda/domain";
 
 import { mobileTheme } from "./src/index";
+import { createNativeOfflineCacheStore } from "./src/offline-cache.native";
+import type { OfflineCacheLoadResult } from "./src/offline-cache";
 import { MOBILE_TAB_LABELS, MOBILE_TABS, type MobileTab } from "./src/shell";
 import { canCopyOrSpeakShowToLocalCard, showToLocalAccessibilityLabel } from "./src/show-to-local";
+
+const offlineCacheStore = createNativeOfflineCacheStore();
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<MobileTab>("today");
   const [showToLocalOpen, setShowToLocalOpen] = useState(false);
+  const [offlineCache, setOfflineCache] = useState<OfflineCacheLoadResult | null>(null);
+  const [offlineCacheNotice, setOfflineCacheNotice] = useState<string | null>(null);
+
+  useEffect(() => {
+    void loadOfflineCache();
+  }, []);
+
+  async function loadOfflineCache() {
+    const result = await offlineCacheStore.load();
+    setOfflineCache(result);
+    if (result.kind === "corrupted_cleared") {
+      setOfflineCacheNotice(
+        "A corrupted local cache was cleared. Refresh to save this build again.",
+      );
+    }
+  }
+
+  async function refreshOfflineCache() {
+    const tripPackage = offlineCache?.kind === "ready" ? offlineCache.cache.tripPackage : null;
+    const cache = createOfflineMobileCache({
+      refreshedAt: new Date(),
+      tripPackage,
+      toolsContent: TOOLS_CONTENT_PACK,
+      phrasePack: SHOW_TO_LOCAL_PHRASE_PACK,
+    });
+
+    try {
+      await offlineCacheStore.save(cache);
+      setOfflineCache({ kind: "ready", cache });
+      setOfflineCacheNotice(
+        tripPackage
+          ? "Local Trip, Tools, and phrase cards refreshed."
+          : "Local Tools and phrase cards refreshed. No Trip is connected yet.",
+      );
+    } catch {
+      setOfflineCacheNotice(
+        "Local refresh is unavailable. Existing cached content was not changed.",
+      );
+    }
+  }
+
+  async function clearOfflineCache() {
+    try {
+      await offlineCacheStore.clear();
+      setOfflineCache({ kind: "empty" });
+      setOfflineCacheNotice("Local cache cleared.");
+    } catch {
+      setOfflineCacheNotice("Local cache could not be cleared. Try again before relying on it.");
+    }
+  }
+
+  const cachedContent = offlineCache?.kind === "ready" ? offlineCache.cache : null;
+  const toolsContent = cachedContent?.toolsContent ?? TOOLS_CONTENT_PACK;
+  const phrasePack = cachedContent?.phrasePack ?? SHOW_TO_LOCAL_PHRASE_PACK;
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -28,12 +91,19 @@ export default function App() {
         </View>
 
         <ScrollView contentContainerStyle={styles.content}>
-          {activeTab === "today" ? <TodayView /> : null}
+          {activeTab === "today" ? <TodayView cache={cachedContent} /> : null}
           {activeTab === "tools" && showToLocalOpen ? (
-            <ShowToLocalView onBack={() => setShowToLocalOpen(false)} />
+            <ShowToLocalView onBack={() => setShowToLocalOpen(false)} phrasePack={phrasePack} />
           ) : null}
           {activeTab === "tools" && !showToLocalOpen ? (
-            <ToolsView onOpenShowToLocal={() => setShowToLocalOpen(true)} />
+            <ToolsView
+              cache={offlineCache}
+              notice={offlineCacheNotice}
+              onClearCache={() => void clearOfflineCache()}
+              onOpenShowToLocal={() => setShowToLocalOpen(true)}
+              onRefreshCache={() => void refreshOfflineCache()}
+              toolsContent={toolsContent}
+            />
           ) : null}
           {activeTab === "help" ? <HelpView /> : null}
           {activeTab === "me" ? <MeView /> : null}
@@ -66,23 +136,61 @@ export default function App() {
   );
 }
 
-function TodayView() {
+function TodayView({ cache }: { cache: OfflineMobileCache | null }) {
+  const cachedTrip = cache?.tripPackage ?? null;
+  const tripCurrent = cachedTrip ? isOfflineTripPackageCurrent(cachedTrip) : false;
+
   return (
     <View style={styles.section}>
       <Text accessibilityRole="header" style={styles.title}>
         Today
       </Text>
-      <Text style={styles.body}>
-        Your current Trip will appear here when a future read-only sync is configured.
-      </Text>
-      <View style={styles.notice}>
-        <Text style={styles.noticeText}>No Trip is connected in this build.</Text>
-      </View>
+      {cachedTrip && tripCurrent ? (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>{cachedTrip.trip.title}</Text>
+          <Text style={styles.cardBody}>
+            Read-only cached Trip · {cachedTrip.trip.days.length} day
+            {cachedTrip.trip.days.length === 1 ? "" : "s"}
+          </Text>
+          <Text style={styles.cardAction}>
+            Last refreshed {formatOfflineTimestamp(cache?.refreshedAt ?? cachedTrip.savedAt)}
+          </Text>
+        </View>
+      ) : (
+        <>
+          <Text style={styles.body}>
+            Your current Trip will appear here when a future read-only sync is configured.
+          </Text>
+          <View style={styles.notice}>
+            <Text style={styles.noticeText}>
+              {cachedTrip
+                ? "The saved Trip has expired. Refresh after a read-only sync is available."
+                : "No Trip is connected in this build."}
+            </Text>
+          </View>
+        </>
+      )}
     </View>
   );
 }
 
-function ToolsView({ onOpenShowToLocal }: { onOpenShowToLocal: () => void }) {
+function ToolsView({
+  cache,
+  notice,
+  onClearCache,
+  onOpenShowToLocal,
+  onRefreshCache,
+  toolsContent,
+}: {
+  cache: OfflineCacheLoadResult | null;
+  notice: string | null;
+  onClearCache: () => void;
+  onOpenShowToLocal: () => void;
+  onRefreshCache: () => void;
+  toolsContent: ToolsContentPack;
+}) {
+  const persistedCache = cache?.kind === "ready" ? cache.cache : null;
+
   return (
     <View style={styles.section}>
       <Text accessibilityRole="header" style={styles.title}>
@@ -91,7 +199,39 @@ function ToolsView({ onOpenShowToLocal }: { onOpenShowToLocal: () => void }) {
       <Text style={styles.body}>
         Local preparation content. It does not make live bookings or calls.
       </Text>
-      {TOOLS_CONTENT_PACK.items.map((item) => {
+      <View style={styles.offlineStatus}>
+        <Text style={styles.offlineStatusTitle}>Offline content</Text>
+        <Text style={styles.offlineStatusText}>{offlineCacheSummary(cache)}</Text>
+        {persistedCache ? (
+          <Text style={styles.offlineStatusText}>
+            Last refreshed {formatOfflineTimestamp(persistedCache.refreshedAt)}
+          </Text>
+        ) : null}
+        {notice ? (
+          <Text accessibilityLiveRegion="polite" style={styles.offlineStatusText}>
+            {notice}
+          </Text>
+        ) : null}
+        <View style={styles.phraseActions}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={onRefreshCache}
+            style={styles.primaryButton}
+          >
+            <Text style={styles.primaryButtonText}>Refresh local cache</Text>
+          </Pressable>
+          {persistedCache ? (
+            <Pressable
+              accessibilityRole="button"
+              onPress={onClearCache}
+              style={styles.secondaryButton}
+            >
+              <Text style={styles.secondaryButtonText}>Clear cache</Text>
+            </Pressable>
+          ) : null}
+        </View>
+      </View>
+      {toolsContent.items.map((item) => {
         const opensShowToLocal = item.id === "translation";
         const content = (
           <>
@@ -123,10 +263,14 @@ function ToolsView({ onOpenShowToLocal }: { onOpenShowToLocal: () => void }) {
   );
 }
 
-function ShowToLocalView({ onBack }: { onBack: () => void }) {
-  const [selectedCard, setSelectedCard] = useState<ShowToLocalPhraseCard>(
-    SHOW_TO_LOCAL_PHRASE_PACK.cards[0]!,
-  );
+function ShowToLocalView({
+  onBack,
+  phrasePack,
+}: {
+  onBack: () => void;
+  phrasePack: ShowToLocalPhrasePack;
+}) {
+  const [selectedCard, setSelectedCard] = useState<ShowToLocalPhraseCard>(phrasePack.cards[0]!);
   const [copyStatus, setCopyStatus] = useState<string | null>(null);
 
   async function copySelectedPhrase() {
@@ -155,7 +299,7 @@ function ShowToLocalView({ onBack }: { onBack: () => void }) {
       </Text>
 
       <View style={styles.phraseList}>
-        {SHOW_TO_LOCAL_PHRASE_PACK.cards.map((card) => {
+        {phrasePack.cards.map((card) => {
           const selected = card.id === selectedCard.id;
           return (
             <Pressable
@@ -259,6 +403,21 @@ function MeView() {
   );
 }
 
+function offlineCacheSummary(cache: OfflineCacheLoadResult | null): string {
+  if (cache === null) return "Checking device storage…";
+  if (cache.kind === "ready") {
+    return cache.cache.tripPackage
+      ? "Trip, Tools, and Show to Local cards are stored on this device."
+      : "Tools and Show to Local cards are stored on this device. No Trip is connected yet.";
+  }
+  if (cache.kind === "corrupted_cleared") return "A corrupted cache was cleared.";
+  return "No local cache saved yet.";
+}
+
+function formatOfflineTimestamp(value: string): string {
+  return new Date(value).toLocaleString();
+}
+
 const { colors, components, radii, spacing, typography } = mobileTheme;
 
 const styles = StyleSheet.create({
@@ -301,6 +460,22 @@ const styles = StyleSheet.create({
     padding: spacing[4],
   },
   warningText: { color: components.status.attention.color, fontSize: typography.sizes.sm },
+  offlineStatus: {
+    backgroundColor: components.status.info.backgroundColor,
+    borderRadius: radii.sm,
+    gap: spacing[2],
+    padding: spacing[4],
+  },
+  offlineStatusTitle: {
+    color: components.status.info.color,
+    fontSize: typography.sizes.md,
+    fontWeight: "700",
+  },
+  offlineStatusText: {
+    color: components.status.info.color,
+    fontSize: typography.sizes.sm,
+    lineHeight: 20,
+  },
   tabBar: {
     backgroundColor: colors.surface,
     borderTopColor: colors.line,
