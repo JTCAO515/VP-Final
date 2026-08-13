@@ -105,8 +105,8 @@ export function AccountPanel() {
           {sessionEmail ? "Your session is active" : "Keep your trip close."}
         </h1>
         <p>
-          Create an account or sign in to keep your travel plans with you. A limited VisePanda preview
-          is available without an account.
+          Create an account or sign in to keep your travel plans with you. A limited VisePanda
+          preview is available without an account.
         </p>
         {loading ? (
           <div className="accountLoading" role="status">
