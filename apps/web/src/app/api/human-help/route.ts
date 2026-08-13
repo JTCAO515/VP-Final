@@ -26,6 +26,7 @@ export async function POST(request: Request) {
     const unavailable = runtimeUnavailableResponse(error);
     if (unavailable) return applyIdentityCookies(unavailable, cookieResponse);
     const code = errorCode(error);
+    const causeCode = nestedErrorCode(error);
     const status =
       code === "TOO_MANY_REQUESTS"
         ? 429
@@ -38,7 +39,9 @@ export async function POST(request: Request) {
               : 502;
     const message =
       status === 429
-        ? "The Shanghai preview queue is full for today. Please try again tomorrow."
+        ? causeCode === "HUMAN_TASK_IDENTITY_CAPACITY_REACHED"
+          ? "Human Help accepts one new request per verified traveler each China day. Please try again tomorrow."
+          : "The Shanghai preview queue is full for today. Please try again tomorrow."
         : status === 409
           ? "This request could not be safely retried. Start a new request."
           : status === 400
@@ -57,5 +60,15 @@ function errorCode(error: unknown): string | null {
   if (error && typeof error === "object" && "code" in error && typeof error.code === "string") {
     return error.code;
   }
+  return null;
+}
+
+function nestedErrorCode(error: unknown): string | null {
+  if (!error || typeof error !== "object") return null;
+  if ("cause" in error) {
+    const nested = nestedErrorCode(error.cause);
+    if (nested) return nested;
+  }
+  if ("code" in error && typeof error.code === "string") return error.code;
   return null;
 }

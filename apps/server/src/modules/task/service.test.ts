@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   HumanTaskCapacityError,
+  HumanTaskIdentityCapacityError,
   HumanTaskIdempotencyConflictError,
   HumanTaskPreviewScopeError,
   HumanTaskTransitionForbiddenError,
@@ -11,6 +12,10 @@ import {
 
 const anonA = { kind: "anonymous" as const, anonId: "anon-a" };
 const anonB = { kind: "anonymous" as const, anonId: "anon-b" };
+const authenticatedTraveler = {
+  kind: "authenticated" as const,
+  userId: "00000000-0000-4000-8000-000000000300",
+};
 const request = {
   city: "Shanghai",
   kind: "call_restaurant" as const,
@@ -79,6 +84,23 @@ describe("human task service", () => {
         request,
       }),
     ).rejects.toBeInstanceOf(HumanTaskCapacityError);
+  });
+
+  it("allows one new authenticated task per China day without charging an idempotent replay twice", async () => {
+    const service = createInMemoryHumanTaskService({
+      now: () => new Date("2026-07-16T04:00:00.000Z"),
+    });
+    const first = {
+      identity: authenticatedTraveler,
+      idempotencyKey: "00000000-0000-4000-8000-000000000301",
+      request,
+    };
+
+    const created = await service.create(first);
+    await expect(service.create(first)).resolves.toEqual(created);
+    await expect(
+      service.create({ ...first, idempotencyKey: "00000000-0000-4000-8000-000000000302" }),
+    ).rejects.toBeInstanceOf(HumanTaskIdentityCapacityError);
   });
 
   it("records actor, reason, timestamp, and retention for enabled transitions", async () => {

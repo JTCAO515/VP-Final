@@ -6,6 +6,7 @@ import { requireService } from "../../runtime/requireService.js";
 import { recordTelemetrySafely } from "../telemetry/producer.js";
 import {
   HumanTaskCapacityError,
+  HumanTaskIdentityCapacityError,
   HumanTaskIdempotencyConflictError,
   HumanTaskPreviewScopeError,
   type HumanTaskIdentity,
@@ -59,7 +60,7 @@ function telemetryIdentity(identity: HumanTaskIdentity): { user_id?: string; ano
 }
 
 function mapHumanTaskError(error: unknown): TRPCError {
-  if (error instanceof HumanTaskCapacityError) {
+  if (error instanceof HumanTaskCapacityError || error instanceof HumanTaskIdentityCapacityError) {
     return new TRPCError({ code: "TOO_MANY_REQUESTS", message: error.message, cause: error });
   }
   if (error instanceof HumanTaskPreviewScopeError) {

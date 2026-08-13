@@ -21,6 +21,7 @@ import {
 import {
   HUMAN_TASK_DAILY_CAPACITY,
   HumanTaskCapacityError,
+  HumanTaskIdentityCapacityError,
   HumanTaskIdempotencyConflictError,
   HumanTaskNotFoundError,
   HumanTaskTransitionForbiddenError,
@@ -56,6 +57,24 @@ export function createDbHumanTaskService(db: Db, options?: { now?: () => Date })
 
         const requestedAt = now();
         const bounds = chinaDayBounds(requestedAt);
+        if (input.identity.kind === "authenticated") {
+          await tx.execute(
+            sql`select pg_advisory_xact_lock(hashtextextended(${`human-task-identity:${input.identity.userId}:${bounds.key}`}, 0))`,
+          );
+          const [identityDaily] = await tx
+            .select({ value: count() })
+            .from(humanTasks)
+            .where(
+              and(
+                eq(humanTasks.userId, input.identity.userId),
+                gte(humanTasks.createdAt, bounds.start),
+                lt(humanTasks.createdAt, bounds.end),
+              ),
+            );
+          if ((identityDaily?.value ?? 0) >= 1) {
+            throw new HumanTaskIdentityCapacityError();
+          }
+        }
         await tx.execute(
           sql`select pg_advisory_xact_lock(hashtextextended(${`human-task-capacity:${bounds.key}`}, 0))`,
         );
