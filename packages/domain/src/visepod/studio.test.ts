@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   compareVisePodBindingIdempotency,
   isVisePodStudioProvisioningGrantUsable,
+  transitionVisePodBinding,
+  VisePodBindingStateTransitionError,
   VISEPOD_STUDIO_IDEMPOTENCY_RETENTION_DAYS,
   VISEPOD_STUDIO_PROVISION_SCOPE,
   VISEPOD_STUDIO_PROVISION_TOKEN_LIFETIME_SECONDS,
@@ -125,6 +127,61 @@ describe("VisePod Studio provisioning contract", () => {
         },
       }),
     ).toMatchObject({ outcome: "created", idempotencyHit: true });
+  });
+
+  it("computes only legal create, rebind, and revoke transitions", () => {
+    const command = {
+      operation: "bind" as const,
+      deviceId: "device-001",
+      userId,
+      idempotencyKey,
+      reason: "Assign the demonstration device to the selected traveler.",
+    };
+    const at = new Date("2026-08-13T00:00:00.000Z");
+    const created = transitionVisePodBinding({ currentBinding: null, command, actorId, at });
+    expect(created).toMatchObject({ outcome: "created", binding: { userId, state: "active" } });
+
+    const rebound = transitionVisePodBinding({
+      currentBinding: created.binding,
+      command: { ...command, userId: actorId },
+      actorId,
+      at,
+    });
+    expect(rebound).toMatchObject({ outcome: "rebound", binding: { userId: actorId } });
+
+    expect(
+      transitionVisePodBinding({
+        currentBinding: rebound.binding,
+        command: {
+          operation: "unbind",
+          deviceId: "device-001",
+          idempotencyKey,
+          reason: "Remove the device from the completed demonstration.",
+        },
+        actorId,
+        at,
+      }),
+    ).toEqual({ outcome: "revoked", binding: null });
+
+    expect(() =>
+      transitionVisePodBinding({ currentBinding: null, command, actorId, at }),
+    ).not.toThrow();
+    expect(() =>
+      transitionVisePodBinding({ currentBinding: created.binding, command, actorId, at }),
+    ).toThrow(VisePodBindingStateTransitionError);
+    expect(() =>
+      transitionVisePodBinding({
+        currentBinding: null,
+        command: {
+          operation: "unbind",
+          deviceId: "device-001",
+          idempotencyKey,
+          reason: "Remove the device from the completed demonstration.",
+        },
+        actorId,
+        at,
+      }),
+    ).toThrow(VisePodBindingStateTransitionError);
   });
 
   it("validates strict binding and revoke request bodies without duplicating the path device id", () => {

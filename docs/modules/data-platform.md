@@ -15,6 +15,14 @@ closed selection key. It stores no traveler identity, anonymous session, convers
 message content. RLS is enabled and all `anon`/`authenticated` privileges are revoked; a later
 server-only resolver must still apply the domain freshness and exact-severity gate before any display.
 
+`visepod_device_bindings` and `visepod_binding_idempotency` are private ADR-0017 Studio relations.
+Bindings preserve historical revoked assignments while a partial unique index permits one active row
+per device. Their user foreign key cascades on account deletion; the dependent 30-day replay row then
+cascades through its binding foreign key. The replay carrier stores only a lowercase SHA-256 command
+digest and bounded result projection, never raw operator reason text, email, provisioning token,
+device secret, Wi-Fi credential, session, chat, or audio. Both tables have RLS enabled with every
+Data API role revoked; later server composition must remain the only consumer.
+
 | Area              | Relations                                                                                 |
 | ----------------- | ----------------------------------------------------------------------------------------- |
 | Identity and Trip | `users`, `trips`, `trip_events`, `copilot_completion_jobs`                                |
@@ -22,6 +30,7 @@ server-only resolver must still apply the domain freshness and exact-severity ga
 | Copilot dialogue  | `copilot_conversation_turns`                                                              |
 | Knowledge         | `pois`, `poi_facts`, `poi_fact_editorial_audit`, `knowledge_gaps`, `poi_commercial_links` |
 | Safety phrases    | `safe_phrases` (private operator-verified fixed-expression editorial records)             |
+| VisePod Studio    | `visepod_device_bindings`, `visepod_binding_idempotency` (private assignment/replay history) |
 | Commerce          | `partners`, `outbound_clicks`                                                             |
 | Telemetry         | `events`, `trust_funnel_daily`, private Phase 0 funnel/outbound/Human Help live views     |
 | Human operations  | `human_tasks`, `human_task_transitions`, `human_task_evidence`                            |

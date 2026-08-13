@@ -89,8 +89,11 @@ fulfilling -> done`, with explicit cancellation edges and no terminal recovery. 
 - VisePod Studio binding is a separate server-side contract. Its opaque, eight-hour,
   environment-bound grant is limited to `visepod.provision`; exact user lookup returns only a
   masked email hint; a UUID idempotency key is retained for 30 days; and a same-payload replay
-  cannot become a second mutation or audit event. The schema does not implement a Studio route,
-  token store, binding table, or device registry. See
+  cannot become a second mutation or audit event. Its private server schema preserves revoked
+  assignment history, permits one active device assignment, cascades account deletion through
+  bindings and idempotency records, and retains only a canonical command digest instead of the raw
+  free-text reason. It does not implement a Studio route, token store, or device
+  registry. See
   [Studio Binding Contract v1](../visepod/studio-binding-contract-v1.md).
 
 ## Change Workflow

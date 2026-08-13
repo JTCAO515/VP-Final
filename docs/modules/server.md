@@ -134,6 +134,13 @@ Next.js runtimes rather than deployed as an independent service.
   rather than a model-authored substitute. The public chat route does not accept arbitrary phrase
   selections, so until a separately governed controlled surface supplies one, high-risk chat input
   remains on that unavailable path.
+- ADR-0017's accepted VisePod Studio schema maps private device-assignment history and a bounded
+  idempotency replay carrier only. A device has at most one active assignment through a database
+  partial unique index; rebind creates a new active row after revoking the old row, while account
+  deletion cascades its bindings and their dependent replay records. The replay carrier stores only a
+  canonical-command SHA-256 digest and the bounded result projection, never free-text reasons,
+  provisioning tokens, device secrets, Wi-Fi credentials, or user credentials. No Studio router,
+  provisioning-grant store, exact-user resolver, or device runtime is composed yet.
 - After Zod envelope validation, the Copilot pipeline scans all user-presentable envelope fields for
   concrete address, route/line, time, and price values. Each such value must be present in a cited,
   currently retrieved fact value; an unsupported value throws before any Trip patch can be applied.

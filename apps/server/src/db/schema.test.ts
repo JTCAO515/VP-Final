@@ -24,6 +24,8 @@ import {
   tripEvents,
   trips,
   users,
+  visePodBindingIdempotency,
+  visePodDeviceBindings,
 } from "./schema.js";
 
 describe("database schema", () => {
@@ -151,6 +153,28 @@ describe("database schema", () => {
     );
     expect(Object.keys(safePhrases)).not.toContain("userId");
     expect(Object.keys(safePhrases)).not.toContain("anonId");
+  });
+
+  it("maps private VisePod binding history and bounded idempotency records", () => {
+    expect(visePodDeviceBindings.deviceId.name).toBe("device_id");
+    expect(visePodDeviceBindings.userId.name).toBe("user_id");
+    expect(visePodDeviceBindings.boundBy.name).toBe("bound_by");
+    expect(visePodDeviceBindings.revokedAt.name).toBe("revoked_at");
+    expect(
+      getTableConfig(visePodDeviceBindings).indexes.map((index) => index.config.name),
+    ).toContain("visepod_device_bindings_device_active_unique");
+    expect(
+      getTableConfig(visePodDeviceBindings).checks.map((constraint) => constraint.name),
+    ).toContain("visepod_device_bindings_revoked_state_check");
+    expect(visePodBindingIdempotency.idempotencyKey.name).toBe("idempotency_key");
+    expect(visePodBindingIdempotency.commandDigest.name).toBe("command_digest");
+    expect(visePodBindingIdempotency.retentionExpiresAt.name).toBe("retention_expires_at");
+    expect(
+      getTableConfig(visePodBindingIdempotency).indexes.map((index) => index.config.name),
+    ).toContain("visepod_binding_idempotency_key_unique");
+    expect(Object.keys(visePodDeviceBindings)).not.toContain("token");
+    expect(Object.keys(visePodDeviceBindings)).not.toContain("deviceSecret");
+    expect(Object.keys(visePodBindingIdempotency)).not.toContain("commandJsonb");
   });
 
   it("maps the outbound commerce tables", () => {
