@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calculateLlmCostUsd } from "./costAccounting.js";
+import { calculateLlmCostUsd, calculateMeteredCostUsd } from "./costAccounting.js";
 
 describe("calculateLlmCostUsd", () => {
   it.each([
@@ -92,5 +92,16 @@ describe("calculateLlmCostUsd", () => {
         outputPerMillionUsd: "0",
       }),
     ).toThrow("at most eight decimal places");
+  });
+});
+
+describe("calculateMeteredCostUsd", () => {
+  it.each([
+    ["token", "1200", "0.50000000", "0.00060000"],
+    ["audio second", "12.5", "4.00000000", "0.00005000"],
+    ["character", "240", "0.20000000", "0.00004800"],
+    ["missing pricing", "240", "0", "0.00000000"],
+  ])("calculates %s rows with fixed-point HALF_UP arithmetic", (_, quantity, price, expected) => {
+    expect(calculateMeteredCostUsd({ quantity, unitPricePerMillionUsd: price })).toBe(expected);
   });
 });

@@ -84,8 +84,11 @@ describe("database schema", () => {
       "llm_call_costs_cached_input_price_per_million_usd_check",
     );
     expect(getTableConfig(llmCallCosts).indexes.map((index) => index.config.name)).toContain(
-      "llm_call_costs_agent_attempt_unique",
+      "llm_call_costs_agent_attempt_call_kind_unique",
     );
+    expect(llmCallCosts.callKind.name).toBe("call_kind");
+    expect(llmCallCosts.meteringUnit.name).toBe("metering_unit");
+    expect(llmCallCosts.deviceCorrelationId.name).toBe("device_correlation_id");
     expect(getTableConfig(llmCallCosts).foreignKeys).toHaveLength(1);
   });
 

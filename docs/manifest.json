@@ -868,6 +868,16 @@
       "summary": "Freezes scoped online Ops provisioning and server-side VisePod user/device bindings while rejecting user browsing and desktop-held secrets.",
       "sourcePrefixes": ["packages/domain/src/visepod/"]
     },
+    {
+      "path": "docs/adr/ADR-0018-voice-call-cost-accounting.md",
+      "title": "ADR-0018: Multi-Meter Voice Call Cost Accounting",
+      "category": "decisions",
+      "type": "decision",
+      "status": "accepted",
+      "owner": "AI platform / data platform",
+      "summary": "Extends the retained cost ledger for token, audio-second, and character calls without activating voice providers.",
+      "sourcePrefixes": ["packages/ai/", "packages/domain/src/observability/", "apps/server/src/db/", "infra/supabase/"]
+    },
 
     {
       "path": "docs/runbooks/README.md",

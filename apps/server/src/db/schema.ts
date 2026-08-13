@@ -319,6 +319,13 @@ export const llmCallCosts = pgTable(
     userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }),
     anonId: text("anon_id"),
     attemptIndex: integer("attempt_index").notNull(),
+    callKind: text("call_kind").notNull().default("llm"),
+    meteringUnit: text("metering_unit").notNull().default("token"),
+    quantity: numeric("quantity", { precision: 20, scale: 8 }).notNull().default("0"),
+    unitPricePerMillionUsd: numeric("unit_price_per_million_usd", { precision: 14, scale: 8 })
+      .notNull()
+      .default("0"),
+    deviceCorrelationId: uuid("device_correlation_id"),
     provider: text("provider").notNull(),
     model: text("model").notNull(),
     effort: text("effort").notNull(),
@@ -348,9 +355,10 @@ export const llmCallCosts = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
-    agentAttemptUnique: uniqueIndex("llm_call_costs_agent_attempt_unique").on(
+    agentAttemptCallKindUnique: uniqueIndex("llm_call_costs_agent_attempt_call_kind_unique").on(
       table.agentRunId,
       table.attemptIndex,
+      table.callKind,
     ),
     userCreatedIdx: index("llm_call_costs_user_created_idx").on(table.userId, table.createdAt),
     anonCreatedIdx: index("llm_call_costs_anon_created_idx").on(table.anonId, table.createdAt),
@@ -359,11 +367,27 @@ export const llmCallCosts = pgTable(
       table.model,
       table.createdAt,
     ),
+    deviceCreatedIdx: index("llm_call_costs_device_created_idx").on(
+      table.deviceCorrelationId,
+      table.createdAt,
+    ),
     identityCheck: check(
       "llm_call_costs_exactly_one_identity_check",
       sql`num_nonnulls(${table.userId}, ${table.anonId}) = 1`,
     ),
     attemptCheck: check("llm_call_costs_attempt_index_check", sql`${table.attemptIndex} > 0`),
+    callKindCheck: check(
+      "llm_call_costs_call_kind_check",
+      sql`${table.callKind} in ('llm', 'stt', 'tts')`,
+    ),
+    meteringCheck: check(
+      "llm_call_costs_metering_unit_check",
+      sql`${table.meteringUnit} in ('token', 'audio_second', 'character')`,
+    ),
+    quantityCheck: check(
+      "llm_call_costs_quantity_check",
+      sql`${table.quantity} >= 0 and ${table.unitPricePerMillionUsd} >= 0`,
+    ),
     effortCheck: check(
       "llm_call_costs_effort_check",
       sql`${table.effort} in ('low', 'medium', 'high')`,
