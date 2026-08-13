@@ -26,6 +26,7 @@ import {
   users,
   visePodBindingIdempotency,
   visePodDeviceBindings,
+  visePodProvisioningGrants,
 } from "./schema.js";
 
 describe("database schema", () => {
@@ -175,6 +176,16 @@ describe("database schema", () => {
     expect(Object.keys(visePodDeviceBindings)).not.toContain("token");
     expect(Object.keys(visePodDeviceBindings)).not.toContain("deviceSecret");
     expect(Object.keys(visePodBindingIdempotency)).not.toContain("commandJsonb");
+  });
+
+  it("maps private VisePod provisioning grants without raw token storage", () => {
+    expect(visePodProvisioningGrants.tokenDigest.name).toBe("token_digest");
+    expect(visePodProvisioningGrants.opsUserId.name).toBe("ops_user_id");
+    expect(visePodProvisioningGrants.scope.default).toBe("visepod.provision");
+    expect(
+      getTableConfig(visePodProvisioningGrants).indexes.map((index) => index.config.name),
+    ).toContain("visepod_provisioning_grants_token_digest_unique");
+    expect(Object.keys(visePodProvisioningGrants)).not.toContain("token");
   });
 
   it("maps the outbound commerce tables", () => {

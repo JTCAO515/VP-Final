@@ -958,6 +958,50 @@ export const visePodBindingIdempotency = pgTable(
   }),
 );
 
+export const visePodProvisioningGrants = pgTable(
+  "visepod_provisioning_grants",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tokenDigest: text("token_digest").notNull(),
+    opsUserId: uuid("ops_user_id")
+      .notNull()
+      .references(() => authUsers.id, { onDelete: "restrict" }),
+    scope: text("scope").notNull().default("visepod.provision"),
+    environment: text("environment").notNull(),
+    issuedAt: timestamp("issued_at", { withTimezone: true }).notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    revokedAt: timestamp("revoked_at", { withTimezone: true }),
+    revokedBy: uuid("revoked_by").references(() => authUsers.id, { onDelete: "restrict" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    tokenDigestUnique: uniqueIndex("visepod_provisioning_grants_token_digest_unique").on(
+      table.tokenDigest,
+    ),
+    activeGrantIdx: index("visepod_provisioning_grants_active_grant_idx").on(
+      table.tokenDigest,
+      table.environment,
+      table.expiresAt,
+    ),
+    tokenDigestCheck: check(
+      "visepod_provisioning_grants_token_digest_check",
+      sql`${table.tokenDigest} ~ '^[a-f0-9]{64}$'`,
+    ),
+    scopeCheck: check(
+      "visepod_provisioning_grants_scope_check",
+      sql`${table.scope} = 'visepod.provision'`,
+    ),
+    environmentCheck: check(
+      "visepod_provisioning_grants_environment_check",
+      sql`${table.environment} in ('development', 'production')`,
+    ),
+    lifetimeCheck: check(
+      "visepod_provisioning_grants_lifetime_check",
+      sql`${table.expiresAt} = ${table.issuedAt} + interval '8 hours'`,
+    ),
+  }),
+);
+
 export const usersRelations = relations(users, ({ many }) => ({
   trips: many(trips),
   agentRuns: many(agentRuns),

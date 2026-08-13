@@ -23,6 +23,7 @@ export type { DbAgentTraceService } from "./db/agentTraceService.js";
 export { createDbTelemetryService } from "./db/telemetryService.js";
 export { createDbOpsAuthorizationService } from "./db/opsAuthorizationService.js";
 export { createDbOpsCostSummaryService } from "./db/opsCostSummaryService.js";
+export { createDbVisePodProvisioningService } from "./db/visePodProvisioningService.js";
 export { createDbVersionedTripService } from "./db/versionedTripService.js";
 export { createDbCompletionJobService } from "./db/completionJobService.js";
 export {
@@ -134,6 +135,13 @@ export {
   permissionsForRole,
   requireOpsAccess,
 } from "./modules/opsAuthorization/service.js";
+export {
+  createInMemoryVisePodProvisioningService,
+  createVisePodProvisioningToken,
+  digestVisePodProvisioningToken,
+  resolveVisePodStudioEnvironment,
+  VisePodProvisioningAccessDeniedError,
+} from "./modules/visepod/provisioning.js";
 export {
   costWindow,
   privateIdentityReference,
@@ -249,6 +257,7 @@ export type {
   OpsRole,
   RecordOpsAuditInput,
 } from "./modules/opsAuthorization/service.js";
+export type { VisePodProvisioningService } from "./modules/visepod/provisioning.js";
 export type {
   CopilotCostDailySummary,
   CopilotCostIdentitySummary,

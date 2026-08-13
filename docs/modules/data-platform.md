@@ -23,18 +23,23 @@ digest and bounded result projection, never raw operator reason text, email, pro
 device secret, Wi-Fi credential, session, chat, or audio. Both tables have RLS enabled with every
 Data API role revoked; later server composition must remain the only consumer.
 
-| Area              | Relations                                                                                 |
-| ----------------- | ----------------------------------------------------------------------------------------- |
-| Identity and Trip | `users`, `trips`, `trip_events`, `copilot_completion_jobs`                                |
-| AI trace          | `agent_runs`, `tool_calls`, `llm_call_costs`                                              |
-| Copilot dialogue  | `copilot_conversation_turns`                                                              |
-| Knowledge         | `pois`, `poi_facts`, `poi_fact_editorial_audit`, `knowledge_gaps`, `poi_commercial_links` |
-| Safety phrases    | `safe_phrases` (private operator-verified fixed-expression editorial records)             |
+`visepod_provisioning_grants` is the private eight-hour, single-scope Studio authorization record.
+It stores a SHA-256 token digest, issuer reference, bounded environment, expiry, and optional server
+revocation reference; raw bearer material is never persisted. RLS and Data API revocation are part of
+the same migration, and validation also checks the issuer's current Ops permission at runtime.
+
+| Area              | Relations                                                                                    |
+| ----------------- | -------------------------------------------------------------------------------------------- |
+| Identity and Trip | `users`, `trips`, `trip_events`, `copilot_completion_jobs`                                   |
+| AI trace          | `agent_runs`, `tool_calls`, `llm_call_costs`                                                 |
+| Copilot dialogue  | `copilot_conversation_turns`                                                                 |
+| Knowledge         | `pois`, `poi_facts`, `poi_fact_editorial_audit`, `knowledge_gaps`, `poi_commercial_links`    |
+| Safety phrases    | `safe_phrases` (private operator-verified fixed-expression editorial records)                |
 | VisePod Studio    | `visepod_device_bindings`, `visepod_binding_idempotency` (private assignment/replay history) |
-| Commerce          | `partners`, `outbound_clicks`                                                             |
-| Telemetry         | `events`, `trust_funnel_daily`, private Phase 0 funnel/outbound/Human Help live views     |
-| Human operations  | `human_tasks`, `human_task_transitions`, `human_task_evidence`                            |
-| Ops authorization | `ops_memberships`, `ops_audit_events`                                                     |
+| Commerce          | `partners`, `outbound_clicks`                                                                |
+| Telemetry         | `events`, `trust_funnel_daily`, private Phase 0 funnel/outbound/Human Help live views        |
+| Human operations  | `human_tasks`, `human_task_transitions`, `human_task_evidence`                               |
+| Ops authorization | `ops_memberships`, `ops_audit_events`                                                        |
 
 ## Migration Rules
 
