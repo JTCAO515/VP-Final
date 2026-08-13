@@ -17,8 +17,19 @@ spacing, and radii. The shell imports shared domain content. A signed-in travele
 one, and save the existing sanitized `OfflineTripPackage` locally. The app never connects to Postgres,
 uses a service-role key, or exposes a Trip write path. The access and refresh tokens are held only by
 `expo-secure-store`; the offline cache holds no credential. Network, session, and response failures
-leave an existing cache unchanged and show an honest state. Help remains unavailable and no Human
-Help submission path exists.
+leave an existing cache unchanged and show an honest state.
+
+The Help tab submits a Shanghai controlled-preview Human Help request through
+`POST /api/mobile/human-help`. It uses only an HTTPS Supabase Bearer access token; the Web boundary
+verifies that token online and derives an authenticated owner before calling the existing Human Task
+service. Native clients do not present a browser anonymous cookie and cannot select an owner. A saved
+read-only Trip can prefill an editable description from its first block, but the app never sends a Trip
+snapshot or block metadata. The request body is sent only after an explicit submit. It is not queued
+offline: a network or runtime failure explicitly means no request was submitted. The response exposes
+only the minimal task receipt, while the server retains the contact and description under the existing
+Human Task privacy/retention boundary. One form session retains its UUID idempotency key across an
+uncertain retry and starts a new key only after a confirmed receipt. The app emits
+`human_help_submitted` only after that receipt.
 
 The Translation item opens a local Show to Local phrase-card view. Restaurant, taxi, and hotel cards
 have fixed ordinary Chinese wording and support on-device copy plus local `expo-speech` playback.
@@ -73,6 +84,9 @@ for public capability claims until the relevant live dependencies and lifecycle 
 - Consume `TOOLS_CONTENT_PACK` as local preparation content only. It does not establish live booking,
   exchange, emergency, partner, or translation-service availability; a future UI must hide a target
   it cannot resolve honestly.
+- Human Help uses `POST /api/mobile/human-help` only for a verified account. It keeps its submission
+  outside the offline queue, sends no raw Trip data, and must retain the existing controlled-preview,
+  capacity, non-emergency, and no-SLA policy text.
 
 ## Current Verification
 
