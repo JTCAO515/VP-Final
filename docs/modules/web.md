@@ -107,6 +107,13 @@ storage URL or imply that a file has been durably saved. Chinese address text ma
 projection carries a current reviewed fact receipt. Until a Trip-to-fact binding exists, the consumer
 states that no reviewed Chinese address is included rather than inferring one from the Trip.
 
+Public POI/intent SEO pages at `/[city]/[poi]/[intent]` load POIs from the current knowledge service on
+each request and resolve the shared domain SEO matrix before rendering. An unsupported, expired, or
+incomplete candidate is a 404, not a conservative-looking fallback. The page publishes only the fact
+receipts named by its candidate, the public-safe source label, verification date, canonical path, and a
+minimal `Place` JSON-LD record without a legacy address. Sitemap and noindex aggregation remain the
+separate #86 consumer of this same authority.
+
 Before the endpoint delegates to the telemetry service, it requires both the verified signed-session
 or account identity and Vercel's trusted client address to pass independent Upstash sliding windows.
 The current default allows a generous real browsing burst: `60/minute` and `300/hour` per identity,
