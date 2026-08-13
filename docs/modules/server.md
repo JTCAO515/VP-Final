@@ -133,8 +133,13 @@ Next.js runtimes rather than deployed as an independent service.
   more constant-time `v1` signatures before it parses JSON. It accepts only a paid USD Checkout
   completion whose signed client reference exactly matches its signed task metadata, then returns a
   minimal provider-event/session/intent/task/amount projection. It neither stores nor returns the
-  raw payload, signature, secret, or non-payment event fields. No public/Ops HTTP route or webhook
-  consumer exists yet.
+  raw payload, signature, secret, or non-payment event fields. The provider-only webhook consumer
+  reads the exact raw body once, verifies it before JSON parsing, then atomically requires the
+  private ledger's session, task, amount, currency, and open status to agree before it records the
+  event/payment-intent evidence and advances the matching task to `paid`. An exact duplicate event
+  replays safely; a mismatched or unavailable event never changes either row. It records neither raw
+  payload/signature nor provider ids in the audit metadata, and it has no traveler-facing Checkout,
+  payment-success, or fulfillment surface.
 - P0-19d protects the public browser capture route before `TelemetryService.track` with two atomic
   Upstash sliding windows: a HMAC-derived verified-identity window (`60/minute`, `300/hour` by
   default) and a separate HMAC-derived Vercel trusted-network window (`180/minute`, `900/hour`).

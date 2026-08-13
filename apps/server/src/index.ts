@@ -23,6 +23,12 @@ export {
   HumanTaskPaymentStateError,
 } from "./db/humanTaskPaymentService.js";
 export {
+  createDbHumanTaskPaymentWebhookService,
+  HumanTaskPaymentWebhookMismatchError,
+  HumanTaskPaymentWebhookStateError,
+  resolveVerifiedPaymentDisposition,
+} from "./db/humanTaskPaymentWebhookService.js";
+export {
   createStripeCheckoutGateway,
   resolveStripeCheckoutConfig,
   StripeCheckoutProviderError,
@@ -314,6 +320,10 @@ export type {
   HumanTaskPaymentCheckoutResult,
   HumanTaskPaymentCheckoutService,
 } from "./db/humanTaskPaymentService.js";
+export type {
+  HumanTaskPaymentWebhookResult,
+  HumanTaskPaymentWebhookService,
+} from "./db/humanTaskPaymentWebhookService.js";
 export type {
   CreateStripeCheckoutSessionRequest,
   StripeCheckoutConfig,
