@@ -295,6 +295,16 @@ lifecycle transitions. P0-16 extends the injected service interface with private
 Ops consumers, but the public Web route neither calls those methods nor exposes evidence in its
 receipt or failure response.
 
+`GET /api/human-help/tasks` is a separate owner-scoped read projection for the Human Help page. It
+derives the signed anonymous or verified account owner on the server, calls only `task.listMine`, and
+returns a private, no-store response. Each item contains only task id, state, timestamps and, **only
+while the durable state is `payment_pending`**, the server-recorded amount and provider checkout URL.
+It never returns contact data, task descriptions, Ops notes, payment-provider identifiers, or any
+internal transition detail. The browser renders a payment entry only when both of those pending values
+exist; an absent provider configuration, quote, link, or confirmation remains absent rather than a
+placeholder payment action. This is a controlled pre-production surface, not evidence that public
+payment collection is enabled or that a payment has succeeded.
+
 Copilot writes best-effort private observability after a validated result or failure. Before the
 composition root receives the record, the user message and typed envelope are recursively redacted
 for email, phone, travel-document, credential, cookie, and signature material. The durable writer
