@@ -1,7 +1,15 @@
 import { useEffect, useState } from "react";
 import * as Clipboard from "expo-clipboard";
 import * as Speech from "expo-speech";
-import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  Pressable,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import {
   isAvailableShowToLocalPhrase,
   createOfflineMobileCache,
@@ -9,6 +17,7 @@ import {
   SHOW_TO_LOCAL_PHRASE_PACK,
   TOOLS_CONTENT_PACK,
   type OfflineMobileCache,
+  type ReadOnlyTripSnapshot,
   type ShowToLocalPhrasePack,
   type ShowToLocalPhraseCard,
   type ToolsContentPack,
@@ -17,19 +26,56 @@ import {
 import { mobileTheme } from "./src/index";
 import { createNativeOfflineCacheStore } from "./src/offline-cache.native";
 import type { OfflineCacheLoadResult } from "./src/offline-cache";
+import { readMobileAuthConfig } from "./src/mobile-auth";
+import { createMobileAuthClient } from "./src/mobile-auth-client.native";
+import {
+  createReadOnlyTripOfflineCache,
+  fetchMobileTrips,
+  MobileTripSyncError,
+  readMobileWebBaseUrl,
+} from "./src/mobile-trip-sync";
 import { MOBILE_TAB_LABELS, MOBILE_TABS, type MobileTab } from "./src/shell";
 import { canCopyOrSpeakShowToLocalCard, showToLocalAccessibilityLabel } from "./src/show-to-local";
 
 const offlineCacheStore = createNativeOfflineCacheStore();
+const mobileAuthConfig = readMobileAuthConfig(process.env);
+const mobileAuthClient = mobileAuthConfig ? createMobileAuthClient(mobileAuthConfig) : null;
+const mobileWebBaseUrl = readMobileWebBaseUrl(process.env);
+
+type MobileSession = { accessToken: string; email: string | null };
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<MobileTab>("today");
   const [showToLocalOpen, setShowToLocalOpen] = useState(false);
   const [offlineCache, setOfflineCache] = useState<OfflineCacheLoadResult | null>(null);
   const [offlineCacheNotice, setOfflineCacheNotice] = useState<string | null>(null);
+  const [mobileSession, setMobileSession] = useState<MobileSession | null>(null);
+  const [mobileTrips, setMobileTrips] = useState<ReadonlyArray<ReadOnlyTripSnapshot>>([]);
+  const [tripSyncNotice, setTripSyncNotice] = useState<string | null>(null);
+  const [tripSyncing, setTripSyncing] = useState(false);
 
   useEffect(() => {
     void loadOfflineCache();
+  }, []);
+
+  useEffect(() => {
+    if (!mobileAuthClient) return;
+    let active = true;
+
+    void mobileAuthClient.auth.getSession().then(({ data }) => {
+      if (!active) return;
+      setMobileSession(sessionForMobile(data.session));
+      if (!data.session) setMobileTrips([]);
+    });
+    const { data } = mobileAuthClient.auth.onAuthStateChange((_event, session) => {
+      if (!active) return;
+      setMobileSession(sessionForMobile(session));
+      if (!session) setMobileTrips([]);
+    });
+    return () => {
+      active = false;
+      data.subscription.unsubscribe();
+    };
   }, []);
 
   async function loadOfflineCache() {
@@ -76,6 +122,76 @@ export default function App() {
     }
   }
 
+  async function syncTrips() {
+    if (!mobileSession) {
+      setTripSyncNotice("Sign in in Me to load your Web Trips.");
+      setActiveTab("me");
+      return;
+    }
+    if (!mobileWebBaseUrl) {
+      setTripSyncNotice(
+        "Trip sync is unavailable in this build. Your offline Trip was not changed.",
+      );
+      return;
+    }
+
+    setTripSyncing(true);
+    setTripSyncNotice(null);
+    try {
+      const trips = await fetchMobileTrips({
+        accessToken: mobileSession.accessToken,
+        baseUrl: mobileWebBaseUrl,
+      });
+      setMobileTrips(trips);
+      setTripSyncNotice(
+        trips.length === 0
+          ? "No Web Trips are available for this account yet."
+          : "Choose a Trip below to save a read-only offline copy.",
+      );
+    } catch (error) {
+      if (error instanceof MobileTripSyncError && error.code === "MOBILE_SESSION_INVALID") {
+        await mobileAuthClient?.auth.signOut();
+      }
+      setTripSyncNotice(
+        error instanceof MobileTripSyncError
+          ? error.message
+          : "Trip sync is unavailable. Your existing offline Trip was not changed.",
+      );
+    } finally {
+      setTripSyncing(false);
+    }
+  }
+
+  async function saveReadOnlyTrip(snapshot: (typeof mobileTrips)[number]) {
+    const savedAt = new Date();
+    const cache = createReadOnlyTripOfflineCache(snapshot, savedAt);
+    try {
+      await offlineCacheStore.save(cache);
+      setOfflineCache({ kind: "ready", cache });
+      setOfflineCacheNotice("Read-only Trip saved for offline access for seven days.");
+      setTripSyncNotice(`Saved ${snapshot.trip.title} for offline access.`);
+    } catch {
+      setTripSyncNotice("The Trip could not be saved. Your existing offline Trip was not changed.");
+    }
+  }
+
+  async function signIn(email: string, password: string): Promise<string | null> {
+    if (!mobileAuthClient) return "Mobile sign-in is unavailable in this build.";
+    const { error } = await mobileAuthClient.auth.signInWithPassword({ email, password });
+    return error ? "Sign-in failed. Check your email and password, then try again." : null;
+  }
+
+  async function signOut(): Promise<void> {
+    if (!mobileAuthClient) return;
+    const { error } = await mobileAuthClient.auth.signOut();
+    if (!error) setMobileTrips([]);
+    setTripSyncNotice(
+      error
+        ? "Sign-out could not be completed. Try again."
+        : "Signed out. Offline content remains on this device.",
+    );
+  }
+
   const cachedContent = offlineCache?.kind === "ready" ? offlineCache.cache : null;
   const toolsContent = cachedContent?.toolsContent ?? TOOLS_CONTENT_PACK;
   const phrasePack = cachedContent?.phrasePack ?? SHOW_TO_LOCAL_PHRASE_PACK;
@@ -91,7 +207,17 @@ export default function App() {
         </View>
 
         <ScrollView contentContainerStyle={styles.content}>
-          {activeTab === "today" ? <TodayView cache={cachedContent} /> : null}
+          {activeTab === "today" ? (
+            <TodayView
+              cache={cachedContent}
+              canSync={Boolean(mobileSession && mobileWebBaseUrl)}
+              notice={tripSyncNotice}
+              onSaveTrip={(snapshot) => void saveReadOnlyTrip(snapshot)}
+              onSyncTrips={() => void syncTrips()}
+              syncing={tripSyncing}
+              trips={mobileTrips}
+            />
+          ) : null}
           {activeTab === "tools" && showToLocalOpen ? (
             <ShowToLocalView onBack={() => setShowToLocalOpen(false)} phrasePack={phrasePack} />
           ) : null}
@@ -106,7 +232,14 @@ export default function App() {
             />
           ) : null}
           {activeTab === "help" ? <HelpView /> : null}
-          {activeTab === "me" ? <MeView /> : null}
+          {activeTab === "me" ? (
+            <MeView
+              accountEmail={mobileSession?.email ?? null}
+              authConfigured={Boolean(mobileAuthClient)}
+              onSignIn={signIn}
+              onSignOut={() => void signOut()}
+            />
+          ) : null}
         </ScrollView>
 
         <View accessibilityRole="tablist" style={styles.tabBar}>
@@ -136,7 +269,23 @@ export default function App() {
   );
 }
 
-function TodayView({ cache }: { cache: OfflineMobileCache | null }) {
+function TodayView({
+  cache,
+  canSync,
+  notice,
+  onSaveTrip,
+  onSyncTrips,
+  syncing,
+  trips,
+}: {
+  cache: OfflineMobileCache | null;
+  canSync: boolean;
+  notice: string | null;
+  onSaveTrip: (snapshot: ReadOnlyTripSnapshot) => void;
+  onSyncTrips: () => void;
+  syncing: boolean;
+  trips: ReadonlyArray<ReadOnlyTripSnapshot>;
+}) {
   const cachedTrip = cache?.tripPackage ?? null;
   const tripCurrent = cachedTrip ? isOfflineTripPackageCurrent(cachedTrip) : false;
 
@@ -145,6 +294,46 @@ function TodayView({ cache }: { cache: OfflineMobileCache | null }) {
       <Text accessibilityRole="header" style={styles.title}>
         Today
       </Text>
+      <View style={styles.offlineStatus}>
+        <Text style={styles.offlineStatusTitle}>Read-only Trip sync</Text>
+        <Text style={styles.offlineStatusText}>
+          {canSync
+            ? "Load Trips from your signed-in Web account, then choose one to save locally."
+            : "Sign in in Me to load a Web Trip. This app never edits a Trip."}
+        </Text>
+        <Pressable
+          accessibilityRole="button"
+          disabled={syncing}
+          onPress={onSyncTrips}
+          style={[styles.primaryButton, syncing ? styles.buttonDisabled : null]}
+        >
+          <Text style={styles.primaryButtonText}>
+            {syncing ? "Loading Trips…" : "Load Web Trips"}
+          </Text>
+        </Pressable>
+        {notice ? (
+          <Text accessibilityLiveRegion="polite" style={styles.offlineStatusText}>
+            {notice}
+          </Text>
+        ) : null}
+      </View>
+      {trips.map((snapshot) => (
+        <View key={snapshot.trip.id} style={styles.card}>
+          <Text style={styles.cardTitle}>{snapshot.trip.title}</Text>
+          <Text style={styles.cardBody}>
+            Version {snapshot.version} · {snapshot.trip.days.length} day
+            {snapshot.trip.days.length === 1 ? "" : "s"} · read-only
+          </Text>
+          <Pressable
+            accessibilityLabel={`Save ${snapshot.trip.title} for offline access`}
+            accessibilityRole="button"
+            onPress={() => onSaveTrip(snapshot)}
+            style={styles.secondaryButton}
+          >
+            <Text style={styles.secondaryButtonText}>Save offline</Text>
+          </Pressable>
+        </View>
+      ))}
       {cachedTrip && tripCurrent ? (
         <View style={styles.card}>
           <Text style={styles.cardTitle}>{cachedTrip.trip.title}</Text>
@@ -158,14 +347,12 @@ function TodayView({ cache }: { cache: OfflineMobileCache | null }) {
         </View>
       ) : (
         <>
-          <Text style={styles.body}>
-            Your current Trip will appear here when a future read-only sync is configured.
-          </Text>
+          <Text style={styles.body}>Your saved read-only Trip will appear here.</Text>
           <View style={styles.notice}>
             <Text style={styles.noticeText}>
               {cachedTrip
-                ? "The saved Trip has expired. Refresh after a read-only sync is available."
-                : "No Trip is connected in this build."}
+                ? "The saved Trip has expired. Load the latest Trip before relying on it."
+                : "No Trip is saved on this device yet."}
             </Text>
           </View>
         </>
@@ -387,18 +574,89 @@ function HelpView() {
   );
 }
 
-function MeView() {
+function MeView({
+  accountEmail,
+  authConfigured,
+  onSignIn,
+  onSignOut,
+}: {
+  accountEmail: string | null;
+  authConfigured: boolean;
+  onSignIn: (email: string, password: string) => Promise<string | null>;
+  onSignOut: () => void;
+}) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [notice, setNotice] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  async function submitSignIn() {
+    setSubmitting(true);
+    setNotice(await onSignIn(email.trim(), password));
+    setSubmitting(false);
+  }
+
   return (
     <View style={styles.section}>
       <Text accessibilityRole="header" style={styles.title}>
         Me
       </Text>
-      <Text style={styles.body}>
-        Account and entitlement state are not connected in this build.
-      </Text>
-      <View style={styles.notice}>
-        <Text style={styles.noticeText}>No account data is stored by this shell.</Text>
-      </View>
+      {accountEmail ? (
+        <View style={styles.notice}>
+          <Text style={styles.noticeText}>Signed in as {accountEmail}</Text>
+          <Pressable accessibilityRole="button" onPress={onSignOut} style={styles.secondaryButton}>
+            <Text style={styles.secondaryButtonText}>Sign out</Text>
+          </Pressable>
+        </View>
+      ) : authConfigured ? (
+        <View style={styles.card}>
+          <Text style={styles.cardBody}>
+            Sign in with the same account you use on the Web to load read-only Trips.
+          </Text>
+          <TextInput
+            accessibilityLabel="Email"
+            autoCapitalize="none"
+            autoComplete="email"
+            keyboardType="email-address"
+            onChangeText={setEmail}
+            placeholder="Email"
+            placeholderTextColor={colors.muted}
+            style={styles.input}
+            value={email}
+          />
+          <TextInput
+            accessibilityLabel="Password"
+            autoCapitalize="none"
+            autoComplete="password"
+            onChangeText={setPassword}
+            placeholder="Password"
+            placeholderTextColor={colors.muted}
+            secureTextEntry
+            style={styles.input}
+            value={password}
+          />
+          <Pressable
+            accessibilityRole="button"
+            disabled={submitting || !email.trim() || !password}
+            onPress={() => void submitSignIn()}
+            style={[
+              styles.primaryButton,
+              submitting || !email.trim() || !password ? styles.buttonDisabled : null,
+            ]}
+          >
+            <Text style={styles.primaryButtonText}>{submitting ? "Signing in…" : "Sign in"}</Text>
+          </Pressable>
+          {notice ? (
+            <Text accessibilityLiveRegion="polite" style={styles.warningText}>
+              {notice}
+            </Text>
+          ) : null}
+        </View>
+      ) : (
+        <View style={styles.notice}>
+          <Text style={styles.noticeText}>Mobile sign-in is unavailable in this build.</Text>
+        </View>
+      )}
     </View>
   );
 }
@@ -412,6 +670,15 @@ function offlineCacheSummary(cache: OfflineCacheLoadResult | null): string {
   }
   if (cache.kind === "corrupted_cleared") return "A corrupted cache was cleared.";
   return "No local cache saved yet.";
+}
+
+function sessionForMobile(
+  session: {
+    access_token: string;
+    user: { email?: string | null };
+  } | null,
+): MobileSession | null {
+  return session ? { accessToken: session.access_token, email: session.user.email ?? null } : null;
 }
 
 function formatOfflineTimestamp(value: string): string {
@@ -540,6 +807,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing[4],
   },
   primaryButtonText: { color: colors.surface, fontSize: typography.sizes.sm, fontWeight: "700" },
+  buttonDisabled: { opacity: 0.48 },
   secondaryButton: {
     alignItems: "center",
     borderColor: colors.line,
@@ -550,5 +818,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing[4],
   },
   secondaryButtonText: { color: colors.ink, fontSize: typography.sizes.sm, fontWeight: "600" },
+  input: {
+    borderColor: colors.line,
+    borderRadius: radii.sm,
+    borderWidth: StyleSheet.hairlineWidth,
+    color: colors.ink,
+    fontSize: typography.sizes.md,
+    minHeight: components.button.minHeight,
+    paddingHorizontal: spacing[3],
+  },
   copyStatus: { color: components.status.info.color, fontSize: typography.sizes.sm },
 });

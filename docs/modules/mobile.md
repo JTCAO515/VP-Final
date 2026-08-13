@@ -9,15 +9,16 @@ Trip access, Tools, Show to Local, Human Help, and account state.
 
 ## Current State
 
-The package is an Expo SDK 55 shell with four static Execute-stage tabs: Today, Tools, Help, and Me.
+The package is an Expo SDK 55 shell with four Execute-stage tabs: Today, Tools, Help, and Me.
 It imports `mobileTheme` from `@visepanda/ui`: a React Native-ready projection of the canonical
 red/gold token record, including accessible semantic states, 44pt button minimums, cards, type scale,
-spacing, and radii. The shell imports shared domain content but makes no real API call. Its Today,
-Help, and Me surfaces explicitly report their unavailable state; Tools displays local preparation
-content only. The portable `OfflineTripPackage` domain contract is available for a future
-local-storage/AsyncStorage consumer, but no mobile synchronization, download, account state, Human
-Help submission, or write path exists. This is a controlled pre-production boundary, not a public
-offline-product claim.
+spacing, and radii. The shell imports shared domain content. A signed-in traveler can use
+`GET /api/mobile/trips` to load only the Trips owned by a server-verified Supabase session, choose
+one, and save the existing sanitized `OfflineTripPackage` locally. The app never connects to Postgres,
+uses a service-role key, or exposes a Trip write path. The access and refresh tokens are held only by
+`expo-secure-store`; the offline cache holds no credential. Network, session, and response failures
+leave an existing cache unchanged and show an honest state. Help remains unavailable and no Human
+Help submission path exists.
 
 The Translation item opens a local Show to Local phrase-card view. Restaurant, taxi, and hotel cards
 have fixed ordinary Chinese wording and support on-device copy plus local `expo-speech` playback.
@@ -31,6 +32,8 @@ directory. It contains the versioned local Tools and Show to Local packs, a refr
 optional sanitized `OfflineTripPackage`; it never contains an auth token or an invented Trip. Tools
 offers a manual local refresh and clear action. A failed parse deletes the disposable cache and reports
 that result; refresh rebuilds from the app's bundled content and is not represented as a server sync.
+Today separately labels its authenticated Trip load and always requires the traveler to choose a
+snapshot before replacing the local Trip.
 
 ## Start Trigger
 
@@ -48,7 +51,10 @@ for public capability claims until the relevant live dependencies and lifecycle 
 - Cache the versioned read-only `OfflineTripPackage` before enabling mobile writes. It carries a
   Trip snapshot, tool/phrase versions, city list, and expiry, strips arbitrary block metadata, and
   rejects credential-shaped strings.
-- Keep authentication tokens in platform-secure storage.
+- Keep authentication tokens in platform-secure storage. `EXPO_PUBLIC_SUPABASE_URL`,
+  `EXPO_PUBLIC_SUPABASE_ANON_KEY`, and `EXPO_PUBLIC_VISEPANDA_WEB_URL` are public build-time
+  configuration only, never database/service-role credentials; missing or malformed values disable
+  the corresponding path honestly.
 - Separate digital entitlements from real-world service payments.
 - Queue privacy-safe telemetry offline and flush after reconnect.
 - Consume `TOOLS_CONTENT_PACK` as local preparation content only. It does not establish live booking,

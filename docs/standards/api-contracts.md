@@ -75,6 +75,14 @@ not-found result as an absent Trip. Empty Patches are successful no-ops and do n
 New Copilot Trips receive a server-generated id. A client sends `tripId` only when referencing an
 existing owner-scoped Trip, preventing caller-selected ids from becoming an existence side channel.
 
+`GET /api/mobile/trips` is a read-only native consumer contract. Its sole credential is an HTTPS
+`Authorization: Bearer <Supabase access token>` header; the server validates it online and derives
+the owner. Success is the strict domain `MobileTripListResponseSchema` (`{ ok: true, trips: [{ trip,
+version }] }`). Missing, malformed, or invalid tokens return 401, and unavailable Auth or Trip runtime
+returns 503. The response has no owner, event, share token, patch, or write capability. Mobile
+consumers keep credentials in platform-secure storage and do not persist them with an offline Trip
+package.
+
 Background completion provenance is internal authority, never client identity. A completion Patch may
 append `completion_job_id` plus a positive `completion_attempt` to its Trip event only when both are
 provided and the source is `ai_copilot`. The pair is unique. Normal Trip writes leave both null, and a
