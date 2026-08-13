@@ -6,7 +6,7 @@ type SiteHeaderProps = Readonly<{
 }>;
 
 const NAV_ITEMS: ReadonlyArray<Readonly<{ section: SiteSection; href: string; label: string }>> = [
-  { section: "copilot", href: "/", label: "Copilot" },
+  { section: "copilot", href: "/visepanda", label: "VisePanda" },
   { section: "explore", href: "/explore", label: "Explore" },
   { section: "guides", href: "/guides/payment", label: "Guides" },
   { section: "help", href: "/human-help", label: "Human Help" },
@@ -41,7 +41,7 @@ export function SiteHeader({ active, context = "China Travel AI Copilot" }: Site
           </p>
           <a
             aria-current={active === "account" ? "page" : undefined}
-            className="siteAccountLink"
+            className="siteNavLink siteAccountLink"
             href="/account"
           >
             Account
@@ -63,7 +63,7 @@ export function SiteFooter() {
       <p>Practical guidance for confident travel in China.</p>
       <div className="siteFooterLinks">
         <nav aria-label="Product links">
-          <a href="/">Copilot</a>
+          <a href="/visepanda">VisePanda</a>
           <a href="/explore">Explore</a>
           <a href="/guides/payment">Guides</a>
           <a href="/human-help">Human Help</a>

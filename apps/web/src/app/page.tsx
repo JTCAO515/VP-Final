@@ -1,5 +1,5 @@
-import { CopilotShell } from "./shell";
+import { HomeShell } from "./home";
 
 export default function Page() {
-  return <CopilotShell />;
+  return <HomeShell />;
 }

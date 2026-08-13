@@ -45,7 +45,7 @@ export default async function SharedTripPage({ params }: SharedTripPageProps) {
             editing controls are hidden.
           </p>
         </div>
-        <a className="pageAction" href="/">
+        <a className="pageAction" href="/visepanda?context=trip">
           Plan with VisePanda
         </a>
       </section>

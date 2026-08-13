@@ -53,7 +53,7 @@ export async function POST(request: Request) {
           {
             ok: false,
             code: "COPILOT_INPUT_TOO_LARGE",
-            error: `Copilot messages must be ${publicRuntimePolicy.maxInputCodeUnits} characters or fewer. Shorten your message and try again.`,
+            error: `VisePanda messages must be ${publicRuntimePolicy.maxInputCodeUnits} characters or fewer. Shorten your message and try again.`,
             maxInputCodeUnits: publicRuntimePolicy.maxInputCodeUnits,
           },
           { status: 413 },
@@ -76,7 +76,7 @@ export async function POST(request: Request) {
           {
             ok: false,
             code: "COPILOT_IP_RATE_LIMITED",
-            error: `This network has sent too many Copilot requests. Try again in ${retryAfterSeconds} seconds.`,
+            error: `This network has sent too many VisePanda requests. Try again in ${retryAfterSeconds} seconds.`,
             retryAfterSeconds,
           },
           { status: 429, headers: { "retry-after": String(retryAfterSeconds) } },
@@ -101,7 +101,7 @@ export async function POST(request: Request) {
             {
               ok: false,
               code: "COPILOT_AUTHENTICATED_RATE_LIMITED",
-              error: `Your Copilot account has sent too many requests. Try again in ${retryAfterSeconds} seconds.`,
+              error: `Your VisePanda account has sent too many requests. Try again in ${retryAfterSeconds} seconds.`,
               retryAfterSeconds,
             },
             { status: 429, headers: { "retry-after": String(retryAfterSeconds) } },
@@ -145,7 +145,7 @@ export async function POST(request: Request) {
           {
             ok: false,
             code: publicRuntimePolicyUnavailable.code,
-            error: "Copilot request safety is temporarily unavailable. Try again later.",
+            error: "VisePanda request safety is temporarily unavailable. Try again later.",
           },
           { status: 503 },
         ),
@@ -170,8 +170,8 @@ export async function POST(request: Request) {
             ok: false,
             code: authenticatedRateLimitUnavailable?.code ?? "COPILOT_IP_RATE_LIMIT_UNAVAILABLE",
             error: authenticatedRateLimitUnavailable
-              ? "Copilot account request protection is temporarily unavailable. Try again later."
-              : "Copilot request protection is temporarily unavailable. Try again later.",
+              ? "VisePanda account request protection is temporarily unavailable. Try again later."
+              : "VisePanda request protection is temporarily unavailable. Try again later.",
           },
           { status: 503 },
         ),
@@ -185,7 +185,7 @@ export async function POST(request: Request) {
           {
             ok: false,
             code: capacityReserved.code,
-            error: "Another anonymous Copilot question is still finishing. Try again shortly.",
+            error: "Another anonymous VisePanda question is still finishing. Try again shortly.",
             anonymousUsage: capacityReserved.usage,
           },
           { status: 409 },
@@ -200,7 +200,7 @@ export async function POST(request: Request) {
           {
             ok: false,
             code: turnLimit.code,
-            error: "Sign in to continue using the Copilot.",
+            error: "Sign in to continue using VisePanda.",
             anonymousUsage: turnLimit.usage,
           },
           { status: 403 },
@@ -221,7 +221,7 @@ export async function POST(request: Request) {
             ok: false,
             code: turnControl.code,
             error:
-              "Anonymous Copilot access is temporarily unavailable. Sign in or try again later.",
+              "Anonymous VisePanda access is temporarily unavailable. Sign in or try again later.",
           },
           { status: 503 },
         ),
@@ -251,8 +251,8 @@ export async function POST(request: Request) {
             code: modelFailure.code,
             error:
               modelFailure.code === "MODEL_CONFIGURATION_UNAVAILABLE"
-                ? "Copilot is unavailable because its model provider configuration is incomplete."
-                : "Copilot is temporarily unavailable because its model providers could not respond.",
+                ? "VisePanda is unavailable because its model provider configuration is incomplete."
+                : "VisePanda is temporarily unavailable because its model providers could not respond.",
           },
           { status: 503 },
         ),
@@ -274,7 +274,7 @@ export async function POST(request: Request) {
           ...(!conflict ? { code: "COPILOT_REQUEST_FAILED" } : {}),
           error: conflict
             ? "This trip changed in another session. Reload it before trying again."
-            : "Copilot is temporarily unavailable. Try again later.",
+            : "VisePanda is temporarily unavailable. Try again later.",
           ...(conflict ? { code: conflict.code, currentVersion: conflict.currentVersion } : {}),
           ...(correlationId ? { correlationId } : {}),
         },

@@ -58,6 +58,8 @@ type RequestFailureNotice = {
   detail: string;
   retryable: boolean;
 };
+type WorkspacePanel = "trip" | "chat";
+
 const LAST_TRIP_ID_KEY = "visepanda.lastTripId";
 const EXAMPLE_PROMPTS = [
   "How do I prepare payment before arriving in China?",
@@ -72,6 +74,15 @@ const initialMessages: ChatMessage[] = [
   },
 ];
 
+const SAFE_CONTEXT_PROMPTS: Readonly<Record<string, string>> = {
+  explore: "Help me decide what to do next from Explore.",
+  guide: "Help me turn this guide into a practical next step.",
+  "human-help": "What can I do myself before I request Human Help?",
+  payment: "What is the safest practical next step for payment preparation?",
+  trip: "Help me think through the next practical step for my trip.",
+};
+
+// Retained only for the existing markup that is hidden on the dedicated workspace route.
 const SCENARIO_GROUPS = [
   {
     label: "Before you fly",
@@ -105,7 +116,7 @@ const SCENARIO_GROUPS = [
       "Get a truthful next step when a payment, booking, connection, or plan stops working.",
     items: [
       ["Practical re-planning", "Ask for alternatives with the information currently available."],
-      ["Clear limits", "Know when the Copilot does not have enough evidence to make a claim."],
+      ["Clear limits", "Know when VisePanda does not have enough evidence to make a claim."],
       [
         "Human help, later",
         "A distinct assisted path is reserved for cases software should not fake.",
@@ -130,6 +141,7 @@ export function CopilotShell() {
   const [anonymousUsage, setAnonymousUsage] = useState<AnonymousTurnUsage | null>(null);
   const [registrationGate, setRegistrationGate] = useState(false);
   const [requestFailure, setRequestFailure] = useState<RequestFailureNotice | null>(null);
+  const [mobilePanel, setMobilePanel] = useState<WorkspacePanel>("chat");
   const monitorGeneration = useRef(0);
   const promptInput = useRef<HTMLInputElement>(null);
   const preflightFailureNotice = useRef<HTMLDivElement>(null);
@@ -156,6 +168,13 @@ export function CopilotShell() {
     return () => {
       monitorGeneration.current += 1;
     };
+  }, []);
+
+  useEffect(() => {
+    const draft = workspaceContextPrompt(
+      new URLSearchParams(window.location.search).get("context"),
+    );
+    if (draft) setInput((current) => current || draft);
   }, []);
 
   useEffect(() => {
@@ -361,7 +380,7 @@ export function CopilotShell() {
           });
           return;
         }
-        if (data.ok) throw new Error("Copilot request failed.");
+        if (data.ok) throw new Error("VisePanda request failed.");
         setRequestFailure(requestFailureNotice(data));
         throw new Error(data.error);
       }
@@ -400,7 +419,7 @@ export function CopilotShell() {
           current ??
           requestFailureNotice({
             ok: false,
-            error: error instanceof Error ? error.message : "Copilot connection failed.",
+            error: error instanceof Error ? error.message : "VisePanda connection failed.",
           }),
       );
       setProgress({
@@ -408,7 +427,7 @@ export function CopilotShell() {
         completedDays: 0,
         totalDays: 0,
         attempts: 1,
-        error: error instanceof Error ? error.message : "Copilot connection failed.",
+        error: error instanceof Error ? error.message : "VisePanda connection failed.",
       });
     }
   }
@@ -416,6 +435,7 @@ export function CopilotShell() {
   function chooseQuestion(question: string): void {
     if (registrationGate) return;
     setInput(question);
+    setMobilePanel("chat");
     window.requestAnimationFrame(() => {
       promptInput.current?.scrollIntoView({ block: "center" });
       promptInput.current?.focus();
@@ -423,7 +443,7 @@ export function CopilotShell() {
   }
 
   return (
-    <main className="shell copilotShell">
+    <main className="shell copilotShell viseWorkspace">
       <SiteHeader active="copilot" />
 
       <section className="homeHero" aria-labelledby="home-title">
@@ -431,12 +451,12 @@ export function CopilotShell() {
           <p className="homeEyebrow">China Travel AI Copilot</p>
           <h1 id="home-title">China, handled.</h1>
           <p className="homeHeroLead">
-            A practical Copilot for the decisions that make a China trip feel easy: payment,
-            transport, language, tickets, and the next step when plans change.
+            A practical VisePanda workspace for the decisions that make a China trip feel easy:
+            payment, transport, language, tickets, and the next step when plans change.
           </p>
           <div className="heroActions">
             <a className="primaryAction" href="#ask-copilot">
-              Ask the Copilot
+              Ask VisePanda
             </a>
             <a className="secondaryAction" href="/explore">
               Explore places
@@ -456,7 +476,7 @@ export function CopilotShell() {
 
         <div
           className="productFrame"
-          aria-label="Illustrative VisePanda Copilot preview, not live trip data"
+          aria-label="Illustrative VisePanda workspace preview, not live trip data"
         >
           <div className="productFrameBar">
             <span>Illustrative arrival example</span>
@@ -494,7 +514,7 @@ export function CopilotShell() {
               </article>
             </section>
             <aside className="previewCopilot">
-              <span className="miniLabel">Copilot</span>
+              <span className="miniLabel">VisePanda</span>
               <p>“What is the calmest way to get from Pudong to my hotel after a long flight?”</p>
               <div className="previewAnswer">
                 <b>Start with the direct route.</b>
@@ -522,15 +542,54 @@ export function CopilotShell() {
             <h2 id="copilot-workbench-title">Ask one clear question. Get one useful next step.</h2>
           </div>
           <p>
-            The Copilot is intentionally focused. It does not pretend to book, edit, or promise what
+            VisePanda is intentionally focused. It does not pretend to book, edit, or promise what
             it cannot verify.
           </p>
         </div>
-        <div className="copilotLayout">
-          <section className="conversationPanel" aria-label="Copilot conversation">
+        <div className="copilotLayout" data-mobile-panel={mobilePanel}>
+          <div className="mobileWorkspaceTabs" aria-label="Workspace view">
+            <button
+              aria-pressed={mobilePanel === "trip"}
+              onClick={() => setMobilePanel("trip")}
+              type="button"
+            >
+              Trip
+            </button>
+            <button
+              aria-pressed={mobilePanel === "chat"}
+              onClick={() => setMobilePanel("chat")}
+              type="button"
+            >
+              VisePanda
+            </button>
+          </div>
+          <section className="tripCanvas" aria-label="Trip Canvas">
             <div className="canvasToolbar">
               <div>
-                <h1>Conversation</h1>
+                <h1>Trip Canvas</h1>
+                <span>
+                  {trip ? "Read-only trip draft" : "Your practical plan will appear here"}
+                </span>
+              </div>
+              <span className={`conversationStatus ${progress.status}`}>
+                {progressLabel(progress, detailPassFailed)}
+              </span>
+            </div>
+            {trip ? (
+              <TripPreview trip={trip} />
+            ) : (
+              <div className="tripCanvasEmpty">
+                <p>Start with a practical question in VisePanda.</p>
+                <span>
+                  When a Trip draft is available, it will appear here without changing it silently.
+                </span>
+              </div>
+            )}
+          </section>
+          <section className="conversationPanel" aria-label="VisePanda conversation">
+            <div className="canvasToolbar">
+              <div>
+                <h1>VisePanda</h1>
                 <span>Practical China travel guidance</span>
               </div>
               <span
@@ -546,9 +605,9 @@ export function CopilotShell() {
             <div className="railMessages">
               {messages.map((message, index) => (
                 <article className={`railMessage ${message.role}`} key={`${message.role}-${index}`}>
-                  <b>{message.role === "user" ? "You" : "VisePanda Copilot"}</b>
+                  <b>{message.role === "user" ? "You" : "VisePanda"}</b>
                   {message.envelope ? (
-                    <EnvelopeMessage envelope={message.envelope} trip={message.trip ?? null} />
+                    <EnvelopeMessage envelope={message.envelope} trip={null} />
                   ) : (
                     <p>{message.body}</p>
                   )}
@@ -556,7 +615,7 @@ export function CopilotShell() {
               ))}
               {progress.status === "skeleton" ? (
                 <article className="railMessage assistant typing" aria-live="polite">
-                  <b>VisePanda Copilot</b>
+                  <b>VisePanda</b>
                   <p>
                     <span aria-hidden="true">● ● ●</span> Thinking through your travel question
                   </p>
@@ -571,15 +630,13 @@ export function CopilotShell() {
                       ? () => void retryCompletion()
                       : null
                   }
-                  trip={
-                    trip && !messages.some((message) => message.trip?.id === trip.id) ? trip : null
-                  }
+                  trip={null}
                 />
               ) : null}
             </div>
           </section>
 
-          <aside className="copilotRail" aria-label="Copilot prompt composer">
+          <aside className="copilotRail" aria-label="VisePanda prompt composer">
             <div className="railHeader">
               <div>
                 <strong>Start with a practical question</strong>
@@ -635,7 +692,7 @@ export function CopilotShell() {
                 value={input}
               />
               <button disabled={!input.trim() || isWorking || registrationGate} type="submit">
-                {isWorking ? "Thinking" : "Ask Copilot"}
+                {isWorking ? "Thinking" : "Ask VisePanda"}
               </button>
             </form>
           </aside>
@@ -689,7 +746,7 @@ export function CopilotShell() {
         <div className="ecosystemMap" aria-label="VisePanda ecosystem layers">
           <article>
             <span>01</span>
-            <b>Copilot</b>
+            <b>VisePanda</b>
             <p>Practical questions and clear limits.</p>
           </article>
           <article>
@@ -819,6 +876,10 @@ export function previewTripDays(trip: TripState): TripDay[] {
   return trip.days.slice(0, 3);
 }
 
+export function workspaceContextPrompt(context: string | null): string | undefined {
+  return context ? SAFE_CONTEXT_PROMPTS[context] : undefined;
+}
+
 export function attachTripToLatestAssistant(
   messages: ChatMessage[],
   nextTrip: TripState,
@@ -873,7 +934,7 @@ export function anonymousTurnNotice(
       }
     : {
         title: "Your next question needs an account.",
-        detail: `You have used all ${usage.limit} anonymous Copilot turns. Create an account or sign in before you continue.`,
+        detail: `You have used all ${usage.limit} anonymous VisePanda turns. Create an account or sign in before you continue.`,
       };
 }
 
@@ -883,7 +944,7 @@ export function requestFailureNotice(error: ErrorResponse): RequestFailureNotice
     return {
       kind: "rate-limit",
       label: "Request limit",
-      title: "This network has reached its Copilot limit.",
+      title: "This network has reached its VisePanda limit.",
       detail: retryAfterSeconds
         ? `Please wait ${retryAfterSeconds} seconds before asking another question.`
         : "Please wait a little before asking another question.",
@@ -894,7 +955,7 @@ export function requestFailureNotice(error: ErrorResponse): RequestFailureNotice
     return {
       kind: "request-failure",
       label: "Protection unavailable",
-      title: "Copilot is temporarily unavailable.",
+      title: "VisePanda is temporarily unavailable.",
       detail: "Request protection could not be verified. Please try again later.",
       retryable: true,
     };
@@ -903,7 +964,7 @@ export function requestFailureNotice(error: ErrorResponse): RequestFailureNotice
     return {
       kind: "model-failure",
       label: "Model unavailable",
-      title: "The Copilot models could not respond.",
+      title: "The VisePanda models could not respond.",
       detail: "No answer was generated or invented. Please try again in a moment.",
       retryable: true,
     };
@@ -920,7 +981,7 @@ export function requestFailureNotice(error: ErrorResponse): RequestFailureNotice
   return {
     kind: "request-failure",
     label: "Request failed",
-    title: "Copilot could not respond.",
+    title: "VisePanda could not respond.",
     detail: error.error || "Please check your connection and try again.",
     retryable: true,
   };

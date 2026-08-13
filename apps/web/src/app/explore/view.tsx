@@ -56,8 +56,8 @@ export function ExploreView({ pois, availability, asOf }: ExploreViewProps) {
           <h1>Explore China</h1>
           <p>Scene tags are derived from verified POI facts. Missing facts stay quiet.</p>
         </div>
-        <a className="pageAction" href="/">
-          Ask Copilot
+        <a className="pageAction" href="/visepanda?context=explore">
+          Ask VisePanda
         </a>
       </section>
 

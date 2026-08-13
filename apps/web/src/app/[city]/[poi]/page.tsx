@@ -56,9 +56,14 @@ export default async function PoiPage({ params }: Props) {
           <h1>{entry.poi.nameEn}</h1>
           <p>{poiDescription(entry.poi)}</p>
         </div>
-        <a className="pageAction" href="/explore">
-          Back to Explore
-        </a>
+        <div className="pageActionGroup">
+          <a className="pageAction" href="/visepanda?context=explore">
+            Ask VisePanda
+          </a>
+          <a className="pageAction secondaryPageAction" href="/explore">
+            Back to Explore
+          </a>
+        </div>
       </section>
 
       <article className="guideArticle">

@@ -47,7 +47,7 @@ export const LEGAL_DOCUMENTS: Readonly<Record<LegalDocumentId, LegalDocument>> =
         bullets: [
           "Account identity and email when you register or sign in.",
           "Signed anonymous and session identifiers used for continuity, security, and product limits.",
-          "Messages, Trip content, and the context needed to answer a Copilot request.",
+          "Messages, Trip content, and the context needed to answer a VisePanda request.",
           "Human Help request details and the reply contact you choose to provide.",
           "Provider, model, token, latency, and cost metadata that does not contain provider credentials.",
           "Product and security events plus necessary network and device operational metadata.",
@@ -58,7 +58,7 @@ export const LEGAL_DOCUMENTS: Readonly<Record<LegalDocumentId, LegalDocument>> =
         bullets: [
           "Provide, secure, troubleshoot, and improve the requested VisePanda experience.",
           "Maintain your session and Trip, enforce abuse and anonymous-use limits, and diagnose failures.",
-          "Route relevant Copilot content to a configured model provider and return the validated result.",
+          "Route relevant VisePanda content to a configured model provider and return the validated result.",
           "Review a Human Help request within the published controlled-preview boundary.",
           "Measure service reliability and reconcile model usage and operating costs.",
         ],
@@ -111,7 +111,7 @@ export const LEGAL_DOCUMENTS: Readonly<Record<LegalDocumentId, LegalDocument>> =
       {
         heading: "What the service provides",
         paragraphs: [
-          "VisePanda provides travel planning, structured Trip information, practical guidance, and limited manual-request intake. Copilot output can be incomplete, outdated, or wrong. Verify safety-critical, ticketing, entry, legal, medical, and booking information with the appropriate official or qualified source.",
+          "VisePanda provides travel planning, structured Trip information, practical guidance, and limited manual-request intake. VisePanda output can be incomplete, outdated, or wrong. Verify safety-critical, ticketing, entry, legal, medical, and booking information with the appropriate official or qualified source.",
           "A Trip, place, route, price, opening time, availability, or recommendation is information, not a reservation, inventory hold, guarantee, or promise that a third party will perform.",
         ],
       },
@@ -162,7 +162,7 @@ export const LEGAL_DOCUMENTS: Readonly<Record<LegalDocumentId, LegalDocument>> =
       {
         heading: "When a link is commercial",
         paragraphs: [
-          "A commercial action must be clearly labelled before or next to the link. Ordinary Copilot planning and advice must not contain an undisclosed commercial action.",
+          "A commercial action must be clearly labelled before or next to the link. Ordinary VisePanda planning and advice must not contain an undisclosed commercial action.",
           "The presence of this general page does not turn every external link into an affiliate link. Check the disclosure attached to the specific action.",
         ],
       },
@@ -241,7 +241,7 @@ export const LEGAL_DOCUMENTS: Readonly<Record<LegalDocumentId, LegalDocument>> =
       {
         heading: "Do not wait for VisePanda",
         paragraphs: [
-          "If anyone is in immediate danger, seriously ill or injured, or facing a fire or crime, contact the appropriate official service now. Do not submit or wait for a Copilot or Human Help response.",
+          "If anyone is in immediate danger, seriously ill or injured, or facing a fire or crime, contact the appropriate official service now. Do not submit or wait for a VisePanda or Human Help response.",
           "If you cannot communicate safely, ask a nearby person, your accommodation, venue staff, or another trusted local contact to help call and state your location.",
         ],
       },

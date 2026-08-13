@@ -14,7 +14,7 @@ export function WebErrorFallback({ correlationId, reset }: WebErrorFallbackProps
         <p className="pageEyebrow">VisePanda</p>
         <h1 id="runtime-error-title">We could not finish that page.</h1>
         <p>
-          No travel action was completed. Try again, or return to the Copilot and continue from a
+          No travel action was completed. Try again, or return to VisePanda and continue from a
           fresh page.
         </p>
         <p className="runtimeErrorReference">
@@ -24,7 +24,7 @@ export function WebErrorFallback({ correlationId, reset }: WebErrorFallbackProps
           <button onClick={reset} type="button">
             Try again
           </button>
-          <a href="/">Return to Copilot</a>
+          <a href="/visepanda">Return to VisePanda</a>
         </div>
       </section>
     </main>

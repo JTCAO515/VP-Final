@@ -4,8 +4,8 @@ import { designTokenCss } from "@visepanda/ui";
 import "./styles.css";
 
 export const metadata: Metadata = {
-  title: "VisePanda Copilot",
-  description: "China travel copilot for planning and execution.",
+  title: "VisePanda",
+  description: "China Travel AI Copilot for planning and practical execution.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {

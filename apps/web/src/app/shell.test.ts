@@ -9,6 +9,7 @@ import {
   previewTripDays,
   progressLabel,
   requestFailureNotice,
+  workspaceContextPrompt,
 } from "./shell";
 
 const completedTrip = {
@@ -67,14 +68,14 @@ describe("previewTripDays", () => {
     expect(updated[1]).toMatchObject({ body: envelope.message.body, trip: completedTrip });
   });
 
-  it("renders an honest new-visitor state without live-preview claims or an actionable blank submit", () => {
+  it("renders an honest dedicated VisePanda workspace without an actionable blank submit", () => {
     const html = renderWithReactGlobal(React.createElement(CopilotShell));
 
-    expect(html).toContain("Illustrative arrival example");
-    expect(html).toContain("Not live trip data");
+    expect(html).toContain("Trip Canvas");
+    expect(html).toContain("VisePanda");
     expect(html).toContain("No request yet");
     expect(html).toContain('aria-label="Trip prompt"');
-    expect(html).toContain('<button disabled="" type="submit">Ask Copilot</button>');
+    expect(html).toContain('<button disabled="" type="submit">Ask VisePanda</button>');
     expect(html).not.toContain("productLiveDot");
     expect(html).not.toContain(">Ready<");
   });
@@ -93,7 +94,7 @@ describe("previewTripDays", () => {
     expect(anonymousTurnNotice({ completedTurns: 3, limit: 3, remaining: 0 }, false)).toEqual({
       title: "Your next question needs an account.",
       detail:
-        "You have used all 3 anonymous Copilot turns. Create an account or sign in before you continue.",
+        "You have used all 3 anonymous VisePanda turns. Create an account or sign in before you continue.",
     });
   });
 
@@ -120,10 +121,19 @@ describe("previewTripDays", () => {
     expect(notice).toEqual({
       kind: "rate-limit",
       label: "Request limit",
-      title: "This network has reached its Copilot limit.",
+      title: "This network has reached its VisePanda limit.",
       detail: "Please wait 42 seconds before asking another question.",
       retryable: false,
     });
+  });
+
+  it("accepts only controlled context keys for an editable workspace draft", () => {
+    expect(workspaceContextPrompt("explore")).toBe("Help me decide what to do next from Explore.");
+    expect(workspaceContextPrompt("trip")).toBe(
+      "Help me think through the next practical step for my trip.",
+    );
+    expect(workspaceContextPrompt("full-trip-with-private-details")).toBeUndefined();
+    expect(workspaceContextPrompt(null)).toBeUndefined();
   });
 
   it("renders model failure as an honest shared notice with a retry action", () => {
@@ -140,7 +150,7 @@ describe("previewTripDays", () => {
     );
 
     expect(html).toContain('class="copilotNotice model-failure"');
-    expect(html).toContain("The Copilot models could not respond.");
+    expect(html).toContain("The VisePanda models could not respond.");
     expect(html).toContain("No answer was generated or invented.");
     expect(html).toContain(">Try again</button>");
     expect(html).not.toContain("internal provider response");

@@ -15,7 +15,7 @@ describe("WebErrorFallback", () => {
     expect(html).toContain("We could not finish that page.");
     expect(html).toContain("4e63db44-0ac0-4751-a045-e9c9fe96dc85");
     expect(html).toContain("Try again");
-    expect(html).toContain('href="/"');
+    expect(html).toContain('href="/visepanda"');
     expect(html).not.toContain("provider payload");
     expect(html).not.toContain("secret token");
   });

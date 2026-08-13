@@ -9,8 +9,8 @@ export default function NotFound() {
         <h1>This page is not on the itinerary.</h1>
         <p>The link may have changed, or the shared page may no longer be available.</p>
         <div className="notFoundActions">
-          <a className="primaryAction" href="/">
-            Return to Copilot
+          <a className="primaryAction" href="/visepanda">
+            Return to VisePanda
           </a>
           <a className="secondaryAction" href="/explore">
             Explore China
