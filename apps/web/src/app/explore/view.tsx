@@ -10,6 +10,7 @@ import {
 import { poiEntries } from "../poiSeo";
 import { SiteFooter, SiteHeader } from "../site-chrome";
 import { captureClientTelemetry } from "../../lib/clientTelemetry";
+import { exploreCommercialLinkHref } from "./commercialLink";
 import { deriveExploreFacts } from "./factPresentation";
 
 type ExploreViewProps = Readonly<{
@@ -135,6 +136,22 @@ export function ExploreView({ pois, availability, asOf }: ExploreViewProps) {
               >
                 Open guide
               </a>
+            ) : null}
+            {poi.commercialLinks.length > 0 ? (
+              <div className="poiCommercialLinks" aria-label="Partner options">
+                {poi.commercialLinks.map((link) => (
+                  <div className="poiCommercialLink" key={link.id}>
+                    <a
+                      className="poiLink"
+                      href={exploreCommercialLinkHref(link, poi.id)}
+                      rel="noreferrer"
+                    >
+                      Continue to partner
+                    </a>
+                    <small>{link.disclosure}</small>
+                  </div>
+                ))}
+              </div>
             ) : null}
             {tags.length > 0 ? (
               <div className="sceneTags">
