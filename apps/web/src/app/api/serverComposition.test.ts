@@ -4,7 +4,7 @@ import {
   createInMemoryKnowledgeService,
   createVersionedInMemoryTripService,
 } from "@visepanda/app-server";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   createWebServerServices,
   setTestWebServerServices,
@@ -12,7 +12,10 @@ import {
 } from "./_server";
 import { pendingDurableCapabilityResponse } from "./_runtimeError";
 
-afterEach(() => setTestWebServerServices(null));
+afterEach(() => {
+  setTestWebServerServices(null);
+  vi.restoreAllMocks();
+});
 
 describe("Web server composition", () => {
   it("fails closed for missing mode and missing deployed database", () => {
@@ -45,6 +48,29 @@ describe("Web server composition", () => {
       knowledgeService: expect.any(Object),
       tripService: expect.any(Object),
     });
+  });
+
+  it("reports incomplete provider configuration by environment variable name only", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    createWebServerServices({
+      VISEPANDA_RUNTIME_MODE: "production",
+      DATABASE_URL: "postgres://postgres:postgres@127.0.0.1:5432/postgres",
+      DASHSCOPE_API_KEY: "test-dashscope-key",
+      VISEPANDA_MODEL_ROUTER_PRIMARY: "catalog-confirmed-qwen",
+    });
+
+    expect(warn).toHaveBeenCalledWith(
+      "copilot_provider_configuration_degraded",
+      expect.objectContaining({
+        routes: expect.arrayContaining([
+          expect.objectContaining({
+            route: "router_fallback",
+            keyEnvironment: "DEEPSEEK_API_KEY",
+          }),
+        ]),
+      }),
+    );
+    expect(JSON.stringify(warn.mock.calls)).not.toContain("test-dashscope-key");
   });
 
   it("quarantines pending ledgers in deployed modes", async () => {
