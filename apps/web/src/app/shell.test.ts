@@ -128,9 +128,7 @@ describe("previewTripDays", () => {
   });
 
   it("accepts only controlled context keys for an editable workspace draft", () => {
-    expect(workspaceContextPrompt("explore")).toBe(
-      "Help me decide what to do next from Explore.",
-    );
+    expect(workspaceContextPrompt("explore")).toBe("Help me decide what to do next from Explore.");
     expect(workspaceContextPrompt("trip")).toBe(
       "Help me think through the next practical step for my trip.",
     );
