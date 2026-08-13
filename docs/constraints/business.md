@@ -11,6 +11,15 @@ Status: active
 - Missing inventory, price, commission, rating, booking state, or partner capability MUST be shown as
   unknown or unavailable.
 
+### China Readiness Check
+
+The China Readiness Check is an explainable preparation diagnostic, not a score or recommendation
+engine. It MUST use only versioned deterministic rules; it MUST preserve missing answers as
+`unknown`; and it MUST distinguish self-reported information from externally verified facts.
+Readiness schema and derivation MUST NOT emit, rank, or imply an affiliate action. A later UI
+consumer may show a partner action only after it has confirmed matching explicit user intent and an
+active approved partner through the existing outbound controls.
+
 ## Human Help and Payments
 
 - Human Help MUST require user confirmation before task creation or payment.
