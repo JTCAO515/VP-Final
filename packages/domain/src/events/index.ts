@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { CopilotIntentSchema } from "../copilot/index.js";
+import { RescueCategorySchema, RescuePrimaryActionKindSchema } from "../rescue/index.js";
 
 export const ExistingCopilotEventActionSchema = z.enum([
   "session_started",
@@ -34,9 +35,18 @@ export const PhaseZeroTelemetryActionSchema = z.enum([
   "task_done",
 ]);
 
+export const RescueTelemetryActionSchema = z.enum([
+  "rescue_started",
+  "rescue_route_selected",
+  "human_help_offered",
+  "human_help_confirmed",
+  "resolution_outcome",
+]);
+
 export const TelemetryActionSchema = z.union([
   ExistingCopilotEventActionSchema,
   PhaseZeroTelemetryActionSchema,
+  RescueTelemetryActionSchema,
 ]);
 
 export const ClientTelemetryActionSchema = z.enum([
@@ -45,6 +55,8 @@ export const ClientTelemetryActionSchema = z.enum([
   "scene_filter_used",
   "human_help_viewed",
   "task_started",
+  "rescue_started",
+  "rescue_route_selected",
 ]);
 
 const IdentifierSchema = z
@@ -102,6 +114,23 @@ const HumanHelpPropsSchema = z
     kind: DimensionSchema.optional(),
   })
   .strict();
+const RescueCategoryPropsSchema = z
+  .object({
+    category: RescueCategorySchema,
+  })
+  .strict();
+const RescueRouteSelectedPropsSchema = RescueCategoryPropsSchema.extend({
+  primaryActionKind: RescuePrimaryActionKindSchema,
+}).strict();
+const RescueOutcomePropsSchema = RescueRouteSelectedPropsSchema.extend({
+  outcome: z.enum([
+    "not_recorded",
+    "unavailable",
+    "official_guidance",
+    "reviewed_tool",
+    "show_to_local",
+  ]),
+}).strict();
 
 const TelemetryPropsSchemas = {
   session_started: EmptyPropsSchema,
@@ -131,6 +160,11 @@ const TelemetryPropsSchemas = {
   payment_link_clicked: HumanHelpPropsSchema,
   task_paid: HumanHelpPropsSchema,
   task_done: HumanHelpPropsSchema,
+  rescue_started: RescueCategoryPropsSchema,
+  rescue_route_selected: RescueRouteSelectedPropsSchema,
+  human_help_offered: RescueCategoryPropsSchema,
+  human_help_confirmed: RescueCategoryPropsSchema,
+  resolution_outcome: RescueOutcomePropsSchema,
 } satisfies Record<z.infer<typeof TelemetryActionSchema>, z.ZodType<Record<string, unknown>>>;
 
 const RESTRICTED_KEY =

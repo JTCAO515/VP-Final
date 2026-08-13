@@ -13,6 +13,7 @@ describe("TelemetryEventSchema", () => {
     expect(TelemetryActionSchema.parse("turn_completed")).toBe("turn_completed");
     expect(TelemetryActionSchema.parse("prompt_submitted")).toBe("prompt_submitted");
     expect(TelemetryActionSchema.parse("task_paid")).toBe("task_paid");
+    expect(TelemetryActionSchema.parse("rescue_route_selected")).toBe("rescue_route_selected");
     expect(() => TelemetryActionSchema.parse("arbitrary_event")).toThrow();
   });
 
@@ -136,6 +137,28 @@ describe("TelemetryCaptureInputSchema", () => {
         id: eventId,
         created_at: "2026-07-27T12:00:00.000Z",
         retention_expires_at: "2027-01-23T12:00:00.000Z",
+      }),
+    ).toThrow();
+  });
+
+  it("allows only category and deterministic route outcome metadata for Rescue browser events", () => {
+    expect(
+      TelemetryCaptureInputSchema.parse({
+        action: "rescue_route_selected",
+        entity_type: "rescue_route",
+        entity_id: "payment_problem",
+        props_jsonb: { category: "payment_problem", primaryActionKind: "unavailable" },
+      }).action,
+    ).toBe("rescue_route_selected");
+    expect(() =>
+      TelemetryCaptureInputSchema.parse({
+        action: "rescue_route_selected",
+        entity_type: "rescue_route",
+        props_jsonb: {
+          category: "payment_problem",
+          primaryActionKind: "unavailable",
+          narrative: "My card was declined at a hotel",
+        },
       }),
     ).toThrow();
   });
