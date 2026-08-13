@@ -3,6 +3,7 @@ import {
   AnonymousTurnCapacityReservedError,
   AnonymousTurnControlUnavailableError,
   AnonymousTurnLimitExceededError,
+  AuthenticatedCopilotRateLimitUnavailableError,
   CopilotIpRateLimitUnavailableError,
   opaqueCopilotSessionId,
   PublicRuntimePolicyUnavailableError,
@@ -13,6 +14,7 @@ import {
 import { after, NextResponse } from "next/server";
 import { z } from "zod";
 import {
+  getAuthenticatedCopilotRateLimiter,
   getCopilotIpRateLimiter,
   getCopilotProductEventService,
   getServerCaller,
@@ -81,6 +83,32 @@ export async function POST(request: Request) {
         cookieResponse,
       );
     }
+    if (identity.kind === "authenticated") {
+      const authenticatedLimiter = getAuthenticatedCopilotRateLimiter();
+      if (!authenticatedLimiter) {
+        throw new AuthenticatedCopilotRateLimitUnavailableError("limiter_not_configured");
+      }
+      const authenticatedAdmission = await authenticatedLimiter.check(identity.userId);
+      if (!authenticatedAdmission.allowed) {
+        const retryAfterSeconds = authenticatedAdmission.retryAfterSeconds;
+        await recordRateLimitEventSafely(
+          { kind: "authenticated", userId: identity.userId },
+          retryAfterSeconds,
+        );
+        return applyIdentityCookies(
+          NextResponse.json(
+            {
+              ok: false,
+              code: "COPILOT_AUTHENTICATED_RATE_LIMITED",
+              error: `Your Copilot account has sent too many requests. Try again in ${retryAfterSeconds} seconds.`,
+              retryAfterSeconds,
+            },
+            { status: 429, headers: { "retry-after": String(retryAfterSeconds) } },
+          ),
+          cookieResponse,
+        );
+      }
+    }
     const result = await getServerCaller(identity, after).copilot.run(parsed.data);
     const envelope = CopilotEnvelopeSchema.parse(result.envelope);
     const emptyDays = result.trip?.days.filter((day) => day.blocks.length === 0).length ?? 0;
@@ -122,17 +150,26 @@ export async function POST(request: Request) {
       );
     }
     const rateLimitUnavailable = findError(error, CopilotIpRateLimitUnavailableError);
+    const authenticatedRateLimitUnavailable = findError(
+      error,
+      AuthenticatedCopilotRateLimitUnavailableError,
+    );
     const trustedAddressUnavailable = findError(error, TrustedClientAddressUnavailableError);
-    if (rateLimitUnavailable || trustedAddressUnavailable) {
-      console.warn("copilot_ip_rate_limit_unavailable", {
-        reason: rateLimitUnavailable?.reason ?? trustedAddressUnavailable?.reason,
+    if (rateLimitUnavailable || authenticatedRateLimitUnavailable || trustedAddressUnavailable) {
+      console.warn("copilot_rate_limit_unavailable", {
+        reason:
+          rateLimitUnavailable?.reason ??
+          authenticatedRateLimitUnavailable?.reason ??
+          trustedAddressUnavailable?.reason,
       });
       return applyIdentityCookies(
         NextResponse.json(
           {
             ok: false,
-            code: "COPILOT_IP_RATE_LIMIT_UNAVAILABLE",
-            error: "Copilot request protection is temporarily unavailable. Try again later.",
+            code: authenticatedRateLimitUnavailable?.code ?? "COPILOT_IP_RATE_LIMIT_UNAVAILABLE",
+            error: authenticatedRateLimitUnavailable
+              ? "Copilot account request protection is temporarily unavailable. Try again later."
+              : "Copilot request protection is temporarily unavailable. Try again later.",
           },
           { status: 503 },
         ),

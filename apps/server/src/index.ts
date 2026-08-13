@@ -89,6 +89,13 @@ export {
   resolveUpstashCopilotIpRateLimiterConfig,
 } from "./modules/copilot/ipRateLimiter.js";
 export {
+  AUTHENTICATED_COPILOT_RATE_LIMIT_TTL_SECONDS,
+  AuthenticatedCopilotRateLimitUnavailableError,
+  createInMemoryAuthenticatedCopilotRateLimiter,
+  createUpstashAuthenticatedCopilotRateLimiter,
+  resolveUpstashAuthenticatedCopilotRateLimiterConfig,
+} from "./modules/copilot/authenticatedRateLimiter.js";
+export {
   DEFAULT_TELEMETRY_IDENTITY_HOUR_LIMIT,
   DEFAULT_TELEMETRY_IDENTITY_MINUTE_LIMIT,
   DEFAULT_TELEMETRY_IP_HOUR_LIMIT,
@@ -186,6 +193,11 @@ export type {
   CopilotIpRateLimiter,
   UpstashCopilotIpRateLimiterConfig,
 } from "./modules/copilot/ipRateLimiter.js";
+export type {
+  AuthenticatedCopilotRateLimitAdmission,
+  AuthenticatedCopilotRateLimiter,
+  UpstashAuthenticatedCopilotRateLimiterConfig,
+} from "./modules/copilot/authenticatedRateLimiter.js";
 export type {
   TelemetryRateLimitAdmission,
   TelemetryRateLimiter,

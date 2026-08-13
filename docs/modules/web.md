@@ -151,6 +151,14 @@ model attempts. Missing trusted platform/header, salt, Redis configuration, or R
 returns HTTP 503 `COPILOT_IP_RATE_LIMIT_UNAVAILABLE`. Tests and explicit `local-demo` use one fixed
 local identity; other non-Vercel deployed modes fail closed. OA-013 owns production verification.
 
+After that shared network guard, only a verified authenticated session enters the separate account
+window. It uses an Upstash key formed from a domain-separated HMAC of the server-verified user id;
+the user id, address, salt, and cookie never enter Redis or public/logged diagnostics. Exhaustion
+returns HTTP 429 `COPILOT_AUTHENTICATED_RATE_LIMITED` with `Retry-After`; an absent or failed required
+identity limiter returns HTTP 503 `COPILOT_AUTHENTICATED_RATE_LIMIT_UNAVAILABLE` rather than using an
+in-process fallback. Anonymous visitors remain governed by their existing signed turn wall and shared
+network guard only.
+
 The workspace presents anonymous exhaustion, trusted-network rate limiting, and model-provider
 failure through one accessible status-notice pattern while preserving different recovery actions.
 Anonymous exhaustion links to account access and disables composition; an HTTP 429 displays the

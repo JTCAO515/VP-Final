@@ -11,6 +11,7 @@ import {
   createDbVersionedTripService,
   createDemoCopilotModelDependencies,
   createInMemoryAnonymousTurnCounter,
+  createInMemoryAuthenticatedCopilotRateLimiter,
   createInMemoryCopilotIpRateLimiter,
   createInMemoryCompletionJobService,
   createInMemoryKnowledgeService,
@@ -22,16 +23,19 @@ import {
   createModelCompleteDay,
   createQStashCompletionQueue,
   createUpstashAnonymousTurnCounter,
+  createUpstashAuthenticatedCopilotRateLimiter,
   createUpstashCopilotIpRateLimiter,
   createUpstashTelemetryRateLimiter,
   resolveQStashCompletionQueueConfig,
   resolveUpstashAnonymousTurnCounterConfig,
+  resolveUpstashAuthenticatedCopilotRateLimiterConfig,
   resolveUpstashCopilotIpRateLimiterConfig,
   resolveUpstashTelemetryRateLimiterConfig,
   resolveDatabaseAdapter,
   resolveRuntimeMode,
   type AgentTraceService,
   type AnonymousTurnCounter,
+  type AuthenticatedCopilotRateLimiter,
   type CopilotIpRateLimiter,
   type CopilotProductEventService,
   type CompleteDay,
@@ -59,6 +63,7 @@ type WebServerServices = {
   completionQueue?: CompletionQueue;
   completionDay?: CompleteDay;
   anonymousTurnCounter?: AnonymousTurnCounter;
+  authenticatedCopilotRateLimiter?: AuthenticatedCopilotRateLimiter;
   copilotIpRateLimiter?: CopilotIpRateLimiter;
   telemetryRateLimiter?: TelemetryRateLimiter;
   commerceService?: CommerceService;
@@ -128,6 +133,7 @@ export function createWebServerServices(environment: Environment): WebServerServ
       tripService,
       completionJobService: createInMemoryCompletionJobService(tripService),
       anonymousTurnCounter: createInMemoryAnonymousTurnCounter(),
+      authenticatedCopilotRateLimiter: createInMemoryAuthenticatedCopilotRateLimiter(),
       copilotIpRateLimiter: createInMemoryCopilotIpRateLimiter(),
       telemetryRateLimiter: createInMemoryTelemetryRateLimiter(),
     };
@@ -140,6 +146,7 @@ export function createWebServerServices(environment: Environment): WebServerServ
   const telemetryService = createDbTelemetryService(db, { environment });
   const completionQueue = resolveCompletionQueue(environment);
   const anonymousTurnCounter = resolveAnonymousTurnCounter(environment);
+  const authenticatedCopilotRateLimiter = resolveAuthenticatedCopilotRateLimiter(environment);
   const copilotIpRateLimiter = resolveCopilotIpRateLimiter(environment);
   const telemetryRateLimiter = resolveTelemetryRateLimiter(environment);
   return {
@@ -154,6 +161,7 @@ export function createWebServerServices(environment: Environment): WebServerServ
     completionJobService: createDbCompletionJobService(db),
     ...(completionQueue ? { completionQueue } : {}),
     ...(anonymousTurnCounter ? { anonymousTurnCounter } : {}),
+    ...(authenticatedCopilotRateLimiter ? { authenticatedCopilotRateLimiter } : {}),
     ...(copilotIpRateLimiter ? { copilotIpRateLimiter } : {}),
     ...(telemetryRateLimiter ? { telemetryRateLimiter } : {}),
     completionDay: createModelCompleteDay({ environment, traceService }),
@@ -163,6 +171,18 @@ export function createWebServerServices(environment: Environment): WebServerServ
 function resolveCopilotIpRateLimiter(environment: Environment): CopilotIpRateLimiter | undefined {
   try {
     return createUpstashCopilotIpRateLimiter(resolveUpstashCopilotIpRateLimiterConfig(environment));
+  } catch {
+    return undefined;
+  }
+}
+
+function resolveAuthenticatedCopilotRateLimiter(
+  environment: Environment,
+): AuthenticatedCopilotRateLimiter | undefined {
+  try {
+    return createUpstashAuthenticatedCopilotRateLimiter(
+      resolveUpstashAuthenticatedCopilotRateLimiterConfig(environment),
+    );
   } catch {
     return undefined;
   }
@@ -212,6 +232,10 @@ export function setTestWebServerServices(services: WebServerServices | null): vo
 
 export function getCopilotIpRateLimiter(): CopilotIpRateLimiter | undefined {
   return getWebServerServices(process.env).copilotIpRateLimiter;
+}
+
+export function getAuthenticatedCopilotRateLimiter(): AuthenticatedCopilotRateLimiter | undefined {
+  return getWebServerServices(process.env).authenticatedCopilotRateLimiter;
 }
 
 export function getTelemetryRateLimiter(): TelemetryRateLimiter | undefined {

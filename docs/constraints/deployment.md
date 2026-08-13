@@ -50,6 +50,11 @@ Status: active
   MUST NOT exceed its default hard ceiling. Invalid values fail closed. Every model attempt,
   including fallback attempts, MUST use the stricter of the public output ceiling and its own
   provider/request limit.
+- A verified authenticated Copilot request MUST also pass its separate Upstash identity window after
+  the trusted-network guard. Its Redis key is a domain-separated HMAC derived from the verified user
+  identity and `VISEPANDA_IP_HASH_SALT`; raw user ids, addresses, cookies, and salts MUST NOT be sent
+  to Redis or logs. Missing Redis or hashing configuration fails the authenticated request closed with
+  a typed unavailable result rather than falling back to process-local accounting.
 - Public telemetry capture MUST use the same approved Upstash Redis service and Vercel-only trusted
   address resolver before the telemetry database write. It MUST require both a HMAC-derived verified
   identity window and a HMAC-derived trusted-network window; raw identity, address, salt, cookie,

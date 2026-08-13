@@ -1,6 +1,7 @@
 import {
   createInMemoryAgentTraceService,
   createInMemoryAnonymousTurnCounter,
+  createInMemoryAuthenticatedCopilotRateLimiter,
   createInMemoryCopilotIpRateLimiter,
   createInMemoryHumanTaskService,
   createInMemoryKnowledgeService,
@@ -8,6 +9,19 @@ import {
   TripVersionConflictError,
 } from "@visepanda/app-server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+const authenticatedUser = vi.hoisted(() => ({
+  current: null as { id: string; email?: string } | null,
+}));
+
+vi.mock("@supabase/ssr", () => ({
+  createServerClient: () => ({
+    auth: {
+      getUser: async () => ({ data: { user: authenticatedUser.current } }),
+    },
+  }),
+}));
+
 import { createAnonymousSessionValue } from "../../../lib/requestIdentity";
 import { setTestWebServerServices } from "../_server";
 import { POST } from "./route";
@@ -27,6 +41,7 @@ beforeEach(() => {
   delete process.env.SUPABASE_URL;
   delete process.env.SUPABASE_ANON_KEY;
   process.env.VERCEL = "1";
+  authenticatedUser.current = null;
 });
 
 afterEach(() => {
@@ -38,6 +53,7 @@ afterEach(() => {
   restoreEnv("SUPABASE_ANON_KEY", originalEnvironment.supabaseAnonKey);
   restoreEnv("VERCEL", originalEnvironment.vercel);
   restoreEnv("VISEPANDA_COPILOT_MAX_INPUT_CODE_UNITS", originalEnvironment.maxInputCodeUnits);
+  authenticatedUser.current = null;
 });
 
 describe("POST /api/copilot anonymous turn wall", () => {
@@ -89,6 +105,60 @@ describe("POST /api/copilot anonymous turn wall", () => {
       ok: false,
       code: "COPILOT_INPUT_TOO_LARGE",
       maxInputCodeUnits: 4,
+    });
+  });
+
+  it("enforces the separate authenticated identity window without counting an anonymous turn", async () => {
+    process.env.SUPABASE_URL = "https://project.supabase.co";
+    process.env.SUPABASE_ANON_KEY = "public-anon-key";
+    authenticatedUser.current = {
+      id: "11111111-1111-4111-8111-111111111111",
+      email: "traveler@example.test",
+    };
+    setTestWebServerServices({
+      authenticatedCopilotRateLimiter: createInMemoryAuthenticatedCopilotRateLimiter({
+        minuteLimit: 1,
+        hourLimit: 2,
+      }),
+      copilotIpRateLimiter: createInMemoryCopilotIpRateLimiter(),
+      humanTaskService: createInMemoryHumanTaskService(),
+      knowledgeService: createInMemoryKnowledgeService(),
+      traceService: createInMemoryAgentTraceService(),
+      tripService: createVersionedInMemoryTripService(),
+    });
+
+    expect((await POST(request("First authenticated request"))).status).toBe(200);
+    const blocked = await POST(request("Second authenticated request"));
+
+    expect(blocked.status).toBe(429);
+    expect(blocked.headers.get("retry-after")).toBe("60");
+    await expect(blocked.json()).resolves.toEqual({
+      ok: false,
+      code: "COPILOT_AUTHENTICATED_RATE_LIMITED",
+      error: "Your Copilot account has sent too many requests. Try again in 60 seconds.",
+      retryAfterSeconds: 60,
+    });
+  });
+
+  it("fails closed for an authenticated request when its identity limiter is unavailable", async () => {
+    process.env.SUPABASE_URL = "https://project.supabase.co";
+    process.env.SUPABASE_ANON_KEY = "public-anon-key";
+    authenticatedUser.current = { id: "11111111-1111-4111-8111-111111111111" };
+    setTestWebServerServices({
+      copilotIpRateLimiter: createInMemoryCopilotIpRateLimiter(),
+      humanTaskService: createInMemoryHumanTaskService(),
+      knowledgeService: createInMemoryKnowledgeService(),
+      traceService: createInMemoryAgentTraceService(),
+      tripService: createVersionedInMemoryTripService(),
+    });
+
+    const response = await POST(request("Authenticated request"));
+
+    expect(response.status).toBe(503);
+    await expect(response.json()).resolves.toEqual({
+      ok: false,
+      code: "COPILOT_AUTHENTICATED_RATE_LIMIT_UNAVAILABLE",
+      error: "Copilot account request protection is temporarily unavailable. Try again later.",
     });
   });
 

@@ -56,8 +56,10 @@ Next.js runtimes rather than deployed as an independent service.
   120/hour. Deployment settings may only lower these hard ceilings and invalid values fail closed.
   The model runtime already clamps primary and fallback attempts to the stricter request/provider and
   public output-token bound. The Web boundary rejects an over-limit message with typed HTTP 413 before
-  any request-protection or model composition work. The authenticated limiter and per-identity Human
-  Task daily cap remain separate P0-20 integration boundaries and are not implied by this slice.
+  any request-protection or model composition work. A verified account then passes a separate
+  domain-separated-HMAC authenticated identity window after the trusted-network guard; a missing
+  dependency returns an honest unavailable response and never falls back to process-local enforcement.
+  The per-identity Human Task daily cap remains a separate P0-20 integration boundary.
 - The deployed DEMO-01 path is dialogue-only. It rejects Trip actions, tools, commerce, Human Help,
   and citations before any state-changing branch can run. Real provider evidence remains blocked on
   OA-005 and is not claimed by this repository change.
