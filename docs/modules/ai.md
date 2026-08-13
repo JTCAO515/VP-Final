@@ -35,6 +35,9 @@ Copilot-specific provider composition belong in their owning runtime module.
   are environment-selected and readiness diagnostics never expose key values. Moonshot, DeepSeek,
   and Zhipu routes inject their documented non-thinking request body because DEMO-01 expects short
   JSON envelopes rather than reasoning traces.
+- The durable Web composition emits one safe startup warning when any configured DEMO-01 route is
+  incomplete. The warning contains only route, provider, model-variable name, key-variable name, and
+  missing class; it never includes environment values or a public provider-health response.
 
 ## Not Yet Production-Implemented
 

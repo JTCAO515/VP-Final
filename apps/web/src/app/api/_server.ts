@@ -10,6 +10,7 @@ import {
   createDbTelemetryService,
   createDbVersionedTripService,
   createDemoCopilotModelDependencies,
+  reportDemoProviderReadiness,
   createInMemoryAnonymousTurnCounter,
   createInMemoryAuthenticatedCopilotRateLimiter,
   createInMemoryCopilotIpRateLimiter,
@@ -142,6 +143,7 @@ export function createWebServerServices(environment: Environment): WebServerServ
   const databaseUrl = environment.DATABASE_URL;
   if (!databaseUrl) throw new WebRuntimeUnavailableError("database_url_missing");
   const db = createDb(databaseUrl);
+  reportDemoProviderReadiness(environment);
   const traceService = createDbAgentTraceService(db);
   const telemetryService = createDbTelemetryService(db, { environment });
   const completionQueue = resolveCompletionQueue(environment);

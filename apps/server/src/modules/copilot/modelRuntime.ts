@@ -1,6 +1,7 @@
 import {
   createModelRouter,
   createOpenAiCompatibleProvider,
+  inspectDemoProviderReadiness,
   ModelRoutingError,
   planningRewriteEnabled,
   resolveDemoModelRoute,
@@ -53,6 +54,35 @@ const CHAINS: Record<DemoModelChain, readonly DemoModelRoute[]> = {
   concierge: ["concierge_primary", "concierge_fallback", "concierge_tertiary"],
   planning: ["planning_primary", "planning_fallback"],
 };
+
+type ProviderConfigurationWarning = (
+  event: "copilot_provider_configuration_degraded",
+  details: {
+    routes: Array<{
+      route: DemoModelRoute;
+      provider: string;
+      modelEnvironment: string;
+      keyEnvironment: string;
+      status: "ready" | "missing_model" | "missing_key";
+    }>;
+  },
+) => void;
+
+export function reportDemoProviderReadiness(
+  environment: Environment,
+  warn: ProviderConfigurationWarning = console.warn,
+): void {
+  const routes = inspectDemoProviderReadiness(environment)
+    .filter((entry) => entry.status !== "ready")
+    .map(({ route, provider, modelEnvironment, keyEnvironment, status }) => ({
+      route,
+      provider,
+      modelEnvironment,
+      keyEnvironment,
+      status,
+    }));
+  if (routes.length > 0) warn("copilot_provider_configuration_degraded", { routes });
+}
 
 export function createDemoModelRuntime(environment: Environment) {
   return {

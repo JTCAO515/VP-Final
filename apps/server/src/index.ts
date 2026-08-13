@@ -123,6 +123,7 @@ export {
   createDemoModelRuntime,
   DemoModelExecutionError,
   DemoModelUnavailableError,
+  reportDemoProviderReadiness,
 } from "./modules/copilot/modelRuntime.js";
 export {
   createInMemoryOpsAuthorizationService,

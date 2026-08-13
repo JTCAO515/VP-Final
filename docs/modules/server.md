@@ -314,3 +314,10 @@ replacing fixtures with model output.
 review-before-submit Human Help handoff, malformed and business-rule-invalid TripPatch rejection,
 no-evidence honesty, and medical/passport fixed-unavailable paths. It uses only deterministic local
 fixtures and cannot make a provider, payment, task-creation, or public-policy claim.
+
+### Provider configuration readiness
+
+When durable Web services are composed, an incomplete DEMO-01 provider route emits one structured
+`copilot_provider_configuration_degraded` warning containing only route/provider and the relevant
+model/key environment-variable names. It is a private deployment diagnostic, never a public health
+endpoint; the requested Copilot capability continues to use its typed unavailable response.
