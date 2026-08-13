@@ -1382,6 +1382,32 @@ button:disabled {
   line-height: 1.45;
 }
 
+.rescueCitySelect {
+  color: var(--ink);
+  display: grid;
+  font-size: 14px;
+  font-weight: 700;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.rescueCitySelect select {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  font: inherit;
+  min-height: 44px;
+  padding: 0 12px;
+}
+
+.rescueCitySelect small {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
 .rescueResult {
   background: color-mix(in srgb, var(--surface), var(--gold-soft) 18%);
   border: 1px solid var(--line);
@@ -1409,6 +1435,21 @@ button:disabled {
 .rescueUnavailableResult {
   border-left: 3px solid var(--gold);
   padding-left: 16px;
+}
+
+.rescueHumanHelpOffer {
+  background: var(--surface-warm);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 20px;
+}
+
+.rescueHumanHelpOffer h2,
+.rescueHumanHelpOffer p {
+  margin: 0;
 }
 
 .rescuePrivacyNote {

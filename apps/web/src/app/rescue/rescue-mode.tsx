@@ -8,6 +8,7 @@ import {
   type RescueCategory,
 } from "@visepanda/domain";
 import { captureClientTelemetry } from "../../lib/clientTelemetry";
+import type { RescueRuntimeConfiguration } from "./runtime";
 
 const RESCUE_CATEGORIES: ReadonlyArray<{
   id: RescueCategory;
@@ -53,16 +54,36 @@ const RESCUE_CATEGORIES: ReadonlyArray<{
   },
 ];
 
-export function RescueMode() {
+type RescueModeProps = Readonly<{
+  configuration?: RescueRuntimeConfiguration;
+}>;
+
+const UNAVAILABLE_CONFIGURATION: RescueRuntimeConfiguration = {
+  availableTargetIds: [],
+  actionHrefs: {},
+  humanHelpAvailability: DEFAULT_RESCUE_HUMAN_HELP_AVAILABILITY,
+};
+
+const HUMAN_HELP_KIND_BY_CATEGORY: Readonly<Partial<Record<RescueCategory, string>>> = {
+  transport_problem: "transport_help",
+  language_barrier: "translation_help",
+  ticket_booking_problem: "ticket_help",
+  lost_item: "other",
+  payment_problem: "other",
+};
+
+export function RescueMode({ configuration = UNAVAILABLE_CONFIGURATION }: RescueModeProps) {
   const [selectedCategory, setSelectedCategory] = useState<RescueCategory | null>(null);
+  const [selectedCity, setSelectedCity] = useState<string>("");
   const route = selectedCategory
     ? resolveRescueRoute(
         {
           version: RESCUE_ROUTING_VERSION,
           category: selectedCategory,
-          availableTargetIds: [],
+          ...(selectedCity ? { city: selectedCity } : {}),
+          availableTargetIds: configuration.availableTargetIds,
         },
-        DEFAULT_RESCUE_HUMAN_HELP_AVAILABILITY,
+        configuration.humanHelpAvailability,
       )
     : null;
 
@@ -78,9 +99,10 @@ export function RescueMode() {
       {
         version: RESCUE_ROUTING_VERSION,
         category,
-        availableTargetIds: [],
+        ...(selectedCity ? { city: selectedCity } : {}),
+        availableTargetIds: configuration.availableTargetIds,
       },
-      DEFAULT_RESCUE_HUMAN_HELP_AVAILABILITY,
+      configuration.humanHelpAvailability,
     );
     captureClientTelemetry({
       action: "rescue_route_selected",
@@ -135,6 +157,26 @@ export function RescueMode() {
               </button>
             ))}
           </div>
+          {configuration.humanHelpAvailability.status === "available" ? (
+            <label className="rescueCitySelect">
+              <span>Current city for the limited Human Help preview</span>
+              <select
+                onChange={(event) => setSelectedCity(event.target.value)}
+                value={selectedCity}
+              >
+                <option value="">Select a configured city</option>
+                {configuration.humanHelpAvailability.supportedCities.map((city) => (
+                  <option key={city} value={city}>
+                    {city}
+                  </option>
+                ))}
+              </select>
+              <small>
+                Currently configured: {configuration.humanHelpAvailability.hoursLabel}. Requests are
+                best-effort, with no response-time guarantee.
+              </small>
+            </label>
+          ) : null}
         </div>
 
         <aside className="rescueResult" aria-live="polite">
@@ -156,6 +198,20 @@ export function RescueMode() {
                 Open official emergency guidance
               </a>
             </div>
+          ) : route.primaryAction.kind !== "unavailable" &&
+            route.primaryAction.targetId !== null &&
+            configuration.actionHrefs[route.primaryAction.targetId] ? (
+            <div className="rescueReviewedResult">
+              <p className="pageEyebrow">Reviewed self-service step</p>
+              <h2>Start with the current guide.</h2>
+              <p>{route.primaryAction.message}</p>
+              <a
+                className="pageAction"
+                href={configuration.actionHrefs[route.primaryAction.targetId]}
+              >
+                Open reviewed guidance
+              </a>
+            </div>
           ) : (
             <div className="rescueUnavailableResult">
               <p className="pageEyebrow">Current availability</p>
@@ -170,6 +226,29 @@ export function RescueMode() {
               </a>
             </div>
           )}
+
+          {route?.humanHelpOffer.status === "available" && selectedCategory ? (
+            <div className="rescueHumanHelpOffer">
+              <p className="pageEyebrow">Optional manual review</p>
+              <h2>Human Help may review this request.</h2>
+              <p>
+                Current preview hours: {route.humanHelpOffer.hoursLabel}. A request is free to
+                submit for triage; no price, payment, booking, or outcome is promised.
+              </p>
+              <p>
+                No Trip, block, location, or incident narrative is being carried from Rescue. You
+                can change the task type and enter only the details you choose before submitting.
+              </p>
+              <a
+                className="pageAction"
+                href={`/human-help?kind=${encodeURIComponent(
+                  HUMAN_HELP_KIND_BY_CATEGORY[selectedCategory] ?? "other",
+                )}`}
+              >
+                Continue to Human Help
+              </a>
+            </div>
+          ) : null}
 
           <div className="rescuePrivacyNote">
             <b>Privacy by default</b>
