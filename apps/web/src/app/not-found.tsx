@@ -1,4 +1,7 @@
 import { SiteFooter, SiteHeader } from "./site-chrome";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 export default function NotFound() {
   return (
