@@ -93,6 +93,10 @@ not an incident narrative, location, contact, health detail, or free-form outcom
 Human Help offer/confirmation, and resolution lifecycle events remain server-owned and must not be
 emitted merely because a disabled or unavailable Rescue route rendered.
 
+Arrival Pack browser observations are likewise closed-set: generated, downloaded, and regenerated may
+send only fixed version/count metadata. They never send the printable Trip text, local address, Readiness
+answers, rendered HTML, or any download payload; a failed local download does not produce a success event.
+
 Before the endpoint delegates to the telemetry service, it requires both the verified signed-session
 or account identity and Vercel's trusted client address to pass independent Upstash sliding windows.
 The current default allows a generous real browsing burst: `60/minute` and `300/hour` per identity,

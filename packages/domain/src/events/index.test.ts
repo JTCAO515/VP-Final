@@ -14,6 +14,7 @@ describe("TelemetryEventSchema", () => {
     expect(TelemetryActionSchema.parse("prompt_submitted")).toBe("prompt_submitted");
     expect(TelemetryActionSchema.parse("task_paid")).toBe("task_paid");
     expect(TelemetryActionSchema.parse("rescue_route_selected")).toBe("rescue_route_selected");
+    expect(TelemetryActionSchema.parse("arrival_pack_downloaded")).toBe("arrival_pack_downloaded");
     expect(() => TelemetryActionSchema.parse("arbitrary_event")).toThrow();
   });
 
@@ -158,6 +159,35 @@ describe("TelemetryCaptureInputSchema", () => {
           category: "payment_problem",
           primaryActionKind: "unavailable",
           narrative: "My card was declined at a hotel",
+        },
+      }),
+    ).toThrow();
+  });
+
+  it("allows fixed Arrival Pack counters but rejects Trip text or address content", () => {
+    expect(
+      TelemetryCaptureInputSchema.parse({
+        action: "arrival_pack_generated",
+        entity_type: "arrival_pack",
+        entity_id: "trip-123",
+        props_jsonb: {
+          packVersion: 1,
+          firstDayBlockCount: 2,
+          reviewedAddressCount: 0,
+          readinessIncluded: true,
+        },
+      }).action,
+    ).toBe("arrival_pack_generated");
+    expect(() =>
+      TelemetryCaptureInputSchema.parse({
+        action: "arrival_pack_downloaded",
+        entity_type: "arrival_pack",
+        props_jsonb: {
+          packVersion: 1,
+          firstDayBlockCount: 2,
+          reviewedAddressCount: 1,
+          readinessIncluded: true,
+          address: "Shanghai address must not be tracked",
         },
       }),
     ).toThrow();
