@@ -105,7 +105,7 @@ export function AccountPanel() {
           {sessionEmail ? "Your session is active" : "Keep your trip close."}
         </h1>
         <p>
-          Create an account or sign in to keep your travel plans with you. A limited Copilot preview
+          Create an account or sign in to keep your travel plans with you. A limited VisePanda preview
           is available without an account.
         </p>
         {loading ? (
@@ -177,7 +177,7 @@ export function AccountPanel() {
             {error}
           </p>
         ) : null}
-        <a className="backLink" href="/">
+        <a className="backLink" href="/visepanda">
           Continue without signing in
         </a>
       </div>
