@@ -141,6 +141,73 @@ body {
   overflow-x: clip;
 }
 
+.runtimeErrorPage {
+  align-items: center;
+  background: var(--app);
+  display: grid;
+  min-height: 100vh;
+  padding: 24px;
+}
+
+.runtimeErrorPanel {
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--red);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  margin: 0 auto;
+  max-width: 560px;
+  padding: 40px;
+}
+
+.runtimeErrorPanel h1 {
+  font-size: clamp(30px, 6vw, 46px);
+  letter-spacing: 0;
+  line-height: 1.08;
+  margin: 0;
+}
+
+.runtimeErrorPanel > p:not(.pageEyebrow) {
+  color: var(--ink-soft);
+  line-height: 1.6;
+  margin: 18px 0 0;
+}
+
+.runtimeErrorReference code {
+  color: var(--ink);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.runtimeErrorActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.runtimeErrorActions button,
+.runtimeErrorActions a {
+  align-items: center;
+  border: 1px solid var(--red);
+  border-radius: 8px;
+  display: inline-flex;
+  font-weight: 800;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 16px;
+  text-decoration: none;
+}
+
+.runtimeErrorActions button {
+  background: var(--red);
+  color: var(--vp-on-primary);
+}
+
+.runtimeErrorActions a {
+  border-color: var(--vp-line-strong);
+  color: var(--ink);
+}
+
 button,
 input,
 select,
