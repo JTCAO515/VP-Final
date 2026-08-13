@@ -62,3 +62,8 @@ model routing, envelope validation, citation checks, execution-fact support, or 
 must keep the deterministic safety runtime suite green alongside the Trip-generation golden set. The
 suite exercises the real pipeline with controlled fixtures; it must not be weakened by replacing an
 assertion with model output or by narrowing a safety input after a regression is discovered.
+
+The gate also runs the deterministic Copilot policy-regression suite. It verifies that commercial
+actions remain gated by `commerce_intent`, Human Help is only a reviewable draft, malformed or
+business-invalid patches are rejected, insufficient verified knowledge stays honest, and medical or
+legal-sensitive requests cannot bypass the fixed-expression safety path.
