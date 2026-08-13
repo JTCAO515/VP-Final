@@ -31,6 +31,11 @@ the public Web application and protected by server-side role checks.
   normalized open knowledge-gap draft through the durable KnowledgeService.
 - `/api/tasks/:taskId/status`: `task.write`-protected transition endpoint; actor is session-derived.
   Mutation responses contain status/audit evidence only and never echo contact or description.
+- `/api/tasks/:taskId/checkout`: `task.write`-protected internal Checkout composition endpoint. It is
+  unavailable unless the deployed database, explicit Checkout activation, HTTPS Checkout URLs, Stripe
+  secret, and signed webhook configuration all resolve. It accepts an Ops-authorized cents amount
+  only after a task has become `quoted`; it returns a minimized Ops-only session projection, never card
+  data, contact, description, provider error body, or payment-success claim.
 - `/login`: verified Supabase Ops sign-in.
 - `/roles` and `/api/roles`: Admin-only membership management.
 - `/costs`: Admin-only server-rendered Copilot cost summary for the latest 14 UTC days. It displays
@@ -92,7 +97,9 @@ the public Web application and protected by server-side role checks.
   host values, target URLs, contacts, credentials, cookies, and signatures are excluded. No partner
   is activated by repository defaults, and this surface does not represent affiliate approval,
   booking, commission, payment, reconciliation, or revenue.
-- Payment operations are not yet available.
+- Payment operations remain unavailable to travelers. The private Ops Checkout composition may create a
+  hosted provider session only when every server-side configuration gate resolves; a signed webhook
+  consumer is still required before any task can become `paid`.
 
 Production use still requires OA-001, OA-004, and OA-010 verification. Missing Auth or database
 configuration fails closed; there is no production memory-role fallback.
