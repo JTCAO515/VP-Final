@@ -46,8 +46,19 @@ describe("Web server composition", () => {
     expect(createWebServerServices({ VISEPANDA_RUNTIME_MODE: "local-demo" })).toMatchObject({
       humanTaskService: expect.any(Object),
       knowledgeService: expect.any(Object),
+      readinessService: expect.any(Object),
       tripService: expect.any(Object),
     });
+  });
+
+  it("rejects a readiness retention setting that would extend the documented maximum", () => {
+    expect(() =>
+      createWebServerServices({
+        VISEPANDA_RUNTIME_MODE: "production",
+        DATABASE_URL: "postgres://postgres:postgres@127.0.0.1:5432/postgres",
+        VISEPANDA_READINESS_RETENTION_DAYS: "181",
+      }),
+    ).toThrow("VISEPANDA_READINESS_RETENTION_DAYS must be between 1 and 180");
   });
 
   it("reports incomplete provider configuration by environment variable name only", () => {

@@ -9,6 +9,7 @@ import type { CompletionQueue } from "./modules/copilot/completionQueue.js";
 import type { AnonymousTurnCounter } from "./modules/copilot/anonymousTurnCounter.js";
 import type { CommerceService } from "./modules/commerce/service.js";
 import type { SafePhraseResolver } from "./modules/copilot/executionSafety.js";
+import type { ReadinessService } from "./modules/readiness/service.js";
 
 export type RequestIdentity =
   | { kind: "anonymous"; anonId: string }
@@ -28,6 +29,7 @@ export type ServerContext = {
   anonymousTurnCounter?: AnonymousTurnCounter;
   commerceService?: CommerceService;
   safePhraseResolver?: SafePhraseResolver;
+  readinessService?: ReadinessService;
   demoDialogueOnly?: boolean;
   tripService: VersionedTripService;
 };

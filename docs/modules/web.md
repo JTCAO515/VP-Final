@@ -10,41 +10,47 @@ the outbound gateway.
 
 ## Routes
 
-| Route                            | Purpose                                                                  |
-| -------------------------------- | ------------------------------------------------------------------------ |
+| Route                            | Purpose                                                                        |
+| -------------------------------- | ------------------------------------------------------------------------------ |
 | `/`                              | Product home with an illustrative, non-interactive VisePanda workspace preview |
-| `/visepanda`                     | Canonical VisePanda workspace and Trip Canvas                            |
-| `/copilot`                       | Legacy redirect to `/visepanda`                                          |
-| `/explore`                       | Execution-fact discovery                                                 |
-| `/guides/[slug]`                 | Editorial execution guides                                               |
-| `/[city]/[poi]`                  | Programmatic POI page                                                    |
-| `/human-help`                    | Human Task request surface                                               |
-| `/account`                       | Server-verified traveler session and email/password registration/sign-in |
-| `/privacy`                       | Public Privacy Policy                                                    |
-| `/terms`                         | Public Terms of Use                                                      |
-| `/affiliate-disclosure`          | Public affiliate relationship disclosure                                 |
-| `/human-help-disclaimer`         | Full Human Help controlled-preview limits                                |
-| `/emergency-disclaimer`          | Official emergency-channel guidance and product limits                   |
-| `/share/trips/[token]`           | Public read-only Trip share                                              |
-| `/outbound`                      | Validated partner redirect gateway                                       |
-| `/api/copilot`                   | First-pass Copilot request                                               |
-| `/api/copilot/complete`          | Silent second-pass completion                                            |
-| `/api/copilot/complete/callback` | Signed QStash completion delivery callback                               |
-| `/api/auth/login`                | Supabase email/password sign-in and SSR cookie issuance                  |
-| `/api/auth/logout`               | Supabase sign-out and SSR cookie clearing                                |
-| `/api/auth/session`              | Verified display-safe session status and cookie refresh                  |
-| `/api/telemetry`                 | Strict privacy-safe browser telemetry capture                            |
-| `/api/trips/*`                   | Trip read, claim, and share handlers                                     |
+| `/visepanda`                     | Canonical VisePanda workspace and Trip Canvas                                  |
+| `/copilot`                       | Legacy redirect to `/visepanda`                                                |
+| `/explore`                       | Execution-fact discovery                                                       |
+| `/guides/[slug]`                 | Editorial execution guides                                                     |
+| `/[city]/[poi]`                  | Programmatic POI page                                                          |
+| `/human-help`                    | Human Task request surface                                                     |
+| `/account`                       | Server-verified traveler session and email/password registration/sign-in       |
+| `/privacy`                       | Public Privacy Policy                                                          |
+| `/terms`                         | Public Terms of Use                                                            |
+| `/affiliate-disclosure`          | Public affiliate relationship disclosure                                       |
+| `/human-help-disclaimer`         | Full Human Help controlled-preview limits                                      |
+| `/emergency-disclaimer`          | Official emergency-channel guidance and product limits                         |
+| `/share/trips/[token]`           | Public read-only Trip share                                                    |
+| `/outbound`                      | Validated partner redirect gateway                                             |
+| `/api/copilot`                   | First-pass Copilot request                                                     |
+| `/api/copilot/complete`          | Silent second-pass completion                                                  |
+| `/api/copilot/complete/callback` | Signed QStash completion delivery callback                                     |
+| `/api/auth/login`                | Supabase email/password sign-in and SSR cookie issuance                        |
+| `/api/auth/logout`               | Supabase sign-out and SSR cookie clearing                                      |
+| `/api/auth/session`              | Verified display-safe session status and cookie refresh                        |
+| `/api/telemetry`                 | Strict privacy-safe browser telemetry capture                                  |
+| `/api/trips/*`                   | Trip read, claim, and share handlers                                           |
 
 ## Data Access
 
 The Next.js API layer creates an in-process server caller through one composition root. Explicit
 `preview`, `staging`, and `production` modes require `DATABASE_URL` and select only the existing
-Postgres Trip, Knowledge, Agent Trace, Human Task, and Commerce adapters. Missing/invalid mode or database configuration returns typed
-503 `RUNTIME_UNAVAILABLE`; it never selects memory. Tests inject services explicitly. Only explicit
+Postgres Trip, Knowledge, Agent Trace, Human Task, Commerce, and Readiness adapters. Missing/invalid
+mode or database configuration returns typed 503 `RUNTIME_UNAVAILABLE`; it never selects memory. Tests inject services explicitly. Only explicit
 `local-demo` may use a process-cached, non-durable memory pair. The selected durable service pair is
 also process-cached so requests reuse the Postgres pool; persistence remains in Postgres across cold
 starts.
+
+The composition root also supplies the private Readiness service to the shared server router. It is
+not a browser table-access path: a later traveler UI uses only server procedures, explicit persistence
+consent, and the existing verified-account or signed-anonymous-Trip identity boundary. Deployed
+retention defaults to 180 days and `VISEPANDA_READINESS_RETENTION_DAYS` may only shorten it; invalid
+configuration fails composition rather than silently retaining data longer.
 
 [ADR-0005](../adr/ADR-0005-runtime-modes-and-production-adapter-ownership.md) requires explicit mode
 selection: only `local-demo` may use labelled fixtures/memory; deployed modes return honest

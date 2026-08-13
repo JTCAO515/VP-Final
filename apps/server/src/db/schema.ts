@@ -115,6 +115,42 @@ export const tripEvents = pgTable(
   }),
 );
 
+export const readinessAssessments = pgTable(
+  "readiness_assessments",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }),
+    tripId: uuid("trip_id").references(() => trips.id, { onDelete: "cascade" }),
+    assessmentJsonb: jsonb("assessment_jsonb").notNull(),
+    resultJsonb: jsonb("result_jsonb").notNull(),
+    consentedAt: timestamp("consented_at", { withTimezone: true }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    retentionExpiresAt: timestamp("retention_expires_at", { withTimezone: true }).notNull(),
+  },
+  (table) => ({
+    userCreatedIdx: index("readiness_assessments_user_created_idx").on(
+      table.userId,
+      table.createdAt,
+    ),
+    tripCreatedIdx: index("readiness_assessments_trip_created_idx").on(
+      table.tripId,
+      table.createdAt,
+    ),
+    ownerCheck: check(
+      "readiness_assessments_user_or_trip_check",
+      sql`num_nonnulls(${table.userId}, ${table.tripId}) >= 1`,
+    ),
+    consentTimeCheck: check(
+      "readiness_assessments_consent_time_check",
+      sql`${table.consentedAt} <= ${table.createdAt}`,
+    ),
+    retentionCheck: check(
+      "readiness_assessments_retention_check",
+      sql`${table.retentionExpiresAt} > ${table.createdAt} and ${table.retentionExpiresAt} <= ${table.createdAt} + interval '180 days'`,
+    ),
+  }),
+);
+
 export const copilotCompletionJobs = pgTable(
   "copilot_completion_jobs",
   {

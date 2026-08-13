@@ -63,6 +63,10 @@ Status: active
   telemetry views MUST expose aggregate measures only, and no `anon` or `authenticated` Data API role
   may read the ledger or those views.
 - Deletion/export/retention behavior MUST be documented before collecting a new personal-data class.
+- China Readiness self-reports are server-only, fixed-enum records. Their persistence requires
+  explicit consent, one server-derived authenticated owner or owned Trip reference, and a retention
+  deadline no later than 180 days after creation. Direct Data API access is forbidden; expired rows
+  are unreadable before the private purge job removes them, and account/Trip deletion cascades them.
 - AI trace data MUST follow ADR-0007: server-only allowlisted metadata/digests, one verified or signed
   identity at most, no raw payload/error storage, and an enforceable retention deadline.
 

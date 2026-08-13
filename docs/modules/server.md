@@ -19,6 +19,8 @@ Next.js runtimes rather than deployed as an independent service.
 - `task`: owner-scoped Human Task intake/reads plus authorized, audited lifecycle transitions.
 - `telemetry`: event validation and ingestion interface.
 - `trace`: private agent-run and tool-call metadata recording.
+- `readiness`: owner-scoped persistence and retrieval of deterministic, consented China Readiness
+  self-reports.
 
 `identity` remains a reserved domain boundary rather than a complete standalone module.
 
@@ -30,6 +32,10 @@ Next.js runtimes rather than deployed as an independent service.
 - The shared Postgres.js client disables prepared statements so Vercel serverless traffic remains
   compatible with the approved Supavisor transaction-mode connection.
 - In-memory services support tests and explicit demos only.
+- Readiness persistence accepts only the fixed domain assessment/result shape after explicit consent.
+  An anonymous result must be attached to a currently owned Trip; an authenticated traveler may
+  save either an owned Trip result or an account-level result. The server derives every owner field,
+  never accepts free-form narrative, and stops reads at the retention deadline.
 - Runtime dependencies are injected through `ServerContext` or a caller factory.
 - `@visepanda/app-server/runtime` owns explicit mode parsing, database capability metadata, and the
   persistent-object ownership inventory. It does not select a service inside a router.

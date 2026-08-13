@@ -27,6 +27,7 @@ export { createDbVisePodProvisioningService } from "./db/visePodProvisioningServ
 export { createDbVisePodBindingService } from "./db/visePodBindingService.js";
 export { createDbVisePodUserResolutionService } from "./db/visePodUserResolutionService.js";
 export { createDbVersionedTripService } from "./db/versionedTripService.js";
+export { createDbReadinessService } from "./db/readinessService.js";
 export { createDbCompletionJobService } from "./db/completionJobService.js";
 export {
   adapterInventory,
@@ -185,6 +186,13 @@ export {
   TripVersionConflictError,
 } from "./modules/trip/versionedService.js";
 export {
+  DEFAULT_READINESS_RETENTION_DAYS,
+  createInMemoryReadinessService,
+  ReadinessTripNotFoundError,
+  ReadinessTripRequiredError,
+  resolveReadinessRetentionDays,
+} from "./modules/readiness/service.js";
+export {
   createCommerceService,
   InvalidOutboundTargetError,
   PartnerUnavailableError,
@@ -201,6 +209,7 @@ export {
 } from "./modules/commerce/partnerAdministration.js";
 export { OutboundRedirectInputSchema } from "./modules/commerce/router.js";
 export type { RequestIdentity } from "./context.js";
+export type { ReadinessIdentity, ReadinessService } from "./modules/readiness/service.js";
 export type { AdapterAvailability, RuntimeMode, RuntimeResolution } from "./runtime/runtimeMode.js";
 export type { KnowledgeService } from "./modules/knowledge/service.js";
 export type {

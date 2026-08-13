@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   CHINA_READINESS_QUESTIONS,
   ChinaReadinessAssessmentSchema,
+  ChinaReadinessPersistenceRequestSchema,
   deriveChinaReadinessResult,
 } from "./index.js";
 
@@ -49,6 +50,25 @@ describe("China Readiness Check domain contract", () => {
           { questionId: "payment_method", value: "confirmed" },
           { questionId: "payment_method", value: "not_confirmed" },
         ],
+      }).success,
+    ).toBe(false);
+  });
+
+  it("accepts persistence only after explicit consent and an optional Trip reference", () => {
+    expect(
+      ChinaReadinessPersistenceRequestSchema.safeParse({
+        assessment: {
+          version: 1,
+          answers: [{ questionId: "payment_method", value: "confirmed" }],
+          persistenceConsent: "granted",
+        },
+        tripId: "550e8400-e29b-41d4-a716-446655440000",
+      }).success,
+    ).toBe(true);
+
+    expect(
+      ChinaReadinessPersistenceRequestSchema.safeParse({
+        assessment: { version: 1, answers: [], persistenceConsent: "declined" },
       }).success,
     ).toBe(false);
   });

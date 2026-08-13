@@ -87,12 +87,42 @@ export const ChinaReadinessResultSchema = z
   })
   .strict();
 
+export const ChinaReadinessPersistenceRequestSchema = z
+  .object({
+    assessment: ChinaReadinessAssessmentSchema,
+    tripId: z.string().uuid().optional(),
+  })
+  .strict()
+  .superRefine((request, context) => {
+    if (request.assessment.persistenceConsent !== "granted") {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["assessment", "persistenceConsent"],
+        message: "Readiness persistence requires explicit granted consent",
+      });
+    }
+  });
+
+export const ChinaReadinessSavedAssessmentSchema = z
+  .object({
+    id: z.string().uuid(),
+    assessment: ChinaReadinessAssessmentSchema,
+    result: ChinaReadinessResultSchema,
+    tripId: z.string().uuid().optional(),
+    savedAt: z.string().datetime(),
+  })
+  .strict();
+
 export type ChinaReadinessQuestionId = z.infer<typeof ChinaReadinessQuestionIdSchema>;
 export type ChinaReadinessAnswerValue = z.infer<typeof ChinaReadinessAnswerValueSchema>;
 export type ChinaReadinessAssessment = z.infer<typeof ChinaReadinessAssessmentSchema>;
 export type ChinaReadinessQuestion = z.infer<typeof ChinaReadinessQuestionSchema>;
 export type ChinaReadinessResultItem = z.infer<typeof ChinaReadinessResultItemSchema>;
 export type ChinaReadinessResult = z.infer<typeof ChinaReadinessResultSchema>;
+export type ChinaReadinessPersistenceRequest = z.infer<
+  typeof ChinaReadinessPersistenceRequestSchema
+>;
+export type ChinaReadinessSavedAssessment = z.infer<typeof ChinaReadinessSavedAssessmentSchema>;
 
 /**
  * User-facing preparation prompts. They are self-reporting prompts, not claims that a service,

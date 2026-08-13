@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(27);
+select plan(31);
 
 select ok(
   exists (select 1 from pg_extension where extname = 'pg_cron'),
@@ -40,8 +40,8 @@ select throws_ok(
 
 select is(
   (select count(*) from cron.job where jobname like 'visepanda-purge-%'),
-  3::bigint,
-  'exactly three VisePanda retention jobs are scheduled'
+  4::bigint,
+  'exactly four VisePanda retention jobs are scheduled'
 );
 select is(
   (select schedule from cron.job where jobname = 'visepanda-purge-agent-traces'),
@@ -58,6 +58,11 @@ select is(
   '30 2 * * *',
   'Human Task purge runs daily at 02:30 UTC'
 );
+select is(
+  (select schedule from cron.job where jobname = 'visepanda-purge-readiness-assessments'),
+  '40 2 * * *',
+  'Readiness assessment purge runs daily at 02:40 UTC'
+);
 select matches(
   (select command from cron.job where jobname = 'visepanda-purge-agent-traces'),
   $$run_retention_purge\('agent_traces'\)$$,
@@ -72,6 +77,11 @@ select matches(
   (select command from cron.job where jobname = 'visepanda-purge-human-tasks'),
   $$run_retention_purge\('human_tasks'\)$$,
   'Human Task job calls only the reviewed wrapper target'
+);
+select matches(
+  (select command from cron.job where jobname = 'visepanda-purge-readiness-assessments'),
+  $$run_retention_purge\('readiness_assessments'\)$$,
+  'Readiness job calls only the reviewed wrapper target'
 );
 
 insert into public.agent_runs (id, anon_id, status, expires_at)
@@ -114,6 +124,35 @@ select is(
   (select status from internal.retention_purge_runs where target = 'human_tasks' order by completed_at desc, id desc limit 1),
   'succeeded',
   'Human Task wrapper records execution evidence'
+);
+
+insert into auth.users (
+  id, aud, role, email, encrypted_password, raw_app_meta_data, raw_user_meta_data,
+  created_at, updated_at
+) values (
+  '31100000-0000-4000-8000-000000000002', 'authenticated', 'authenticated',
+  'readiness-retention@example.com', '', '{}'::jsonb, '{}'::jsonb, now(), now()
+)
+on conflict (id) do nothing;
+insert into public.users (id, email)
+values ('31100000-0000-4000-8000-000000000002', 'readiness-retention@example.com')
+on conflict (id) do nothing;
+insert into public.readiness_assessments (
+  user_id, assessment_jsonb, result_jsonb, consented_at, created_at, retention_expires_at
+) values (
+  '31100000-0000-4000-8000-000000000002', '{}', '{}',
+  now() - interval '2 days', now() - interval '2 days', now() - interval '1 day'
+);
+select internal.run_retention_purge('readiness_assessments');
+select is(
+  (select count(*) from public.readiness_assessments where retention_expires_at <= now()),
+  0::bigint,
+  'Readiness wrapper deletes expired assessments'
+);
+select is(
+  (select readiness_assessments_deleted from internal.retention_purge_runs where target = 'readiness_assessments' order by completed_at desc, id desc limit 1),
+  1::bigint,
+  'Readiness wrapper records its deleted row count'
 );
 
 select is(
