@@ -185,6 +185,53 @@ describeDatabase("database HumanTaskService", () => {
     });
   });
 
+  it("allows an Ops-only non-binding quote only when payment preparation is explicitly enabled", async () => {
+    const service = createDbHumanTaskService(db, {
+      now: () => new Date("2099-01-05T04:00:00.000Z"),
+      allowPaymentPreparation: true,
+    });
+    const created = await service.create({
+      identity: { kind: "anonymous", anonId: anonA },
+      idempotencyKey: crypto.randomUUID(),
+      request,
+    });
+    const actor = {
+      userId: operatorId,
+      role: "operator" as const,
+      permissions: ["task.read", "task.contact.read", "task.write"] as const,
+    };
+    await service.transition({
+      taskId: created.id,
+      actor: { ...actor, permissions: [...actor.permissions] },
+      toStatus: "triaged",
+      reason: "Scope and capacity were reviewed before preparing a non-binding quote.",
+    });
+
+    const quoted = await service.transition({
+      taskId: created.id,
+      actor: { ...actor, permissions: [...actor.permissions] },
+      toStatus: "quoted",
+      reason: "A non-binding quote is ready for the configured payment preparation path.",
+    });
+
+    expect(quoted.task).toMatchObject({
+      status: "quoted",
+      price_usd: null,
+      payment_link: null,
+    });
+    const transitions = await service.listTransitions(created.id, {
+      ...actor,
+      permissions: [...actor.permissions],
+    });
+    expect(transitions).toContainEqual(
+      expect.objectContaining({
+        from_status: "triaged",
+        to_status: "quoted",
+        actor_id: operatorId,
+      }),
+    );
+  });
+
   it("persists an internal operator note and protects detail reads", async () => {
     const service = createDbHumanTaskService(db, {
       now: () => new Date("2099-01-04T04:00:00.000Z"),

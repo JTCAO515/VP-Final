@@ -116,8 +116,11 @@ Next.js runtimes rather than deployed as an independent service.
   server-only Stripe Checkout adapter is an explicit opt-in (`VISEPANDA_HUMAN_TASK_PAYMENTS_ENABLED`
   must equal `true`) and requires an HTTPS success URL, HTTPS cancel URL, retention-days value, and
   `STRIPE_SECRET_KEY`; otherwise it returns no gateway. It requests only a hosted one-time Checkout
-  session with the task id as opaque provider metadata and a server-authorized cents amount. It does
-  not write the ledger, change task status, expose raw provider errors, or accept card data; the
+  session with the task id as opaque provider metadata and a server-authorized cents amount. Before
+  that writer can be reached, `triaged -> quoted` is an Ops-only preparation transition that stays
+  absent unless both the Checkout configuration and the signing-webhook configuration resolve. It
+  sets neither a price nor a payment link, and is never payment evidence. The adapter does not write
+  the ledger, change task status, expose raw provider errors, or accept card data; the
   authorized writer and signed webhook consumer remain separate boundaries. The private Checkout
   writer locks one task before it asks the provider for a session, replays the existing matching
   ledger row without a second provider call, and commits the ledger row, task price/link,

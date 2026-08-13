@@ -254,4 +254,31 @@ describe("human task service", () => {
       }),
     ).rejects.toBeInstanceOf(HumanTaskTransitionPolicyError);
   });
+
+  it("permits an Ops-only quote only when payment preparation is explicitly configured", async () => {
+    const service = createInMemoryHumanTaskService({ allowPaymentPreparation: true });
+    const task = await service.create({
+      identity: anonA,
+      idempotencyKey: "00000000-0000-4000-8000-000000000121",
+      request,
+    });
+    await service.transition({
+      taskId: task.id,
+      actor: { ...operator, permissions: [...operator.permissions] },
+      toStatus: "triaged",
+      reason: "Scope and capacity were reviewed before preparing a non-binding quote.",
+    });
+
+    await expect(
+      service.transition({
+        taskId: task.id,
+        actor: { ...operator, permissions: [...operator.permissions] },
+        toStatus: "quoted",
+        reason: "A non-binding quote is ready for the configured payment preparation path.",
+      }),
+    ).resolves.toMatchObject({
+      task: { status: "quoted", price_usd: null, payment_link: null },
+      transition: { from_status: "triaged", to_status: "quoted", actor_id: operator.userId },
+    });
+  });
 });

@@ -1,6 +1,10 @@
 import { createInMemoryHumanTaskService } from "@visepanda/app-server";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { getHumanTaskService, setTestOpsHumanTaskService } from "./store";
+import {
+  getHumanTaskService,
+  isHumanTaskPaymentPreparationAvailable,
+  setTestOpsHumanTaskService,
+} from "./store";
 
 beforeEach(() => {
   process.env.VISEPANDA_RUNTIME_MODE = "test";
@@ -34,5 +38,22 @@ describe("ops human task store", () => {
   it("fails closed when test composition is not injected", () => {
     setTestOpsHumanTaskService(null);
     expect(() => getHumanTaskService()).toThrow("Ops test Human Tasks are not injected.");
+  });
+
+  it("requires both Checkout and webhook configuration before enabling quote preparation", () => {
+    const checkoutOnly = {
+      VISEPANDA_HUMAN_TASK_PAYMENTS_ENABLED: "true",
+      STRIPE_SECRET_KEY: "test_secret",
+      VISEPANDA_STRIPE_SUCCESS_URL: "https://www.go2china.space/payment/success",
+      VISEPANDA_STRIPE_CANCEL_URL: "https://www.go2china.space/payment/cancel",
+      VISEPANDA_PAYMENT_RETENTION_DAYS: "180",
+    };
+    expect(isHumanTaskPaymentPreparationAvailable(checkoutOnly)).toBe(false);
+    expect(
+      isHumanTaskPaymentPreparationAvailable({
+        ...checkoutOnly,
+        STRIPE_WEBHOOK_SECRET: "test_webhook_secret",
+      }),
+    ).toBe(true);
   });
 });

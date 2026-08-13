@@ -31,10 +31,15 @@ import {
   validateHumanTaskPreviewRequest,
   type HumanTaskIdentity,
   type HumanTaskService,
+  type HumanTaskServiceOptions,
 } from "../modules/task/service.js";
 
-export function createDbHumanTaskService(db: Db, options?: { now?: () => Date }): HumanTaskService {
+export function createDbHumanTaskService(
+  db: Db,
+  options?: HumanTaskServiceOptions,
+): HumanTaskService {
   const now = options?.now ?? (() => new Date());
+  const allowPaymentPreparation = options?.allowPaymentPreparation ?? false;
 
   return {
     async create(input) {
@@ -220,7 +225,9 @@ export function createDbHumanTaskService(db: Db, options?: { now?: () => Date })
           .limit(1);
         if (!row) throw new HumanTaskNotFoundError();
 
-        const prepared = prepareHumanTaskTransition(taskFromRow(row), input, now());
+        const prepared = prepareHumanTaskTransition(taskFromRow(row), input, now(), {
+          allowPaymentPreparation,
+        });
         const [updated] = await tx
           .update(humanTasks)
           .set({

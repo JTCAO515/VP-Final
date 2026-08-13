@@ -4,6 +4,8 @@ import {
   createInMemoryHumanTaskService,
   resolveDatabaseAdapter,
   resolveRuntimeMode,
+  resolveStripeCheckoutConfig,
+  resolveStripeWebhookConfig,
   type HumanTaskService,
 } from "@visepanda/app-server";
 
@@ -42,7 +44,23 @@ export function createOpsHumanTaskService(
   if (availability.status !== "ready" || !environment.DATABASE_URL) {
     throw new Error("Ops Human Tasks are unavailable.");
   }
-  return createDbHumanTaskService(createDb(environment.DATABASE_URL));
+  return createDbHumanTaskService(createDb(environment.DATABASE_URL), {
+    allowPaymentPreparation: isHumanTaskPaymentPreparationAvailable(environment),
+  });
+}
+
+/**
+ * A quote is an Ops-only preparation state. A Checkout key without signed webhook verification is
+ * not enough to create it, because it would leave a task in a payment-adjacent state that cannot
+ * be safely reconciled.
+ */
+export function isHumanTaskPaymentPreparationAvailable(
+  environment: Readonly<Record<string, string | undefined>> = process.env,
+): boolean {
+  return (
+    resolveStripeCheckoutConfig(environment) !== null &&
+    resolveStripeWebhookConfig(environment) !== null
+  );
 }
 
 export function setTestOpsHumanTaskService(service: HumanTaskService | null): void {
