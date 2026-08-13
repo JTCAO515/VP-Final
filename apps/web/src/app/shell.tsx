@@ -87,7 +87,8 @@ const SCENARIO_GROUPS = [
   {
     label: "Before you fly",
     title: "Arrive prepared, not merely inspired.",
-    description: "Turn the China-specific parts of a trip into a short, calm checklist before you land.",
+    description:
+      "Turn the China-specific parts of a trip into a short, calm checklist before you land.",
     items: [
       ["Payment setup", "Understand cards, cash, and the first payment steps before departure."],
       ["Connection plan", "Choose an eSIM and keep essential travel details accessible offline."],
@@ -97,21 +98,29 @@ const SCENARIO_GROUPS = [
   {
     label: "On the move",
     title: "Move through the day with less friction.",
-    description: "A single practical surface for metro questions, places, language, and the next decision.",
+    description:
+      "A single practical surface for metro questions, places, language, and the next decision.",
     items: [
       ["Metro-friendly routes", "Ask for the simplest route, not the most impressive itinerary."],
-      ["Show to Local", "Turn a clear need into something you can show at a counter or restaurant."],
+      [
+        "Show to Local",
+        "Turn a clear need into something you can show at a counter or restaurant.",
+      ],
       ["Place context", "See what needs booking, what is nearby, and what is worth knowing first."],
     ],
   },
   {
     label: "When plans change",
     title: "Keep moving when the trip gets real.",
-    description: "Get a truthful next step when a payment, booking, connection, or plan stops working.",
+    description:
+      "Get a truthful next step when a payment, booking, connection, or plan stops working.",
     items: [
       ["Practical re-planning", "Ask for alternatives with the information currently available."],
       ["Clear limits", "Know when VisePanda does not have enough evidence to make a claim."],
-      ["Human help, later", "A distinct assisted path is reserved for cases software should not fake."],
+      [
+        "Human help, later",
+        "A distinct assisted path is reserved for cases software should not fake.",
+      ],
     ],
   },
 ] as const;
@@ -162,7 +171,9 @@ export function CopilotShell() {
   }, []);
 
   useEffect(() => {
-    const draft = workspaceContextPrompt(new URLSearchParams(window.location.search).get("context"));
+    const draft = workspaceContextPrompt(
+      new URLSearchParams(window.location.search).get("context"),
+    );
     if (draft) setInput((current) => current || draft);
   }, []);
 
@@ -440,8 +451,8 @@ export function CopilotShell() {
           <p className="homeEyebrow">China Travel AI Copilot</p>
           <h1 id="home-title">China, handled.</h1>
           <p className="homeHeroLead">
-            A practical VisePanda workspace for the decisions that make a China trip feel easy: payment,
-            transport, language, tickets, and the next step when plans change.
+            A practical VisePanda workspace for the decisions that make a China trip feel easy:
+            payment, transport, language, tickets, and the next step when plans change.
           </p>
           <div className="heroActions">
             <a className="primaryAction" href="#ask-copilot">
@@ -556,7 +567,9 @@ export function CopilotShell() {
             <div className="canvasToolbar">
               <div>
                 <h1>Trip Canvas</h1>
-                <span>{trip ? "Read-only trip draft" : "Your practical plan will appear here"}</span>
+                <span>
+                  {trip ? "Read-only trip draft" : "Your practical plan will appear here"}
+                </span>
               </div>
               <span className={`conversationStatus ${progress.status}`}>
                 {progressLabel(progress, detailPassFailed)}
@@ -567,7 +580,9 @@ export function CopilotShell() {
             ) : (
               <div className="tripCanvasEmpty">
                 <p>Start with a practical question in VisePanda.</p>
-                <span>When a Trip draft is available, it will appear here without changing it silently.</span>
+                <span>
+                  When a Trip draft is available, it will appear here without changing it silently.
+                </span>
               </div>
             )}
           </section>
