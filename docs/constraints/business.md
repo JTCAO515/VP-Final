@@ -40,6 +40,14 @@ claim current price, exchange rate, inventory, booking, partner availability, or
 Before a user-visible CTA resolves to an external or operational capability, its consumer MUST use
 the corresponding verified availability boundary; otherwise the action is unavailable.
 
+### Show to Local Fixed Cards
+
+Show to Local MAY copy or speak a versioned ordinary fixed phrase locally. It MUST NOT use an LLM,
+network translation, transliteration, or a plausible static Chinese substitute for allergy/dietary,
+symptom/medical, emergency, passport/visa/ticket, or destination-address content. A high-risk card
+without a current exact operator-reviewed expression MUST show ADR-0016's fixed unavailable fallback
+and MUST NOT expose copy or local speech controls.
+
 ## Human Help and Payments
 
 - Human Help MUST require user confirmation before task creation or payment.
