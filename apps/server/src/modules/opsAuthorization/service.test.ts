@@ -106,4 +106,48 @@ describe("Ops authorization", () => {
       },
     ]);
   });
+
+  it("revokes a different member immediately while preserving the membership audit trail", async () => {
+    const service = createInMemoryOpsAuthorizationService([
+      { userId: adminId, role: "admin" },
+      { userId: operatorId, role: "operator" },
+    ]);
+    const admin = (await service.getAccess(adminId))!;
+
+    await expect(service.revokeMembership(admin, operatorId)).resolves.toMatchObject({
+      userId: operatorId,
+      revokedBy: adminId,
+    });
+    await expect(service.getAccess(operatorId)).resolves.toBeNull();
+    await expect(service.listMemberships(admin)).resolves.toEqual(
+      expect.arrayContaining([expect.objectContaining({ userId: operatorId, revokedBy: adminId })]),
+    );
+    await expect(service.listAudit(admin)).resolves.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          actorId: adminId,
+          action: "membership.revoked",
+          targetId: operatorId,
+        }),
+      ]),
+    );
+  });
+
+  it("refuses self-management and removal or demotion of the final active admin", async () => {
+    const service = createInMemoryOpsAuthorizationService([{ userId: adminId, role: "admin" }]);
+    const admin = (await service.getAccess(adminId))!;
+
+    await expect(service.setMembership(admin, adminId, "admin")).rejects.toThrow(OpsForbiddenError);
+    await expect(service.revokeMembership(admin, adminId)).rejects.toThrow(OpsForbiddenError);
+
+    const secondAdminId = "44444444-4444-4444-8444-444444444444";
+    await service.setMembership(admin, secondAdminId, "admin");
+    await expect(service.revokeMembership(admin, secondAdminId)).resolves.toMatchObject({
+      userId: secondAdminId,
+      revokedBy: adminId,
+    });
+    await expect(service.setMembership(admin, secondAdminId, "editor")).resolves.toMatchObject({
+      role: "editor",
+    });
+  });
 });

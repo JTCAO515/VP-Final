@@ -31,6 +31,8 @@ export type OpsMembership = {
   createdBy: string | null;
   createdAt: string;
   updatedAt: string;
+  revokedAt: string | null;
+  revokedBy: string | null;
 };
 
 export type OpsAuditEvent = {
@@ -54,6 +56,12 @@ export type OpsAuthorizationService = {
   getAccess(userId: string): Promise<OpsAccess | null>;
   listMemberships(actor: OpsAccess): Promise<OpsMembership[]>;
   setMembership(actor: OpsAccess, userId: string, role: OpsRole): Promise<OpsMembership>;
+  setMembershipByExactEmail(
+    actor: OpsAccess,
+    email: string,
+    role: OpsRole,
+  ): Promise<OpsMembership | null>;
+  revokeMembership(actor: OpsAccess, userId: string): Promise<OpsMembership | null>;
   recordAudit(actor: OpsAccess, input: RecordOpsAuditInput): Promise<OpsAuditEvent>;
   listAudit(actor: OpsAccess): Promise<OpsAuditEvent[]>;
 };
@@ -112,7 +120,15 @@ export function createInMemoryOpsAuthorizationService(
   const memberships = new Map<string, OpsMembership>(
     seed.map(({ userId, role }) => [
       userId,
-      { userId, role, createdBy: null, createdAt: now, updatedAt: now },
+      {
+        userId,
+        role,
+        createdBy: null,
+        createdAt: now,
+        updatedAt: now,
+        revokedAt: null,
+        revokedBy: null,
+      },
     ]),
   );
   const audit: OpsAuditEvent[] = [];
@@ -120,7 +136,7 @@ export function createInMemoryOpsAuthorizationService(
   return {
     async getAccess(userId) {
       const membership = memberships.get(userId);
-      return membership
+      return membership && !membership.revokedAt
         ? { userId, role: membership.role, permissions: permissionsForRole(membership.role) }
         : null;
     },
@@ -130,7 +146,7 @@ export function createInMemoryOpsAuthorizationService(
     },
     async setMembership(actor, userId, role) {
       assertPermission(actor, "membership.write");
-      if (userId === actor.userId && role !== actor.role) {
+      if (userId === actor.userId) {
         throw new OpsForbiddenError();
       }
       const timestamp = new Date().toISOString();
@@ -141,6 +157,8 @@ export function createInMemoryOpsAuthorizationService(
         createdBy: existing?.createdBy ?? actor.userId,
         createdAt: existing?.createdAt ?? timestamp,
         updatedAt: timestamp,
+        revokedAt: null,
+        revokedBy: null,
       };
       memberships.set(userId, membership);
       await this.recordAudit(actor, {
@@ -148,6 +166,35 @@ export function createInMemoryOpsAuthorizationService(
         targetType: "ops_membership",
         targetId: userId,
         metadata: { role },
+      });
+      return { ...membership };
+    },
+    async setMembershipByExactEmail() {
+      throw new Error(
+        "Exact email resolution is unavailable in the in-memory authorization service.",
+      );
+    },
+    async revokeMembership(actor, userId) {
+      assertPermission(actor, "membership.write");
+      if (userId === actor.userId) throw new OpsForbiddenError();
+      const existing = memberships.get(userId);
+      if (!existing || existing.revokedAt) return null;
+      if (existing.role === "admin" && activeAdminCount(memberships) <= 1) {
+        throw new OpsForbiddenError();
+      }
+      const timestamp = new Date().toISOString();
+      const membership: OpsMembership = {
+        ...existing,
+        revokedAt: timestamp,
+        revokedBy: actor.userId,
+        updatedAt: timestamp,
+      };
+      memberships.set(userId, membership);
+      await this.recordAudit(actor, {
+        action: "membership.revoked",
+        targetType: "ops_membership",
+        targetId: userId,
+        metadata: { role: existing.role },
       });
       return { ...membership };
     },
@@ -169,6 +216,12 @@ export function createInMemoryOpsAuthorizationService(
       return audit.map((event) => ({ ...event, metadata: structuredClone(event.metadata) }));
     },
   };
+}
+
+function activeAdminCount(memberships: ReadonlyMap<string, OpsMembership>): number {
+  return [...memberships.values()].filter(
+    (membership) => membership.role === "admin" && !membership.revokedAt,
+  ).length;
 }
 
 function assertPermission(access: OpsAccess, permission: OpsPermission): void {
