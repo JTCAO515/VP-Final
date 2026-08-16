@@ -23,13 +23,17 @@ Explore, and SEO, so provenance and freshness are release-critical.
    each fact; do not combine an address, district, metro exit, and visibility instruction into one row.
    Treat `local_address_zh` as real-world safety data because it may be shown to a stranger. Saving the
    form creates only a draft and cannot set `verifiedAt`.
-4. Save the fact as `draft`. Inspect the saved value and evidence, then use the separate review action.
-   That action records the real `verifiedAt`, authenticated Ops reviewer privately, versioned cadence,
-   bounded expiry, and append-only completion audit in one transaction. User reports, model output,
-   and uncorroborated scrapes
-   must first be independently checked and reclassified; changing status alone is forbidden.
-5. Renew unchanged reviewed facts, save changed facts as a new draft version for re-review, or
-   deprecate/reject unsupported facts. Never treat a legacy `source` or `active` label as evidence.
+4. Save the fact as `draft`. In the protected draft-review queue, filter by POI, field type, or import
+   batch as needed; inspect the content, source, and same-POI reviewed facts. Choose **Approve**, then
+   use the separate visible **Confirm approve** action for that one displayed version. The action records
+   the real `verifiedAt`, authenticated Ops reviewer privately, versioned cadence, bounded expiry, and
+   append-only completion audit in one transaction. Never use a bulk approval action: none is provided.
+   User reports, model output, and uncorroborated scrapes must first be independently checked and
+   reclassified; changing status alone is forbidden.
+5. For a correction, save the changed evidence back to `draft`, refresh the item, inspect it again, and
+   complete a new per-item approval confirmation. Renew unchanged **reviewed** facts only; renewal cannot
+   promote a draft. Deprecate or reject unsupported facts. Never treat a legacy `source` or `active`
+   label as evidence.
 6. Confirm draft/deprecated/expired facts are excluded from public derivation and Copilot retrieval.
 7. Link recurring unanswered questions to knowledge gaps and mark resolved only when evidence exists.
 8. Sample the resulting Explore/guide/Copilot presentation for misleading wording.

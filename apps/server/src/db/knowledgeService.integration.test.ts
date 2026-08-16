@@ -57,7 +57,11 @@ describeDatabase("database KnowledgeService", () => {
       { id: poiId, facts: [] },
     ]);
 
-    const reviewed = await service.renewFact({ factId: created.id, reviewedBy: reviewerId });
+    const reviewed = await service.approveDraftFact({
+      factId: created.id,
+      reviewedBy: reviewerId,
+      expectedVersion: created.version,
+    });
     expect(reviewed).toMatchObject({
       id: created.id,
       status: "reviewed",
@@ -81,6 +85,40 @@ describeDatabase("database KnowledgeService", () => {
     await expect(service.listPois({ city: "Integration City" })).resolves.toMatchObject([
       { id: poiId, facts: [{ id: created.id, status: "reviewed" }] },
     ]);
+  });
+
+  it("does not approve a draft that changed after the reviewer opened it", async () => {
+    const created = await service.createFact({
+      poiId,
+      factType: "metro_access",
+      value: { label: "Near metro exit 1" },
+      confidence: 0.9,
+      sourceClass: "official",
+      sourceLocator: "https://example.com/metro-version-one",
+      evidenceSummary: "The official source confirms a nearby metro entrance.",
+    });
+    await service.updateFact({
+      factId: created.id,
+      value: { label: "Near metro exit 2" },
+      sourceLocator: "https://example.com/metro-version-two",
+    });
+
+    await expect(
+      service.approveDraftFact({
+        factId: created.id,
+        reviewedBy: reviewerId,
+        expectedVersion: created.version,
+      }),
+    ).rejects.toThrow("no longer the unreviewed draft shown for confirmation");
+
+    const [current] = await sql`
+      select version, status, reviewed_by from public.poi_facts where id = ${created.id}
+    `;
+    expect(current).toMatchObject({
+      version: created.version + 1,
+      status: "draft",
+      reviewed_by: null,
+    });
   });
 
   it("persists canonical POI creation and edits without creating a fact", async () => {
@@ -172,7 +210,11 @@ describeDatabase("database KnowledgeService", () => {
       sourceLocator: "https://example.com/metro-reviewed",
       evidenceSummary: "The official source confirms the metro exit.",
     });
-    await service.renewFact({ factId: reviewedSibling.id, reviewedBy: reviewerId });
+    await service.approveDraftFact({
+      factId: reviewedSibling.id,
+      reviewedBy: reviewerId,
+      expectedVersion: reviewedSibling.version,
+    });
     const draft = await service.createFact({
       poiId,
       factType: "local_name_zh",
@@ -229,7 +271,11 @@ describeDatabase("database KnowledgeService", () => {
       sourceLocator: "https://example.com/hours",
       evidenceSummary: "The official page publishes daily opening hours.",
     });
-    const reviewed = await service.renewFact({ factId: created.id, reviewedBy: reviewerId });
+    const reviewed = await service.approveDraftFact({
+      factId: created.id,
+      reviewedBy: reviewerId,
+      expectedVersion: created.version,
+    });
     const updatedPois = await service.updateFact({
       factId: created.id,
       value: { label: "Hours changed; review required" },

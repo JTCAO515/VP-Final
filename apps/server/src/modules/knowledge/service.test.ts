@@ -116,11 +116,46 @@ describe("createInMemoryKnowledgeService draft review actions", () => {
     ).resolves.toEqual([]);
 
     await expect(
-      service.rejectFact({ factId: draft.id, rejectedBy: "30000000-0000-4000-8000-000000000021" }),
-    ).resolves.toMatchObject({ id: draft.id, status: "rejected" });
+      service.approveDraftFact({
+        factId: draft.id,
+        reviewedBy: "30000000-0000-4000-8000-000000000021",
+        expectedVersion: draft.version,
+      }),
+    ).resolves.toMatchObject({ id: draft.id, status: "reviewed" });
+    await expect(
+      service.approveDraftFact({
+        factId: draft.id,
+        reviewedBy: "30000000-0000-4000-8000-000000000021",
+        expectedVersion: draft.version,
+      }),
+    ).rejects.toThrow("no longer the unreviewed draft");
+    const rejectedDraft = await service.createFact({
+      poiId: poi.id,
+      factType: "metro_access",
+      value: { label: "Another nearby metro" },
+      confidence: 0.9,
+      sourceClass: "official",
+      sourceLocator: "https://example.com/metro-two",
+      evidenceSummary: "The official source confirms another nearby metro entrance.",
+    });
+    await expect(
+      service.renewFact({
+        factId: rejectedDraft.id,
+        reviewedBy: "30000000-0000-4000-8000-000000000021",
+      }),
+    ).rejects.toThrow("Only reviewed facts can be renewed");
+    await expect(
+      service.rejectFact({
+        factId: rejectedDraft.id,
+        rejectedBy: "30000000-0000-4000-8000-000000000021",
+      }),
+    ).resolves.toMatchObject({ id: rejectedDraft.id, status: "rejected" });
     await expect(service.listDraftFactReviewQueue()).resolves.toEqual([]);
     await expect(
-      service.rejectFact({ factId: draft.id, rejectedBy: "30000000-0000-4000-8000-000000000021" }),
+      service.rejectFact({
+        factId: rejectedDraft.id,
+        rejectedBy: "30000000-0000-4000-8000-000000000021",
+      }),
     ).rejects.toThrow("Only draft facts");
   });
 });

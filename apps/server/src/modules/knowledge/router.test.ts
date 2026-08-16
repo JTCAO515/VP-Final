@@ -194,9 +194,10 @@ describe("knowledgeRouter", () => {
     });
 
     await expect(
-      knowledgeService.renewFact({
+      knowledgeService.approveDraftFact({
         factId: created.id,
         reviewedBy: "30000000-0000-4000-8000-000000000010",
+        expectedVersion: created.version,
       }),
     ).rejects.toThrow("independently reviewable evidence");
   });
