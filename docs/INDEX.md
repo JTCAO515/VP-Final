@@ -194,6 +194,7 @@ How documents, Issues, pull requests, decisions, and lifecycle evidence are mana
 | [Operator Action Register](governance/operator-action-register.md) | constraint | active | operator / overall design | Authoritative status, placeholders, owners, external setup gates, verification, and rollback for operator-only actions. |
 | [Operator Action Tutorial Template](governance/operator-action-tutorial-template.md) | reference | active | operator / delivery agent | Beginner-friendly Chinese template for safely executing and verifying registered external actions without exposing secrets. |
 | [Phase 0/1 Dependency Graph](governance/phase-0-1-dependency-graph.md) | reference | active | overall design | Canonical Phase 0/1 Issue ownership, blockers, migration map, lifecycle gates, and backlog-validation procedure. |
+| [Reviewed Content Localization Authority](governance/reviewed-content-localization.md) | constraint | active | content governance / Web / knowledge operations | Review, provenance, expiry, fallback, and rollback gates before legal, factual, commercial, safety, or SEO content is localized publicly. |
 
 ## Architecture Decisions
 
