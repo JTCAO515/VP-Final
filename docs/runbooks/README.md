@@ -13,6 +13,7 @@ current, and tied to the deployed system that exists today.
 | [Knowledge fact review](knowledge-fact-review.md)         | Weekly review, expiry, or report            | Knowledge operator                |
 | [AI eval regression](ai-eval-regression.md)               | Prompt, model, routing, or retrieval change | AI module owner                   |
 | [AI provider configuration](ai-provider-configuration.md) | Preview/staging/production provider setup   | Operator / AI module owner        |
+| [Parallel external-unblock](parallel-external-unblock.md) | Partner/payment/device/metric evidence gate | Operator / Codex                  |
 
 ## Runbook Template
 
