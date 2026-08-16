@@ -10,8 +10,9 @@ the public Web application and protected by server-side role checks.
 
 ## Current Routes
 
-- `/facts`: create and edit canonical POIs, then list, create, update, renew, and deprecate
-  execution facts. POI identity fields never create, review, or publish a fact.
+- `/facts`: create and edit canonical POIs, then list, create, update, renew, reject, and deprecate
+  execution facts. POI identity fields never create, review, or publish a fact. Draft review actions
+  are one fact at a time; reject is limited to a current draft and records the authenticated operator.
 - `/seo`: Editor-authorized bounded SEO title, summary, and editor-note overrides for an already
   eligible POI/intent candidate. It is presentation-only and offers a delete action that restores
   generated copy.
@@ -25,6 +26,10 @@ the public Web application and protected by server-side role checks.
   derive the actor from the verified Ops session.
 - `/api/knowledge/import`: Editor-authorized CSV `dry-run` and atomic `commit` endpoint; no public
   upload surface exists.
+- `/api/knowledge/facts/review-queue`: `knowledge.write`-protected private queue for draft facts,
+  optionally filtered by POI, fact type, a new batch UUID, or `legacy-unbatched`. It returns only
+  source context and same-POI reviewed facts needed for an item-by-item decision; it never returns
+  researcher/reviewer handles or internal notes, and has no bulk approval operation.
 - `/api/tasks`: permission-protected task list endpoint.
 - `/api/tasks/:taskId`: `task.contact.read`-protected detail and `task.write`-protected internal-note
   and terminal-evidence endpoint. Writes append audit evidence without copying private content.

@@ -186,6 +186,30 @@ export const PoiSchema = z.object({
   commercialLinks: z.array(PoiCommercialLinkSchema).default([]),
 });
 
+// This is a private Ops composition model. It carries only the collection metadata needed to
+// organize a manual review queue; researcher/reviewer handles and internal notes stay server-side.
+export const DraftFactImportContextSchema = z.object({
+  collectionRowId: z.string().trim().min(1).max(200),
+  collectionStatus: z.enum(["researched", "reviewed"]),
+  importBatchId: z.string().uuid().nullable(),
+  evidenceReviewedAt: z.string().datetime().nullable(),
+});
+
+export const DraftFactReviewQueueFilterSchema = z
+  .object({
+    poiId: z.string().uuid().optional(),
+    factType: z.string().trim().min(1).max(120).optional(),
+    importBatchId: z.union([z.string().uuid(), z.literal("legacy-unbatched")]).optional(),
+  })
+  .strict();
+
+export const DraftFactReviewQueueItemSchema = z.object({
+  poi: PoiSchema.pick({ id: true, city: true, category: true, nameEn: true, nameZh: true }),
+  draft: PoiFactSchema,
+  importContext: DraftFactImportContextSchema.nullable(),
+  reviewedSiblings: z.array(PoiFactSchema),
+});
+
 const PoiCitySchema = z.string().trim().min(1).max(100);
 const PoiNameSchema = z.string().trim().min(1).max(200);
 const PoiOptionalNameSchema = z.string().trim().min(1).max(200).nullable().default(null);
@@ -250,6 +274,8 @@ export type EligiblePoiLocalAddress = z.infer<typeof EligiblePoiLocalAddressSche
 export type PoiLocalAddressAlternative = z.infer<typeof PoiLocalAddressAlternativeSchema>;
 export type PoiLocalAddressPresentation = z.infer<typeof PoiLocalAddressPresentationSchema>;
 export type Poi = z.infer<typeof PoiSchema>;
+export type DraftFactReviewQueueFilter = z.infer<typeof DraftFactReviewQueueFilterSchema>;
+export type DraftFactReviewQueueItem = z.infer<typeof DraftFactReviewQueueItemSchema>;
 export type PoiCreateInput = z.infer<typeof PoiCreateInputSchema>;
 export type PoiUpdateInput = z.infer<typeof PoiUpdateInputSchema>;
 export type KnowledgeGap = z.infer<typeof KnowledgeGapSchema>;

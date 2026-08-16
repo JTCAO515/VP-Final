@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  DraftFactReviewQueueFilterSchema,
+  DraftFactReviewQueueItemSchema,
   PoiFactEvidenceSummarySchema,
   PoiCreateInputSchema,
   PoiLocalPresentationFactValueSchema,
@@ -80,6 +82,44 @@ describe("PoiSchema", () => {
         searchAliases: ["Alias Place"],
       }).searchAliases,
     ).toEqual(["Alias Place"]);
+  });
+});
+
+describe("draft fact review queue contracts", () => {
+  it("accepts only explicit batch or legacy-unbatched filters", () => {
+    expect(
+      DraftFactReviewQueueFilterSchema.parse({
+        importBatchId: "30000000-0000-4000-8000-000000000001",
+      }),
+    ).toEqual({ importBatchId: "30000000-0000-4000-8000-000000000001" });
+    expect(DraftFactReviewQueueFilterSchema.parse({ importBatchId: "legacy-unbatched" })).toEqual({
+      importBatchId: "legacy-unbatched",
+    });
+    expect(() =>
+      DraftFactReviewQueueFilterSchema.parse({ importBatchId: "all-imports" }),
+    ).toThrow();
+  });
+
+  it("omits reviewer identities and internal notes from the queue model", () => {
+    const item = DraftFactReviewQueueItemSchema.parse({
+      poi: {
+        id: "30000000-0000-4000-8000-000000000001",
+        city: "Shanghai",
+        category: "attraction",
+        nameEn: "Yu Garden",
+      },
+      draft: { ...fact, status: "draft", verifiedAt: null, reviewPolicy: null, expiresAt: null },
+      importContext: {
+        collectionRowId: "row-1",
+        collectionStatus: "researched",
+        importBatchId: null,
+        evidenceReviewedAt: null,
+      },
+      reviewedSiblings: [fact],
+    });
+
+    expect(JSON.stringify(item)).not.toContain("reviewer");
+    expect(JSON.stringify(item)).not.toContain("reviewNotes");
   });
 });
 

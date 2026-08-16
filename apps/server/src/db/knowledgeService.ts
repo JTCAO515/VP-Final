@@ -1,5 +1,7 @@
 import {
   KnowledgeGapSchema,
+  DraftFactReviewQueueFilterSchema,
+  DraftFactReviewQueueItemSchema,
   sanitizeEvidenceDerivedGapPattern,
   hasReviewablePoiFactEvidence,
   isEligiblePoiFact,
@@ -11,13 +13,22 @@ import {
   PoiUpdateInputSchema,
   resolvePoiFactReview,
   type KnowledgeGap,
+  type DraftFactReviewQueueFilter,
+  type DraftFactReviewQueueItem,
   type Poi,
   type PoiCategory,
   type PoiFact,
 } from "@visepanda/domain";
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, isNull } from "drizzle-orm";
 import type { Db } from "./client.js";
-import { knowledgeGaps, opsAuditEvents, poiCommercialLinks, poiFacts, pois } from "./schema.js";
+import {
+  knowledgeGaps,
+  opsAuditEvents,
+  poiCommercialLinks,
+  poiFactEditorialAudit,
+  poiFacts,
+  pois,
+} from "./schema.js";
 import type { KnowledgeService } from "../modules/knowledge/service.js";
 
 export function createDbKnowledgeService(db: Db): KnowledgeService {
@@ -157,6 +168,9 @@ export function createDbKnowledgeService(db: Db): KnowledgeService {
         ),
       );
     },
+    async listDraftFactReviewQueue(input = {}) {
+      return listDraftFactReviewQueue(db, input);
+    },
     async renewFact(input) {
       const existing = await getFact(db, input.factId);
       if (!existing) return null;
@@ -203,6 +217,37 @@ export function createDbKnowledgeService(db: Db): KnowledgeService {
         .where(eq(poiFacts.id, input.factId))
         .returning();
       return row ? rowToFact(row) : null;
+    },
+    async rejectFact(input) {
+      const existing = await getFact(db, input.factId);
+      if (!existing) return null;
+      if (existing.status !== "draft") {
+        throw new Error("Only draft facts can be rejected through the review queue");
+      }
+      return db.transaction(async (transaction) => {
+        const [rejected] = await transaction
+          .update(poiFacts)
+          .set({ status: "rejected", version: existing.version + 1 })
+          .where(
+            and(
+              eq(poiFacts.id, input.factId),
+              eq(poiFacts.status, "draft"),
+              eq(poiFacts.version, existing.version),
+            ),
+          )
+          .returning();
+        if (!rejected) {
+          throw new Error("Fact is no longer an unreviewed draft");
+        }
+        await transaction.insert(opsAuditEvents).values({
+          actorId: input.rejectedBy,
+          action: "knowledge.fact.review.rejected",
+          targetType: "poi_fact",
+          targetId: input.factId,
+          metadataJsonb: { version: rejected.version },
+        });
+        return rowToFact(rejected);
+      });
     },
     async recordGap(input) {
       const questionPattern = normalizeGapPattern(input.question);
@@ -333,6 +378,62 @@ async function listPois(
           url: link.url,
           disclosure: link.disclosure,
         })),
+    }),
+  );
+}
+
+async function listDraftFactReviewQueue(
+  db: Db,
+  input: DraftFactReviewQueueFilter = {},
+): Promise<DraftFactReviewQueueItem[]> {
+  const filter = DraftFactReviewQueueFilterSchema.parse(input);
+  const conditions = [
+    eq(poiFacts.status, "draft"),
+    filter.poiId ? eq(poiFacts.poiId, filter.poiId) : undefined,
+    filter.factType ? eq(poiFacts.factType, filter.factType) : undefined,
+    filter.importBatchId === "legacy-unbatched"
+      ? and(isNotNull(poiFactEditorialAudit.factId), isNull(poiFactEditorialAudit.importBatchId))
+      : filter.importBatchId
+        ? eq(poiFactEditorialAudit.importBatchId, filter.importBatchId)
+        : undefined,
+  ].filter((condition): condition is NonNullable<typeof condition> => condition !== undefined);
+
+  const draftRows = await db
+    .select({ fact: poiFacts, poi: pois, audit: poiFactEditorialAudit })
+    .from(poiFacts)
+    .innerJoin(pois, eq(poiFacts.poiId, pois.id))
+    .leftJoin(poiFactEditorialAudit, eq(poiFactEditorialAudit.factId, poiFacts.id))
+    .where(and(...conditions));
+
+  const poiIds = [...new Set(draftRows.map((row) => row.poi.id))];
+  const reviewedRows = poiIds.length
+    ? await db
+        .select()
+        .from(poiFacts)
+        .where(and(inArray(poiFacts.poiId, poiIds), eq(poiFacts.status, "reviewed")))
+    : [];
+
+  return draftRows.map((row) =>
+    DraftFactReviewQueueItemSchema.parse({
+      poi: {
+        id: row.poi.id,
+        city: row.poi.city,
+        category: row.poi.category,
+        nameEn: row.poi.nameEn,
+        ...(row.poi.nameZh ? { nameZh: row.poi.nameZh } : {}),
+      },
+      draft: rowToFact(row.fact),
+      importContext: row.audit
+        ? {
+            collectionRowId: row.audit.collectionRowId,
+            collectionStatus: row.audit.collectionStatus,
+            importBatchId: row.audit.importBatchId,
+            evidenceReviewedAt: row.audit.evidenceReviewedAt?.toISOString() ?? null,
+          }
+        : null,
+      reviewedSiblings: reviewedRows
+        .filter((candidate) => candidate.poiId === row.poi.id)
+        .map(rowToFact),
     }),
   );
 }

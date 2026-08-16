@@ -319,6 +319,10 @@ distinguish its own previous partial effect from a later unrelated Trip edit.
   different content aborts the batch rather than overwriting evidence. Every non-empty committed import
   also writes one private batch UUID and attaches it to each new editorial-audit row; dry-runs,
   duplicate-only commits, and historical rows carry no invented batch identity.
+- `KnowledgeService.listDraftFactReviewQueue` is private Ops composition, not a public knowledge query.
+  It returns drafts with a minimal import context and same-POI reviewed siblings for manual comparison;
+  it omits editorial identities and internal notes. `rejectFact` accepts only a current draft, records
+  the authenticated rejecting operator in the private audit ledger, and cannot be a batch transition.
 - Existing Trip persistence receives only a validated Patch plus trusted identity, expected version,
   and event source; creation receives the initial validated Trip.
 - A module may not import another module's tables.
