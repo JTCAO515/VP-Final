@@ -139,11 +139,13 @@ export function SeoEditorialOverrideEditor() {
           }
           value={intent}
         >
-          {SeoPageIntentSchema.options.map((option) => (
-            <option key={option} value={option}>
-              {option.replaceAll("_", " ")}
-            </option>
-          ))}
+          {SeoPageIntentSchema.options.map(
+            (option: (typeof SeoPageIntentSchema.options)[number]) => (
+              <option key={option} value={option}>
+                {option.replaceAll("_", " ")}
+              </option>
+            ),
+          )}
         </select>
       </div>
 

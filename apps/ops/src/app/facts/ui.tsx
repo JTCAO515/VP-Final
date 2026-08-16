@@ -10,6 +10,7 @@ import {
   type PoiFactSourceClass,
   type PoiLocalPresentationFactType,
   type PoiFact,
+  type PoiImage,
   type DraftFactReviewQueueItem,
 } from "@visepanda/domain";
 
@@ -140,6 +141,7 @@ export function FactEditor() {
       <FactExpiryDashboard pois={pois} onChanged={loadPois} />
       <section className="panel">
         <PoiEditor pois={pois} onChanged={loadPois} />
+        <PoiImageEditor pois={pois} />
         <LocalPresentationFactEditor pois={pois} onChanged={loadPois} />
         <h2>Other fact drafts</h2>
         <form className="inlineForm" onSubmit={(event) => void createFact(event)}>
@@ -287,6 +289,187 @@ export function FactEditor() {
         )}
       </section>
     </div>
+  );
+}
+
+function PoiImageEditor({ pois }: { pois: Poi[] }) {
+  const [images, setImages] = useState<PoiImage[]>([]);
+  const [targetKind, setTargetKind] = useState<"poi" | "city" | "category">("poi");
+  const [state, setState] = useState<SaveState>("idle");
+  const [message, setMessage] = useState(
+    "Private editorial assets only. Upload requires a verifiable attribution and license note.",
+  );
+
+  async function loadImages() {
+    const response = await fetch("/api/knowledge/images", { cache: "no-store" });
+    const payload = (await response.json().catch(() => null)) as {
+      images?: PoiImage[];
+      error?: string;
+    } | null;
+    if (!response.ok || !payload || !Array.isArray(payload.images)) {
+      throw new Error(payload?.error ?? "Private image metadata is unavailable.");
+    }
+    setImages(payload.images);
+  }
+
+  useEffect(() => {
+    void loadImages().catch((error) =>
+      setMessage(error instanceof Error ? error.message : "Private image metadata is unavailable."),
+    );
+  }, []);
+
+  async function upload(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setState("saving");
+    setMessage("Validating and stripping private image metadata…");
+    try {
+      const response = await fetch("/api/knowledge/images", {
+        method: "POST",
+        body: new FormData(event.currentTarget),
+      });
+      const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+      if (!response.ok) throw new Error(payload?.error ?? "Image upload failed.");
+      event.currentTarget.reset();
+      await loadImages();
+      setState("saved");
+      setMessage("Private editorial image stored with its attribution and license note.");
+    } catch (error) {
+      setState("error");
+      setMessage(error instanceof Error ? error.message : "Image upload failed.");
+    }
+  }
+
+  async function deleteImage(image: PoiImage) {
+    setState("saving");
+    setMessage("Deleting this private image and revoking its metadata…");
+    try {
+      const response = await fetch("/api/knowledge/images", {
+        method: "DELETE",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ imageId: image.id }),
+      });
+      const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+      if (!response.ok) throw new Error(payload?.error ?? "Image deletion failed.");
+      await loadImages();
+      setState("saved");
+      setMessage("Private image deleted and its metadata was revoked.");
+    } catch (error) {
+      setState("error");
+      setMessage(error instanceof Error ? error.message : "Image deletion failed.");
+    }
+  }
+
+  const cities = [...new Set(pois.map((poi) => poi.city))].sort();
+  return (
+    <section className="poiImageEditor" aria-labelledby="poi-image-title">
+      <div>
+        <p className="eyebrow">Private editorial media</p>
+        <h2 id="poi-image-title">POI image library</h2>
+        <p className="muted">
+          Files are checked by signature, converted to WebP without EXIF, and kept private. This
+          page does not create a public image URL or traveler-facing media.
+        </p>
+      </div>
+      <form className="inlineForm" onSubmit={(event) => void upload(event)}>
+        <select
+          aria-label="Image target type"
+          name="targetKind"
+          onChange={(event) => setTargetKind(event.target.value as typeof targetKind)}
+          value={targetKind}
+        >
+          <option value="poi">POI</option>
+          <option value="city">City</option>
+          <option value="category">Category</option>
+        </select>
+        {targetKind === "poi" ? (
+          <select aria-label="Image POI target" name="poiId" required>
+            <option value="">Choose POI</option>
+            {pois.map((poi) => (
+              <option key={poi.id} value={poi.id}>
+                {poi.city} · {poi.nameEn}
+              </option>
+            ))}
+          </select>
+        ) : null}
+        {targetKind === "city" ? (
+          <select aria-label="Image city target" name="city" required>
+            <option value="">Choose city</option>
+            {cities.map((city) => (
+              <option key={city} value={city}>
+                {city}
+              </option>
+            ))}
+          </select>
+        ) : null}
+        {targetKind === "category" ? (
+          <select aria-label="Image category target" name="category" required>
+            {PoiCategorySchema.options.map((category: PoiCategory) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
+          </select>
+        ) : null}
+        <input
+          accept="image/jpeg,image/png,image/webp"
+          aria-label="Editorial image file"
+          name="file"
+          required
+          type="file"
+        />
+        <input
+          aria-label="Image attribution"
+          maxLength={500}
+          name="attribution"
+          placeholder="source or copyright holder"
+          required
+        />
+        <input
+          aria-label="Image license note"
+          maxLength={500}
+          name="licenseNote"
+          placeholder="licensed editorial use"
+          required
+        />
+        <button disabled={state === "saving"} type="submit">
+          Store private image
+        </button>
+      </form>
+      <p className={state === "error" ? "danger" : "muted"} role="status">
+        {message}
+      </p>
+      {images.length === 0 ? (
+        <p className="empty">No active private editorial images.</p>
+      ) : (
+        <ul className="factExpiryList">
+          {images.map((image) => (
+            <li className="factExpiryItem" key={image.id}>
+              <div>
+                <strong>
+                  {image.target.kind === "poi"
+                    ? "POI"
+                    : image.target.kind === "city"
+                      ? image.target.city
+                      : image.target.category}
+                </strong>
+                <p className="muted">
+                  {image.width} × {image.height} · {image.contentType} · Attribution:{" "}
+                  {image.attribution}
+                </p>
+                <p className="muted">License: {image.licenseNote}</p>
+              </div>
+              <button
+                disabled={state === "saving"}
+                onClick={() => void deleteImage(image)}
+                type="button"
+              >
+                Delete private image
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }
 

@@ -2,11 +2,13 @@ import {
   createDb,
   createDbKnowledgeBulkImportService,
   createDbKnowledgeService,
+  createDbPoiImageService,
   createInMemoryKnowledgeService,
   resolveDatabaseAdapter,
   resolveRuntimeMode,
   type KnowledgeBulkImportService,
   type KnowledgeService,
+  type PoiImageService,
 } from "@visepanda/app-server";
 
 const store = globalThis as typeof globalThis & {
@@ -14,6 +16,8 @@ const store = globalThis as typeof globalThis & {
   __visepandaOpsDurableKnowledge?: KnowledgeService;
   __visepandaOpsDurableKnowledgeImport?: KnowledgeBulkImportService;
   __visepandaOpsTestKnowledge?: KnowledgeService;
+  __visepandaOpsDurablePoiImages?: PoiImageService;
+  __visepandaOpsTestPoiImages?: PoiImageService;
 };
 
 export function getKnowledgeService(): KnowledgeService {
@@ -64,4 +68,30 @@ export function getKnowledgeBulkImportService(): KnowledgeBulkImportService {
 export function setTestOpsKnowledgeService(service: KnowledgeService | null): void {
   if (service) store.__visepandaOpsTestKnowledge = service;
   else delete store.__visepandaOpsTestKnowledge;
+}
+
+export function getPoiImageService(): PoiImageService {
+  const runtime = resolveRuntimeMode(process.env);
+  if (!runtime.ok) throw new Error("Ops POI images are unavailable.");
+  if (runtime.mode === "test") {
+    if (!store.__visepandaOpsTestPoiImages)
+      throw new Error("Ops test POI images are not injected.");
+    return store.__visepandaOpsTestPoiImages;
+  }
+  if (runtime.mode === "local-demo") {
+    throw new Error("Ops POI images require the durable database adapter.");
+  }
+  const availability = resolveDatabaseAdapter(runtime, process.env);
+  if (availability.status !== "ready" || !process.env.DATABASE_URL) {
+    throw new Error("Ops POI images are unavailable.");
+  }
+  store.__visepandaOpsDurablePoiImages ??= createDbPoiImageService(
+    createDb(process.env.DATABASE_URL),
+  );
+  return store.__visepandaOpsDurablePoiImages;
+}
+
+export function setTestPoiImageService(service: PoiImageService | null): void {
+  if (service) store.__visepandaOpsTestPoiImages = service;
+  else delete store.__visepandaOpsTestPoiImages;
 }

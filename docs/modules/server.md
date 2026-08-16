@@ -15,7 +15,7 @@ Next.js runtimes rather than deployed as an independent service.
 - `copilot`: route, retrieve, generate, validate, apply Trip actions, and two-pass completion.
 - `commerce`: active-partner lookup, safe outbound construction, and durable click recording.
 - `trip`: owner-scoped create/read/Patch/claim/share/revoke operations through the versioned Trip service.
-- `knowledge`: POI/fact/gap reads and operations workflow.
+- `knowledge`: POI/fact/gap reads, operations workflow, and private editorial-image metadata writes.
 - `task`: owner-scoped Human Task intake/reads plus authorized, audited lifecycle transitions.
 - `telemetry`: event validation and ingestion interface.
 - `trace`: private agent-run and tool-call metadata recording.

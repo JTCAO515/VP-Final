@@ -18,29 +18,30 @@ placeholder names, exact external action, unblock/verification evidence, rollbac
 date. Update the register in the same PR that creates, changes, verifies, retires, or makes an action's
 assumptions false.
 
-| ID     | Status      | Associated owner          | Last reviewed |
-| ------ | ----------- | ------------------------- | ------------- |
-| OA-001 | verified    | P0-03 #112                | 2026-07-25    |
-| OA-002 | verified    | P0-03 #112                | 2026-07-21    |
-| OA-003 | open        | P0-03 #112                | 2026-07-11    |
-| OA-004 | in-progress | P0-04b #167 onward        | 2026-07-26    |
-| OA-005 | verified    | P0-07 #116 / DEMO-01 #183 | 2026-07-25    |
-| OA-006 | deferred    | #169 / P0-17 #154         | 2026-07-14    |
-| OA-007 | in review   | DOC-P0-04 #134            | 2026-07-14    |
-| OA-008 | open        | P0-19 #156                | 2026-07-11    |
-| OA-009 | open        | V2-63 #92 / V2-64 #93     | 2026-07-11    |
-| OA-010 | open        | P0-05 #114                | 2026-07-11    |
-| OA-011 | in-progress | P0-10 #118                | 2026-07-24    |
-| OA-012 | in-progress | DEMO-01c-1 #246           | 2026-07-25    |
-| OA-013 | in-progress | DEMO-01c-2 #247           | 2026-07-24    |
-| OA-014 | open        | DEMO-01c-4 #249           | 2026-07-25    |
-| OA-015 | open        | Retention purge #311      | 2026-07-26    |
-| OA-016 | open        | VPOD-STUDIO-04 #339       | 2026-08-13    |
-| OA-017 | open        | VPOD-STUDIO-05 #340       | 2026-08-13    |
+| ID     | Status      | Associated owner           | Last reviewed |
+| ------ | ----------- | -------------------------- | ------------- |
+| OA-001 | verified    | P0-03 #112                 | 2026-07-25    |
+| OA-002 | verified    | P0-03 #112                 | 2026-07-21    |
+| OA-003 | open        | P0-03 #112                 | 2026-07-11    |
+| OA-004 | in-progress | P0-04b #167 onward         | 2026-07-26    |
+| OA-005 | verified    | P0-07 #116 / DEMO-01 #183  | 2026-07-25    |
+| OA-006 | deferred    | #169 / P0-17 #154          | 2026-07-14    |
+| OA-007 | in review   | DOC-P0-04 #134             | 2026-07-14    |
+| OA-008 | open        | P0-19 #156                 | 2026-07-11    |
+| OA-009 | open        | V2-63 #92 / V2-64 #93      | 2026-07-11    |
+| OA-010 | open        | P0-05 #114                 | 2026-07-11    |
+| OA-011 | in-progress | P0-10 #118                 | 2026-07-24    |
+| OA-012 | in-progress | DEMO-01c-1 #246            | 2026-07-25    |
+| OA-013 | in-progress | DEMO-01c-2 #247            | 2026-07-24    |
+| OA-014 | open        | DEMO-01c-4 #249            | 2026-07-25    |
+| OA-015 | open        | Retention purge #311       | 2026-07-26    |
+| OA-016 | open        | VPOD-STUDIO-04 #339        | 2026-08-13    |
+| OA-017 | open        | VPOD-STUDIO-05 #340        | 2026-08-13    |
 | OA-018 | open        | Rescue Mode #124           | 2026-08-13    |
-| OA-019 | open        | Creator attribution #99   | 2026-08-16    |
-| OA-020 | open        | Metrics/trigger evidence  | 2026-08-16    |
+| OA-019 | open        | Creator attribution #99    | 2026-08-16    |
+| OA-020 | open        | Metrics/trigger evidence   | 2026-08-16    |
 | OA-021 | open        | VisePod prototype evidence | 2026-08-16    |
+| OA-022 | open        | Ops POI image storage #442 | 2026-08-16    |
 
 ## Sanitized External Evidence — 2026-07-21
 
@@ -200,6 +201,7 @@ purge execution was performed.
 | OA-019 | Creator agreement and attribution activation / #99 | JTCao | private business record, Ops, future Web consumer | approved referral key, same-origin landing path, disclosure text; no secret | Record a real Creator agreement, approved disclosure, lower-case referral key, same-origin landing path, review/expiry date, and operator verifier in a protected business record. Then create an active Creator source only through reviewed Ops controls. Do not publish a redirect, raw query parameter, social-handle inference, report, or compensation claim before the server-side consumer is merged. | A future consumer resolves only the private mapping, requires the active Creator source, renders the approved disclosure, has no outbound click/target URL, and becomes unavailable after deactivation. Record only the agreement/disclosure dates, key, path, verifier, and sanitized observed result. | Deactivate the Creator source and remove its mapping through a forward change; no public redirect should remain. Preserve minimum audit evidence under retention. |
 | OA-020 | Consented operating data and lifecycle-trigger evidence / #343, #98, #100, #126, #194, Phase 2/3 | JTCao | controlled preview, private operator evidence store | no secret; de-identified observation template | Collect consented, de-identified travel-task fragments and real controlled-preview operating metrics. Use durable telemetry/ledger/Ops sources for published counts; record source, window, consent status, verifier, and aggregation method. Never synthesize samples, quotes, orders, WAU, costs, or partner outcomes to satisfy a gate. | Codex can reproduce the reported aggregate from the approved durable source, the relevant Issue's threshold/window is met, and the evidence contains no raw traveler content or sensitive identifiers. | Mark invalid evidence unusable, preserve only permitted audit notes, and start a new consented observation window; do not unlock a phase from contaminated or synthetic data. |
 | OA-021 | VisePod controlled prototype evidence / #279, #280, #282, #278 | JTCao | private controlled venue and evidence store | finite approved device-id list only when later required; no device key, Wi-Fi password, or recording in configuration | Freeze the investor audience, venue/window, enclosure, demo Trip/account, recruitment mix, and consent process. Run consented 20-run scenario/weak-network observations and a ten-person phone/earbud comparison; obtain independent hardware/security review before any device registry, gateway, speech, provisioning, or firmware runtime work. | A sanitized evidence pack names the observation window, device labels, scenario counts, consent owner, first-audio/full-response observations, failure modes, comparison aggregate, and independent review conclusion. No simulator or documentation result substitutes for real-device evidence. | Stop testing, remove a device from the approved inventory, and disable any later device environment variables when consent, integrity, or scope fails. Keep only the minimum permitted incident/audit record. |
+| OA-022 | Private Ops POI image writer / #442 | JTCao | Vercel Ops preview and production; approved Supabase project | `SUPABASE_SERVICE_ROLE_KEY` (server-only) | In the Vercel **vp-final-ops** project only, add the approved Supabase service-role key as a server environment variable for Preview and Production, then redeploy. Never put it in a `NEXT_PUBLIC_*` variable, browser bundle, Web project, GitHub, or chat. Leave it unset until a verified private-bucket test is planned. | An authorized Editor uploads one licensed JPEG/PNG/WebP to the private `ops-poi-images` bucket; the Ops route returns only private WebP metadata, no public URL; Supabase Storage confirms the object is private; unauthorized upload/delete returns 401/403; deleting the test image revokes metadata and removes the object. Record only status/code/date/environment, never image bytes, key, cookie, or object path. | Remove `SUPABASE_SERVICE_ROLE_KEY` from the affected Vercel environment and redeploy to fail closed immediately; delete only approved test objects through the Ops route or reviewed Storage console procedure, preserving private metadata/audit truth. |
 
 ## Closure Rule
 
