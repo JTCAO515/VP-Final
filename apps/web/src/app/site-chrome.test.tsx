@@ -1,6 +1,7 @@
 import * as React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import { LocaleProvider } from "../i18n/locale-provider";
 import { SiteFooter, SiteHeader } from "./site-chrome";
 
 describe("shared site chrome", () => {
@@ -45,6 +46,20 @@ describe("shared site chrome", () => {
     ]) {
       expect(html).toContain(`href="${href}"`);
     }
+  });
+
+  it("renders shared navigation from the selected UI locale without changing destinations", () => {
+    const html = renderWithReact(
+      React.createElement(LocaleProvider, {
+        initialLocale: "ar",
+        children: React.createElement(SiteHeader, { active: "copilot" }),
+      }),
+    );
+
+    expect(html).toContain(">استكشاف<");
+    expect(html).toContain(">العربية<");
+    expect(html).toContain('href="/visepanda"');
+    expect(html).toContain('aria-label="اللغة"');
   });
 });
 

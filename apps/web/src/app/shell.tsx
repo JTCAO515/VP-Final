@@ -14,6 +14,8 @@ import {
   type TripDay,
   type TripState,
 } from "@visepanda/domain";
+import { useLocale } from "../i18n/locale-provider";
+import type { MessageKey } from "../i18n/messages";
 import {
   COMPLETION_MAX_POLLS,
   COMPLETION_POLL_INTERVAL_MS,
@@ -61,18 +63,11 @@ type RequestFailureNotice = {
 type WorkspacePanel = "trip" | "chat";
 
 const LAST_TRIP_ID_KEY = "visepanda.lastTripId";
-const EXAMPLE_PROMPTS = [
-  "How do I prepare payment before arriving in China?",
-  "What is the easiest way to use the metro in Shanghai?",
-  "How can I show a restaurant my dietary needs?",
-];
-
-const initialMessages: ChatMessage[] = [
-  {
-    role: "assistant",
-    body: "Tell me what you need to get done in China. I can help you think through payments, transport, language, and practical travel questions.",
-  },
-];
+const EXAMPLE_PROMPT_KEYS = [
+  "workspace.prompt.payment",
+  "workspace.prompt.metro",
+  "workspace.prompt.show",
+] as const;
 
 const SAFE_CONTEXT_PROMPTS: Readonly<Record<string, string>> = {
   explore: "Help me decide what to do next from Explore.",
@@ -80,6 +75,14 @@ const SAFE_CONTEXT_PROMPTS: Readonly<Record<string, string>> = {
   "human-help": "What can I do myself before I request Human Help?",
   payment: "What is the safest practical next step for payment preparation?",
   trip: "Help me think through the next practical step for my trip.",
+};
+
+const LOCALIZED_CONTEXT_KEYS: Readonly<Record<string, MessageKey>> = {
+  explore: "workspace.context.explore",
+  guide: "workspace.context.guide",
+  "human-help": "workspace.context.help",
+  payment: "workspace.context.payment",
+  trip: "workspace.context.trip",
 };
 
 // Retained only for the existing markup that is hidden on the dedicated workspace route.
@@ -126,6 +129,7 @@ const SCENARIO_GROUPS = [
 ] as const;
 
 export function CopilotShell() {
+  const { t } = useLocale();
   const [input, setInput] = useState("");
   const [progress, setProgress] = useState<GenerationProgress>({
     status: "idle",
@@ -136,7 +140,9 @@ export function CopilotShell() {
   });
   const [trip, setTrip] = useState<TripState | null>(null);
   const [tripVersion, setTripVersion] = useState<number | null>(null);
-  const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
+  const [messages, setMessages] = useState<ChatMessage[]>(() => [
+    { role: "assistant", body: t("workspace.initialMessage") },
+  ]);
   const [completionJob, setCompletionJob] = useState<CompletionJob | null>(null);
   const [anonymousUsage, setAnonymousUsage] = useState<AnonymousTurnUsage | null>(null);
   const [registrationGate, setRegistrationGate] = useState(false);
@@ -171,11 +177,20 @@ export function CopilotShell() {
   }, []);
 
   useEffect(() => {
-    const draft = workspaceContextPrompt(
-      new URLSearchParams(window.location.search).get("context"),
-    );
+    const context = new URLSearchParams(window.location.search).get("context");
+    const draft = context
+      ? t(LOCALIZED_CONTEXT_KEYS[context] ?? "workspace.context.trip")
+      : undefined;
     if (draft) setInput((current) => current || draft);
-  }, []);
+  }, [t]);
+
+  useEffect(() => {
+    setMessages((current) =>
+      current.length === 1 && current[0]?.role === "assistant" && !current[0].envelope
+        ? [{ role: "assistant", body: t("workspace.initialMessage") }]
+        : current,
+    );
+  }, [t]);
 
   useEffect(() => {
     if (!shouldRevealPreflightFailure) return;
@@ -547,13 +562,13 @@ export function CopilotShell() {
           </p>
         </div>
         <div className="copilotLayout" data-mobile-panel={mobilePanel}>
-          <div className="mobileWorkspaceTabs" aria-label="Workspace view">
+          <div className="mobileWorkspaceTabs" aria-label={t("workspace.view")}>
             <button
               aria-pressed={mobilePanel === "trip"}
               onClick={() => setMobilePanel("trip")}
               type="button"
             >
-              Trip
+              {t("workspace.trip")}
             </button>
             <button
               aria-pressed={mobilePanel === "chat"}
@@ -563,49 +578,44 @@ export function CopilotShell() {
               VisePanda
             </button>
           </div>
-          <section className="tripCanvas" aria-label="Trip Canvas">
+          <section className="tripCanvas" aria-label={t("workspace.tripCanvas")}>
             <div className="canvasToolbar">
               <div>
-                <h1>Trip Canvas</h1>
-                <span>
-                  {trip ? "Read-only trip draft" : "Your practical plan will appear here"}
-                </span>
+                <h1>{t("workspace.tripCanvas")}</h1>
+                <span>{trip ? t("workspace.readOnlyDraft") : t("workspace.emptyTrip")}</span>
               </div>
               <span className={`conversationStatus ${progress.status}`}>
-                {progressLabel(progress, detailPassFailed)}
+                {localizedProgressLabel(t, progress, detailPassFailed)}
               </span>
             </div>
             {trip ? (
               <TripPreview trip={trip} />
             ) : (
               <div className="tripCanvasEmpty">
-                <p>Start with a practical question in VisePanda.</p>
-                <span>
-                  When a Trip draft is available, it will appear here without changing it silently.
-                </span>
+                <p>{t("workspace.emptyTitle")}</p>
+                <span>{t("workspace.emptyLead")}</span>
               </div>
             )}
           </section>
-          <section className="conversationPanel" aria-label="VisePanda conversation">
+          <section className="conversationPanel" aria-label={t("workspace.conversation")}>
             <div className="canvasToolbar">
               <div>
                 <h1>VisePanda</h1>
-                <span>Practical China travel guidance</span>
+                <span>{t("workspace.guidance")}</span>
               </div>
               <span
                 className={`conversationStatus ${registrationGate ? "accessRequired" : progress.status}`}
               >
-                {registrationGate ? "Sign in required" : progressLabel(progress, detailPassFailed)}
+                {registrationGate
+                  ? t("workspace.signInRequired")
+                  : localizedProgressLabel(t, progress, detailPassFailed)}
               </span>
             </div>
-            <p className="scopeNote">
-              This preview answers travel questions and can draft a read-only Trip preview. It does
-              not edit itineraries, book services, or connect you to a human agent.
-            </p>
+            <p className="scopeNote">{t("workspace.scope")}</p>
             <div className="railMessages">
               {messages.map((message, index) => (
                 <article className={`railMessage ${message.role}`} key={`${message.role}-${index}`}>
-                  <b>{message.role === "user" ? "You" : "VisePanda"}</b>
+                  <b>{message.role === "user" ? t("workspace.you") : "VisePanda"}</b>
                   {message.envelope ? (
                     <EnvelopeMessage envelope={message.envelope} trip={null} />
                   ) : (
@@ -617,7 +627,7 @@ export function CopilotShell() {
                 <article className="railMessage assistant typing" aria-live="polite">
                   <b>VisePanda</b>
                   <p>
-                    <span aria-hidden="true">● ● ●</span> Thinking through your travel question
+                    <span aria-hidden="true">● ● ●</span> {t("workspace.thinking")}
                   </p>
                 </article>
               ) : null}
@@ -636,25 +646,28 @@ export function CopilotShell() {
             </div>
           </section>
 
-          <aside className="copilotRail" aria-label="VisePanda prompt composer">
+          <aside className="copilotRail" aria-label={t("workspace.composer")}>
             <div className="railHeader">
               <div>
-                <strong>Start with a practical question</strong>
-                <span>Ask in plain English</span>
+                <strong>{t("workspace.askQuestion")}</strong>
+                <span>{t("workspace.askPlain")}</span>
               </div>
-              <span className="previewBadge">Preview</span>
+              <span className="previewBadge">{t("workspace.preview")}</span>
             </div>
-            <div className="quickReplies" aria-label="Example questions">
-              {EXAMPLE_PROMPTS.map((prompt) => (
-                <button
-                  disabled={registrationGate}
-                  key={prompt}
-                  onClick={() => chooseQuestion(prompt)}
-                  type="button"
-                >
-                  {prompt}
-                </button>
-              ))}
+            <div className="quickReplies" aria-label={t("workspace.examples")}>
+              {EXAMPLE_PROMPT_KEYS.map((key) => {
+                const prompt = t(key);
+                return (
+                  <button
+                    disabled={registrationGate}
+                    key={prompt}
+                    onClick={() => chooseQuestion(prompt)}
+                    type="button"
+                  >
+                    {prompt}
+                  </button>
+                );
+              })}
             </div>
             {shouldRevealPreflightFailure && requestFailure ? (
               <CopilotRequestNotice
@@ -668,12 +681,12 @@ export function CopilotShell() {
                 className={`copilotNotice account ${registrationGate ? "blocked" : "warning"}`}
                 role={registrationGate ? "alert" : "status"}
               >
-                <span className="copilotNoticeLabel">Account</span>
+                <span className="copilotNoticeLabel">{t("workspace.account")}</span>
                 <div>
                   <strong>{registrationNotice.title}</strong>
                   <span>{registrationNotice.detail}</span>
                 </div>
-                <a href="/account">Create account or sign in</a>
+                <a href="/account">{t("workspace.createAccount")}</a>
               </div>
             ) : null}
             <form
@@ -687,12 +700,12 @@ export function CopilotShell() {
                 aria-label="Trip prompt"
                 disabled={registrationGate}
                 onChange={(event) => setInput(event.target.value)}
-                placeholder="Ask about payments, transport, language, or travel basics"
+                placeholder={t("workspace.placeholder")}
                 ref={promptInput}
                 value={input}
               />
               <button disabled={!input.trim() || isWorking || registrationGate} type="submit">
-                {isWorking ? "Thinking" : "Ask VisePanda"}
+                {isWorking ? t("workspace.thinkingButton") : t("workspace.ask")}
               </button>
             </form>
           </aside>
@@ -913,6 +926,19 @@ export function progressLabel(progress: GenerationProgress, detailPassFailed: bo
   if (progress.status === "completed") return "Answer received";
   if (detailPassFailed) return "Details need attention";
   return "Request failed";
+}
+
+function localizedProgressLabel(
+  translate: (key: MessageKey) => string,
+  progress: GenerationProgress,
+  detailPassFailed: boolean,
+): string {
+  if (progress.status === "idle") return translate("workspace.status.idle");
+  if (progress.status === "skeleton") return translate("workspace.status.skeleton");
+  if (progress.status === "completing") return translate("workspace.status.completing");
+  if (progress.status === "completed") return translate("workspace.status.completed");
+  if (detailPassFailed) return translate("workspace.status.attention");
+  return translate("workspace.status.failed");
 }
 
 export function anonymousTurnNotice(

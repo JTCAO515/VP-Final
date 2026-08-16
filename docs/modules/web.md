@@ -8,6 +8,27 @@ The public Next.js application owns acquisition and traveler-facing Phase 0 expe
 the product home, VisePanda workspace and Trip Canvas, Explore, guides, POI pages, Human Help, public Trip shares, and
 the outbound gateway.
 
+## Locale and Content Boundary
+
+The public Web locale contract is owned by `apps/web/src/i18n`. English (`en`) is the deterministic
+default. A traveler may choose Chinese (`zh-CN`), Spanish (`es`), Arabic (`ar`), or Russian (`ru`) in
+the shared header; the choice is persisted in the same-origin `visepanda_locale` cookie so a later
+internal navigation starts in the selected UI locale. Arabic sets document `lang="ar"` and `dir="rtl"`;
+the other supported locales are left-to-right.
+
+This contract localizes reviewed **interface copy**, not arbitrary content. User prompts, model
+responses, provider errors, POI facts, reviewed Safe Phrase text, Trip data, partner disclosures,
+and server-owned domain enum values MUST NOT be browser-translated or rewritten by a client-side
+translation service. A missing UI key falls back to the English catalog; it must never produce a
+blank label. Fixed questionnaire/category presentation is introduced only through a separately
+reviewed catalog that preserves the submitted domain value.
+
+The legal/policy body, evidence-backed editorial/SEO content, and any canonical foreign-language
+source require an explicit reviewed-content decision before translation. The selector does not make
+an unreviewed legal translation authoritative, and it does not create locale SEO routes or change
+canonical/indexability behavior. See Issue #431 for the shared foundation, #432 for traveler utility
+surfaces, and #433 for the legal/editorial authority path.
+
 ## Routes
 
 | Route                                     | Purpose                                                                        |
