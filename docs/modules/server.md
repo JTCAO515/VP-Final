@@ -316,7 +316,9 @@ distinguish its own previous partial effect from a later unrelated Trip edit.
 - Bulk import never promotes an input row: imported facts are drafts even when their collection record
   has been independently reviewed. The explicit fact review transition remains the only publication
   path. A repeated collection row with the same digest is a no-op; a reused row id or fact id with
-  different content aborts the batch rather than overwriting evidence.
+  different content aborts the batch rather than overwriting evidence. Every non-empty committed import
+  also writes one private batch UUID and attaches it to each new editorial-audit row; dry-runs,
+  duplicate-only commits, and historical rows carry no invented batch identity.
 - Existing Trip persistence receives only a validated Patch plus trusted identity, expected version,
   and event source; creation receives the initial validated Trip.
 - A module may not import another module's tables.

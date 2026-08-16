@@ -28,19 +28,19 @@ It stores a SHA-256 token digest, issuer reference, bounded environment, expiry,
 revocation reference; raw bearer material is never persisted. RLS and Data API revocation are part of
 the same migration, and validation also checks the issuer's current Ops permission at runtime.
 
-| Area              | Relations                                                                                                                         |
-| ----------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| Identity and Trip | `users`, `trips`, `trip_events`, `copilot_completion_jobs`                                                                        |
-| Readiness         | `readiness_assessments` (private, consented fixed-answer self-reports and deterministic results)                                  |
-| AI trace          | `agent_runs`, `tool_calls`, `llm_call_costs`                                                                                      |
-| Copilot dialogue  | `copilot_conversation_turns`                                                                                                      |
-| Knowledge         | `pois`, `poi_facts`, `poi_fact_editorial_audit`, `knowledge_gaps`, `poi_commercial_links`, `seo_editorial_overrides`              |
-| Safety phrases    | `safe_phrases` (private operator-verified fixed-expression editorial records)                                                     |
-| VisePod Studio    | `visepod_device_bindings`, `visepod_binding_idempotency`, `visepod_provisioning_grants` (private assignment/replay/grant history) |
-| Commerce          | `partners`, private `creator_referrals`, `outbound_clicks`                                                                        |
-| Telemetry         | `events`, `trust_funnel_daily`, private Phase 0 funnel/outbound/Human Help live views                                             |
-| Human operations  | `human_tasks`, `human_task_transitions`, `human_task_evidence`                                                                    |
-| Ops authorization | `ops_memberships`, `ops_audit_events`                                                                                             |
+| Area              | Relations                                                                                                                                        |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Identity and Trip | `users`, `trips`, `trip_events`, `copilot_completion_jobs`                                                                                       |
+| Readiness         | `readiness_assessments` (private, consented fixed-answer self-reports and deterministic results)                                                 |
+| AI trace          | `agent_runs`, `tool_calls`, `llm_call_costs`                                                                                                     |
+| Copilot dialogue  | `copilot_conversation_turns`                                                                                                                     |
+| Knowledge         | `pois`, `poi_facts`, `knowledge_import_batches`, `poi_fact_editorial_audit`, `knowledge_gaps`, `poi_commercial_links`, `seo_editorial_overrides` |
+| Safety phrases    | `safe_phrases` (private operator-verified fixed-expression editorial records)                                                                    |
+| VisePod Studio    | `visepod_device_bindings`, `visepod_binding_idempotency`, `visepod_provisioning_grants` (private assignment/replay/grant history)                |
+| Commerce          | `partners`, private `creator_referrals`, `outbound_clicks`                                                                                       |
+| Telemetry         | `events`, `trust_funnel_daily`, private Phase 0 funnel/outbound/Human Help live views                                                            |
+| Human operations  | `human_tasks`, `human_task_transitions`, `human_task_evidence`                                                                                   |
+| Ops authorization | `ops_memberships`, `ops_audit_events`                                                                                                            |
 
 ## Migration Rules
 
@@ -94,10 +94,12 @@ the same migration, and validation also checks the issuer's current Ops permissi
   the click in the same locked partner transaction before redirecting. The database compatibility
   constraint still permits a retained row to become ownerless after account deletion, but every new
   runtime write passes the stricter exactly-one-identity domain contract.
-- `poi_fact_editorial_audit` is server-only: it retains a bulk collection row id, deterministic
-  content digest, researcher/reviewer handles, actual evidence-review time, and internal review notes.
-  RLS is enabled and no `anon` or `authenticated` grant exists. It must not be joined into any public
-  POI, Explore, Copilot, or SEO response.
+- `knowledge_import_batches` and `poi_fact_editorial_audit` are server-only. A newly committed import
+  receives one private batch UUID and each new audit row references it; historical audit rows retain a
+  null batch rather than being inferred into a made-up group. The audit retains a collection row id,
+  deterministic content digest, researcher/reviewer handles, actual evidence-review time, and internal
+  review notes. RLS is enabled and no `anon` or `authenticated` grant exists. Neither relation may be
+  joined into any public POI, Explore, Copilot, or SEO response.
 - `seo_editorial_overrides` is server-only presentation data. One Ops-authored row may exist for a
   POI/intent pair and must replace at least one bounded title, summary, or emphasis field. RLS is
   enabled and all direct client grants are revoked. It deliberately has no fact, source, evidence,

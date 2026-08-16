@@ -10,6 +10,7 @@ import {
   humanTaskEvidence,
   humanTaskPayments,
   humanTasks,
+  knowledgeImportBatches,
   knowledgeGaps,
   llmCallCosts,
   outboundClicks,
@@ -135,6 +136,11 @@ describe("database schema", () => {
     expect(poiFacts.status.default).toBe("draft");
     expect(poiFactEditorialAudit.collectionRowId.name).toBe("collection_row_id");
     expect(poiFactEditorialAudit.contentDigest.name).toBe("content_digest");
+    expect(knowledgeImportBatches.id.name).toBe("id");
+    expect(poiFactEditorialAudit.importBatchId.name).toBe("import_batch_id");
+    expect(
+      getTableConfig(poiFactEditorialAudit).indexes.map((index) => index.config.name),
+    ).toContain("poi_fact_editorial_audit_import_batch_idx");
     expect(
       getTableConfig(poiFactEditorialAudit).checks.map((constraint) => constraint.name),
     ).toContain("poi_fact_editorial_audit_reviewed_fields_check");

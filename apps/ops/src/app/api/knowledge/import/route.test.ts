@@ -17,6 +17,7 @@ vi.mock("../../../../lib/opsAccess", () => ({
 }));
 
 const report: KnowledgeImportReport = {
+  importBatchId: "30000000-0000-4000-8000-000000000099",
   totalRows: 1,
   readyRows: 1,
   skippedRows: [],

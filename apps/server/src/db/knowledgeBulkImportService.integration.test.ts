@@ -44,12 +44,20 @@ describeDatabase("database KnowledgeBulkImportService", () => {
     const concurrentReports = await Promise.all([service.commit(csv), service.commit(csv)]);
     expect(concurrentReports.map((report) => report.createdFacts).sort()).toEqual([0, 1]);
     expect(concurrentReports.map((report) => report.duplicateFacts).sort()).toEqual([0, 1]);
+    expect(
+      concurrentReports.filter((report) => report.createdFacts === 1)[0]?.importBatchId,
+    ).toMatch(/^[0-9a-f-]{36}$/);
+    expect(
+      concurrentReports.filter((report) => report.createdFacts === 0)[0]?.importBatchId,
+    ).toBeNull();
 
     const facts = await sql`
-      select fact.status, fact.verified_at, audit.collection_status, audit.researcher,
+      select fact.status, fact.verified_at, audit.import_batch_id, batch.created_at as batch_created_at,
+             audit.collection_status, audit.researcher,
              audit.reviewer, audit.evidence_reviewed_at, audit.review_notes
       from public.poi_facts fact
       join public.poi_fact_editorial_audit audit on audit.fact_id = fact.id
+      join public.knowledge_import_batches batch on batch.id = audit.import_batch_id
       join public.pois poi on poi.id = fact.poi_id
       where poi.source_ids ->> 'import_test' = 'v2-75'
     `;
@@ -64,8 +72,11 @@ describeDatabase("database KnowledgeBulkImportService", () => {
       }),
     ]);
     expect(facts[0]?.evidence_reviewed_at).not.toBeNull();
+    expect(facts[0]?.import_batch_id).toMatch(/^[0-9a-f-]{36}$/);
+    expect(facts[0]?.batch_created_at).not.toBeNull();
 
     await expect(service.commit(csv)).resolves.toMatchObject({
+      importBatchId: null,
       createdPois: 0,
       createdFacts: 0,
       duplicateFacts: 1,

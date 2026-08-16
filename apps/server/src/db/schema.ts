@@ -587,6 +587,11 @@ export const seoEditorialOverrides = pgTable(
 
 // Editorial identity and notes never belong on the public POI-fact read model.
 // Keep them in a private, one-to-one audit relation instead.
+export const knowledgeImportBatches = pgTable("knowledge_import_batches", {
+  id: uuid("id").primaryKey(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 export const poiFactEditorialAudit = pgTable(
   "poi_fact_editorial_audit",
   {
@@ -600,9 +605,15 @@ export const poiFactEditorialAudit = pgTable(
     reviewer: text("reviewer"),
     evidenceReviewedAt: timestamp("evidence_reviewed_at", { withTimezone: true }),
     reviewNotes: text("review_notes"),
+    importBatchId: uuid("import_batch_id").references(() => knowledgeImportBatches.id, {
+      onDelete: "restrict",
+    }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
+    importBatchIdx: index("poi_fact_editorial_audit_import_batch_idx")
+      .on(table.importBatchId)
+      .where(sql`${table.importBatchId} is not null`),
     statusCheck: check(
       "poi_fact_editorial_audit_collection_status_check",
       sql`${table.collectionStatus} in ('researched', 'reviewed')`,
