@@ -359,6 +359,168 @@ input {
   padding: 14px;
 }
 
+.membershipWorkspace {
+  display: grid;
+  gap: 24px;
+}
+
+.membershipHeading,
+.membershipAssignmentForm,
+.membershipDirectory,
+.membershipRow,
+.membershipRemovalConfirmation {
+  padding: 20px;
+}
+
+.membershipHeading {
+  border-bottom: 1px solid var(--line);
+}
+
+.membershipHeading h2,
+.membershipHeading p,
+.roleCapability h2,
+.roleCapability h3,
+.roleCapability p,
+.membershipRemovalConfirmation h2,
+.membershipRemovalConfirmation p {
+  margin-top: 0;
+}
+
+.membershipHeading .muted {
+  margin-bottom: 0;
+  max-width: 720px;
+}
+
+.membershipAssignmentForm {
+  align-items: end;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: minmax(0, 1fr) minmax(210px, 0.55fr) auto;
+}
+
+.membershipAssignmentForm label,
+.membershipControl label {
+  color: var(--muted);
+  display: grid;
+  font-size: 13px;
+  font-weight: 700;
+  gap: 7px;
+}
+
+.membershipAssignmentForm input,
+.membershipAssignmentForm select,
+.membershipControl select {
+  min-width: 0;
+  width: 100%;
+}
+
+.membershipNote {
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 0;
+  padding: 14px 20px;
+}
+
+.membershipList {
+  display: grid;
+}
+
+.membershipRow {
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(230px, 1fr) minmax(190px, 0.65fr) auto;
+}
+
+.membershipRow:last-child {
+  border-bottom: 0;
+}
+
+.membershipIdentity,
+.membershipControl,
+.membershipActions {
+  display: grid;
+  gap: 7px;
+}
+
+.membershipIdentity code {
+  color: var(--muted);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.membershipIdentity small {
+  color: var(--muted);
+}
+
+.membershipActions {
+  justify-items: end;
+}
+
+.dangerButton {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--vp-on-primary);
+}
+
+.roleCapabilityGrid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.roleCapability {
+  padding: 20px;
+}
+
+.roleCapability h2 {
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+
+.roleCapability h3 {
+  color: var(--muted);
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.roleCapability ul,
+.roleRisk ul {
+  display: grid;
+  gap: 7px;
+  line-height: 1.4;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.roleRisk {
+  background: var(--vp-danger-soft);
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  display: grid;
+  gap: 8px;
+  margin-top: 18px;
+  padding: 12px;
+}
+
+.membershipRemovalConfirmation {
+  align-items: center;
+  background: var(--vp-danger-soft);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  display: flex;
+  gap: 20px;
+  justify-content: space-between;
+}
+
+.membershipRemovalConfirmation p {
+  line-height: 1.5;
+  margin-bottom: 0;
+  max-width: 720px;
+}
+
 .inlineForm input {
   min-width: 150px;
 }
@@ -855,6 +1017,21 @@ button:disabled {
 }
 
 @media (max-width: 760px) {
+  .membershipAssignmentForm,
+  .membershipRow,
+  .roleCapabilityGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .membershipActions {
+    justify-items: start;
+  }
+
+  .membershipRemovalConfirmation {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
   .draftReviewHeading,
   .factExpiryHeading,
   .factExpiryItem,

@@ -46,7 +46,11 @@ the public Web application and protected by server-side role checks.
 - `/roles` and `/api/roles`: Admin-only membership management. Exact-email assignment is POST-only and
   resolves one already-registered account after `membership.write`; it does not expose a user directory.
   Individual membership soft revocation is server-authoritative and immediately removes Ops access on
-  the next protected request.
+  the next protected request. The Roles page uses a complete-email entry only, lists each existing
+  membership as an individual audited control, requires a second confirmation for role changes and
+  revocation, and disables self-management. It explains every fixed role in operator language and
+  marks contact, cost, membership, and VisePod-provisioning access as high risk; it never offers
+  account browsing, bulk changes, or client-side authority.
 - `/costs`: Admin-only server-rendered Copilot cost summary for the latest 14 UTC days. It displays
   retained daily/model aggregates, cache and fallback rates, pseudonymous top-identity references,
   and reconciliation health without exposing conversation content or raw identity ids.

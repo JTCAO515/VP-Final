@@ -2,16 +2,20 @@ import { requireOpsPage } from "../../lib/opsAccess";
 import { RoleManager } from "./ui";
 
 export default async function RolesPage() {
-  await requireOpsPage("membership.read");
+  const access = await requireOpsPage("membership.read");
   return (
     <>
       <section className="heading">
         <h1>Ops memberships</h1>
         <p className="muted">
-          Assign one explicit least-privilege role to a verified Supabase user id.
+          Give registered collaborators the smallest fixed role they need. Membership changes are
+          audited and take effect on the next protected request.
         </p>
       </section>
-      <RoleManager />
+      <RoleManager
+        canWrite={access.permissions.includes("membership.write")}
+        currentUserId={access.userId}
+      />
     </>
   );
 }
