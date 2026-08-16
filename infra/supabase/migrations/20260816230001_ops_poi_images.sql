@@ -40,7 +40,7 @@ create table public.poi_images (
       or (target_kind = 'category' and poi_id is null and city is null and category in ('food', 'attraction', 'hotel', 'shopping', 'experience'))
     ),
   constraint poi_images_storage_path_check
-    check (storage_path ~ '^[a-z0-9][a-z0-9/_-]*\\.webp$' and char_length(storage_path) <= 300),
+    check (storage_path ~ '^[a-z0-9][a-z0-9/_-]*\.webp$' and char_length(storage_path) <= 300),
   constraint poi_images_content_type_check
     check (content_type = 'image/webp'),
   constraint poi_images_byte_size_check
