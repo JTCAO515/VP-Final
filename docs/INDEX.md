@@ -227,6 +227,7 @@ Repeatable deployment, data, AI, knowledge, and Human Task procedures.
 | [AI Provider Configuration Runbook](runbooks/ai-provider-configuration.md) | runbook | active | AI / operator | Configure bounded OpenAI-compatible providers without exposing secrets or overstating live evidence. |
 | [Human Task Concierge Runbook](runbooks/human-task-concierge.md) | runbook | active | operator | Triage, quote, fulfil, evidence, privacy, and escalation for real Human Tasks. |
 | [Knowledge Fact Review Runbook](runbooks/knowledge-fact-review.md) | runbook | active | knowledge operations | Review fact source, freshness, version, deprecation, gaps, and public exposure. |
+| [Parallel External-Unblock Runbook](runbooks/parallel-external-unblock.md) | runbook | active | operator / Codex | Collect partner, payment, VisePod, and lifecycle evidence without fabricating activation or trigger facts. |
 | [Runbook Index](runbooks/README.md) | reference | active | operations | Index and template for active operational runbooks. |
 | [Supabase Migration Runbook](runbooks/supabase-migrations.md) | runbook | active | data platform | Create, reset, apply, verify, and forward-repair Supabase migrations and RLS. |
 | [Web Deploy and Rollback Runbook](runbooks/web-deploy-rollback.md) | runbook | active | platform | Build, preview, smoke, promote, and recover the Vercel Web deployment. |

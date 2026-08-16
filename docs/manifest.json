@@ -982,6 +982,16 @@
       "sourcePrefixes": ["packages/ai/", "turbo.json"]
     },
     {
+      "path": "docs/runbooks/parallel-external-unblock.md",
+      "title": "Parallel External-Unblock Runbook",
+      "category": "operations",
+      "type": "runbook",
+      "status": "active",
+      "owner": "operator / Codex",
+      "summary": "Collect partner, payment, VisePod, and lifecycle evidence without fabricating activation or trigger facts.",
+      "sourcePrefixes": []
+    },
+    {
       "path": "docs/runbooks/human-task-concierge.md",
       "title": "Human Task Concierge Runbook",
       "category": "operations",
