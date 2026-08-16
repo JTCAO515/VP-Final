@@ -50,6 +50,12 @@ Next.js runtimes rather than deployed as an independent service.
   Postgres adapter uses a transaction-scoped advisory lock for active-Admin floor checks and commits a
   soft revocation or role assignment with one minimized audit row; an audit failure rolls back the
   authorization change.
+- The private Ops audit ledger is a read-only `membership.read` capability. Authorization happens
+  before any filter or database read; callers may use only exact actor/action filters, a default
+  30-day window bounded to 90 days, and at most 100 newest rows. Both adapters defensively project
+  bounded scalar metadata and remove sensitive or nested fields, so an audit-view response cannot
+  become a secondary PII or credential read surface. It has no edit, delete, export, browse, or
+  mutation route.
 
 ## Current State
 

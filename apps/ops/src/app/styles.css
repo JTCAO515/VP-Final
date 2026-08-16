@@ -364,6 +364,84 @@ input {
   gap: 24px;
 }
 
+.auditFilters {
+  align-items: end;
+  border-bottom: 1px solid var(--line);
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
+  padding: 20px;
+}
+
+.auditFilters label {
+  color: var(--muted);
+  display: grid;
+  font-size: 13px;
+  font-weight: 700;
+  gap: 7px;
+}
+
+.auditFilters input {
+  min-width: 0;
+  width: 100%;
+}
+
+.auditNote {
+  color: var(--muted);
+  margin: 0;
+  padding: 14px 20px;
+}
+
+.auditList {
+  display: grid;
+}
+
+.auditEvent {
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 14px;
+  padding: 18px 20px;
+}
+
+.auditEvent header,
+.auditEvent dl {
+  align-items: baseline;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+}
+
+.auditEvent time,
+.auditEvent dt {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.auditEvent dl {
+  justify-content: flex-start;
+  margin: 0;
+}
+
+.auditEvent dl div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.auditEvent dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.auditEvent pre {
+  background: var(--soft);
+  border-radius: 6px;
+  font-size: 12px;
+  margin: 0;
+  overflow-x: auto;
+  padding: 12px;
+}
+
 .membershipHeading,
 .membershipAssignmentForm,
 .membershipDirectory,
@@ -1017,6 +1095,17 @@ button:disabled {
 }
 
 @media (max-width: 760px) {
+  .auditFilters {
+    grid-template-columns: 1fr;
+  }
+
+  .auditEvent header,
+  .auditEvent dl {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+
   .membershipAssignmentForm,
   .membershipRow,
   .roleCapabilityGrid {

@@ -51,6 +51,10 @@ the public Web application and protected by server-side role checks.
   revocation, and disables self-management. It explains every fixed role in operator language and
   marks contact, cost, membership, and VisePod-provisioning access as high risk; it never offers
   account browsing, bulk changes, or client-side authority.
+- `/audit` and `/api/audit`: `membership.read`-authorized, read-only Ops audit ledger. It accepts only
+  exact actor/action filters and a bounded time window (default 30 days, maximum 90 days, maximum 100
+  events). The server rechecks authorization before the query and removes sensitive-key, nested, and
+  oversize metadata from its projection. The page has no edit, delete, export, or bulk operation.
 - `/costs`: Admin-only server-rendered Copilot cost summary for the latest 14 UTC days. It displays
   retained daily/model aggregates, cache and fallback rates, pseudonymous top-identity references,
   and reconciliation health without exposing conversation content or raw identity ids.

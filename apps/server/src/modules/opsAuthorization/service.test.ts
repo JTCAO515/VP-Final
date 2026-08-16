@@ -4,6 +4,8 @@ import {
   OpsUnauthorizedError,
   createInMemoryOpsAuthorizationService,
   requireOpsAccess,
+  resolveOpsAuditFilters,
+  sanitizeAuditMetadata,
 } from "./service.js";
 
 const editorId = "11111111-1111-4111-8111-111111111111";
@@ -148,6 +150,32 @@ describe("Ops authorization", () => {
     });
     await expect(service.setMembership(admin, secondAdminId, "editor")).resolves.toMatchObject({
       role: "editor",
+    });
+  });
+
+  it("returns only bounded, sanitized audit events for an exact actor/action/time filter", async () => {
+    const service = createInMemoryOpsAuthorizationService([{ userId: adminId, role: "admin" }]);
+    const admin = (await service.getAccess(adminId))!;
+    await service.recordAudit(admin, {
+      action: "membership.set",
+      targetType: "ops_membership",
+      metadata: { role: "editor", token: "must-not-render", nested: { unsafe: true } },
+    });
+    await service.recordAudit(admin, { action: "partner.updated", targetType: "partner" });
+
+    await expect(
+      service.listAudit(admin, { actorId: adminId, action: "membership.set" }),
+    ).resolves.toEqual([
+      expect.objectContaining({ action: "membership.set", metadata: { role: "editor" } }),
+    ]);
+    expect(() =>
+      resolveOpsAuditFilters({
+        from: new Date("2026-01-01T00:00:00.000Z"),
+        to: new Date("2026-05-01T00:00:00.000Z"),
+      }),
+    ).toThrow("no longer than 90 days");
+    expect(sanitizeAuditMetadata({ cookie: "x", status: "active", nested: { value: 1 } })).toEqual({
+      status: "active",
     });
   });
 });
