@@ -576,6 +576,16 @@
       "sourcePrefixes": []
     },
     {
+      "path": "docs/governance/reviewed-content-localization.md",
+      "title": "Reviewed Content Localization Authority",
+      "category": "governance",
+      "type": "constraint",
+      "status": "active",
+      "owner": "content governance / Web / knowledge operations",
+      "summary": "Review, provenance, expiry, fallback, and rollback gates before legal, factual, commercial, safety, or SEO content is localized publicly.",
+      "sourcePrefixes": ["apps/web/src/i18n/", "apps/web/src/app/legal-content.ts", "apps/web/src/app/guides/", "apps/server/src/modules/knowledge/"]
+    },
+    {
       "path": "docs/governance/claude-code-sync-prompt.md",
       "title": "Claude Code Engineering Synchronization Prompt",
       "category": "governance",
