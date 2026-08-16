@@ -410,10 +410,13 @@ and truthful; retries are offered only for retryable jobs within the server-owne
 
 English is the default public interface language. A traveler may choose Chinese, Spanish, Arabic,
 or Russian through the shared header selector; the same-origin `visepanda_locale` preference cookie
-persists the UI choice and Arabic applies RTL document direction. Shared route contexts, Account,
-and Explore translate their authored UI chrome, including controls, derived scene/fact-kind labels,
-empty states, and illustrative preview copy. The selection must not alter authentication requests,
-telemetry values, POI source values, partner disclosures, or any other server/domain data.
+ persists the UI choice and Arabic applies RTL document direction. Shared route contexts, Account,
+ Explore, Arrival Pack, Readiness, Rescue, Human Help, and public-guide navigation translate their
+ authored UI chrome, including controls, derived scene/fact-kind labels, empty states, and
+ illustrative preview copy. Rescue category identifiers, Human Help task values, telemetry event
+ values, and request payloads remain stable domain values even when their displayed labels change.
+ The selection must not alter authentication requests, telemetry values, POI source values, partner
+ disclosures, or any other server/domain data.
 
 Evidence-bearing and regulated content keeps its recorded source language until its own reviewed
 translation authority exists: traveler prompts, model output, Trip data, POI fact values, legal and

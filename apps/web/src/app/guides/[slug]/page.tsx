@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { GUIDES, getGuide } from "../data";
 import { SiteFooter, SiteHeader } from "../../site-chrome";
 import { GuideTelemetry } from "../guideTelemetry";
+import { GuideAskAction, GuideEyebrow, GuideFaqHeading } from "./guide-ui";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -41,13 +42,11 @@ export default async function GuidePage({ params }: Props) {
       />
       <section className="hero pageHero articleHero">
         <div>
-          <p className="pageEyebrow">Practical guide</p>
+          <GuideEyebrow />
           <h1>{guide.title}</h1>
           <p>{guide.description}</p>
         </div>
-        <a className="pageAction" href="/visepanda?context=guide">
-          Ask VisePanda
-        </a>
+        <GuideAskAction />
       </section>
 
       <article className="guideArticle">
@@ -61,7 +60,7 @@ export default async function GuidePage({ params }: Props) {
         ))}
 
         <section>
-          <h2>FAQ</h2>
+          <GuideFaqHeading />
           {guide.faqs.map((faq) => (
             <details key={faq.question}>
               <summary>{faq.question}</summary>

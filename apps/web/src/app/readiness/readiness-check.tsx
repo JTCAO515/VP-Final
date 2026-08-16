@@ -10,6 +10,7 @@ import {
   type ChinaReadinessQuestionId,
   type ChinaReadinessSavedAssessment,
 } from "@visepanda/domain";
+import { useLocale } from "../../i18n/locale-provider";
 
 const LAST_TRIP_ID_KEY = "visepanda.lastTripId";
 const ANSWER_OPTIONS: ReadonlyArray<{
@@ -29,6 +30,7 @@ type SaveState = "idle" | "saving" | "saved" | "error";
 type SavedResponse = { ok: true; assessment: unknown } | { ok: false; error: string };
 
 export function ReadinessCheck() {
+  const { t } = useLocale();
   const [answers, setAnswers] = useState<AnswerMap>({});
   const [hasStarted, setHasStarted] = useState(false);
   const [consent, setConsent] = useState(false);
@@ -139,8 +141,8 @@ export function ReadinessCheck() {
     <>
       <section className="readinessHero" aria-labelledby="readiness-title">
         <div>
-          <p className="pageEyebrow">Before you fly</p>
-          <h1 id="readiness-title">China Readiness Check</h1>
+          <p className="pageEyebrow">{t("readiness.eyebrow")}</p>
+          <h1 id="readiness-title">{t("readiness.title")}</h1>
           <p>
             A short preparation self-check for the practical parts of arriving in China. This is not
             a score, booking service, or verification of your travel arrangements.
@@ -157,7 +159,7 @@ export function ReadinessCheck() {
         <div className="readinessQuestions">
           <div className="readinessSectionHeading">
             <div>
-              <p className="pageEyebrow">Your self-report</p>
+              <p className="pageEyebrow">{t("readiness.selfReport")}</p>
               <h2>Answer only what you know.</h2>
             </div>
             <span aria-live="polite">
@@ -202,7 +204,7 @@ export function ReadinessCheck() {
         <aside className="readinessResults" aria-live="polite">
           <div className="readinessResultsHeading">
             <p className="pageEyebrow">Explainable result</p>
-            <h2>Your preparation items</h2>
+            <h2>{t("readiness.items")}</h2>
             <p>
               {hasStarted
                 ? "Each item uses your answer and a fixed VisePanda rule."
@@ -240,7 +242,7 @@ export function ReadinessCheck() {
           </ul>
 
           <div className="readinessSave">
-            <h3>Save this self-report</h3>
+            <h3>{t("readiness.save")}</h3>
             <p>
               Saving is optional. We only send these fixed selections after you explicitly agree; no
               free-form travel notes are collected here.
@@ -273,7 +275,7 @@ export function ReadinessCheck() {
                 onClick={() => void saveAssessment()}
                 type="button"
               >
-                {saveState === "saving" ? "Saving self-report" : "Save self-report"}
+                {saveState === "saving" ? t("readiness.saving") : t("readiness.save")}
               </button>
             ) : null}
             {savedAt ? <small>Last saved: {formatSavedAt(savedAt)}</small> : null}

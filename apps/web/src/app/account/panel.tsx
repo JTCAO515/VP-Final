@@ -27,11 +27,12 @@ export function AccountPanel() {
     try {
       const response = await fetch("/api/auth/session", { cache: "no-store" });
       const data = (await response.json()) as SessionResponse;
-      if (!response.ok || !data.ok) throw new Error(data.ok ? "Session check failed." : data.error);
-      setSessionEmail(data.authenticated ? (data.user?.email ?? "Signed in") : null);
+      if (!response.ok || !data.ok)
+        throw new Error(data.ok ? t("account.sessionCheckFailed") : data.error);
+      setSessionEmail(data.authenticated ? (data.user?.email ?? t("account.signedIn")) : null);
       setError(null);
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Session check failed.");
+      setError(cause instanceof Error ? cause.message : t("account.sessionCheckFailed"));
     } finally {
       setLoading(false);
     }
@@ -55,13 +56,14 @@ export function AccountPanel() {
       };
       if (!response.ok || !data.ok) {
         throw new Error(
-          data.error ?? (authMode === "register" ? "Registration failed." : "Login failed."),
+          data.error ??
+            (authMode === "register" ? t("account.registrationFailed") : t("account.loginFailed")),
         );
       }
       setPassword("");
       if (authMode === "register" && data.confirmationRequired) {
         setAuthMode("login");
-        setNotice("Check your email to confirm the account, then sign in here.");
+        setNotice(t("account.confirmEmail"));
         setLoading(false);
         return;
       }
@@ -69,12 +71,10 @@ export function AccountPanel() {
       const claimResponse = await fetch("/api/trips/claim", { method: "POST" });
       const claim = (await claimResponse.json()) as { ok: boolean; error?: string };
       if (!claimResponse.ok || !claim.ok) {
-        setError(
-          claim.error ?? "Signed in, but anonymous trips could not be moved to this account.",
-        );
+        setError(claim.error ?? t("account.tripClaimFailed"));
       }
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Authentication failed.");
+      setError(cause instanceof Error ? cause.message : t("account.authenticationFailed"));
       setLoading(false);
     }
   }
@@ -91,10 +91,10 @@ export function AccountPanel() {
     try {
       const response = await fetch("/api/auth/logout", { method: "POST" });
       const data = (await response.json()) as { ok: boolean; error?: string };
-      if (!response.ok || !data.ok) throw new Error(data.error ?? "Logout failed.");
+      if (!response.ok || !data.ok) throw new Error(data.error ?? t("account.logoutFailed"));
       await refreshSession();
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Logout failed.");
+      setError(cause instanceof Error ? cause.message : t("account.logoutFailed"));
       setLoading(false);
     }
   }

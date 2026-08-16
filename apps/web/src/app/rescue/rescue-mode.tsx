@@ -8,6 +8,8 @@ import {
   type RescueCategory,
 } from "@visepanda/domain";
 import { captureClientTelemetry } from "../../lib/clientTelemetry";
+import { useLocale } from "../../i18n/locale-provider";
+import type { MessageKey } from "../../i18n/messages";
 import type { RescueRuntimeConfiguration } from "./runtime";
 
 const RESCUE_CATEGORIES: ReadonlyArray<{
@@ -73,6 +75,7 @@ const HUMAN_HELP_KIND_BY_CATEGORY: Readonly<Partial<Record<RescueCategory, strin
 };
 
 export function RescueMode({ configuration = UNAVAILABLE_CONFIGURATION }: RescueModeProps) {
+  const { t } = useLocale();
   const [selectedCategory, setSelectedCategory] = useState<RescueCategory | null>(null);
   const [selectedCity, setSelectedCity] = useState<string>("");
   const route = selectedCategory
@@ -116,20 +119,17 @@ export function RescueMode({ configuration = UNAVAILABLE_CONFIGURATION }: Rescue
     <>
       <section className="rescueHero" aria-labelledby="rescue-title">
         <div>
-          <p className="pageEyebrow">When plans change</p>
-          <h1 id="rescue-title">Rescue Mode</h1>
-          <p>
-            Choose the practical problem in front of you. VisePanda will show only a deterministic
-            next step it can support today.
-          </p>
+          <p className="pageEyebrow">{t("rescue.eyebrow")}</p>
+          <h1 id="rescue-title">{t("rescue.title")}</h1>
+          <p>{t("rescue.lead")}</p>
         </div>
         <aside className="rescueBoundary" aria-label="Rescue Mode limits">
-          <b>Important boundary</b>
+          <b>{t("rescue.boundary")}</b>
           <p>
             This is not emergency, medical, legal, police, embassy, or 24/7 support. For immediate
             danger or serious illness, contact official emergency services now.
           </p>
-          <a href="/emergency-disclaimer">Official emergency guidance</a>
+          <a href="/emergency-disclaimer">{t("rescue.officialGuidance")}</a>
         </aside>
       </section>
 
@@ -137,10 +137,10 @@ export function RescueMode({ configuration = UNAVAILABLE_CONFIGURATION }: Rescue
         <div className="rescueCategoryColumn">
           <div className="rescueSectionHeading">
             <div>
-              <p className="pageEyebrow">Choose one situation</p>
-              <h2>What needs attention?</h2>
+              <p className="pageEyebrow">{t("rescue.choose")}</p>
+              <h2>{t("rescue.whatNeedsAttention")}</h2>
             </div>
-            <span>Fixed categories only</span>
+            <span>{t("rescue.fixedCategories")}</span>
           </div>
           <div className="rescueCategories" role="list">
             {RESCUE_CATEGORIES.map((category) => (
@@ -152,7 +152,7 @@ export function RescueMode({ configuration = UNAVAILABLE_CONFIGURATION }: Rescue
                 type="button"
               >
                 <span aria-hidden="true">{category.marker}</span>
-                <b>{category.label}</b>
+                <b>{t(categoryKey(category.id))}</b>
                 <small>{category.description}</small>
               </button>
             ))}
@@ -182,8 +182,8 @@ export function RescueMode({ configuration = UNAVAILABLE_CONFIGURATION }: Rescue
         <aside className="rescueResult" aria-live="polite">
           {route === null ? (
             <div className="rescueEmptyState">
-              <p className="pageEyebrow">Your next step</p>
-              <h2>Select a situation first.</h2>
+              <p className="pageEyebrow">{t("rescue.nextStep")}</p>
+              <h2>{t("rescue.selectFirst")}</h2>
               <p>
                 We do not collect an incident description here. Choose the closest fixed category to
                 see the currently supportable route.
@@ -191,38 +191,38 @@ export function RescueMode({ configuration = UNAVAILABLE_CONFIGURATION }: Rescue
             </div>
           ) : route.primaryAction.kind === "official_guidance" ? (
             <div className="rescueOfficialResult">
-              <p className="pageEyebrow">Official guidance first</p>
-              <h2>Do not wait for VisePanda.</h2>
+              <p className="pageEyebrow">{t("rescue.officialFirst")}</p>
+              <h2>{t("rescue.dontWait")}</h2>
               <p>{route.primaryAction.message}</p>
               <a className="pageAction" href="/emergency-disclaimer">
-                Open official emergency guidance
+                {t("rescue.officialGuidance")}
               </a>
             </div>
           ) : route.primaryAction.kind !== "unavailable" &&
             route.primaryAction.targetId !== null &&
             configuration.actionHrefs[route.primaryAction.targetId] ? (
             <div className="rescueReviewedResult">
-              <p className="pageEyebrow">Reviewed self-service step</p>
-              <h2>Start with the current guide.</h2>
+              <p className="pageEyebrow">{t("rescue.reviewedStep")}</p>
+              <h2>{t("rescue.startGuide")}</h2>
               <p>{route.primaryAction.message}</p>
               <a
                 className="pageAction"
                 href={configuration.actionHrefs[route.primaryAction.targetId]}
               >
-                Open reviewed guidance
+                {t("rescue.startGuide")}
               </a>
             </div>
           ) : (
             <div className="rescueUnavailableResult">
-              <p className="pageEyebrow">Current availability</p>
-              <h2>This route is not available yet.</h2>
+              <p className="pageEyebrow">{t("rescue.availability")}</p>
+              <h2>{t("rescue.unavailable")}</h2>
               <p>{route.primaryAction.message}</p>
               <p>
                 We will not pretend that a reviewed tool or Human Help handoff is active when it is
                 not configured for this situation.
               </p>
               <a className="textAction" href="/visepanda?context=trip">
-                Ask VisePanda a general travel question
+                {t("rescue.ask")}
               </a>
             </div>
           )}
@@ -251,7 +251,7 @@ export function RescueMode({ configuration = UNAVAILABLE_CONFIGURATION }: Rescue
           ) : null}
 
           <div className="rescuePrivacyNote">
-            <b>Privacy by default</b>
+            <b>{t("rescue.privacy")}</b>
             <p>
               This screen records only the selected category and fixed route result. It does not
               send your incident narrative, contact details, exact location, or health information.
@@ -261,4 +261,16 @@ export function RescueMode({ configuration = UNAVAILABLE_CONFIGURATION }: Rescue
       </section>
     </>
   );
+}
+
+function categoryKey(category: RescueCategory): MessageKey {
+  const keys: Readonly<Record<RescueCategory, MessageKey>> = {
+    payment_problem: "rescue.category.payment",
+    transport_problem: "rescue.category.transport",
+    language_barrier: "rescue.category.language",
+    ticket_booking_problem: "rescue.category.ticket",
+    lost_item: "rescue.category.lost",
+    health_safety: "rescue.category.health",
+  };
+  return keys[category];
 }
