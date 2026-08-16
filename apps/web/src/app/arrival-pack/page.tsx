@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default function ArrivalPackPage() {
   return (
     <main className="shell arrivalPackPage">
-      <SiteHeader context="First-day information for offline use" />
+      <SiteHeader contextKey="context.arrivalPack" />
       <ArrivalPackWorkspace />
       <SiteFooter />
     </main>

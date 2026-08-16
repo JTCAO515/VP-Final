@@ -10,6 +10,8 @@ import {
 import { poiEntries } from "../poiSeo";
 import { SiteFooter, SiteHeader } from "../site-chrome";
 import { captureClientTelemetry } from "../../lib/clientTelemetry";
+import { useLocale } from "../../i18n/locale-provider";
+import type { MessageKey } from "../../i18n/messages";
 import { exploreCommercialLinkHref } from "./commercialLink";
 import { deriveExploreFacts } from "./factPresentation";
 
@@ -20,6 +22,7 @@ type ExploreViewProps = Readonly<{
 }>;
 
 export function ExploreView({ pois, availability, asOf }: ExploreViewProps) {
+  const { t } = useLocale();
   const [selectedTag, setSelectedTag] = useState<TravelerSceneTag | "All">("All");
   const entries = useMemo(() => poiEntries(), []);
   const referenceTime = useMemo(() => new Date(asOf), [asOf]);
@@ -50,25 +53,25 @@ export function ExploreView({ pois, availability, asOf }: ExploreViewProps) {
 
   return (
     <main className="shell">
-      <SiteHeader active="explore" context="Verified place context" />
+      <SiteHeader active="explore" contextKey="context.explore" />
       <section className="hero pageHero">
         <div>
-          <p className="pageEyebrow">Discover with context</p>
-          <h1>Explore China</h1>
-          <p>Scene tags are derived from verified POI facts. Missing facts stay quiet.</p>
+          <p className="pageEyebrow">{t("explore.eyebrow")}</p>
+          <h1>{t("explore.title")}</h1>
+          <p>{t("explore.lead")}</p>
         </div>
         <a className="pageAction" href="/visepanda?context=explore">
-          Ask VisePanda
+          {t("explore.ask")}
         </a>
       </section>
 
-      <section className="exploreFilters" aria-label="Explore scene filters">
+      <section className="exploreFilters" aria-label={t("explore.filters")}>
         <button
           className={selectedTag === "All" ? "active" : ""}
           onClick={() => selectScene("All")}
           type="button"
         >
-          All
+          {t("explore.all")}
         </button>
         {TRAVELER_SCENE_TAGS.map((tag) => (
           <button
@@ -77,7 +80,7 @@ export function ExploreView({ pois, availability, asOf }: ExploreViewProps) {
             onClick={() => selectScene(tag)}
             type="button"
           >
-            {tag}
+            {t(sceneKey(tag))}
           </button>
         ))}
       </section>
@@ -85,13 +88,13 @@ export function ExploreView({ pois, availability, asOf }: ExploreViewProps) {
       <section className="poiGrid">
         {availability === "unavailable" ? (
           <div className="exploreEmpty" role="status">
-            <h2>Explore data is unavailable</h2>
-            <p>Verified place facts could not be loaded. Please try again later.</p>
+            <h2>{t("explore.unavailable.title")}</h2>
+            <p>{t("explore.unavailable.lead")}</p>
           </div>
         ) : rows.length === 0 ? (
           <div className="exploreEmpty" role="status">
-            <h2>No verified places match</h2>
-            <p>Try another scene filter. We do not fill gaps with unverified claims.</p>
+            <h2>{t("explore.empty.title")}</h2>
+            <p>{t("explore.empty.lead")}</p>
           </div>
         ) : null}
         {rows.map(({ facts, href, poi, tags }) => (
@@ -103,16 +106,16 @@ export function ExploreView({ pois, availability, asOf }: ExploreViewProps) {
             <h2>{poi.nameEn}</h2>
             {poi.nameZh ? <p>{poi.nameZh}</p> : null}
             {facts.length > 0 ? (
-              <div className="poiFacts" aria-label="Verified travel facts">
-                <strong>Verified travel facts</strong>
+              <div className="poiFacts" aria-label={t("explore.facts")}>
+                <strong>{t("explore.facts")}</strong>
                 <ul>
                   {facts.map((fact) => (
                     <li key={fact.id}>
-                      <span className="factKind">{fact.kind}</span>
+                      <span className="factKind">{t(factKey(fact.kind))}</span>
                       <div>
                         <b>{fact.label}</b>
                         <small>
-                          {fact.provenance.sourceLabel} · Verified{" "}
+                          {fact.provenance.sourceLabel} · {t("explore.verified")}{" "}
                           {fact.provenance.verifiedDateLabel}
                         </small>
                       </div>
@@ -134,11 +137,11 @@ export function ExploreView({ pois, availability, asOf }: ExploreViewProps) {
                   })
                 }
               >
-                Open guide
+                {t("explore.openGuide")}
               </a>
             ) : null}
             {poi.commercialLinks.length > 0 ? (
-              <div className="poiCommercialLinks" aria-label="Partner options">
+              <div className="poiCommercialLinks" aria-label={t("explore.partners")}>
                 {poi.commercialLinks.map((link) => (
                   <div className="poiCommercialLink" key={link.id}>
                     <a
@@ -146,7 +149,7 @@ export function ExploreView({ pois, availability, asOf }: ExploreViewProps) {
                       href={exploreCommercialLinkHref(link, poi.id)}
                       rel="noreferrer"
                     >
-                      Continue to partner
+                      {t("explore.continuePartner")}
                     </a>
                     <small>{link.disclosure}</small>
                   </div>
@@ -156,7 +159,7 @@ export function ExploreView({ pois, availability, asOf }: ExploreViewProps) {
             {tags.length > 0 ? (
               <div className="sceneTags">
                 {tags.map((tag) => (
-                  <span key={tag}>{tag}</span>
+                  <span key={tag}>{t(sceneKey(tag))}</span>
                 ))}
               </div>
             ) : null}
@@ -166,4 +169,26 @@ export function ExploreView({ pois, availability, asOf }: ExploreViewProps) {
       <SiteFooter />
     </main>
   );
+}
+
+function sceneKey(tag: TravelerSceneTag): MessageKey {
+  const keys: Readonly<Record<TravelerSceneTag, MessageKey>> = {
+    "Avoid peak hours": "explore.scene.peak",
+    "First time in China": "explore.scene.firstTime",
+    "Good in rain": "explore.scene.rain",
+    "Low Mandarin": "explore.scene.lowMandarin",
+    "Near metro": "explore.scene.metro",
+  };
+  return keys[tag];
+}
+
+function factKey(kind: string): MessageKey {
+  const keys: Readonly<Record<string, MessageKey>> = {
+    Booking: "explore.fact.booking",
+    Crowds: "explore.fact.crowds",
+    Metro: "explore.fact.metro",
+    Payment: "explore.fact.payment",
+    Rain: "explore.fact.rain",
+  };
+  return keys[kind] ?? "explore.facts";
 }

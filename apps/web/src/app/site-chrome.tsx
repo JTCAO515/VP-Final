@@ -2,12 +2,14 @@
 
 import { LanguageSelector } from "../i18n/language-selector";
 import { useLocale } from "../i18n/locale-provider";
+import type { MessageKey } from "../i18n/messages";
 
 type SiteSection = "copilot" | "explore" | "guides" | "rescue" | "help" | "account";
 
 type SiteHeaderProps = Readonly<{
   active?: SiteSection;
   context?: string;
+  contextKey?: MessageKey;
 }>;
 
 const NAV_ITEMS: ReadonlyArray<
@@ -24,7 +26,7 @@ const NAV_ITEMS: ReadonlyArray<
   { section: "help", href: "/human-help", labelKey: "nav.humanHelp" },
 ];
 
-export function SiteHeader({ active, context }: SiteHeaderProps) {
+export function SiteHeader({ active, context, contextKey }: SiteHeaderProps) {
   const { t } = useLocale();
 
   return (
@@ -51,7 +53,7 @@ export function SiteHeader({ active, context }: SiteHeaderProps) {
         <div className="siteUtilities">
           <p className="siteContext">
             <span aria-hidden="true" />
-            {context ?? t("context.default")}
+            {contextKey ? t(contextKey) : (context ?? t("context.default"))}
           </p>
           <LanguageSelector />
           <a

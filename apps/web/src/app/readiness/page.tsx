@@ -9,7 +9,7 @@ export const metadata = {
 export default function ReadinessPage() {
   return (
     <main className="shell readinessPage">
-      <SiteHeader context="China preparation self-check" />
+      <SiteHeader contextKey="context.readiness" />
       <ReadinessCheck />
       <SiteFooter />
     </main>

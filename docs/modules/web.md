@@ -406,6 +406,21 @@ and truthful; retries are offered only for retryable jobs within the server-owne
 - At narrow widths, primary navigation uses five equal tracks and prompt cards wrap their text; no
   VisePanda element may force horizontal page scrolling.
 
+## Locale Coverage
+
+English is the default public interface language. A traveler may choose Chinese, Spanish, Arabic,
+or Russian through the shared header selector; the same-origin `visepanda_locale` preference cookie
+persists the UI choice and Arabic applies RTL document direction. Shared route contexts, Account,
+and Explore translate their authored UI chrome, including controls, derived scene/fact-kind labels,
+empty states, and illustrative preview copy. The selection must not alter authentication requests,
+telemetry values, POI source values, partner disclosures, or any other server/domain data.
+
+Evidence-bearing and regulated content keeps its recorded source language until its own reviewed
+translation authority exists: traveler prompts, model output, Trip data, POI fact values, legal and
+emergency policy bodies, provider errors, partner disclosures, and SEO factual copy are not
+machine-translated by the interface layer. Missing UI keys fall back to English rather than rendering
+blank; they are tracked as follow-up localization work, not presented as verified local facts.
+
 ## Public Trust and Legal Pages
 
 Every public route uses the shared footer, which links the Privacy Policy, Terms of Use, Affiliate

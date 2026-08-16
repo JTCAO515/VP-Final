@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
+import { useLocale } from "../../i18n/locale-provider";
 
 type SessionResponse =
   | { ok: true; authenticated: boolean; user: { email: string | null } | null }
@@ -8,6 +9,7 @@ type SessionResponse =
 type AuthMode = "login" | "register";
 
 export function AccountPanel() {
+  const { t } = useLocale();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [sessionEmail, setSessionEmail] = useState<string | null>(null);
@@ -100,47 +102,42 @@ export function AccountPanel() {
   return (
     <section className="accountStage" aria-labelledby="account-title">
       <div className="accountPanel">
-        <p className="pageEyebrow">Traveler account</p>
-        <h1 id="account-title">
-          {sessionEmail ? "Your session is active" : "Keep your trip close."}
-        </h1>
-        <p>
-          Create an account or sign in to keep your travel plans with you. A limited VisePanda
-          preview is available without an account.
-        </p>
+        <p className="pageEyebrow">{t("account.eyebrow")}</p>
+        <h1 id="account-title">{sessionEmail ? t("account.active") : t("account.title")}</h1>
+        <p>{t("account.lead")}</p>
         {loading ? (
           <div className="accountLoading" role="status">
             <span aria-hidden="true" />
-            Checking your session
+            {t("account.checking")}
           </div>
         ) : sessionEmail ? (
           <div className="accountSession">
-            <span>Signed in as</span>
+            <span>{t("account.signedInAs")}</span>
             <strong>{sessionEmail}</strong>
             <button onClick={() => void logout()} type="button">
-              Sign out
+              {t("account.signOut")}
             </button>
           </div>
         ) : (
           <form className="accountForm" onSubmit={(event) => void authenticate(event)}>
-            <div className="accountMode" aria-label="Account action">
+            <div className="accountMode" aria-label={t("account.action")}>
               <button
                 aria-pressed={authMode === "login"}
                 onClick={() => chooseAuthMode("login")}
                 type="button"
               >
-                Sign in
+                {t("account.signIn")}
               </button>
               <button
                 aria-pressed={authMode === "register"}
                 onClick={() => chooseAuthMode("register")}
                 type="button"
               >
-                Create account
+                {t("account.create")}
               </button>
             </div>
             <label>
-              Email
+              {t("account.email")}
               <input
                 autoComplete="email"
                 onChange={(event) => setEmail(event.target.value)}
@@ -151,19 +148,19 @@ export function AccountPanel() {
               />
             </label>
             <label>
-              Password
+              {t("account.password")}
               <input
                 autoComplete={authMode === "register" ? "new-password" : "current-password"}
                 minLength={8}
                 onChange={(event) => setPassword(event.target.value)}
-                placeholder="At least 8 characters"
+                placeholder={t("account.passwordHint")}
                 required
                 type="password"
                 value={password}
               />
             </label>
             <button disabled={loading} type="submit">
-              {authMode === "register" ? "Create account" : "Sign in"}
+              {authMode === "register" ? t("account.create") : t("account.signIn")}
             </button>
           </form>
         )}
@@ -178,39 +175,39 @@ export function AccountPanel() {
           </p>
         ) : null}
         <a className="backLink" href="/visepanda">
-          Continue without signing in
+          {t("account.continue")}
         </a>
       </div>
 
-      <aside className="accountProduct" aria-label="VisePanda product preview">
+      <aside className="accountProduct" aria-label={t("account.preview")}>
         <div className="accountProductChrome">
           <span aria-hidden="true" />
-          <b>Your China arrival plan</b>
-          <small>Product preview</small>
+          <b>{t("account.plan")}</b>
+          <small>{t("account.previewLabel")}</small>
         </div>
         <div className="accountProductBody">
-          <p className="pageEyebrow">Tomorrow · Shanghai</p>
-          <h2>A calm first day, ready when you land.</h2>
+          <p className="pageEyebrow">{t("account.tomorrow")}</p>
+          <h2>{t("account.planTitle")}</h2>
           <div className="accountProductSteps">
             <div>
               <time>09:30</time>
               <span>
-                <b>Get connected</b>
-                <small>Activate your travel connection first.</small>
+                <b>{t("account.connected")}</b>
+                <small>{t("account.connectedLead")}</small>
               </span>
             </div>
             <div>
               <time>11:00</time>
               <span>
-                <b>Set up payment</b>
-                <small>Keep one backup option available.</small>
+                <b>{t("account.payment")}</b>
+                <small>{t("account.paymentLead")}</small>
               </span>
             </div>
             <div>
               <time>14:00</time>
               <span>
-                <b>Move with confidence</b>
-                <small>Choose the simplest route to your hotel.</small>
+                <b>{t("account.move")}</b>
+                <small>{t("account.moveLead")}</small>
               </span>
             </div>
           </div>
