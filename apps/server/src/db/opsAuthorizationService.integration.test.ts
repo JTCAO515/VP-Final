@@ -138,7 +138,12 @@ describeDatabase("database OpsAuthorizationService", () => {
       create trigger issue451_fail_audit before insert on public.ops_audit_events
       for each row execute function public.issue451_fail_audit()
     `;
-    await expect(service.revokeMembership(admin, operatorId)).rejects.toThrow();
-    await expect(service.getAccess(operatorId)).resolves.toMatchObject({ role: "operator" });
+    try {
+      await expect(service.revokeMembership(admin, operatorId)).rejects.toThrow();
+      await expect(service.getAccess(operatorId)).resolves.toMatchObject({ role: "operator" });
+    } finally {
+      // This test runs alongside other database suites; never leak the failure injector.
+      await sql`drop trigger if exists issue451_fail_audit on public.ops_audit_events`;
+    }
   });
 });

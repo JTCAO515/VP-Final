@@ -50,6 +50,9 @@ Next.js runtimes rather than deployed as an independent service.
   Postgres adapter uses a transaction-scoped advisory lock for active-Admin floor checks and commits a
   soft revocation or role assignment with one minimized audit row; an audit failure rolls back the
   authorization change.
+- Database-contract suites may inject a temporary audit-write failure to prove that an authorization
+  mutation rolls back. The test owns that trigger with `try`/`finally` cleanup so parallel suites
+  cannot inherit a synthetic audit outage; this is test isolation only and never a production trigger.
 - The private Ops audit ledger is a read-only `membership.read` capability. Authorization happens
   before any filter or database read; callers may use only exact actor/action filters, a default
   30-day window bounded to 90 days, and at most 100 newest rows. Both adapters defensively project
