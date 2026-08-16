@@ -5,7 +5,7 @@ import { SiteFooter, SiteHeader } from "./site-chrome";
 export function LegalPage({ document }: Readonly<{ document: LegalDocument }>) {
   return (
     <main className="shell legalPage">
-      <SiteHeader context="Trust & legal" />
+      <SiteHeader contextKey="context.legal" />
       <header className="legalHero">
         <div>
           <p className="pageEyebrow">{document.eyebrow}</p>

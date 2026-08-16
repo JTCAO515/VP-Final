@@ -15,7 +15,7 @@ export default function RescuePage() {
   const configuration = getRescueRuntimeConfiguration();
   return (
     <main className="shell rescuePage">
-      <SiteHeader active="rescue" context="Practical help, with clear limits" />
+      <SiteHeader active="rescue" contextKey="context.rescue" />
       <RescueMode configuration={configuration} />
       <SiteFooter />
     </main>

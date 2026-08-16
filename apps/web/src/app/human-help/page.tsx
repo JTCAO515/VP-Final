@@ -105,7 +105,7 @@ export default function HumanHelpPage() {
 
   return (
     <main className="shell humanHelp">
-      <SiteHeader active="help" context="Controlled preview" />
+      <SiteHeader active="help" contextKey="context.humanHelp" />
       <section className="hero pageHero">
         <div>
           <p className="pageEyebrow">Manual travel assistance</p>
