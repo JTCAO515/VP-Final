@@ -82,3 +82,45 @@ describe("createInMemoryKnowledgeService local-presentation fact writes", () => 
     ).rejects.toThrow();
   });
 });
+
+describe("createInMemoryKnowledgeService draft review actions", () => {
+  it("lists drafts without inventing import provenance and rejects one draft only", async () => {
+    const service = createInMemoryKnowledgeService([], []);
+    const poi = await service.createPoi({
+      actorId: "30000000-0000-4000-8000-000000000021",
+      city: "Shanghai",
+      category: "attraction",
+      nameEn: "Yu Garden",
+      nameZh: "豫园",
+      latitude: 31.227,
+      longitude: 121.492,
+    });
+    const draft = await service.createFact({
+      poiId: poi.id,
+      factType: "metro_access",
+      value: { label: "Near metro" },
+      confidence: 0.9,
+      sourceClass: "official",
+      sourceLocator: "https://example.com/metro",
+      evidenceSummary: "The official source confirms a nearby metro entrance.",
+    });
+
+    await expect(service.listDraftFactReviewQueue()).resolves.toEqual([
+      expect.objectContaining({
+        draft: expect.objectContaining({ id: draft.id, status: "draft" }),
+        importContext: null,
+      }),
+    ]);
+    await expect(
+      service.listDraftFactReviewQueue({ importBatchId: "legacy-unbatched" }),
+    ).resolves.toEqual([]);
+
+    await expect(
+      service.rejectFact({ factId: draft.id, rejectedBy: "30000000-0000-4000-8000-000000000021" }),
+    ).resolves.toMatchObject({ id: draft.id, status: "rejected" });
+    await expect(service.listDraftFactReviewQueue()).resolves.toEqual([]);
+    await expect(
+      service.rejectFact({ factId: draft.id, rejectedBy: "30000000-0000-4000-8000-000000000021" }),
+    ).rejects.toThrow("Only draft facts");
+  });
+});

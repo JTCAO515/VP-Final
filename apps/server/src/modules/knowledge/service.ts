@@ -7,12 +7,16 @@ import {
   PoiFactEvidenceSchema,
   parsePoiFactWriteValue,
   PoiCreateInputSchema,
+  DraftFactReviewQueueFilterSchema,
+  DraftFactReviewQueueItemSchema,
   PoiSchema,
   PoiUpdateInputSchema,
   sanitizeEvidenceDerivedGapPattern,
   resolvePoiFactReview,
   updatePoiFact,
   type KnowledgeGap,
+  type DraftFactReviewQueueFilter,
+  type DraftFactReviewQueueItem,
   type Poi,
   type PoiCategory,
   type PoiCreateInput,
@@ -51,12 +55,14 @@ export type KnowledgeService = {
     expiresAt?: string | null;
   }): Promise<Poi[]>;
   listExpiredFacts(input?: { now?: Date }): Promise<PoiFact[]>;
+  listDraftFactReviewQueue(input?: DraftFactReviewQueueFilter): Promise<DraftFactReviewQueueItem[]>;
   renewFact(input: {
     factId: string;
     reviewedBy: string;
     expiresAt?: string | null;
   }): Promise<PoiFact | null>;
   deprecateFact(input: { factId: string }): Promise<PoiFact | null>;
+  rejectFact(input: { factId: string; rejectedBy: string }): Promise<PoiFact | null>;
   recordGap(input: { question: string; city?: string }): Promise<KnowledgeGap>;
   recordEvidenceGap(input: {
     question: string;
@@ -204,6 +210,31 @@ export function createInMemoryKnowledgeService(
         ),
       );
     },
+    async listDraftFactReviewQueue(input = {}) {
+      const filter = DraftFactReviewQueueFilterSchema.parse(input);
+      return pois.flatMap((poi) => {
+        if (filter.poiId && poi.id !== filter.poiId) return [];
+        const reviewedSiblings = poi.facts.filter((fact) => fact.status === "reviewed");
+        return poi.facts
+          .filter((fact) => fact.status === "draft")
+          .filter((fact) => !filter.factType || fact.factType === filter.factType)
+          .filter(() => filter.importBatchId === undefined)
+          .map((draft) =>
+            DraftFactReviewQueueItemSchema.parse({
+              poi: {
+                id: poi.id,
+                city: poi.city,
+                category: poi.category,
+                nameEn: poi.nameEn,
+                ...(poi.nameZh ? { nameZh: poi.nameZh } : {}),
+              },
+              draft,
+              importContext: null,
+              reviewedSiblings,
+            }),
+          );
+      });
+    },
     async renewFact(input) {
       const existing = findFact(pois, input.factId);
       if (!existing) return null;
@@ -228,6 +259,15 @@ export function createInMemoryKnowledgeService(
       const existing = findFact(pois, input.factId);
       if (!existing) return null;
       pois = updatePoiFact(pois, input.factId, existing.value, { status: "deprecated" });
+      return findFact(pois, input.factId);
+    },
+    async rejectFact(input) {
+      const existing = findFact(pois, input.factId);
+      if (!existing) return null;
+      if (existing.status !== "draft") {
+        throw new Error("Only draft facts can be rejected through the review queue");
+      }
+      pois = updatePoiFact(pois, input.factId, existing.value, { status: "rejected" });
       return findFact(pois, input.factId);
     },
     async recordGap(input) {

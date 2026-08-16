@@ -162,6 +162,62 @@ describeDatabase("database KnowledgeService", () => {
     ).rejects.toThrow();
   });
 
+  it("returns private import grouping to Ops only and records a per-fact rejection", async () => {
+    const reviewedSibling = await service.createFact({
+      poiId,
+      factType: "metro_access",
+      value: { label: "Near metro exit 1" },
+      confidence: 0.9,
+      sourceClass: "official",
+      sourceLocator: "https://example.com/metro-reviewed",
+      evidenceSummary: "The official source confirms the metro exit.",
+    });
+    await service.renewFact({ factId: reviewedSibling.id, reviewedBy: reviewerId });
+    const draft = await service.createFact({
+      poiId,
+      factType: "local_name_zh",
+      value: { text: "豫园" },
+      confidence: 0.9,
+      sourceClass: "official",
+      sourceLocator: "https://example.com/local-name",
+      evidenceSummary: "The official source publishes the Chinese venue name.",
+    });
+    const batchId = crypto.randomUUID();
+    await sql`insert into public.knowledge_import_batches (id) values (${batchId})`;
+    await sql`
+      insert into public.poi_fact_editorial_audit (
+        fact_id, collection_row_id, content_digest, collection_status, researcher, import_batch_id
+      ) values (${draft.id}, 'queue-row-${draft.id}', repeat('a', 64), 'researched', 'researcher-1', ${batchId})
+    `;
+
+    const [item] = await service.listDraftFactReviewQueue({ importBatchId: batchId });
+    expect(item).toMatchObject({
+      poi: { id: poiId, nameEn: "Integration POI" },
+      draft: { id: draft.id, status: "draft" },
+      importContext: {
+        importBatchId: batchId,
+        collectionStatus: "researched",
+      },
+      reviewedSiblings: [{ id: reviewedSibling.id, status: "reviewed" }],
+    });
+    expect(JSON.stringify(item)).not.toContain("researcher-1");
+
+    await expect(
+      service.rejectFact({ factId: draft.id, rejectedBy: reviewerId }),
+    ).resolves.toMatchObject({ id: draft.id, status: "rejected" });
+    await expect(service.listDraftFactReviewQueue({ importBatchId: batchId })).resolves.toEqual([]);
+    const [audit] = await sql`
+      select action, target_id from public.ops_audit_events
+      where actor_id = ${reviewerId} and target_id = ${draft.id}
+      order by created_at desc
+      limit 1
+    `;
+    expect(audit).toEqual({
+      action: "knowledge.fact.review.rejected",
+      target_id: draft.id,
+    });
+  });
+
   it("demotes edited reviewed facts and preserves ingestion time", async () => {
     const created = await service.createFact({
       poiId,

@@ -83,7 +83,10 @@ export async function PATCH(request: Request) {
   const sourceClass = PoiFactSourceClassSchema.safeParse(body.sourceClass);
   if (
     typeof body.factId !== "string" ||
-    (body.action !== "renew" && body.action !== "deprecate" && !isRecord(body.value))
+    (body.action !== "renew" &&
+      body.action !== "deprecate" &&
+      body.action !== "reject" &&
+      !isRecord(body.value))
   ) {
     return NextResponse.json({ error: "Expected factId and object value." }, { status: 400 });
   }
@@ -107,6 +110,19 @@ export async function PATCH(request: Request) {
     }
     if (body.action === "deprecate") {
       const result = await service.deprecateFact({ factId: body.factId });
+      return applyOpsCookies(NextResponse.json(result), authorization.cookieResponse);
+    }
+    if (body.action === "reject") {
+      const result = await service.rejectFact({
+        factId: body.factId,
+        rejectedBy: authorization.access.userId,
+      });
+      if (!result) {
+        return applyOpsCookies(
+          NextResponse.json({ error: "Draft fact was not found." }, { status: 404 }),
+          authorization.cookieResponse,
+        );
+      }
       return applyOpsCookies(NextResponse.json(result), authorization.cookieResponse);
     }
     if (!isRecord(body.value)) {
