@@ -4,6 +4,8 @@ import {
   DraftFactReviewQueueItemSchema,
   PoiFactEvidenceSummarySchema,
   PoiCreateInputSchema,
+  PoiImageSchema,
+  PoiImageTargetSchema,
   PoiLocalPresentationFactValueSchema,
   PoiLocalPresentationFactSchema,
   PoiSchema,
@@ -404,6 +406,46 @@ describe("isCurrentPoiFact", () => {
       PoiFactEvidenceSummarySchema.safeParse("Email editor@example.com for proof").success,
     ).toBe(false);
     expect(PoiFactEvidenceSummarySchema.safeParse("Call +86 138 0013 8000").success).toBe(false);
+  });
+});
+
+describe("POI editorial image contract", () => {
+  const image = {
+    id: "56000000-0000-4000-8000-000000000001",
+    target: { kind: "poi" as const, poiId: "56000000-0000-4000-8000-000000000002" },
+    storagePath:
+      "poi/56000000-0000-4000-8000-000000000002/56000000-0000-4000-8000-000000000001.webp",
+    contentType: "image/webp" as const,
+    byteSize: 1024,
+    width: 640,
+    height: 480,
+    attribution: "Licensed photographer collection",
+    licenseNote: "CC BY 4.0",
+    createdBy: "56000000-0000-4000-8000-000000000003",
+    createdAt: "2026-08-16T00:00:00.000Z",
+    deletedAt: null,
+  };
+
+  it("requires one bounded target and normalized WebP metadata", () => {
+    expect(PoiImageSchema.parse(image)).toMatchObject({
+      contentType: "image/webp",
+      target: { kind: "poi" },
+    });
+    expect(PoiImageTargetSchema.safeParse({ kind: "poi", poiId: "not-a-uuid" }).success).toBe(
+      false,
+    );
+    expect(PoiImageSchema.safeParse({ ...image, storagePath: "client-photo.jpg" }).success).toBe(
+      false,
+    );
+  });
+
+  it("rejects oversized or unattributed image metadata", () => {
+    expect(PoiImageSchema.safeParse({ ...image, byteSize: 5 * 1024 * 1024 + 1 }).success).toBe(
+      false,
+    );
+    expect(PoiImageSchema.safeParse({ ...image, width: 4097 }).success).toBe(false);
+    expect(PoiImageSchema.safeParse({ ...image, attribution: "" }).success).toBe(false);
+    expect(PoiImageSchema.safeParse({ ...image, licenseNote: "" }).success).toBe(false);
   });
 });
 

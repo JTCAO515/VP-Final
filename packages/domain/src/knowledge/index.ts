@@ -167,6 +167,40 @@ export const PoiCommercialLinkSchema = z.object({
   disclosure: z.string().min(1),
 });
 
+// POI imagery is private editorial material until a separately governed delivery path exists.
+// The target is exactly one canonical POI, city, or category; source filenames never become data.
+const PoiImageTextSchema = z.string().trim().min(1).max(500);
+
+export const PoiImageTargetSchema = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("poi"), poiId: z.string().uuid() }),
+  z.object({ kind: z.literal("city"), city: z.string().trim().min(1).max(100) }),
+  z.object({ kind: z.literal("category"), category: PoiCategorySchema }),
+]);
+
+export const PoiImageSchema = z.object({
+  id: z.string().uuid(),
+  target: PoiImageTargetSchema,
+  storagePath: z
+    .string()
+    .trim()
+    .min(1)
+    .max(300)
+    .regex(/^[a-z0-9][a-z0-9/_-]*\.webp$/),
+  contentType: z.literal("image/webp"),
+  byteSize: z
+    .number()
+    .int()
+    .positive()
+    .max(5 * 1024 * 1024),
+  width: z.number().int().positive().max(4096),
+  height: z.number().int().positive().max(4096),
+  attribution: PoiImageTextSchema,
+  licenseNote: PoiImageTextSchema,
+  createdBy: z.string().uuid(),
+  createdAt: z.string().datetime(),
+  deletedAt: z.string().datetime().nullable(),
+});
+
 export const PoiSearchAliasSchema = z.string().trim().min(1).max(100);
 
 export const PoiSchema = z.object({
@@ -273,6 +307,8 @@ export type PoiLocalPresentationFact = z.infer<typeof PoiLocalPresentationFactSc
 export type EligiblePoiLocalAddress = z.infer<typeof EligiblePoiLocalAddressSchema>;
 export type PoiLocalAddressAlternative = z.infer<typeof PoiLocalAddressAlternativeSchema>;
 export type PoiLocalAddressPresentation = z.infer<typeof PoiLocalAddressPresentationSchema>;
+export type PoiImageTarget = z.infer<typeof PoiImageTargetSchema>;
+export type PoiImage = z.infer<typeof PoiImageSchema>;
 export type Poi = z.infer<typeof PoiSchema>;
 export type DraftFactReviewQueueFilter = z.infer<typeof DraftFactReviewQueueFilterSchema>;
 export type DraftFactReviewQueueItem = z.infer<typeof DraftFactReviewQueueItemSchema>;
