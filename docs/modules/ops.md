@@ -10,7 +10,8 @@ the public Web application and protected by server-side role checks.
 
 ## Current Routes
 
-- `/facts`: list, create, update, renew, and deprecate execution facts.
+- `/facts`: create and edit canonical POIs, then list, create, update, renew, and deprecate
+  execution facts. POI identity fields never create, review, or publish a fact.
 - `/seo`: Editor-authorized bounded SEO title, summary, and editor-note overrides for an already
   eligible POI/intent candidate. It is presentation-only and offers a delete action that restores
   generated copy.
@@ -130,6 +131,15 @@ as an unverified draft; `Mark reviewed` is a separate action and rejects model-o
 uncorroborated evidence until an editor replaces it with independently reviewable evidence.
 The review action derives reviewer identity from authenticated Ops access, applies the deterministic
 v1 cadence, and cannot accept a client-authored reviewer or an expiry beyond the policy maximum.
+
+Canonical POI create and update use the same verified `knowledge.write` route as fact mutations, with
+authorization before any write. The route derives the actor only from that verified access and passes it
+to the durable service; a successful POI write and its bounded completed-audit record commit together.
+Audit metadata contains field names only. Editors can set English and optional Chinese names, city,
+category, and an all-or-nothing latitude/longitude pair.
+The server owns ids and `source_ids`; this workflow cannot create a fact, source claim, review state,
+or public eligibility. A missing or partial coordinate pair is rejected instead of being interpreted
+as a usable location.
 
 Bulk import accepts only the six-city collection-template header. A `dry-run` reports every malformed
 row before any write. `commit` refuses a file with any validation/conflict error, creates POIs and

@@ -3,9 +3,11 @@ import {
   sanitizeEvidenceDerivedGapPattern,
   hasReviewablePoiFactEvidence,
   isEligiblePoiFact,
+  PoiCreateInputSchema,
   PoiFactEvidenceSchema,
   PoiFactSchema,
   PoiSchema,
+  PoiUpdateInputSchema,
   resolvePoiFactReview,
   type KnowledgeGap,
   type Poi,
@@ -21,6 +23,63 @@ export function createDbKnowledgeService(db: Db): KnowledgeService {
   return {
     async listPois(input = {}) {
       return listPois(db, input);
+    },
+    async createPoi(input) {
+      const { actorId, ...candidate } = input;
+      const parsed = PoiCreateInputSchema.parse(candidate);
+      const row = await db.transaction(async (transaction) => {
+        const [created] = await transaction
+          .insert(pois)
+          .values({
+            city: parsed.city,
+            category: parsed.category,
+            nameEn: parsed.nameEn,
+            nameZh: parsed.nameZh,
+            latitude: parsed.latitude === null ? null : String(parsed.latitude),
+            longitude: parsed.longitude === null ? null : String(parsed.longitude),
+            sourceIds: {},
+          })
+          .returning();
+        if (!created) throw new Error("POI insert failed");
+        await transaction.insert(opsAuditEvents).values({
+          actorId,
+          action: "knowledge.poi.create.completed",
+          targetType: "poi",
+          targetId: created.id,
+          metadataJsonb: { fields: POI_WRITABLE_FIELD_NAMES },
+        });
+        return created;
+      });
+      return rowToPoi(row);
+    },
+    async updatePoi(input) {
+      const { actorId, ...candidate } = input;
+      const parsed = PoiUpdateInputSchema.parse(candidate);
+      const row = await db.transaction(async (transaction) => {
+        const [updated] = await transaction
+          .update(pois)
+          .set({
+            city: parsed.city,
+            category: parsed.category,
+            nameEn: parsed.nameEn,
+            nameZh: parsed.nameZh,
+            latitude: parsed.latitude === null ? null : String(parsed.latitude),
+            longitude: parsed.longitude === null ? null : String(parsed.longitude),
+            updatedAt: new Date(),
+          })
+          .where(eq(pois.id, parsed.id))
+          .returning();
+        if (!updated) return null;
+        await transaction.insert(opsAuditEvents).values({
+          actorId,
+          action: "knowledge.poi.update.completed",
+          targetType: "poi",
+          targetId: updated.id,
+          metadataJsonb: { fields: POI_WRITABLE_FIELD_NAMES },
+        });
+        return updated;
+      });
+      return row ? rowToPoi(row) : null;
     },
     async createFact(input) {
       const evidence = PoiFactEvidenceSchema.parse(input);
@@ -220,6 +279,15 @@ export function createDbKnowledgeService(db: Db): KnowledgeService {
   };
 }
 
+const POI_WRITABLE_FIELD_NAMES = [
+  "city",
+  "category",
+  "nameEn",
+  "nameZh",
+  "latitude",
+  "longitude",
+] as const;
+
 async function listPois(
   db: Db,
   input: {
@@ -243,15 +311,7 @@ async function listPois(
 
   return poiRows.map((poi) =>
     PoiSchema.parse({
-      id: poi.id,
-      city: poi.city,
-      category: poi.category,
-      nameEn: poi.nameEn,
-      ...(poi.nameZh ? { nameZh: poi.nameZh } : {}),
-      ...(poi.address ? { address: poi.address } : {}),
-      ...(poi.latitude ? { latitude: Number(poi.latitude) } : {}),
-      ...(poi.longitude ? { longitude: Number(poi.longitude) } : {}),
-      sourceIds: poi.sourceIds,
+      ...rowToPoi(poi),
       facts: factRows
         .filter((fact) => fact.poiId === poi.id)
         .map(rowToFact)
@@ -272,6 +332,22 @@ async function listPois(
         })),
     }),
   );
+}
+
+function rowToPoi(row: typeof pois.$inferSelect): Poi {
+  return PoiSchema.parse({
+    id: row.id,
+    city: row.city,
+    category: row.category,
+    nameEn: row.nameEn,
+    ...(row.nameZh ? { nameZh: row.nameZh } : {}),
+    ...(row.address ? { address: row.address } : {}),
+    ...(row.latitude !== null ? { latitude: Number(row.latitude) } : {}),
+    ...(row.longitude !== null ? { longitude: Number(row.longitude) } : {}),
+    sourceIds: row.sourceIds,
+    facts: [],
+    commercialLinks: [],
+  });
 }
 
 async function getFact(db: Db, id: string): Promise<PoiFact | null> {

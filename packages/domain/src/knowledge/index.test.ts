@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   PoiFactEvidenceSummarySchema,
+  PoiCreateInputSchema,
   PoiLocalPresentationFactSchema,
   PoiSchema,
+  PoiUpdateInputSchema,
   deriveEligiblePoiLocalAddress,
   derivePoiSceneTags,
   isEligiblePoiFact,
@@ -77,6 +79,41 @@ describe("PoiSchema", () => {
         searchAliases: ["Alias Place"],
       }).searchAliases,
     ).toEqual(["Alias Place"]);
+  });
+});
+
+describe("canonical POI write inputs", () => {
+  const fields = {
+    city: "Shanghai",
+    category: "attraction" as const,
+    nameEn: "Yu Garden",
+    nameZh: "豫园",
+    latitude: 31.227,
+    longitude: 121.492,
+  };
+
+  it("accepts a complete canonical POI record", () => {
+    expect(PoiCreateInputSchema.parse(fields)).toEqual(fields);
+    expect(
+      PoiUpdateInputSchema.parse({ id: "30000000-0000-4000-8000-000000000001", ...fields }),
+    ).toMatchObject(fields);
+  });
+
+  it("requires coordinates to be present or absent together", () => {
+    expect(() => PoiCreateInputSchema.parse({ ...fields, longitude: null })).toThrow(
+      "Latitude and longitude must be provided together",
+    );
+    expect(
+      PoiCreateInputSchema.parse({ ...fields, latitude: null, longitude: null }),
+    ).toMatchObject({
+      latitude: null,
+      longitude: null,
+    });
+  });
+
+  it("rejects invalid coordinates and empty canonical names", () => {
+    expect(() => PoiCreateInputSchema.parse({ ...fields, latitude: 91 })).toThrow();
+    expect(() => PoiCreateInputSchema.parse({ ...fields, nameEn: " " })).toThrow();
   });
 });
 

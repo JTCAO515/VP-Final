@@ -83,6 +83,59 @@ describeDatabase("database KnowledgeService", () => {
     ]);
   });
 
+  it("persists canonical POI creation and edits without creating a fact", async () => {
+    const created = await service.createPoi({
+      actorId: reviewerId,
+      city: "Canonical City",
+      category: "attraction",
+      nameEn: "Canonical Place",
+      nameZh: "规范地点",
+      latitude: 31.227,
+      longitude: 121.492,
+    });
+    const updated = await service.updatePoi({
+      actorId: reviewerId,
+      id: created.id,
+      city: "Canonical City",
+      category: "attraction",
+      nameEn: "Canonical Place Revised",
+      nameZh: null,
+      latitude: null,
+      longitude: null,
+    });
+
+    expect(updated).toMatchObject({
+      id: created.id,
+      nameEn: "Canonical Place Revised",
+      facts: [],
+    });
+    await expect(service.listPois({ city: "Canonical City" })).resolves.toEqual([
+      expect.objectContaining({ id: created.id, nameEn: "Canonical Place Revised", facts: [] }),
+    ]);
+    const auditRows = await sql`
+      select action, target_id, metadata_jsonb from public.ops_audit_events
+      where actor_id = ${reviewerId} and target_id = ${created.id}
+      order by created_at asc
+    `;
+    expect(auditRows).toEqual([
+      {
+        action: "knowledge.poi.create.completed",
+        target_id: created.id,
+        metadata_jsonb: {
+          fields: ["city", "category", "nameEn", "nameZh", "latitude", "longitude"],
+        },
+      },
+      {
+        action: "knowledge.poi.update.completed",
+        target_id: created.id,
+        metadata_jsonb: {
+          fields: ["city", "category", "nameEn", "nameZh", "latitude", "longitude"],
+        },
+      },
+    ]);
+    await sql`delete from public.pois where id = ${created.id}`;
+  });
+
   it("demotes edited reviewed facts and preserves ingestion time", async () => {
     const created = await service.createFact({
       poiId,

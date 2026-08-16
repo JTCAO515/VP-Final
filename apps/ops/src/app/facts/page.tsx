@@ -8,7 +8,8 @@ export default async function FactsPage() {
       <section className="heading">
         <h1>Fact editor</h1>
         <p className="muted">
-          Seeded Beijing and Shanghai POI facts. Edits write through to the read API.
+          Create canonical POIs, then add independently sourced facts. A POI is not a verified
+          travel claim by itself.
         </p>
       </section>
       <FactEditor />

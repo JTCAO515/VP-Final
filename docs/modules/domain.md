@@ -48,6 +48,11 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
   `local_address_nearest_metro_exit`, and `local_address_visibility_note` are independent POI facts.
   `deriveEligiblePoiLocalAddress` returns an address only when exactly one current reviewed
   `local_address_zh` fact exists; missing or ambiguous optional components remain absent.
+- `PoiCreateInputSchema` and `PoiUpdateInputSchema` are the canonical Ops identity-write contract:
+  English name, optional Chinese name, city, category, and a latitude/longitude pair are bounded and
+  runtime-validated. Both axes are present or absent together. The contract deliberately excludes
+  source ids, facts, review state, source provenance, and public eligibility, so a POI write cannot
+  promote an execution fact.
 - Every Show-to-Local, address-card, copy, or speech consumer MUST use
   `resolvePoiLocalAddressPresentation`. Its ready branch contains only the eligible fact derivation;
   its unavailable branch contains the fixed honest message plus Human Help, manual-entry, and
