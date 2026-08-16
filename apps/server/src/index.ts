@@ -10,6 +10,7 @@ export { appRouter } from "./router.js";
 export type { AppRouter } from "./router.js";
 export { createDb } from "./db/client.js";
 export { createDbKnowledgeService } from "./db/knowledgeService.js";
+export { createDbPoiImageService } from "./db/poiImageService.js";
 export { createDbSeoEditorialOverrideService } from "./db/seoEditorialOverrideService.js";
 export { createDbSafePhraseResolver } from "./db/safePhraseResolver.js";
 export {
@@ -239,6 +240,7 @@ export type { RequestIdentity } from "./context.js";
 export type { ReadinessIdentity, ReadinessService } from "./modules/readiness/service.js";
 export type { AdapterAvailability, RuntimeMode, RuntimeResolution } from "./runtime/runtimeMode.js";
 export type { KnowledgeService } from "./modules/knowledge/service.js";
+export type { PoiImageService, PoiImageWriteInput } from "./db/poiImageService.js";
 export type {
   PostHogConfig,
   TelemetryInput,

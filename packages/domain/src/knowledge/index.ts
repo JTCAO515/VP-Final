@@ -201,6 +201,14 @@ export const PoiImageSchema = z.object({
   deletedAt: z.string().datetime().nullable(),
 });
 
+// Upload metadata is deliberately separate from a stored image. The server, not an Ops browser,
+// supplies the id, generated path, normalized WebP properties, actor, and timestamps.
+export const PoiImageUploadMetadataSchema = z.object({
+  target: PoiImageTargetSchema,
+  attribution: PoiImageTextSchema,
+  licenseNote: PoiImageTextSchema,
+});
+
 export const PoiSearchAliasSchema = z.string().trim().min(1).max(100);
 
 export const PoiSchema = z.object({
@@ -309,6 +317,7 @@ export type PoiLocalAddressAlternative = z.infer<typeof PoiLocalAddressAlternati
 export type PoiLocalAddressPresentation = z.infer<typeof PoiLocalAddressPresentationSchema>;
 export type PoiImageTarget = z.infer<typeof PoiImageTargetSchema>;
 export type PoiImage = z.infer<typeof PoiImageSchema>;
+export type PoiImageUploadMetadata = z.infer<typeof PoiImageUploadMetadataSchema>;
 export type Poi = z.infer<typeof PoiSchema>;
 export type DraftFactReviewQueueFilter = z.infer<typeof DraftFactReviewQueueFilterSchema>;
 export type DraftFactReviewQueueItem = z.infer<typeof DraftFactReviewQueueItemSchema>;

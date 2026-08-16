@@ -26,6 +26,11 @@ the public Web application and protected by server-side role checks.
   derive the actor from the verified Ops session.
 - `/api/knowledge/import`: Editor-authorized CSV `dry-run` and atomic `commit` endpoint; no public
   upload surface exists.
+- `/api/knowledge/images`: private editorial POI/city/category image metadata and a server-mediated
+  upload/delete path. `knowledge.write` is checked before the route reads file bytes or touches
+  Storage. JPEG/PNG/WebP signatures, 5 MiB/4096px ceilings, EXIF-stripping WebP re-encode, generated
+  paths, attribution, license notes, physical deletion, soft metadata revocation, and bounded audit
+  events are enforced. It returns no public URL and has no traveler upload or media-display path.
 - `/api/knowledge/facts/review-queue`: `knowledge.write`-protected private queue for draft facts,
   optionally filtered by POI, fact type, a new batch UUID, or `legacy-unbatched`. It returns only
   source context and same-POI reviewed facts needed for an item-by-item decision; it never returns

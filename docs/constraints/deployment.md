@@ -20,6 +20,10 @@ Status: active
 - Turborepo strict-mode builds MUST declare every server variable that changes build or runtime
   behavior in root `globalEnv`. The declaration is names only, participates in the build cache key,
   and MUST NOT expose a secret through a `NEXT_PUBLIC_*` variable.
+- The private Ops image writer may use `SUPABASE_SERVICE_ROLE_KEY` only in the separately deployed
+  Ops server runtime. It MUST NOT be present in Web, browser, build-time public configuration, logs,
+  or source. Missing configuration keeps image upload/delete unavailable; native image processing
+  dependencies must build for the deployed Vercel Linux runtime before release.
 - A deployment review MUST treat a Turborepo warning that a required server variable is unavailable to
   the application as a configuration failure. It must be fixed and redeployed before a real-provider
   or production-success claim.

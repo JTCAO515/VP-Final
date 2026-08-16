@@ -6,6 +6,7 @@ import {
   PoiCreateInputSchema,
   PoiImageSchema,
   PoiImageTargetSchema,
+  PoiImageUploadMetadataSchema,
   PoiLocalPresentationFactValueSchema,
   PoiLocalPresentationFactSchema,
   PoiSchema,
@@ -425,6 +426,23 @@ describe("POI editorial image contract", () => {
     createdAt: "2026-08-16T00:00:00.000Z",
     deletedAt: null,
   };
+
+  it("accepts only target plus attributable, licensed upload metadata", () => {
+    expect(
+      PoiImageUploadMetadataSchema.safeParse({
+        target: { kind: "city", city: "Shanghai" },
+        attribution: "Example photographer",
+        licenseNote: "Licensed editorial use",
+      }).success,
+    ).toBe(true);
+    expect(
+      PoiImageUploadMetadataSchema.safeParse({
+        target: { kind: "city", city: "Shanghai" },
+        attribution: "",
+        licenseNote: "Licensed editorial use",
+      }).success,
+    ).toBe(false);
+  });
 
   it("requires one bounded target and normalized WebP metadata", () => {
     expect(PoiImageSchema.parse(image)).toMatchObject({

@@ -65,6 +65,10 @@ jobs:
       - run: pnpm --filter @visepanda/app-server exec vitest run src/db/partnerAdministrationService.integration.test.ts
         env:
           DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+      # This suite also uses a temporary trigger on the shared audit table to prove atomic rollback.
+      - run: pnpm --filter @visepanda/app-server exec vitest run src/db/poiImageService.integration.test.ts
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
       - run: pnpm --filter @visepanda/app-web exec vitest run src/app/api/serverComposition.integration.test.ts
         env:
           DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres

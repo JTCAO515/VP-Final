@@ -84,6 +84,15 @@ const expiryPoi: Poi = {
 };
 
 describe("FactEditor local-display authoring", () => {
+  it("renders a private image form without a public media claim", () => {
+    const html = renderToStaticMarkup(<FactEditor />);
+
+    expect(html).toContain("POI image library");
+    expect(html).toContain("Store private image");
+    expect(html).toContain("converted to WebP without EXIF");
+    expect(html).not.toContain("Public image URL");
+  });
+
   it("renders the dedicated draft-only Show-to-Local form and address safety warning boundary", () => {
     const html = renderToStaticMarkup(<FactEditor />);
 
