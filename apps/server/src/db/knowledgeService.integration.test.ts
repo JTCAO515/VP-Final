@@ -136,6 +136,32 @@ describeDatabase("database KnowledgeService", () => {
     await sql`delete from public.pois where id = ${created.id}`;
   });
 
+  it("persists local-display provenance as a draft and rejects an untyped address value", async () => {
+    const created = await service.createFact({
+      poiId,
+      factType: "local_address_zh",
+      value: { text: "上海市黄浦区豫园路279号" },
+      confidence: 0.9,
+      sourceClass: "official",
+      sourceLocator: "https://example.com/official-local-address",
+      evidenceSummary: "The official source publishes the Chinese visitor address.",
+    });
+
+    expect(created).toMatchObject({
+      value: { text: "上海市黄浦区豫园路279号" },
+      sourceClass: "official",
+      sourceLocator: "https://example.com/official-local-address",
+      status: "draft",
+      verifiedAt: null,
+    });
+    await expect(
+      service.updateFact({ factId: created.id, value: { label: "not an address value" } }),
+    ).rejects.toThrow();
+    await expect(
+      service.updateFact({ factId: created.id, value: { text: "x".repeat(501) } }),
+    ).rejects.toThrow();
+  });
+
   it("demotes edited reviewed facts and preserves ingestion time", async () => {
     const created = await service.createFact({
       poiId,

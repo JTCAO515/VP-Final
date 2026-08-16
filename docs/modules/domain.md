@@ -46,6 +46,9 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
 - Chinese local-presentation data is not derived from legacy `Poi.nameZh` or `Poi.address` strings.
   `local_name_zh`, `local_address_zh`, `local_address_district`,
   `local_address_nearest_metro_exit`, and `local_address_visibility_note` are independent POI facts.
+  Their write value is exactly a `{ text }` object with a trimmed 1-500 character value; the generic
+  `{ label }` shape is rejected so an editor cannot remove the typed local-display meaning while
+  changing a draft. Creation and editing retain draft status and cannot assign `verifiedAt`.
   `deriveEligiblePoiLocalAddress` returns an address only when exactly one current reviewed
   `local_address_zh` fact exists; missing or ambiguous optional components remain absent.
 - `PoiCreateInputSchema` and `PoiUpdateInputSchema` are the canonical Ops identity-write contract:

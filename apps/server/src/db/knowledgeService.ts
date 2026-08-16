@@ -3,6 +3,7 @@ import {
   sanitizeEvidenceDerivedGapPattern,
   hasReviewablePoiFactEvidence,
   isEligiblePoiFact,
+  parsePoiFactWriteValue,
   PoiCreateInputSchema,
   PoiFactEvidenceSchema,
   PoiFactSchema,
@@ -83,12 +84,13 @@ export function createDbKnowledgeService(db: Db): KnowledgeService {
     },
     async createFact(input) {
       const evidence = PoiFactEvidenceSchema.parse(input);
+      const value = parsePoiFactWriteValue(input.factType, input.value);
       const [row] = await db
         .insert(poiFacts)
         .values({
           poiId: input.poiId,
           factType: input.factType,
-          valueJsonb: input.value,
+          valueJsonb: value,
           confidence: String(input.confidence),
           source: evidence.sourceLocator,
           sourceClass: evidence.sourceClass,
@@ -107,6 +109,7 @@ export function createDbKnowledgeService(db: Db): KnowledgeService {
     async updateFact(input) {
       const existing = await getFact(db, input.factId);
       if (!existing) throw new Error("Fact not found");
+      const value = parsePoiFactWriteValue(existing.factType, input.value);
       const evidence = PoiFactEvidenceSchema.parse({
         sourceClass: input.sourceClass ?? existing.sourceClass,
         sourceLocator: input.sourceLocator ?? existing.sourceLocator,
@@ -115,7 +118,7 @@ export function createDbKnowledgeService(db: Db): KnowledgeService {
       await db
         .update(poiFacts)
         .set({
-          valueJsonb: input.value,
+          valueJsonb: value,
           confidence: String(input.confidence ?? existing.confidence),
           source: evidence.sourceLocator,
           sourceClass: evidence.sourceClass,

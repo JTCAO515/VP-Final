@@ -1,12 +1,15 @@
 "use client";
 
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import React, { useEffect, useMemo, useState, type FormEvent } from "react";
 import {
   PoiCategorySchema,
   PoiFactSourceClassSchema,
+  PoiLocalPresentationFactTypeSchema,
   type Poi,
   type PoiCategory,
   type PoiFactSourceClass,
+  type PoiLocalPresentationFactType,
+  type PoiFact,
 } from "@visepanda/domain";
 
 type SaveState = "idle" | "saving" | "saved" | "error";
@@ -14,6 +17,7 @@ type SaveState = "idle" | "saving" | "saved" | "error";
 export function FactEditor() {
   const [pois, setPois] = useState<Poi[]>([]);
   const [saveState, setSaveState] = useState<SaveState>("idle");
+  const [genericFactMessage, setGenericFactMessage] = useState<string | null>(null);
 
   async function loadPois() {
     const response = await fetch(
@@ -29,34 +33,39 @@ export function FactEditor() {
   const rows = useMemo(
     () =>
       pois.flatMap((poi) =>
-        poi.facts.map((fact) => ({
-          fact,
-          poi,
-          label:
-            typeof fact.value.label === "string" ? fact.value.label : JSON.stringify(fact.value),
-        })),
+        poi.facts.map((fact) => {
+          const localFactType = PoiLocalPresentationFactTypeSchema.safeParse(fact.factType);
+          return {
+            fact,
+            poi,
+            localFactType: localFactType.success ? localFactType.data : null,
+            label: factDisplayValue(fact),
+          };
+        }),
       ),
     [pois],
   );
 
-  async function saveFact(factId: string) {
+  async function saveFact(fact: PoiFact) {
     setSaveState("saving");
-    const saved = await persistDraft(factId);
+    const saved = await persistDraft(fact);
     setSaveState(saved ? "saved" : "error");
   }
 
-  async function persistDraft(factId: string): Promise<boolean> {
-    const value = document.getElementById(`fact-${factId}`) as HTMLInputElement | null;
+  async function persistDraft(fact: PoiFact): Promise<boolean> {
+    const localFactType = PoiLocalPresentationFactTypeSchema.safeParse(fact.factType);
+    const value = document.getElementById(factValueInputId(fact, localFactType.success)) as
+      HTMLInputElement | HTMLTextAreaElement | null;
     const sourceClass = document.getElementById(
-      `source-class-${factId}`,
+      `source-class-${fact.id}`,
     ) as HTMLSelectElement | null;
     const sourceLocator = document.getElementById(
-      `source-locator-${factId}`,
+      `source-locator-${fact.id}`,
     ) as HTMLInputElement | null;
     const evidenceSummary = document.getElementById(
-      `evidence-summary-${factId}`,
+      `evidence-summary-${fact.id}`,
     ) as HTMLInputElement | null;
-    const confidence = document.getElementById(`confidence-${factId}`) as HTMLInputElement | null;
+    const confidence = document.getElementById(`confidence-${fact.id}`) as HTMLInputElement | null;
     if (
       !value ||
       !sourceClass?.value ||
@@ -71,8 +80,8 @@ export function FactEditor() {
       method: "PATCH",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
-        factId,
-        value: { label: value.value },
+        factId: fact.id,
+        value: localFactType.success ? { text: value.value } : { label: value.value },
         sourceClass: sourceClass.value,
         sourceLocator: sourceLocator.value,
         evidenceSummary: evidenceSummary.value,
@@ -88,16 +97,16 @@ export function FactEditor() {
     return true;
   }
 
-  async function reviewFact(factId: string) {
+  async function reviewFact(fact: PoiFact) {
     setSaveState("saving");
-    if (!(await persistDraft(factId))) {
+    if (!(await persistDraft(fact))) {
       setSaveState("error");
       return;
     }
     const response = await fetch("/api/knowledge/facts", {
       method: "PATCH",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ factId, action: "renew" }),
+      body: JSON.stringify({ factId: fact.id, action: "renew" }),
     });
     if (!response.ok) {
       setSaveState("error");
@@ -111,12 +120,20 @@ export function FactEditor() {
     event.preventDefault();
     setSaveState("saving");
     const form = new FormData(event.currentTarget);
+    const factType = String(form.get("factType") ?? "");
+    if (PoiLocalPresentationFactTypeSchema.safeParse(factType).success) {
+      setGenericFactMessage(
+        "Use the Show-to-Local facts form for this independently sourced field.",
+      );
+      setSaveState("error");
+      return;
+    }
     const response = await fetch("/api/knowledge/facts", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
         poiId: String(form.get("poiId") ?? ""),
-        factType: String(form.get("factType") ?? ""),
+        factType,
         value: { label: String(form.get("label") ?? "") },
         sourceClass: String(form.get("sourceClass") ?? ""),
         sourceLocator: String(form.get("sourceLocator") ?? ""),
@@ -125,17 +142,21 @@ export function FactEditor() {
       }),
     });
     if (!response.ok) {
+      setGenericFactMessage("Fact draft could not be saved.");
       setSaveState("error");
       return;
     }
     event.currentTarget.reset();
     await loadPois();
+    setGenericFactMessage(null);
     setSaveState("saved");
   }
 
   return (
     <section className="panel">
       <PoiEditor pois={pois} onChanged={loadPois} />
+      <LocalPresentationFactEditor pois={pois} onChanged={loadPois} />
+      <h2>Other fact drafts</h2>
       <form className="inlineForm" onSubmit={(event) => void createFact(event)}>
         <select name="poiId" required>
           <option value="">Choose POI</option>
@@ -168,6 +189,7 @@ export function FactEditor() {
           Add fact
         </button>
       </form>
+      {genericFactMessage ? <p className="danger">{genericFactMessage}</p> : null}
       {rows.length === 0 ? (
         <p className="empty">No facts loaded.</p>
       ) : (
@@ -183,7 +205,7 @@ export function FactEditor() {
             </tr>
           </thead>
           <tbody>
-            {rows.map(({ fact, label, poi }) => (
+            {rows.map(({ fact, label, localFactType, poi }) => (
               <tr key={fact.id}>
                 <td>{poi.city}</td>
                 <td>
@@ -203,11 +225,27 @@ export function FactEditor() {
                   ) : null}
                 </td>
                 <td>
-                  <input
-                    aria-label={`${fact.id} value`}
-                    defaultValue={label}
-                    id={`fact-${fact.id}`}
-                  />
+                  {localFactType ? (
+                    <>
+                      {localFactType === "local_address_zh" ? (
+                        <small className="danger">
+                          Real-world address: verify against the cited source before review.
+                        </small>
+                      ) : null}
+                      <textarea
+                        aria-label={`${fact.id} local-display text`}
+                        defaultValue={label}
+                        id={factValueInputId(fact, true)}
+                        maxLength={500}
+                      />
+                    </>
+                  ) : (
+                    <input
+                      aria-label={`${fact.id} value`}
+                      defaultValue={label}
+                      id={factValueInputId(fact, false)}
+                    />
+                  )}
                   <input
                     aria-label={`${fact.id} source locator`}
                     defaultValue={fact.sourceLocator ?? ""}
@@ -239,7 +277,7 @@ export function FactEditor() {
                   <div className="rowActions">
                     <button
                       disabled={saveState === "saving"}
-                      onClick={() => void saveFact(fact.id)}
+                      onClick={() => void saveFact(fact)}
                       type="button"
                     >
                       Save
@@ -247,7 +285,7 @@ export function FactEditor() {
                     {fact.status === "draft" ? (
                       <button
                         disabled={saveState === "saving"}
-                        onClick={() => void reviewFact(fact.id)}
+                        onClick={() => void reviewFact(fact)}
                         type="button"
                       >
                         Mark reviewed
@@ -267,6 +305,136 @@ export function FactEditor() {
     </section>
   );
 }
+
+function LocalPresentationFactEditor({
+  pois,
+  onChanged,
+}: {
+  pois: Poi[];
+  onChanged: () => Promise<void>;
+}) {
+  const [factType, setFactType] = useState<PoiLocalPresentationFactType>("local_name_zh");
+  const [message, setMessage] = useState(
+    "Each local-display fact starts as a draft and needs a separate per-item review.",
+  );
+  const [saving, setSaving] = useState(false);
+
+  async function create(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    setSaving(true);
+    const response = await fetch("/api/knowledge/facts", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        poiId: String(form.get("poiId") ?? ""),
+        factType,
+        value: { text: String(form.get("text") ?? "") },
+        sourceClass: String(form.get("sourceClass") ?? ""),
+        sourceLocator: String(form.get("sourceLocator") ?? ""),
+        evidenceSummary: String(form.get("evidenceSummary") ?? ""),
+        confidence: Number(form.get("confidence") ?? 0),
+      }),
+    });
+    setSaving(false);
+    if (!response.ok) {
+      const body = (await response.json().catch(() => null)) as { error?: string } | null;
+      setMessage(body?.error ?? "Local-display draft could not be saved.");
+      return;
+    }
+    event.currentTarget.reset();
+    setFactType("local_name_zh");
+    await onChanged();
+    setMessage("Draft saved. A separate per-item review assigns the verification time.");
+  }
+
+  return (
+    <section aria-labelledby="local-presentation-editor-title">
+      <h2 id="local-presentation-editor-title">Show-to-Local facts</h2>
+      <p className="muted">
+        These are independent execution facts. Saving one does not make it public, reviewed, or safe
+        to show to a local person.
+      </p>
+      <form className="stackForm" onSubmit={(event) => void create(event)}>
+        <label>
+          POI
+          <select name="poiId" required>
+            <option value="">Choose POI</option>
+            {pois.map((poi) => (
+              <option key={poi.id} value={poi.id}>
+                {poi.city} · {poi.nameEn}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Local-display field
+          <select
+            name="factType"
+            onChange={(event) => setFactType(event.target.value as PoiLocalPresentationFactType)}
+            value={factType}
+          >
+            {PoiLocalPresentationFactTypeSchema.options.map((type) => (
+              <option key={type} value={type}>
+                {LOCAL_PRESENTATION_FACT_LABELS[type]}
+              </option>
+            ))}
+          </select>
+        </label>
+        {factType === "local_address_zh" ? (
+          <p className="danger" role="alert">
+            This Chinese address can be shown to a real stranger. Check it against the cited source
+            before saving, then complete a separate per-item review before it can be shown publicly.
+          </p>
+        ) : null}
+        <label>
+          Text (maximum 500 characters)
+          <textarea maxLength={500} name="text" required />
+        </label>
+        <label>
+          Source class
+          <SourceClassSelect name="sourceClass" />
+        </label>
+        <label>
+          Source URL or evidence reference
+          <input maxLength={500} name="sourceLocator" required />
+        </label>
+        <label>
+          Evidence summary (no personal contact details)
+          <input maxLength={240} name="evidenceSummary" required />
+        </label>
+        <label>
+          Confidence
+          <input max="1" min="0" name="confidence" required step="0.05" type="number" />
+        </label>
+        <button disabled={saving} type="submit">
+          Save local-display draft
+        </button>
+      </form>
+      <p className={message.includes("could not") ? "danger" : "muted"}>{message}</p>
+    </section>
+  );
+}
+
+function factDisplayValue(fact: PoiFact): string {
+  return typeof fact.value.text === "string"
+    ? fact.value.text
+    : typeof fact.value.label === "string"
+      ? fact.value.label
+      : JSON.stringify(fact.value);
+}
+
+function factValueInputId(fact: Pick<PoiFact, "id">, isLocalPresentationFact: boolean): string {
+  return `${isLocalPresentationFact ? "local-fact" : "fact"}-${fact.id}`;
+}
+
+const LOCAL_PRESENTATION_FACT_LABELS: Record<PoiLocalPresentationFactType, string> = {
+  local_name_zh: "Chinese local name",
+  local_address_zh: "Chinese address",
+  local_address_district: "District",
+  local_address_nearest_metro_exit: "Nearest metro exit",
+  local_address_visibility_note: "Visibility note",
+};
 
 type PoiDraft = {
   city: string;
