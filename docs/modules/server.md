@@ -324,6 +324,12 @@ distinguish its own previous partial effect from a later unrelated Trip edit.
   it omits editorial identities and internal notes. `approveDraftFact` and `rejectFact` accept only one
   current draft at a time, record the authenticated operator in the private audit ledger, and cannot be
   batch transitions.
+- The Ops-only expiry route calls `KnowledgeService.listExpiredFacts` to return only current expired
+  fact ids after `knowledge.write` authorization. Its dashboard joins those ids to the existing private
+  `listPois` projection for display, derives the separate next-30-day window from server-owned
+  `expiresAt`, and invokes only the existing authenticated single-fact `renewFact` or `deprecateFact`
+  service actions. It does not create a second expiry policy, public data path, or bulk lifecycle
+  operation.
 - Existing Trip persistence receives only a validated Patch plus trusted identity, expected version,
   and event source; creation receives the initial validated Trip.
 - A module may not import another module's tables.

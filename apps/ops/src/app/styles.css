@@ -97,7 +97,12 @@ td small {
   overflow: visible;
 }
 
+.factExpiryDashboard {
+  overflow: visible;
+}
+
 .draftReviewHeading,
+.factExpiryHeading,
 .draftReviewItem header {
   align-items: flex-start;
   display: flex;
@@ -110,8 +115,15 @@ td small {
   padding: 20px;
 }
 
+.factExpiryHeading {
+  border-bottom: 1px solid var(--line);
+  padding: 20px;
+}
+
 .draftReviewHeading h2,
 .draftReviewHeading p,
+.factExpiryHeading h2,
+.factExpiryHeading p,
 .draftReviewItem h3,
 .draftReviewItem h4 {
   margin-top: 0;
@@ -122,8 +134,15 @@ td small {
   max-width: 680px;
 }
 
+.factExpiryHeading .muted {
+  margin-bottom: 0;
+  max-width: 680px;
+}
+
 .draftReviewQueue > .muted,
-.draftReviewQueue > .taskError {
+.draftReviewQueue > .taskError,
+.factExpiryDashboard > .muted,
+.factExpiryDashboard > .taskError {
   margin: 0;
   padding: 14px 20px;
 }
@@ -146,6 +165,67 @@ td small {
   display: grid;
   gap: 14px;
   padding: 0 20px 20px;
+}
+
+.factExpiryWindow {
+  border-top: 1px solid var(--line);
+  padding: 20px;
+}
+
+.factExpiryWindow h3 {
+  margin: 0 0 14px;
+}
+
+.factExpiryGroup {
+  display: grid;
+  gap: 10px;
+}
+
+.factExpiryGroup + .factExpiryGroup {
+  margin-top: 18px;
+}
+
+.factExpiryGroup h4 {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 15px;
+  gap: 8px;
+  margin: 0;
+}
+
+.factExpiryList {
+  display: grid;
+  gap: 10px;
+}
+
+.factExpiryItem {
+  align-items: flex-start;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  padding: 16px;
+}
+
+.factExpiryItem h5,
+.factExpiryItem p {
+  margin-top: 0;
+}
+
+.factExpiryItem h5 {
+  font-size: 16px;
+  margin-bottom: 6px;
+}
+
+.factExpiryItem .muted {
+  margin-bottom: 6px;
+  overflow-wrap: anywhere;
+}
+
+.factExpiryItem .rowActions {
+  flex-shrink: 0;
 }
 
 .draftReviewItem {
@@ -776,6 +856,8 @@ button:disabled {
 
 @media (max-width: 760px) {
   .draftReviewHeading,
+  .factExpiryHeading,
+  .factExpiryItem,
   .draftReviewItem header {
     flex-direction: column;
   }

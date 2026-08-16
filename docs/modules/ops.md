@@ -144,6 +144,12 @@ draft at the version shown to the editor, applies the deterministic v1 cadence, 
 client-authored reviewer or an expiry beyond the policy maximum. Renewal is a separate action for an
 already reviewed fact only; it cannot be used to promote a draft.
 
+The same `knowledge.write` Facts surface has an expiry dashboard. Its protected service-backed expired
+window and its private next-30-day window both derive from reviewed facts' existing `expiresAt` values.
+Rows are grouped by fact type and visibly mark `volatile-30d-v1` facts. Renewal and deprecation remain
+single-fact confirmation actions through the existing service route; no bulk lifecycle transition is
+available. Renewal recalculates the bounded expiry from current server policy and existing evidence.
+
 Canonical POI create and update use the same verified `knowledge.write` route as fact mutations, with
 authorization before any write. The route derives the actor only from that verified access and passes it
 to the durable service; a successful POI write and its bounded completed-audit record commit together.

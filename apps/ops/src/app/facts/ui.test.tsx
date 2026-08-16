@@ -1,8 +1,8 @@
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import type { DraftFactReviewQueueItem } from "@visepanda/domain";
-import { DraftFactReviewCard, FactEditor } from "./ui";
+import type { DraftFactReviewQueueItem, Poi } from "@visepanda/domain";
+import { DraftFactReviewCard, FactEditor, FactExpiryDashboard } from "./ui";
 
 const reviewItem: DraftFactReviewQueueItem = {
   poi: {
@@ -36,6 +36,51 @@ const reviewItem: DraftFactReviewQueueItem = {
     evidenceReviewedAt: null,
   },
   reviewedSiblings: [],
+};
+
+const expiryPoi: Poi = {
+  id: "30000000-0000-0000-0000-000000000001",
+  city: "Shanghai",
+  category: "attraction",
+  nameEn: "Yu Garden",
+  sourceIds: {},
+  commercialLinks: [],
+  facts: [
+    {
+      id: "30000000-0000-0000-0000-000000000004",
+      poiId: "30000000-0000-0000-0000-000000000001",
+      factType: "payment_acceptance",
+      value: { label: "Foreign cards accepted" },
+      confidence: 0.9,
+      source: "https://example.com/payment",
+      sourceClass: "official",
+      sourceLocator: "https://example.com/payment",
+      evidenceSummary: "The official page confirms payment acceptance.",
+      ingestedAt: "2026-08-01T00:00:00.000Z",
+      verifiedAt: "2026-08-01T00:00:00.000Z",
+      expiresAt: "2026-08-30T00:00:00.000Z",
+      reviewPolicy: "volatile-30d-v1",
+      version: 2,
+      status: "reviewed",
+    },
+    {
+      id: "30000000-0000-0000-0000-000000000005",
+      poiId: "30000000-0000-0000-0000-000000000001",
+      factType: "hours",
+      value: { label: "Open daily" },
+      confidence: 0.9,
+      source: "https://example.com/hours",
+      sourceClass: "official",
+      sourceLocator: "https://example.com/hours",
+      evidenceSummary: "The official page confirms opening hours.",
+      ingestedAt: "2026-07-01T00:00:00.000Z",
+      verifiedAt: "2026-07-01T00:00:00.000Z",
+      expiresAt: "2026-07-31T00:00:00.000Z",
+      reviewPolicy: "volatile-30d-v1",
+      version: 2,
+      status: "reviewed",
+    },
+  ],
 };
 
 describe("FactEditor local-display authoring", () => {
@@ -73,5 +118,23 @@ describe("FactEditor local-display authoring", () => {
     expect(html).toContain("This Chinese address may be shown to a real stranger.");
     expect(html).not.toContain("Approve all");
     expect(html).not.toContain("bulk");
+  });
+
+  it("distinguishes expired and near-expiry reviewed facts with individual lifecycle actions", () => {
+    const html = renderToStaticMarkup(
+      <FactExpiryDashboard
+        initialExpiredFactIds={["30000000-0000-0000-0000-000000000005"]}
+        now={() => new Date("2026-08-16T00:00:00.000Z")}
+        onChanged={async () => undefined}
+        pois={[expiryPoi]}
+      />,
+    );
+
+    expect(html).toContain("Expired facts");
+    expect(html).toContain("Expires within 30 days");
+    expect(html).toContain("Volatile · 30-day policy");
+    expect(html).toContain("Renew this fact");
+    expect(html).toContain("Deprecate this fact");
+    expect(html).not.toContain("Approve all");
   });
 });
