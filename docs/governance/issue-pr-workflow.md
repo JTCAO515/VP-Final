@@ -54,13 +54,14 @@ A PR may merge only when:
 - permissions, commercial tracking, evals, migrations, and runbooks are addressed where relevant;
 - no known unclassified deviation remains.
 
-Merge authority is assigned by risk tier. This classification changes who may merge; it does not lower
-any CI, documentation, review, rebase, evidence, or interface gate above.
+Codex owns implementation, architecture review, and merge authority for this project. Risk tier changes
+the required depth of Codex review; it does not lower any CI, documentation, review, rebase, evidence,
+or interface gate above.
 
-### Tier A: bounded self-merge when the architect is unavailable
+### Tier A: focused Codex review and merge
 
-An implementation Agent MAY self-merge a Tier A PR only when the architect is unavailable, every
-required gate is green, and all four self-merge checks below pass. Tier A is limited to:
+Codex MAY merge a Tier A PR only after every required gate is green and the focused review checklist
+below passes. Tier A is limited to:
 
 - pure documentation, draft ADRs that do not establish an accepted contract, and document-manifest
   registration;
@@ -72,10 +73,9 @@ required gate is green, and all four self-merge checks below pass. Tier A is lim
 If a PR contains any Tier B concern, the whole PR is Tier B. Splitting a high-risk change into a Tier A
 wrapper does not change its classification.
 
-### Tier B: independent architecture review required
+### Tier B: Codex architecture review required
 
-The PR author and any implementation Agent MUST NOT approve or merge a Tier B PR, regardless of
-architect availability, elapsed wait, or claimed urgency. Tier B includes:
+Tier B includes:
 
 - identity, authentication, authorization, permissions, RLS, Ops RBAC, and owner scoping;
 - payments, billing, ledgers, provider pricing, metering, and cost-consumption or cost-accounting paths;
@@ -87,24 +87,26 @@ architect availability, elapsed wait, or claimed urgency. Tier B includes:
   and provider routing;
 - every Issue or observed change classified D2 or D3.
 
-The independent reviewer MUST inspect the real checks, Issue acceptance, diff scope, and these
-invariants before merging: AI does not directly write user data; commercial links require explicit
-commerce intent and the outbound gateway; money-adjacent changes have ledger/telemetry evidence;
-identity is server-trusted; and deployed modes never present mock success as production truth.
+Before merging a Tier B PR, Codex MUST perform and record a separate architecture-review pass after the
+implementation pass. It must inspect the real check-run conclusions, Issue acceptance, diff scope, and
+these invariants: AI does not directly write user data; commercial links require explicit commerce
+intent and the outbound gateway; money-adjacent changes have ledger/telemetry evidence; identity is
+server-trusted; and deployed modes never present mock success as production truth. The review record
+MUST state the Tier B basis, relevant threat or data boundary, commands/checks actually observed,
+findings and fixes, residual risk, and merge decision. A passing PR description is not review evidence.
 
-### Mandatory Tier A self-merge checks
+### Mandatory Tier A review and merge checks
 
-Before a permitted Tier A self-merge, the Agent MUST:
+Before a Tier A merge, Codex MUST:
 
 1. verify the PR base is `main`; stacked PR bases remain forbidden;
 2. inspect the provider's actual check-run conclusions and not rely on claims in the PR description;
 3. rebase onto the latest `main`, then verify the checked head commit is still current;
-4. state in the PR body: `Tier A self-merge; architect unavailable`, with the exact Tier A basis.
+4. record a focused PR review comment with the exact Tier A basis and merge decision.
 
-After the architect returns, they review a sample of Tier A PRs merged during the unavailable period.
-If an audit finds that a self-merged PR was actually Tier B, record a D2 deviation and complete the
-missing independent review and corrective action. A Tier B PR cannot use the emergency-fix process as
-a self-merge exception.
+If later review finds that a Tier A PR was actually Tier B, record a D2 deviation, complete the missing
+Tier B Codex review, and make any corrective change. The emergency-fix process never waives the required
+review record or green gate.
 
 ## Multi-Agent Rules
 
@@ -112,10 +114,10 @@ a self-merge exception.
 - One Agent owns a branch/PR at a time unless an explicit handoff is recorded.
 - An Agent must not infer completion from another Agent's message; inspect the merged commit/API.
 - Findings belong in the Issue/PR/repository, not only in an AI conversation.
-- Architecture review resolves interface conflict; model majority does not.
+- Codex architecture review resolves interface conflict; model majority does not.
 
 ## Emergency Fix
 
 Use the emergency exception only for an active production outage or integrity incident. Restore the
-smallest safe behavior, then complete the missing artifacts within 24 hours under QSE-020. This path
-does not authorize an implementation Agent to self-merge a Tier B PR.
+smallest safe behavior, then complete the missing artifacts and Codex review record within 24 hours
+under QSE-020. This path does not waive required checks, safety constraints, or follow-up review.
