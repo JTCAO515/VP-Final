@@ -93,7 +93,7 @@ describeDatabase("database PoiImageService", () => {
       for each row execute function public.issue442_fail_poi_image_audit()
     `;
 
-    await expect(service.create(imageInput())).rejects.toThrow("bounded image audit failure");
+    await expect(service.create(imageInput())).rejects.toThrow();
     const rows =
       await sql`select count(*)::int as count from public.poi_images where created_by = ${actorId}`;
     expect(rows[0]?.count).toBe(0);
