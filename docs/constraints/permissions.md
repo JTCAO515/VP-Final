@@ -15,6 +15,15 @@ Status: active
   sensitive mutations.
 - Ops role authority MUST come only from `ops_memberships`. Roles are non-hierarchical and explicit;
   client claims, Auth user metadata, email allowlists, and hidden navigation MUST NOT grant access.
+- Ops membership assignment by email MUST authorize `membership.write` before one complete normalized
+  email equality lookup. It MUST NOT expose browse, prefix, fuzzy, pagination, cursor, or user-list
+  behavior. Missing users and unauthorized callers MUST receive the same non-disclosing assignment
+  result; an authorization-service outage remains an honest unavailable response.
+- Ops membership removal MUST be a server-side soft revocation that preserves foreign-key and audit
+  history while excluding the member from every subsequent online `getAccess` check. An actor MUST NOT
+  change or revoke their own membership, and a transaction-safe active-admin floor MUST prevent removal
+  or demotion of the final active Admin. Every accepted set or revocation MUST append minimized audit
+  evidence in the same transaction; an audit write failure MUST roll back the membership mutation.
 - Partner configuration reads and writes MUST require a verified Admin session plus `partner.read` or
   `partner.write`. A configuration save MUST NOT change status. Activation MUST be a separately
   confirmed action. Every accepted mutation MUST atomically append an audit row containing only actor,

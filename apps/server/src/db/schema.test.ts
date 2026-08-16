@@ -119,8 +119,11 @@ describe("database schema", () => {
 
   it("maps the Ops authorization and audit tables", () => {
     expect(authUsers.id.name).toBe("id");
+    expect(authUsers.email.name).toBe("email");
     expect(opsMemberships.userId.name).toBe("user_id");
     expect(opsMemberships.role.name).toBe("role");
+    expect(opsMemberships.revokedAt.name).toBe("revoked_at");
+    expect(opsMemberships.revokedBy.name).toBe("revoked_by");
     expect(opsAuditEvents.actorId.name).toBe("actor_id");
     expect(opsAuditEvents.metadataJsonb.name).toBe("metadata_jsonb");
     expect(humanTaskEvidence.actorId.name).toBe("actor_id");

@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(9);
+select plan(11);
 
 insert into auth.users (
   id, aud, role, email, encrypted_password, raw_app_meta_data, raw_user_meta_data,
@@ -62,6 +62,18 @@ select ok(
       and grantee in ('PUBLIC', 'anon', 'authenticated')
   ),
   'Ops authorization tables have no direct Data API grants'
+);
+select has_column(
+  'public',
+  'ops_memberships',
+  'revoked_at',
+  'Ops memberships records server-side soft revocation'
+);
+select has_column(
+  'public',
+  'ops_memberships',
+  'revoked_by',
+  'Ops memberships records the server-derived revoking actor'
 );
 
 select * from finish();

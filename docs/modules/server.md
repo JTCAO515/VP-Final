@@ -44,6 +44,12 @@ Next.js runtimes rather than deployed as an independent service.
   one transaction-level lock to validate exact-host uniqueness, preserve immutable keys, calculate
   bounded audit metadata from the locked current row, write the configuration/status, and append the
   audit event atomically.
+- Ops authorization is a separate private server service. It derives active authority only from an
+  online `ops_memberships` lookup with no revocation timestamp, resolves an assignment target only by
+  one complete normalized email after `membership.write`, and never exposes a user directory. Its
+  Postgres adapter uses a transaction-scoped advisory lock for active-Admin floor checks and commits a
+  soft revocation or role assignment with one minimized audit row; an audit failure rolls back the
+  authorization change.
 
 ## Current State
 

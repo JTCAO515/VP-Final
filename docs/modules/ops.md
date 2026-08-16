@@ -43,7 +43,10 @@ the public Web application and protected by server-side role checks.
   only after a task has become `quoted`; it returns a minimized Ops-only session projection, never card
   data, contact, description, provider error body, or payment-success claim.
 - `/login`: verified Supabase Ops sign-in.
-- `/roles` and `/api/roles`: Admin-only membership management.
+- `/roles` and `/api/roles`: Admin-only membership management. Exact-email assignment is POST-only and
+  resolves one already-registered account after `membership.write`; it does not expose a user directory.
+  Individual membership soft revocation is server-authoritative and immediately removes Ops access on
+  the next protected request.
 - `/costs`: Admin-only server-rendered Copilot cost summary for the latest 14 UTC days. It displays
   retained daily/model aggregates, cache and fallback rates, pseudonymous top-identity references,
   and reconciliation health without exposing conversation content or raw identity ids.
@@ -79,7 +82,12 @@ the public Web application and protected by server-side role checks.
   through a private Upstash HMAC key before reading a user; every found/missing lookup writes only a
   one-way identifier-digest audit record. Browsing, prefix, fuzzy, pagination, cursor, and list paths
   remain absent. See [Studio Binding Contract v1](../visepod/studio-binding-contract-v1.md).
-- Role changes write membership and audit evidence atomically. Knowledge and Human Task reads use
+- Role changes and revocations write membership and audit evidence atomically. Existing active sessions
+  do not retain Ops authority after revocation because every protected request rechecks the active
+  membership record. An Admin cannot modify or revoke their own membership, and a transaction-safe
+  active-Admin floor prevents the final Admin from being removed or demoted. Exact email assignment
+  accepts only a complete existing address; missing and unauthorized requests use one non-disclosing
+  response and no account is pre-created. Knowledge and Human Task reads use
   durable server adapters. P0-14 exposes only the canonical status transition API: every change
   records actor, reason, and timestamp; arbitrary status writes and terminal recovery are rejected.
   P0-15 adds an authorized task-detail and notes workflow. The server remains authoritative for the

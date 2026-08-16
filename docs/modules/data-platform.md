@@ -124,6 +124,10 @@ the same migration, and validation also checks the issuer's current Ops permissi
 - Ops users access data through protected server routes, not broad direct table grants.
 - Ops membership and audit tables are server-only with RLS enabled and no `anon` or `authenticated`
   Data API grants. Supabase Auth proves identity; `ops_memberships` independently grants authority.
+- `ops_memberships` retains soft-revocation actor/timestamp fields instead of deleting historical rows:
+  reviewed-fact and other foreign-key provenance remains valid, while active authorization filters out
+  every row with `revoked_at`. Membership mutations use a transaction-scoped advisory lock around the
+  active-Admin floor and append their minimized `ops_audit_events` row in the same transaction.
 - Service-role and database credentials never enter a public client.
 
 P0-09 extends `agent_runs` with exclusive verified-user/signed-anonymous identity, provider/model,

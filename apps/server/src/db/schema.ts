@@ -18,6 +18,7 @@ import { sql } from "drizzle-orm";
 const authSchema = pgSchema("auth");
 export const authUsers = authSchema.table("users", {
   id: uuid("id").primaryKey(),
+  email: text("email"),
 });
 
 export const users = pgTable("users", {
@@ -35,6 +36,8 @@ export const opsMemberships = pgTable("ops_memberships", {
   createdBy: uuid("created_by").references(() => authUsers.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  revokedAt: timestamp("revoked_at", { withTimezone: true }),
+  revokedBy: uuid("revoked_by").references(() => authUsers.id, { onDelete: "set null" }),
 });
 
 export const opsAuditEvents = pgTable(
