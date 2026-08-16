@@ -183,11 +183,12 @@ describeDatabase("database KnowledgeService", () => {
       evidenceSummary: "The official source publishes the Chinese venue name.",
     });
     const batchId = crypto.randomUUID();
+    const collectionRowId = `queue-row-${draft.id}`;
     await sql`insert into public.knowledge_import_batches (id) values (${batchId})`;
     await sql`
       insert into public.poi_fact_editorial_audit (
         fact_id, collection_row_id, content_digest, collection_status, researcher, import_batch_id
-      ) values (${draft.id}, 'queue-row-${draft.id}', repeat('a', 64), 'researched', 'researcher-1', ${batchId})
+      ) values (${draft.id}, ${collectionRowId}, repeat('a', 64), 'researched', 'researcher-1', ${batchId})
     `;
 
     const [item] = await service.listDraftFactReviewQueue({ importBatchId: batchId });
