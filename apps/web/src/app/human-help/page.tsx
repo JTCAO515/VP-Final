@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import type { HumanTaskReceipt } from "@visepanda/domain";
 import { SiteFooter, SiteHeader } from "../site-chrome";
 import { captureClientTelemetry } from "../../lib/clientTelemetry";
+import { useLocale } from "../../i18n/locale-provider";
 import {
   selectPendingPaymentTasks,
   type PendingPaymentTask,
@@ -13,6 +14,7 @@ import {
 type SubmitState = "idle" | "submitting" | "sent" | "error";
 
 export default function HumanHelpPage() {
+  const { t } = useLocale();
   const [state, setState] = useState<SubmitState>("idle");
   const [task, setTask] = useState<HumanTaskReceipt | null>(null);
   const [kind, setKind] = useState("other");
@@ -85,7 +87,7 @@ export default function HumanHelpPage() {
         error?: string;
       };
       if (!response.ok || !data.task) {
-        setError(data.error ?? "Could not submit this request.");
+        setError(data.error ?? t("help.submitFailed"));
         setState("error");
         return;
       }
@@ -98,7 +100,7 @@ export default function HumanHelpPage() {
       formElement.reset();
       void loadPendingPayments().then(setPaymentTasks);
     } catch {
-      setError("Human Help is offline. Your request was not submitted.");
+      setError(t("help.offline"));
       setState("error");
     }
   }
@@ -108,12 +110,12 @@ export default function HumanHelpPage() {
       <SiteHeader active="help" contextKey="context.humanHelp" />
       <section className="hero pageHero">
         <div>
-          <p className="pageEyebrow">Manual travel assistance</p>
-          <h1>Human Help</h1>
-          <p>Submit a limited Shanghai request for manual review during the Phase 0 preview.</p>
+          <p className="pageEyebrow">{t("help.eyebrow")}</p>
+          <h1>{t("help.title")}</h1>
+          <p>{t("help.lead")}</p>
         </div>
         <a className="pageAction" href="/visepanda?context=human-help">
-          Back to VisePanda
+          {t("help.back")}
         </a>
       </section>
 
@@ -124,47 +126,47 @@ export default function HumanHelpPage() {
           onSubmit={(event) => void submit(event)}
         >
           <label>
-            City
+            {t("help.city")}
             <input name="city" readOnly required value="Shanghai" />
           </label>
           <label>
-            Task type
+            {t("help.taskType")}
             <select
               name="kind"
               onChange={(event) => setKind(event.target.value)}
               required
               value={kind}
             >
-              <option value="call_restaurant">Call restaurant</option>
-              <option value="ticket_help">Ticket help</option>
-              <option value="translation_help">Translation help</option>
-              <option value="transport_help">Transport help</option>
-              <option value="other">Other</option>
+              <option value="call_restaurant">{t("help.callRestaurant")}</option>
+              <option value="ticket_help">{t("help.ticket")}</option>
+              <option value="translation_help">{t("help.translation")}</option>
+              <option value="transport_help">{t("help.transport")}</option>
+              <option value="other">{t("help.other")}</option>
             </select>
           </label>
           <label>
-            What do you need?
+            {t("help.whatNeed")}
             <textarea
               minLength={10}
               name="description"
               onChange={(event) => setDescription(event.target.value)}
-              placeholder="Example: Please call this restaurant and confirm whether they can hold a table for two at 7pm."
+              placeholder={t("help.descriptionPlaceholder")}
               required
               value={description}
             />
           </label>
           <label>
-            Contact
-            <input name="contact" placeholder="Email or WhatsApp" required />
+            {t("help.contact")}
+            <input name="contact" placeholder={t("help.contactPlaceholder")} required />
           </label>
           <button disabled={state === "submitting"} type="submit">
-            {state === "submitting" ? "Sending..." : "Submit for manual review"}
+            {state === "submitting" ? t("help.sending") : t("help.submit")}
           </button>
           {state === "error" ? <p className="formStatus">{error}</p> : null}
         </form>
 
         <aside className="panel helpAside">
-          <h2>Preview limits</h2>
+          <h2>{t("help.previewLimits")}</h2>
           <p>
             English requests for Shanghai are reviewed from 09:00 to 21:00 China time, with up to
             five new requests accepted per day. Requests outside those hours may wait in the queue.
@@ -175,17 +177,17 @@ export default function HumanHelpPage() {
             completion.
           </p>
           <nav aria-label="Human Help policies" className="helpPolicyLinks">
-            <a href="/human-help-disclaimer">Read the full service limits</a>
-            <a href="/emergency-disclaimer">Emergency guidance</a>
+            <a href="/human-help-disclaimer">{t("help.readLimits")}</a>
+            <a href="/emergency-disclaimer">{t("help.emergency")}</a>
           </nav>
           {task ? (
             <div className="confirmation">
-              <b>Request received</b>
+              <b>{t("help.received")}</b>
               <span>{task.id}</span>
               <small>Status: {task.status}</small>
             </div>
           ) : (
-            <div className="confirmation mutedBox">No request submitted yet.</div>
+            <div className="confirmation mutedBox">{t("help.none")}</div>
           )}
           {paymentTasks.map((paymentTask) => (
             <section className="confirmation" key={paymentTask.id}>

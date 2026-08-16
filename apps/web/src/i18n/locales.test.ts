@@ -21,11 +21,15 @@ describe("Web locale contract", () => {
     expect(localeDirection("ru")).toBe("ltr");
   });
 
-  it("has a typed UI translation for each core shared message", () => {
+  it("has a typed UI translation for each shared and traveler-utility message", () => {
     for (const option of WEB_LOCALE_OPTIONS) {
       expect(messageFor(option.code, "nav.visepanda")).not.toEqual("");
       expect(messageFor(option.code, "home.title")).not.toEqual("");
       expect(messageFor(option.code, "workspace.initialMessage")).not.toEqual("");
+      expect(messageFor(option.code, "rescue.title")).not.toEqual("");
+      expect(messageFor(option.code, "help.submit")).not.toEqual("");
+      expect(messageFor(option.code, "arrival.title")).not.toEqual("");
+      expect(messageFor(option.code, "readiness.title")).not.toEqual("");
     }
   });
 });

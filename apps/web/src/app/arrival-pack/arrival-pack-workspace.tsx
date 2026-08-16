@@ -12,6 +12,7 @@ import {
   type TripState,
 } from "@visepanda/domain";
 import { captureClientTelemetry } from "../../lib/clientTelemetry";
+import { useLocale } from "../../i18n/locale-provider";
 
 const LAST_TRIP_ID_KEY = "visepanda.lastTripId";
 const ARRIVAL_PACK_STORAGE_KEY = "visepanda.arrivalPack.v1";
@@ -24,6 +25,7 @@ type TripResponse = { ok: true; trip: unknown; version: unknown } | { ok: false;
 type ReadinessResponse = { ok: true; assessment: unknown | null } | { ok: false; error: string };
 
 export function ArrivalPackWorkspace() {
+  const { t } = useLocale();
   const [trip, setTrip] = useState<TripState | null>(null);
   const [tripVersion, setTripVersion] = useState<number | null>(null);
   const [readiness, setReadiness] = useState<ChinaReadinessSavedAssessment | null>(null);
@@ -150,8 +152,8 @@ export function ArrivalPackWorkspace() {
     <>
       <section className="arrivalPackHero" aria-labelledby="arrival-pack-title">
         <div>
-          <p className="pageEyebrow">Before you land</p>
-          <h1 id="arrival-pack-title">Arrival Pack</h1>
+          <p className="pageEyebrow">{t("arrival.eyebrow")}</p>
+          <h1 id="arrival-pack-title">{t("arrival.title")}</h1>
           <p>
             A compact first-day pack you can save in this browser, download as HTML, or print to a
             PDF before a connection becomes unreliable.
@@ -168,7 +170,7 @@ export function ArrivalPackWorkspace() {
 
       <section className="arrivalPackContent" aria-label="Arrival Pack generator">
         <div className="arrivalPackGenerator">
-          <p className="pageEyebrow">Current Trip</p>
+          <p className="pageEyebrow">{t("arrival.currentTrip")}</p>
           {loadState === "loading" ? <p>Checking this browser for your current Trip...</p> : null}
           {loadState === "empty" ? (
             <div className="arrivalPackEmpty">
@@ -178,7 +180,7 @@ export function ArrivalPackWorkspace() {
                 you here.
               </p>
               <a className="pageAction" href="/visepanda?context=trip">
-                Open VisePanda
+                {t("arrival.open")}
               </a>
             </div>
           ) : null}
@@ -196,20 +198,20 @@ export function ArrivalPackWorkspace() {
               <h2>{trip.title}</h2>
               <dl>
                 <div>
-                  <dt>First day</dt>
+                  <dt>{t("arrival.firstDay")}</dt>
                   <dd>{trip.days[0]?.city ?? "Not provided"}</dd>
                 </div>
                 <div>
-                  <dt>Readiness self-report</dt>
+                  <dt>{t("arrival.readiness")}</dt>
                   <dd>{readiness ? "Included" : "Not saved"}</dd>
                 </div>
                 <div>
-                  <dt>Reviewed Chinese addresses</dt>
+                  <dt>{t("arrival.addresses")}</dt>
                   <dd>Not available from this Trip yet</dd>
                 </div>
               </dl>
               <button onClick={generatePack} type="button">
-                {pack ? "Regenerate Arrival Pack" : "Generate Arrival Pack"}
+                {pack ? t("arrival.regenerate") : t("arrival.generate")}
               </button>
               <p className="arrivalPackHint">
                 Generation is explicit. We keep only the privacy-minimized projection in this
@@ -223,19 +225,19 @@ export function ArrivalPackWorkspace() {
         <aside className="arrivalPackPreview" aria-live="polite">
           {pack === null ? (
             <div className="arrivalPackPreviewEmpty">
-              <p className="pageEyebrow">Pack preview</p>
+              <p className="pageEyebrow">{t("arrival.preview")}</p>
               <h2>Nothing has been generated.</h2>
               <p>When a current Trip is available, you can create a limited offline copy here.</p>
             </div>
           ) : (
             <div>
-              <p className="pageEyebrow">Pack preview</p>
+              <p className="pageEyebrow">{t("arrival.preview")}</p>
               <h2>{pack.tripTitle}</h2>
               <p className="arrivalPackMeta">
                 Generated {formatDate(pack.generatedAt)} · Expires {formatDate(pack.expiresAt)}
               </p>
               <section>
-                <h3>First day</h3>
+                <h3>{t("arrival.firstDay")}</h3>
                 {pack.firstDay.blocks.length ? (
                   <ol>
                     {pack.firstDay.blocks.map((block, index) => (
@@ -250,7 +252,7 @@ export function ArrivalPackWorkspace() {
                 )}
               </section>
               <section>
-                <h3>Chinese addresses</h3>
+                <h3>{t("arrival.addresses")}</h3>
                 <p>
                   {pack.verifiedAddresses.length
                     ? `${pack.verifiedAddresses.length} reviewed address receipt(s) included.`
@@ -273,10 +275,10 @@ export function ArrivalPackWorkspace() {
               </section>
               <div className="arrivalPackActions">
                 <button onClick={downloadPack} type="button">
-                  Download offline HTML
+                  {t("arrival.download")}
                 </button>
                 <button onClick={() => window.print()} type="button">
-                  Print or save as PDF
+                  {t("arrival.print")}
                 </button>
               </div>
               {message ? <p className={`arrivalPackMessage ${packState}`}>{message}</p> : null}

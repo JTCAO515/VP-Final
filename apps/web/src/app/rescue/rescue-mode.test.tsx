@@ -1,6 +1,7 @@
 import * as React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import { LocaleProvider } from "../../i18n/locale-provider";
 import type { RescueRuntimeConfiguration } from "./runtime";
 import { RescueMode } from "./rescue-mode";
 
@@ -43,6 +44,25 @@ describe("Rescue Mode", () => {
     expect(html).not.toContain("24/7 response");
     expect(html).not.toContain("Pay now");
     expect(html).not.toContain("Request received");
+  });
+
+  it("renders localized Arabic utility chrome without changing its route configuration", () => {
+    const html = renderWithReact(
+      React.createElement(LocaleProvider, {
+        initialLocale: "ar",
+        children: React.createElement(RescueMode, {
+          configuration: {
+            availableTargetIds: [],
+            actionHrefs: {},
+            humanHelpAvailability: { status: "unavailable" },
+          },
+        }),
+      }),
+    );
+
+    expect(html).toContain("وضع المساعدة");
+    expect(html).toContain("خطوتك التالية");
+    expect(html).toContain('href="/emergency-disclaimer"');
   });
 });
 
