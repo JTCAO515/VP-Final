@@ -172,41 +172,20 @@ export function createDbKnowledgeService(db: Db): KnowledgeService {
       return listDraftFactReviewQueue(db, input);
     },
     async renewFact(input) {
-      const existing = await getFact(db, input.factId);
-      if (!existing) return null;
-      if (!hasReviewablePoiFactEvidence(existing)) {
-        throw new Error("Fact requires independently reviewable evidence before review");
-      }
-      const verifiedAt = new Date();
-      const review = resolvePoiFactReview({
-        factType: existing.factType,
-        verifiedAt,
-        ...(input.expiresAt !== undefined ? { requestedExpiresAt: input.expiresAt } : {}),
+      return completeFactReview(db, {
+        factId: input.factId,
+        reviewedBy: input.reviewedBy,
+        requiredStatus: "reviewed",
+        ...(input.expiresAt !== undefined ? { expiresAt: input.expiresAt } : {}),
       });
-      const row = await db.transaction(async (transaction) => {
-        const [reviewed] = await transaction
-          .update(poiFacts)
-          .set({
-            expiresAt: new Date(review.expiresAt),
-            reviewPolicy: review.reviewPolicy,
-            reviewedBy: input.reviewedBy,
-            status: "reviewed",
-            verifiedAt,
-            version: existing.version + 1,
-          })
-          .where(eq(poiFacts.id, input.factId))
-          .returning();
-        if (!reviewed) return null;
-        await transaction.insert(opsAuditEvents).values({
-          actorId: input.reviewedBy,
-          action: "knowledge.fact.review.completed",
-          targetType: "poi_fact",
-          targetId: input.factId,
-          metadataJsonb: { reviewPolicy: review.reviewPolicy, version: reviewed.version },
-        });
-        return reviewed;
+    },
+    async approveDraftFact(input) {
+      return completeFactReview(db, {
+        factId: input.factId,
+        reviewedBy: input.reviewedBy,
+        requiredStatus: "draft",
+        expectedVersion: input.expectedVersion,
       });
-      return row ? rowToFact(row) : null;
     },
     async deprecateFact(input) {
       const existing = await getFact(db, input.factId);
@@ -436,6 +415,75 @@ async function listDraftFactReviewQueue(
         .map(rowToFact),
     }),
   );
+}
+
+async function completeFactReview(
+  db: Db,
+  input: {
+    factId: string;
+    reviewedBy: string;
+    requiredStatus: "draft" | "reviewed";
+    expectedVersion?: number;
+    expiresAt?: string | null;
+  },
+): Promise<PoiFact | null> {
+  const existing = await getFact(db, input.factId);
+  if (!existing) return null;
+  if (existing.status !== input.requiredStatus) {
+    throw new Error(
+      input.requiredStatus === "draft"
+        ? "Fact is no longer the unreviewed draft shown for confirmation"
+        : "Only reviewed facts can be renewed",
+    );
+  }
+  if (input.expectedVersion !== undefined && existing.version !== input.expectedVersion) {
+    throw new Error("Fact is no longer the unreviewed draft shown for confirmation");
+  }
+  if (!hasReviewablePoiFactEvidence(existing)) {
+    throw new Error("Fact requires independently reviewable evidence before review");
+  }
+  const verifiedAt = new Date();
+  const review = resolvePoiFactReview({
+    factType: existing.factType,
+    verifiedAt,
+    ...(input.expiresAt !== undefined ? { requestedExpiresAt: input.expiresAt } : {}),
+  });
+  const row = await db.transaction(async (transaction) => {
+    const [reviewed] = await transaction
+      .update(poiFacts)
+      .set({
+        expiresAt: new Date(review.expiresAt),
+        reviewPolicy: review.reviewPolicy,
+        reviewedBy: input.reviewedBy,
+        status: "reviewed",
+        verifiedAt,
+        version: existing.version + 1,
+      })
+      .where(
+        and(
+          eq(poiFacts.id, input.factId),
+          eq(poiFacts.status, input.requiredStatus),
+          eq(poiFacts.version, existing.version),
+        ),
+      )
+      .returning();
+    if (!reviewed) {
+      throw new Error(
+        input.requiredStatus === "draft"
+          ? "Fact is no longer the unreviewed draft shown for confirmation"
+          : "Fact changed before renewal; refresh and try again",
+      );
+    }
+    await transaction.insert(opsAuditEvents).values({
+      actorId: input.reviewedBy,
+      action: "knowledge.fact.review.completed",
+      targetType: "poi_fact",
+      targetId: input.factId,
+      metadataJsonb: { reviewPolicy: review.reviewPolicy, version: reviewed.version },
+    });
+    return reviewed;
+  });
+  return rowToFact(row);
 }
 
 function rowToPoi(row: typeof pois.$inferSelect): Poi {

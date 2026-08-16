@@ -132,10 +132,17 @@ metadata is forbidden.
 Fact review, expiry, conflict resolution, and sanitized knowledge-gap handling follow
 [ADR-0006](../adr/ADR-0006-knowledge-evidence-and-index-quality.md). Fact creation and editing retain
 source class, locator, bounded evidence summary, and confidence. Save always leaves changed evidence
-as an unverified draft; `Mark reviewed` is a separate action and rejects model-only, user-report, or
-uncorroborated evidence until an editor replaces it with independently reviewable evidence.
-The review action derives reviewer identity from authenticated Ops access, applies the deterministic
-v1 cadence, and cannot accept a client-authored reviewer or an expiry beyond the policy maximum.
+as an unverified draft. The authenticated `knowledge.write` review queue filters drafts by POI, fact
+type, and import batch, then presents one item at a time with its source context and same-POI reviewed
+facts. It has no select-all or bulk-promotion control. An editor must visibly select **Approve** and
+then **Confirm approve** for that exact draft version; a correction saves the item back to `draft` and
+requires a fresh per-item confirmation. Model-only, user-report, or uncorroborated evidence must first
+be independently checked and reclassified before approval can succeed.
+
+Draft approval derives reviewer identity from authenticated Ops access, requires the fact to still be a
+draft at the version shown to the editor, applies the deterministic v1 cadence, and cannot accept a
+client-authored reviewer or an expiry beyond the policy maximum. Renewal is a separate action for an
+already reviewed fact only; it cannot be used to promote a draft.
 
 Canonical POI create and update use the same verified `knowledge.write` route as fact mutations, with
 authorization before any write. The route derives the actor only from that verified access and passes it

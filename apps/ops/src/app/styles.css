@@ -88,6 +88,161 @@ td small {
   overflow: hidden;
 }
 
+.factWorkspace {
+  display: grid;
+  gap: 24px;
+}
+
+.draftReviewQueue {
+  overflow: visible;
+}
+
+.draftReviewHeading,
+.draftReviewItem header {
+  align-items: flex-start;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+}
+
+.draftReviewHeading {
+  border-bottom: 1px solid var(--line);
+  padding: 20px;
+}
+
+.draftReviewHeading h2,
+.draftReviewHeading p,
+.draftReviewItem h3,
+.draftReviewItem h4 {
+  margin-top: 0;
+}
+
+.draftReviewHeading .muted {
+  margin-bottom: 0;
+  max-width: 680px;
+}
+
+.draftReviewQueue > .muted,
+.draftReviewQueue > .taskError {
+  margin: 0;
+  padding: 14px 20px;
+}
+
+.filters label,
+.reviewCorrectionForm label {
+  color: var(--muted);
+  display: grid;
+  font-size: 13px;
+  font-weight: 700;
+  gap: 7px;
+}
+
+.filters input,
+.filters select {
+  min-width: 190px;
+}
+
+.draftReviewList {
+  display: grid;
+  gap: 14px;
+  padding: 0 20px 20px;
+}
+
+.draftReviewItem {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+}
+
+.draftReviewItem header .eyebrow,
+.draftReviewItem header h3,
+.draftReviewItem header .muted {
+  margin-bottom: 6px;
+}
+
+.draftFactDetails {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+}
+
+.draftFactDetails div {
+  display: grid;
+  gap: 4px;
+}
+
+.draftFactDetails dt,
+.reviewedSiblings h4,
+.reviewCorrectionForm h4 {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.draftFactDetails dd {
+  line-height: 1.45;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.reviewedSiblings {
+  background: var(--soft);
+  border-radius: 6px;
+  padding: 14px;
+}
+
+.reviewedSiblings h4 {
+  margin: 0 0 8px;
+}
+
+.reviewedSiblings p,
+.reviewedSiblings ul {
+  margin: 0;
+}
+
+.reviewedSiblings ul {
+  display: grid;
+  gap: 6px;
+  padding-left: 18px;
+}
+
+.reviewCorrectionForm {
+  display: grid;
+  gap: 12px;
+  max-width: 760px;
+}
+
+.reviewCorrectionForm input,
+.reviewCorrectionForm select,
+.reviewCorrectionForm textarea {
+  background: var(--vp-surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--text);
+  min-width: 0;
+  padding: 8px 10px;
+  width: 100%;
+}
+
+.reviewCorrectionForm textarea {
+  min-height: 88px;
+  resize: vertical;
+}
+
+.reviewConfirmation {
+  background: var(--vp-danger-soft);
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  padding: 14px;
+}
+
+.reviewConfirmation p {
+  margin: 8px 0 12px;
+}
+
 table {
   border-collapse: collapse;
   width: 100%;
@@ -620,6 +775,21 @@ button:disabled {
 }
 
 @media (max-width: 760px) {
+  .draftReviewHeading,
+  .draftReviewItem header {
+    flex-direction: column;
+  }
+
+  .draftFactDetails {
+    grid-template-columns: 1fr;
+  }
+
+  .draftReviewHeading,
+  .draftReviewList {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
   .taskDetailGrid,
   .taskRequest dl {
     grid-template-columns: 1fr;

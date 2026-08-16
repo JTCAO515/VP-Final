@@ -2,7 +2,7 @@ import { FactEditor } from "./ui";
 import { requireOpsPage } from "../../lib/opsAccess";
 
 export default async function FactsPage() {
-  await requireOpsPage("knowledge.read");
+  await requireOpsPage("knowledge.write");
   return (
     <>
       <section className="heading">

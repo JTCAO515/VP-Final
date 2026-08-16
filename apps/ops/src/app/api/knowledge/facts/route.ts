@@ -78,6 +78,7 @@ export async function PATCH(request: Request) {
     sourceLocator?: unknown;
     evidenceSummary?: unknown;
     expiresAt?: unknown;
+    expectedVersion?: unknown;
     action?: unknown;
   };
   const sourceClass = PoiFactSourceClassSchema.safeParse(body.sourceClass);
@@ -86,6 +87,7 @@ export async function PATCH(request: Request) {
     (body.action !== "renew" &&
       body.action !== "deprecate" &&
       body.action !== "reject" &&
+      body.action !== "approve_draft" &&
       !isRecord(body.value))
   ) {
     return NextResponse.json({ error: "Expected factId and object value." }, { status: 400 });
@@ -106,6 +108,34 @@ export async function PATCH(request: Request) {
           ? { expiresAt: body.expiresAt }
           : {}),
       });
+      return applyOpsCookies(NextResponse.json(result), authorization.cookieResponse);
+    }
+    if (body.action === "approve_draft") {
+      const expectedVersion = body.expectedVersion;
+      if (
+        typeof expectedVersion !== "number" ||
+        !Number.isSafeInteger(expectedVersion) ||
+        expectedVersion < 1
+      ) {
+        return applyOpsCookies(
+          NextResponse.json(
+            { error: "Expected a draft version for confirmation." },
+            { status: 400 },
+          ),
+          authorization.cookieResponse,
+        );
+      }
+      const result = await service.approveDraftFact({
+        factId: body.factId,
+        reviewedBy: authorization.access.userId,
+        expectedVersion,
+      });
+      if (!result) {
+        return applyOpsCookies(
+          NextResponse.json({ error: "Draft fact was not found." }, { status: 404 }),
+          authorization.cookieResponse,
+        );
+      }
       return applyOpsCookies(NextResponse.json(result), authorization.cookieResponse);
     }
     if (body.action === "deprecate") {

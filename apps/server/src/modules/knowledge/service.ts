@@ -56,6 +56,11 @@ export type KnowledgeService = {
   }): Promise<Poi[]>;
   listExpiredFacts(input?: { now?: Date }): Promise<PoiFact[]>;
   listDraftFactReviewQueue(input?: DraftFactReviewQueueFilter): Promise<DraftFactReviewQueueItem[]>;
+  approveDraftFact(input: {
+    factId: string;
+    reviewedBy: string;
+    expectedVersion: number;
+  }): Promise<PoiFact | null>;
   renewFact(input: {
     factId: string;
     reviewedBy: string;
@@ -238,6 +243,9 @@ export function createInMemoryKnowledgeService(
     async renewFact(input) {
       const existing = findFact(pois, input.factId);
       if (!existing) return null;
+      if (existing.status !== "reviewed") {
+        throw new Error("Only reviewed facts can be renewed");
+      }
       if (!hasReviewablePoiFactEvidence(existing)) {
         throw new Error("Fact requires independently reviewable evidence before review");
       }
@@ -247,6 +255,25 @@ export function createInMemoryKnowledgeService(
         verifiedAt,
         ...(input.expiresAt !== undefined ? { requestedExpiresAt: input.expiresAt } : {}),
       });
+      pois = updatePoiFact(pois, input.factId, existing.value, {
+        expiresAt: review.expiresAt,
+        reviewPolicy: review.reviewPolicy,
+        status: "reviewed",
+        verifiedAt: verifiedAt.toISOString(),
+      });
+      return findFact(pois, input.factId);
+    },
+    async approveDraftFact(input) {
+      const existing = findFact(pois, input.factId);
+      if (!existing) return null;
+      if (existing.status !== "draft" || existing.version !== input.expectedVersion) {
+        throw new Error("Fact is no longer the unreviewed draft shown for confirmation");
+      }
+      if (!hasReviewablePoiFactEvidence(existing)) {
+        throw new Error("Fact requires independently reviewable evidence before review");
+      }
+      const verifiedAt = new Date();
+      const review = resolvePoiFactReview({ factType: existing.factType, verifiedAt });
       pois = updatePoiFact(pois, input.factId, existing.value, {
         expiresAt: review.expiresAt,
         reviewPolicy: review.reviewPolicy,

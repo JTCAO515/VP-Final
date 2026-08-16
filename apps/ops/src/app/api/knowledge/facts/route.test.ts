@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { audit, authorize, rejectFact, renewFact } = vi.hoisted(() => ({
+const { approveDraftFact, audit, authorize, rejectFact, renewFact } = vi.hoisted(() => ({
+  approveDraftFact: vi.fn(),
   audit: vi.fn(),
   authorize: vi.fn(),
   rejectFact: vi.fn(),
@@ -8,7 +9,7 @@ const { audit, authorize, rejectFact, renewFact } = vi.hoisted(() => ({
 }));
 
 vi.mock("../store", () => ({
-  getKnowledgeService: () => ({ rejectFact, renewFact }),
+  getKnowledgeService: () => ({ approveDraftFact, rejectFact, renewFact }),
 }));
 
 vi.mock("../../../../lib/opsAccess", async () => {
@@ -35,6 +36,7 @@ describe("Ops knowledge fact review route", () => {
       cookieResponse: new Response(),
     });
     renewFact.mockResolvedValue({ id: "fact-1", status: "reviewed" });
+    approveDraftFact.mockResolvedValue({ id: "fact-1", status: "reviewed" });
     rejectFact.mockResolvedValue({ id: "fact-1", status: "rejected" });
   });
 
@@ -76,6 +78,46 @@ describe("Ops knowledge fact review route", () => {
       factId: "fact-1",
       rejectedBy: "30000000-0000-4000-8000-000000000021",
     });
+  });
+
+  it("approves exactly one displayed draft with a server-derived reviewer and version", async () => {
+    const response = await PATCH(
+      new Request("http://ops.local/api/knowledge/facts", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          factId: "fact-1",
+          action: "approve_draft",
+          expectedVersion: 3,
+          reviewedBy: "attacker-authored-id",
+        }),
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(approveDraftFact).toHaveBeenCalledWith({
+      factId: "fact-1",
+      reviewedBy: "30000000-0000-4000-8000-000000000021",
+      expectedVersion: 3,
+    });
+    expect(renewFact).not.toHaveBeenCalled();
+  });
+
+  it("refuses an approval without one displayed draft version or a bulk id list", async () => {
+    const response = await PATCH(
+      new Request("http://ops.local/api/knowledge/facts", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          factIds: ["fact-1", "fact-2"],
+          action: "approve_draft",
+          expectedVersion: 3,
+        }),
+      }),
+    );
+
+    expect(response.status).toBe(400);
+    expect(approveDraftFact).not.toHaveBeenCalled();
   });
 
   it("does not report a missing draft as rejected", async () => {
