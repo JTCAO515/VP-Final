@@ -137,6 +137,7 @@ export function FactEditor() {
   return (
     <div className="factWorkspace">
       <DraftFactReviewQueue pois={pois} />
+      <FactExpiryDashboard pois={pois} onChanged={loadPois} />
       <section className="panel">
         <PoiEditor pois={pois} onChanged={loadPois} />
         <LocalPresentationFactEditor pois={pois} onChanged={loadPois} />
@@ -287,6 +288,332 @@ export function FactEditor() {
       </section>
     </div>
   );
+}
+
+type ExpiryAction = "renew" | "deprecate";
+
+type ExpiryFactItem = {
+  fact: PoiFact;
+  poi: Poi;
+  window: "expired" | "near_expiry";
+};
+
+export function FactExpiryDashboard({
+  pois,
+  onChanged,
+  initialExpiredFactIds,
+  now = () => new Date(),
+}: {
+  pois: Poi[];
+  onChanged: () => Promise<void>;
+  initialExpiredFactIds?: readonly string[];
+  now?: () => Date;
+}) {
+  const [state, setState] = useState<SaveState>("idle");
+  const [expiredFactIds, setExpiredFactIds] = useState<Set<string> | null>(() =>
+    initialExpiredFactIds ? new Set(initialExpiredFactIds) : null,
+  );
+  const [message, setMessage] = useState(
+    "Review expired facts first, then facts that will expire within 30 days.",
+  );
+  const [pendingAction, setPendingAction] = useState<{
+    factId: string;
+    action: ExpiryAction;
+  } | null>(null);
+  const groups = useMemo(
+    () => (expiredFactIds ? expiryFactGroups(pois, now(), expiredFactIds) : null),
+    [expiredFactIds, now, pois],
+  );
+
+  async function loadExpiredFactIds() {
+    const response = await fetch("/api/knowledge/facts/expiry", { cache: "no-store" });
+    const payload = (await response.json().catch(() => null)) as {
+      error?: string;
+      expiredFactIds?: unknown;
+    } | null;
+    if (
+      !response.ok ||
+      !payload ||
+      !Array.isArray(payload.expiredFactIds) ||
+      !payload.expiredFactIds.every((id): id is string => typeof id === "string")
+    ) {
+      throw new Error(payload?.error ?? "Fact expiry status is unavailable.");
+    }
+    setExpiredFactIds(new Set(payload.expiredFactIds));
+  }
+
+  async function refreshFacts() {
+    setState("saving");
+    try {
+      await Promise.all([onChanged(), loadExpiredFactIds()]);
+      setState("idle");
+      setMessage("Expiry windows were refreshed from the current fact lifecycle.");
+    } catch (error) {
+      setState("error");
+      setMessage(error instanceof Error ? error.message : "Fact expiry status is unavailable.");
+    }
+  }
+
+  useEffect(() => {
+    if (initialExpiredFactIds) return;
+    void refreshFacts();
+  }, []);
+
+  async function applyAction(factId: string, action: ExpiryAction) {
+    setState("saving");
+    setMessage(action === "renew" ? "Renewing this reviewed fact…" : "Deprecating this fact…");
+    try {
+      const response = await fetch("/api/knowledge/facts", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ factId, action }),
+      });
+      const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+      if (!response.ok || !payload || "error" in payload) {
+        throw new Error(payload?.error ?? "This fact could not be updated.");
+      }
+      setPendingAction(null);
+      await Promise.all([onChanged(), loadExpiredFactIds()]);
+      setState("idle");
+      setMessage(
+        action === "renew"
+          ? "One reviewed fact was renewed using its existing evidence and policy."
+          : "One fact was deprecated and is unavailable to traveler-facing surfaces.",
+      );
+    } catch (error) {
+      setState("error");
+      setMessage(error instanceof Error ? error.message : "This fact could not be updated.");
+    }
+  }
+
+  return (
+    <section className="panel factExpiryDashboard" aria-labelledby="fact-expiry-title">
+      <div className="factExpiryHeading">
+        <div>
+          <p className="eyebrow">Evidence freshness</p>
+          <h2 id="fact-expiry-title">Fact expiry dashboard</h2>
+          <p className="muted">
+            Renew only when the existing evidence is still current. Deprecate facts that can no
+            longer be supported; neither action changes a draft into a reviewed fact.
+          </p>
+        </div>
+        <button
+          className="secondaryButton"
+          disabled={state === "saving"}
+          onClick={() => void refreshFacts()}
+          type="button"
+        >
+          Refresh facts
+        </button>
+      </div>
+
+      <p className={state === "error" ? "taskError" : "muted"} role="status">
+        {message}
+      </p>
+
+      {groups ? (
+        <>
+          <FactExpiryWindow
+            groups={groups.expired}
+            pendingAction={pendingAction}
+            state={state}
+            title="Expired facts"
+            onCancelAction={() => setPendingAction(null)}
+            onConfirmAction={(factId, action) => void applyAction(factId, action)}
+            onProposeAction={(factId, action) => setPendingAction({ factId, action })}
+          />
+          <FactExpiryWindow
+            groups={groups.nearExpiry}
+            pendingAction={pendingAction}
+            state={state}
+            title="Expires within 30 days"
+            onCancelAction={() => setPendingAction(null)}
+            onConfirmAction={(factId, action) => void applyAction(factId, action)}
+            onProposeAction={(factId, action) => setPendingAction({ factId, action })}
+          />
+        </>
+      ) : (
+        <p className="muted">Loading the current expiry windows.</p>
+      )}
+    </section>
+  );
+}
+
+function FactExpiryWindow({
+  groups,
+  pendingAction,
+  state,
+  title,
+  onCancelAction,
+  onConfirmAction,
+  onProposeAction,
+}: {
+  groups: Map<string, ExpiryFactItem[]>;
+  pendingAction: { factId: string; action: ExpiryAction } | null;
+  state: SaveState;
+  title: string;
+  onCancelAction: () => void;
+  onConfirmAction: (factId: string, action: ExpiryAction) => void;
+  onProposeAction: (factId: string, action: ExpiryAction) => void;
+}) {
+  return (
+    <section className="factExpiryWindow" aria-label={title}>
+      <h3>{title}</h3>
+      {groups.size === 0 ? (
+        <p className="empty">No reviewed facts in this window.</p>
+      ) : (
+        [...groups.entries()].map(([factType, items]) => (
+          <section className="factExpiryGroup" key={factType}>
+            <h4>
+              {factType}
+              {items[0]?.fact.reviewPolicy === "volatile-30d-v1" ? (
+                <span className="pill">Volatile · 30-day policy</span>
+              ) : null}
+            </h4>
+            <div className="factExpiryList">
+              {items.map((item) => (
+                <FactExpiryCard
+                  actionPending={
+                    pendingAction?.factId === item.fact.id ? pendingAction.action : undefined
+                  }
+                  item={item}
+                  key={item.fact.id}
+                  busy={state === "saving"}
+                  onCancelAction={onCancelAction}
+                  onConfirmAction={(action) => onConfirmAction(item.fact.id, action)}
+                  onProposeAction={(action) => onProposeAction(item.fact.id, action)}
+                />
+              ))}
+            </div>
+          </section>
+        ))
+      )}
+    </section>
+  );
+}
+
+function FactExpiryCard({
+  actionPending,
+  busy,
+  item,
+  onCancelAction,
+  onConfirmAction,
+  onProposeAction,
+}: {
+  actionPending: ExpiryAction | undefined;
+  busy: boolean;
+  item: ExpiryFactItem;
+  onCancelAction: () => void;
+  onConfirmAction: (action: ExpiryAction) => void;
+  onProposeAction: (action: ExpiryAction) => void;
+}) {
+  const expiryDate = item.fact.expiresAt ? new Date(item.fact.expiresAt) : null;
+
+  return (
+    <article className="factExpiryItem">
+      <div>
+        <p className="eyebrow">
+          {item.window === "expired" ? "Expired" : "Near expiry"} · {item.poi.city}
+        </p>
+        <h5>{item.poi.nameEn}</h5>
+        <p className="muted">
+          {factDisplayValue(item.fact)} · {expiryDate ? formatExpiryDate(expiryDate) : "No expiry"}
+        </p>
+        <p className="muted">
+          {item.fact.reviewPolicy ?? "No review policy"}
+          {item.fact.sourceLocator ? ` · ${item.fact.sourceLocator}` : " · Missing source locator"}
+        </p>
+      </div>
+
+      {!actionPending ? (
+        <div className="rowActions">
+          <button disabled={busy} onClick={() => onProposeAction("renew")} type="button">
+            Renew this fact
+          </button>
+          <button
+            className="secondaryButton"
+            disabled={busy}
+            onClick={() => onProposeAction("deprecate")}
+            type="button"
+          >
+            Deprecate this fact
+          </button>
+        </div>
+      ) : (
+        <div className="reviewConfirmation" role="alert">
+          <strong>{actionPending === "renew" ? "Confirm renewal" : "Confirm deprecation"}</strong>
+          <p>
+            {actionPending === "renew"
+              ? "Confirm that the cited evidence remains current. Renewal recalculates the expiry from the existing review policy."
+              : "This removes the fact from traveler-facing eligibility. It does not delete the audit trail."}
+          </p>
+          <div className="rowActions">
+            <button disabled={busy} onClick={() => onConfirmAction(actionPending)} type="button">
+              {actionPending === "renew" ? "Confirm renew" : "Confirm deprecate"}
+            </button>
+            <button
+              className="secondaryButton"
+              disabled={busy}
+              onClick={onCancelAction}
+              type="button"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+    </article>
+  );
+}
+
+function expiryFactGroups(
+  pois: Poi[],
+  now: Date,
+  expiredFactIds: ReadonlySet<string>,
+): {
+  expired: Map<string, ExpiryFactItem[]>;
+  nearExpiry: Map<string, ExpiryFactItem[]>;
+} {
+  const currentTime = now.getTime();
+  const nearExpiryLimit = currentTime + 30 * 24 * 60 * 60 * 1_000;
+  const expired: ExpiryFactItem[] = [];
+  const nearExpiry: ExpiryFactItem[] = [];
+
+  for (const poi of pois) {
+    for (const fact of poi.facts) {
+      if (fact.status !== "reviewed" || !fact.expiresAt) continue;
+      const expiry = Date.parse(fact.expiresAt);
+      if (!Number.isFinite(expiry)) continue;
+      if (expiredFactIds.has(fact.id)) {
+        expired.push({ fact, poi, window: "expired" });
+      } else if (expiry > currentTime && expiry <= nearExpiryLimit) {
+        nearExpiry.push({ fact, poi, window: "near_expiry" });
+      }
+    }
+  }
+
+  return {
+    expired: groupExpiryFacts(expired),
+    nearExpiry: groupExpiryFacts(nearExpiry),
+  };
+}
+
+function groupExpiryFacts(items: ExpiryFactItem[]): Map<string, ExpiryFactItem[]> {
+  const grouped = new Map<string, ExpiryFactItem[]>();
+  for (const item of [...items].sort(
+    (left, right) =>
+      Date.parse(left.fact.expiresAt ?? "").valueOf() -
+      Date.parse(right.fact.expiresAt ?? "").valueOf(),
+  )) {
+    const entries = grouped.get(item.fact.factType) ?? [];
+    entries.push(item);
+    grouped.set(item.fact.factType, entries);
+  }
+  return grouped;
+}
+
+function formatExpiryDate(date: Date): string {
+  return `Expires ${date.toISOString().slice(0, 10)}`;
 }
 
 type DraftReviewAction = "approve" | "reject";

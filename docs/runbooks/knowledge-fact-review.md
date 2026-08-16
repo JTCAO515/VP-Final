@@ -30,10 +30,12 @@ Explore, and SEO, so provenance and freshness are release-critical.
    append-only completion audit in one transaction. Never use a bulk approval action: none is provided.
    User reports, model output, and uncorroborated scrapes must first be independently checked and
    reclassified; changing status alone is forbidden.
-5. For a correction, save the changed evidence back to `draft`, refresh the item, inspect it again, and
-   complete a new per-item approval confirmation. Renew unchanged **reviewed** facts only; renewal cannot
-   promote a draft. Deprecate or reject unsupported facts. Never treat a legacy `source` or `active`
-   label as evidence.
+5. In the expiry dashboard, work the **Expired facts** window before the **Expires within 30 days**
+   window. It groups rows by fact type and marks volatile 30-day facts. For a correction, save the
+   changed evidence back to `draft`, refresh the item, inspect it again, and complete a new per-item
+   approval confirmation. Renew unchanged **reviewed** facts only; renewal cannot promote a draft and
+   recalculates expiry from the server policy. Deprecate or reject unsupported facts. Never treat a
+   legacy `source` or `active` label as evidence.
 6. Confirm draft/deprecated/expired facts are excluded from public derivation and Copilot retrieval.
 7. Link recurring unanswered questions to knowledge gaps and mark resolved only when evidence exists.
 8. Sample the resulting Explore/guide/Copilot presentation for misleading wording.
