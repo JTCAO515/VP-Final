@@ -45,6 +45,19 @@ export type OpsAuditEvent = {
   createdAt: string;
 };
 
+export const OpsAuditFilterSchema = z.object({
+  action: z.string().trim().min(1).max(120).optional(),
+  actorId: z.string().uuid().optional(),
+  from: z.coerce.date().optional(),
+  limit: z.coerce.number().int().min(1).max(100).default(100),
+  to: z.coerce.date().optional(),
+});
+export type OpsAuditFilters = z.input<typeof OpsAuditFilterSchema>;
+export type ResolvedOpsAuditFilters = z.output<typeof OpsAuditFilterSchema> & {
+  from: Date;
+  to: Date;
+};
+
 export type RecordOpsAuditInput = {
   action: string;
   targetType: string;
@@ -63,7 +76,7 @@ export type OpsAuthorizationService = {
   ): Promise<OpsMembership | null>;
   revokeMembership(actor: OpsAccess, userId: string): Promise<OpsMembership | null>;
   recordAudit(actor: OpsAccess, input: RecordOpsAuditInput): Promise<OpsAuditEvent>;
-  listAudit(actor: OpsAccess): Promise<OpsAuditEvent[]>;
+  listAudit(actor: OpsAccess, filters?: OpsAuditFilters): Promise<OpsAuditEvent[]>;
 };
 
 const ROLE_PERMISSIONS: Record<OpsRole, readonly OpsPermission[]> = {
@@ -211,9 +224,14 @@ export function createInMemoryOpsAuthorizationService(
       audit.push(event);
       return { ...event };
     },
-    async listAudit(actor) {
+    async listAudit(actor, filters) {
       assertPermission(actor, "membership.read");
-      return audit.map((event) => ({ ...event, metadata: structuredClone(event.metadata) }));
+      const resolved = resolveOpsAuditFilters(filters);
+      return audit
+        .filter((event) => matchesAuditFilters(event, resolved))
+        .sort((left, right) => right.createdAt.localeCompare(left.createdAt))
+        .slice(0, resolved.limit)
+        .map((event) => ({ ...event, metadata: sanitizeAuditMetadata(event.metadata) }));
     },
   };
 }
@@ -226,4 +244,50 @@ function activeAdminCount(memberships: ReadonlyMap<string, OpsMembership>): numb
 
 function assertPermission(access: OpsAccess, permission: OpsPermission): void {
   if (!access.permissions.includes(permission)) throw new OpsForbiddenError();
+}
+
+const DEFAULT_AUDIT_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
+const MAX_AUDIT_WINDOW_MS = 90 * 24 * 60 * 60 * 1000;
+const sensitiveAuditKey =
+  /password|token|cookie|signature|secret|email|contact|phone|address|note|description/i;
+
+export function resolveOpsAuditFilters(
+  filters: OpsAuditFilters | undefined,
+  now = new Date(),
+): ResolvedOpsAuditFilters {
+  const parsed = OpsAuditFilterSchema.parse(filters ?? {});
+  const to = parsed.to ?? now;
+  const from = parsed.from ?? new Date(to.getTime() - DEFAULT_AUDIT_WINDOW_MS);
+  if (from > to || to.getTime() - from.getTime() > MAX_AUDIT_WINDOW_MS) {
+    throw new Error("Audit time range must be ordered and no longer than 90 days.");
+  }
+  return { ...parsed, from, to };
+}
+
+export function sanitizeAuditMetadata(value: Record<string, unknown>): Record<string, unknown> {
+  const entries = Object.entries(value)
+    .filter(([key]) => key.length <= 64 && !sensitiveAuditKey.test(key))
+    .slice(0, 12)
+    .flatMap(([key, entry]) => {
+      const sanitized = sanitizeAuditValue(entry);
+      return sanitized === undefined ? [] : [[key, sanitized] as const];
+    });
+  return Object.fromEntries(entries);
+}
+
+function sanitizeAuditValue(value: unknown): boolean | number | string | null | undefined {
+  if (value === null || typeof value === "boolean") return value;
+  if (typeof value === "number") return Number.isFinite(value) ? value : undefined;
+  if (typeof value === "string") return value.length <= 160 ? value : undefined;
+  return undefined;
+}
+
+function matchesAuditFilters(event: OpsAuditEvent, filters: ResolvedOpsAuditFilters): boolean {
+  const createdAt = new Date(event.createdAt);
+  return (
+    createdAt >= filters.from &&
+    createdAt <= filters.to &&
+    (!filters.actorId || event.actorId === filters.actorId) &&
+    (!filters.action || event.action === filters.action)
+  );
 }

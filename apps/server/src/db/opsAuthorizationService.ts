@@ -1,9 +1,11 @@
-import { and, count, eq, isNull, sql } from "drizzle-orm";
+import { and, count, desc, eq, gte, isNull, lte, sql } from "drizzle-orm";
 import type { Db } from "./client.js";
 import { authUsers, opsAuditEvents, opsMemberships } from "./schema.js";
 import {
   OpsRoleSchema,
   permissionsForRole,
+  resolveOpsAuditFilters,
+  sanitizeAuditMetadata,
   type OpsAccess,
   type OpsAuditEvent,
   type OpsAuthorizationService,
@@ -145,9 +147,23 @@ export function createDbOpsAuthorizationService(db: Db): OpsAuthorizationService
       return row ? membershipFromRow(row) : null;
     },
     recordAudit,
-    async listAudit(actor) {
+    async listAudit(actor, filters) {
       requirePermission(actor, "membership.read");
-      return (await db.select().from(opsAuditEvents)).map(auditFromRow);
+      const resolved = resolveOpsAuditFilters(filters);
+      const conditions = [
+        gte(opsAuditEvents.createdAt, resolved.from),
+        lte(opsAuditEvents.createdAt, resolved.to),
+      ];
+      if (resolved.actorId) conditions.push(eq(opsAuditEvents.actorId, resolved.actorId));
+      if (resolved.action) conditions.push(eq(opsAuditEvents.action, resolved.action));
+      return (
+        await db
+          .select()
+          .from(opsAuditEvents)
+          .where(and(...conditions))
+          .orderBy(desc(opsAuditEvents.createdAt))
+          .limit(resolved.limit)
+      ).map(auditFromRow);
     },
   };
 }
@@ -177,10 +193,11 @@ function auditFromRow(row: typeof opsAuditEvents.$inferSelect): OpsAuditEvent {
     action: row.action,
     targetType: row.targetType,
     targetId: row.targetId,
-    metadata:
+    metadata: sanitizeAuditMetadata(
       typeof row.metadataJsonb === "object" && row.metadataJsonb !== null
         ? (row.metadataJsonb as Record<string, unknown>)
         : {},
+    ),
     createdAt: row.createdAt.toISOString(),
   };
 }

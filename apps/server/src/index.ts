@@ -344,6 +344,7 @@ export type {
 } from "./modules/trace/service.js";
 export type {
   OpsAccess,
+  OpsAuditFilters,
   OpsAuditEvent,
   OpsAuthorizationService,
   OpsMembership,
