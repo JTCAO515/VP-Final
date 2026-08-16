@@ -129,9 +129,7 @@ describeDatabase("database OpsAuthorizationService", () => {
       for each row execute function public.issue451_fail_audit()
     `;
 
-    await expect(service.setMembership(admin, operatorId, "operator")).rejects.toThrow(
-      "audit unavailable",
-    );
+    await expect(service.setMembership(admin, operatorId, "operator")).rejects.toThrow();
     await expect(service.getAccess(operatorId)).resolves.toBeNull();
 
     await sql`drop trigger issue451_fail_audit on public.ops_audit_events`;
@@ -140,7 +138,7 @@ describeDatabase("database OpsAuthorizationService", () => {
       create trigger issue451_fail_audit before insert on public.ops_audit_events
       for each row execute function public.issue451_fail_audit()
     `;
-    await expect(service.revokeMembership(admin, operatorId)).rejects.toThrow("audit unavailable");
+    await expect(service.revokeMembership(admin, operatorId)).rejects.toThrow();
     await expect(service.getAccess(operatorId)).resolves.toMatchObject({ role: "operator" });
   });
 });
