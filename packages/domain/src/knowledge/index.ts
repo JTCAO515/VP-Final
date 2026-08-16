@@ -173,6 +173,44 @@ export const PoiSchema = z.object({
   commercialLinks: z.array(PoiCommercialLinkSchema).default([]),
 });
 
+const PoiCitySchema = z.string().trim().min(1).max(100);
+const PoiNameSchema = z.string().trim().min(1).max(200);
+const PoiOptionalNameSchema = z.string().trim().min(1).max(200).nullable().default(null);
+const PoiLatitudeSchema = z.number().finite().min(-90).max(90).nullable().default(null);
+const PoiLongitudeSchema = z.number().finite().min(-180).max(180).nullable().default(null);
+
+const PoiWritableFieldsObjectSchema = z
+  .object({
+    city: PoiCitySchema,
+    category: PoiCategorySchema,
+    nameEn: PoiNameSchema,
+    nameZh: PoiOptionalNameSchema,
+    latitude: PoiLatitudeSchema,
+    longitude: PoiLongitudeSchema,
+  })
+  .strict();
+
+// Canonical POI fields are edited as a complete set. Coordinates are intentionally all-or-nothing:
+// accepting a single axis would create a location that downstream consumers could misinterpret.
+function requireCoordinatePair(
+  value: { latitude: number | null; longitude: number | null },
+  context: z.RefinementCtx,
+) {
+  if ((value.latitude === null) !== (value.longitude === null)) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Latitude and longitude must be provided together",
+      path: ["latitude"],
+    });
+  }
+}
+
+export const PoiCreateInputSchema =
+  PoiWritableFieldsObjectSchema.superRefine(requireCoordinatePair);
+export const PoiUpdateInputSchema = PoiWritableFieldsObjectSchema.extend({
+  id: z.string().uuid(),
+}).superRefine(requireCoordinatePair);
+
 export const KnowledgeGapSchema = z.object({
   id: z.string().min(1),
   questionPattern: z.string().min(1),
@@ -199,6 +237,8 @@ export type EligiblePoiLocalAddress = z.infer<typeof EligiblePoiLocalAddressSche
 export type PoiLocalAddressAlternative = z.infer<typeof PoiLocalAddressAlternativeSchema>;
 export type PoiLocalAddressPresentation = z.infer<typeof PoiLocalAddressPresentationSchema>;
 export type Poi = z.infer<typeof PoiSchema>;
+export type PoiCreateInput = z.infer<typeof PoiCreateInputSchema>;
+export type PoiUpdateInput = z.infer<typeof PoiUpdateInputSchema>;
 export type KnowledgeGap = z.infer<typeof KnowledgeGapSchema>;
 
 export const TRAVELER_SCENE_TAGS = [

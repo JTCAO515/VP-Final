@@ -83,6 +83,36 @@ describeDatabase("database KnowledgeService", () => {
     ]);
   });
 
+  it("persists canonical POI creation and edits without creating a fact", async () => {
+    const created = await service.createPoi({
+      city: "Canonical City",
+      category: "attraction",
+      nameEn: "Canonical Place",
+      nameZh: "规范地点",
+      latitude: 31.227,
+      longitude: 121.492,
+    });
+    const updated = await service.updatePoi({
+      id: created.id,
+      city: "Canonical City",
+      category: "attraction",
+      nameEn: "Canonical Place Revised",
+      nameZh: null,
+      latitude: null,
+      longitude: null,
+    });
+
+    expect(updated).toMatchObject({
+      id: created.id,
+      nameEn: "Canonical Place Revised",
+      facts: [],
+    });
+    await expect(service.listPois({ city: "Canonical City" })).resolves.toEqual([
+      expect.objectContaining({ id: created.id, nameEn: "Canonical Place Revised", facts: [] }),
+    ]);
+    await sql`delete from public.pois where id = ${created.id}`;
+  });
+
   it("demotes edited reviewed facts and preserves ingestion time", async () => {
     const created = await service.createFact({
       poiId,

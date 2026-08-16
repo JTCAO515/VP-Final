@@ -5,15 +5,19 @@ import {
   isEligiblePoiFact,
   KnowledgeGapSchema,
   PoiFactEvidenceSchema,
+  PoiCreateInputSchema,
   PoiSchema,
+  PoiUpdateInputSchema,
   sanitizeEvidenceDerivedGapPattern,
   resolvePoiFactReview,
   updatePoiFact,
   type KnowledgeGap,
   type Poi,
   type PoiCategory,
+  type PoiCreateInput,
   type PoiFact,
   type PoiFactSourceClass,
+  type PoiUpdateInput,
 } from "@visepanda/domain";
 
 export type KnowledgeService = {
@@ -24,6 +28,8 @@ export type KnowledgeService = {
     includeDeprecated?: boolean;
     includeDrafts?: boolean;
   }): Promise<Poi[]>;
+  createPoi(input: PoiCreateInput): Promise<Poi>;
+  updatePoi(input: PoiUpdateInput): Promise<Poi | null>;
   createFact(input: {
     poiId: string;
     factType: string;
@@ -90,6 +96,45 @@ export function createInMemoryKnowledgeService(
             commercialLinks: poi.commercialLinks.filter((link) => link.url.length > 0),
           }),
         );
+    },
+    async createPoi(input) {
+      const parsed = PoiCreateInputSchema.parse(input);
+      const poi = PoiSchema.parse({
+        id: crypto.randomUUID(),
+        city: parsed.city,
+        category: parsed.category,
+        nameEn: parsed.nameEn,
+        ...(parsed.nameZh === null ? {} : { nameZh: parsed.nameZh }),
+        ...(parsed.latitude === null ? {} : { latitude: parsed.latitude }),
+        ...(parsed.longitude === null ? {} : { longitude: parsed.longitude }),
+        sourceIds: {},
+        facts: [],
+        commercialLinks: [],
+      });
+      pois = [...pois, poi];
+      return poi;
+    },
+    async updatePoi(input) {
+      const parsed = PoiUpdateInputSchema.parse(input);
+      const existing = pois.find((poi) => poi.id === parsed.id);
+      if (!existing) return null;
+      const {
+        latitude: _latitude,
+        longitude: _longitude,
+        nameZh: _nameZh,
+        ...preserved
+      } = existing;
+      const updated = PoiSchema.parse({
+        ...preserved,
+        city: parsed.city,
+        category: parsed.category,
+        nameEn: parsed.nameEn,
+        ...(parsed.nameZh === null ? {} : { nameZh: parsed.nameZh }),
+        ...(parsed.latitude === null ? {} : { latitude: parsed.latitude }),
+        ...(parsed.longitude === null ? {} : { longitude: parsed.longitude }),
+      });
+      pois = pois.map((poi) => (poi.id === parsed.id ? updated : poi));
+      return updated;
     },
     async createFact(input) {
       assertWritableFact(input);

@@ -1,7 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { PoiFactSourceClassSchema, type Poi, type PoiFactSourceClass } from "@visepanda/domain";
+import {
+  PoiCategorySchema,
+  PoiFactSourceClassSchema,
+  type Poi,
+  type PoiCategory,
+  type PoiFactSourceClass,
+} from "@visepanda/domain";
 
 type SaveState = "idle" | "saving" | "saved" | "error";
 
@@ -129,6 +135,7 @@ export function FactEditor() {
 
   return (
     <section className="panel">
+      <PoiEditor pois={pois} onChanged={loadPois} />
       <form className="inlineForm" onSubmit={(event) => void createFact(event)}>
         <select name="poiId" required>
           <option value="">Choose POI</option>
@@ -259,6 +266,203 @@ export function FactEditor() {
       )}
     </section>
   );
+}
+
+type PoiDraft = {
+  city: string;
+  category: PoiCategory;
+  nameEn: string;
+  nameZh: string;
+  latitude: string;
+  longitude: string;
+};
+
+const EMPTY_POI_DRAFT: PoiDraft = {
+  city: "",
+  category: "attraction",
+  nameEn: "",
+  nameZh: "",
+  latitude: "",
+  longitude: "",
+};
+
+function PoiEditor({ pois, onChanged }: { pois: Poi[]; onChanged: () => Promise<void> }) {
+  const [selectedPoiId, setSelectedPoiId] = useState("");
+  const [draft, setDraft] = useState<PoiDraft>(EMPTY_POI_DRAFT);
+  const [message, setMessage] = useState("Create a canonical POI before adding facts.");
+  const [saving, setSaving] = useState(false);
+
+  function choosePoi(id: string) {
+    setSelectedPoiId(id);
+    const poi = pois.find((candidate) => candidate.id === id);
+    setDraft(poi ? draftFromPoi(poi) : EMPTY_POI_DRAFT);
+    setMessage(
+      poi ? "Edit canonical POI fields. Existing facts are unchanged." : "Create a new POI.",
+    );
+  }
+
+  async function save(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const payload = parsePoiDraft(draft);
+    if (!payload) {
+      setMessage("Enter both coordinates or leave both blank. Coordinates must be valid numbers.");
+      return;
+    }
+
+    setSaving(true);
+    const response = await fetch("/api/knowledge/pois", {
+      method: selectedPoiId ? "PATCH" : "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(selectedPoiId ? { id: selectedPoiId, ...payload } : payload),
+    });
+    const data = (await response.json().catch(() => null)) as Poi | { error: string } | null;
+    setSaving(false);
+    if (!response.ok || !data || "error" in data) {
+      setMessage(data && "error" in data ? data.error : "POI save failed.");
+      return;
+    }
+
+    setSelectedPoiId(data.id);
+    setDraft(draftFromPoi(data));
+    await onChanged();
+    setMessage(
+      selectedPoiId ? "POI saved. Facts remain independently reviewable." : "POI created.",
+    );
+  }
+
+  return (
+    <section aria-labelledby="poi-editor-title">
+      <h2 id="poi-editor-title">Canonical POIs</h2>
+      <p className="muted">
+        Names, city, category, and coordinates identify a place. They do not create or verify any
+        travel fact.
+      </p>
+      <form className="stackForm" onSubmit={(event) => void save(event)}>
+        <label>
+          Existing POI (optional)
+          <select onChange={(event) => choosePoi(event.target.value)} value={selectedPoiId}>
+            <option value="">Create new POI</option>
+            {pois.map((poi) => (
+              <option key={poi.id} value={poi.id}>
+                {poi.city} · {poi.nameEn}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          English name
+          <input
+            maxLength={200}
+            onChange={(event) => setDraft({ ...draft, nameEn: event.target.value })}
+            required
+            value={draft.nameEn}
+          />
+        </label>
+        <label>
+          Chinese name (optional)
+          <input
+            maxLength={200}
+            onChange={(event) => setDraft({ ...draft, nameZh: event.target.value })}
+            value={draft.nameZh}
+          />
+        </label>
+        <label>
+          City
+          <input
+            maxLength={100}
+            onChange={(event) => setDraft({ ...draft, city: event.target.value })}
+            required
+            value={draft.city}
+          />
+        </label>
+        <label>
+          Category
+          <select
+            onChange={(event) =>
+              setDraft({ ...draft, category: event.target.value as PoiCategory })
+            }
+            value={draft.category}
+          >
+            {PoiCategorySchema.options.map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Latitude (optional; requires longitude)
+          <input
+            max="90"
+            min="-90"
+            onChange={(event) => setDraft({ ...draft, latitude: event.target.value })}
+            step="0.000001"
+            type="number"
+            value={draft.latitude}
+          />
+        </label>
+        <label>
+          Longitude (optional; requires latitude)
+          <input
+            max="180"
+            min="-180"
+            onChange={(event) => setDraft({ ...draft, longitude: event.target.value })}
+            step="0.000001"
+            type="number"
+            value={draft.longitude}
+          />
+        </label>
+        <button disabled={saving} type="submit">
+          {selectedPoiId ? "Save POI" : "Create POI"}
+        </button>
+      </form>
+      <p
+        className={
+          message.includes("failed") || message.includes("Enter both") ? "danger" : "muted"
+        }
+      >
+        {message}
+      </p>
+    </section>
+  );
+}
+
+function draftFromPoi(poi: Poi): PoiDraft {
+  return {
+    city: poi.city,
+    category: poi.category,
+    nameEn: poi.nameEn,
+    nameZh: poi.nameZh ?? "",
+    latitude: poi.latitude?.toString() ?? "",
+    longitude: poi.longitude?.toString() ?? "",
+  };
+}
+
+function parsePoiDraft(draft: PoiDraft): {
+  city: string;
+  category: PoiCategory;
+  nameEn: string;
+  nameZh: string | null;
+  latitude: number | null;
+  longitude: number | null;
+} | null {
+  const latitude = draft.latitude.trim() === "" ? null : Number(draft.latitude);
+  const longitude = draft.longitude.trim() === "" ? null : Number(draft.longitude);
+  if (
+    (latitude === null) !== (longitude === null) ||
+    (latitude !== null && !Number.isFinite(latitude)) ||
+    (longitude !== null && !Number.isFinite(longitude))
+  ) {
+    return null;
+  }
+  return {
+    city: draft.city,
+    category: draft.category,
+    nameEn: draft.nameEn,
+    nameZh: draft.nameZh.trim() || null,
+    latitude,
+    longitude,
+  };
 }
 
 function SourceClassSelect({
