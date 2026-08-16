@@ -13,7 +13,7 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
 | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `trip`          | TripState, TripPatch operations, `applyPatch`, `diffTrips`, generation progress                                                                                                                          |
 | `copilot`       | Intent, message, citations, tool cards, commercial actions, Human Help handoff, envelope, completion-job contract                                                                                        |
-| `knowledge`     | POI, execution facts, knowledge gaps, scene-tag derivation, reviewed seed data, and ADR-0006 fact eligibility                                                                                            |
+| `knowledge`     | POI, execution facts, private attributed editorial-image contract, knowledge gaps, scene-tag derivation, reviewed seed data, and ADR-0006 fact eligibility                                               |
 | `offline`       | Versioned read-only Trip package, local-storage/AsyncStorage serialization, expiry, and credential-free offline boundary                                                                                 |
 | `arrival`       | Versioned privacy-minimized Arrival Pack projection: first-day execution summary, verified-address receipts, fixed Readiness result, content versions, and print/offline eligibility                     |
 | `readiness`     | Versioned, deterministic China preparation questions, explainable self-reported results, and consented persistence request/result contracts; no score, LLM scoring, or commercial CTA                    |
@@ -56,6 +56,10 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
   runtime-validated. Both axes are present or absent together. The contract deliberately excludes
   source ids, facts, review state, source provenance, and public eligibility, so a POI write cannot
   promote an execution fact.
+- `PoiImageSchema` is private editorial metadata, separate from `Poi` and from evidence-bearing
+  `PoiFact`. It has exactly one POI/city/category target, a server-generated WebP storage path,
+  bounded dimensions/byte count, and non-empty attribution/license fields. It is not a public image
+  URL, a traveler-upload model, or an implicit authorization to show an image in Explore.
 - Every Show-to-Local, address-card, copy, or speech consumer MUST use
   `resolvePoiLocalAddressPresentation`. Its ready branch contains only the eligible fact derivation;
   its unavailable branch contains the fixed honest message plus Human Help, manual-entry, and

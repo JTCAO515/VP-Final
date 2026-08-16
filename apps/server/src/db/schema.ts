@@ -538,6 +538,77 @@ export const poiFacts = pgTable(
   }),
 );
 
+// Private editorial image metadata. The bytes live in the private Supabase Storage bucket named by
+// ADR-0021; this table deliberately retains no original filename, EXIF, or client-provided MIME.
+export const poiImages = pgTable(
+  "poi_images",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    storagePath: text("storage_path").notNull(),
+    targetKind: text("target_kind").notNull(),
+    poiId: uuid("poi_id").references(() => pois.id, { onDelete: "restrict" }),
+    city: text("city"),
+    category: text("category"),
+    contentType: text("content_type").notNull().default("image/webp"),
+    byteSize: integer("byte_size").notNull(),
+    width: integer("width").notNull(),
+    height: integer("height").notNull(),
+    attribution: text("attribution").notNull(),
+    licenseNote: text("license_note").notNull(),
+    createdBy: uuid("created_by")
+      .notNull()
+      .references(() => authUsers.id, { onDelete: "restrict" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
+    deletedBy: uuid("deleted_by").references(() => authUsers.id, { onDelete: "set null" }),
+  },
+  (table) => ({
+    storagePathUnique: uniqueIndex("poi_images_storage_path_unique").on(table.storagePath),
+    activePoiIdx: index("poi_images_active_poi_idx")
+      .on(table.poiId, table.createdAt)
+      .where(sql`${table.deletedAt} is null`),
+    targetKindCheck: check(
+      "poi_images_target_kind_check",
+      sql`${table.targetKind} in ('poi', 'city', 'category')`,
+    ),
+    targetCheck: check(
+      "poi_images_exactly_one_target_check",
+      sql`(
+        ${table.targetKind} = 'poi' and ${table.poiId} is not null and ${table.city} is null and ${table.category} is null
+      ) or (
+        ${table.targetKind} = 'city' and ${table.poiId} is null and ${table.city} is not null and btrim(${table.city}) <> '' and ${table.category} is null
+      ) or (
+        ${table.targetKind} = 'category' and ${table.poiId} is null and ${table.city} is null and ${table.category} in ('food', 'attraction', 'hotel', 'shopping', 'experience')
+      )`,
+    ),
+    pathCheck: check(
+      "poi_images_storage_path_check",
+      sql`${table.storagePath} ~ '^[a-z0-9][a-z0-9/_-]*\\.webp$' and char_length(${table.storagePath}) <= 300`,
+    ),
+    contentCheck: check("poi_images_content_type_check", sql`${table.contentType} = 'image/webp'`),
+    bytesCheck: check(
+      "poi_images_byte_size_check",
+      sql`${table.byteSize} between 1 and ${5 * 1024 * 1024}`,
+    ),
+    dimensionsCheck: check(
+      "poi_images_dimensions_check",
+      sql`${table.width} between 1 and 4096 and ${table.height} between 1 and 4096`,
+    ),
+    attributionCheck: check(
+      "poi_images_attribution_check",
+      sql`btrim(${table.attribution}) <> '' and char_length(${table.attribution}) <= 500`,
+    ),
+    licenseCheck: check(
+      "poi_images_license_note_check",
+      sql`btrim(${table.licenseNote}) <> '' and char_length(${table.licenseNote}) <= 500`,
+    ),
+    deletionCheck: check(
+      "poi_images_deletion_evidence_check",
+      sql`(${table.deletedAt} is null and ${table.deletedBy} is null) or (${table.deletedAt} is not null and ${table.deletedBy} is not null)`,
+    ),
+  }),
+);
+
 // Editorial SEO copy is a private presentation layer. It does not alter POIs or facts and can be
 // applied only after the shared evidence-gated candidate exists.
 export const seoEditorialOverrides = pgTable(

@@ -924,6 +924,21 @@
         "infra/supabase/"
       ]
     },
+    {
+      "path": "docs/adr/ADR-0021-ops-poi-image-storage.md",
+      "title": "ADR-0021: Ops POI Image Storage",
+      "category": "decisions",
+      "type": "decision",
+      "status": "accepted",
+      "owner": "knowledge / security / operations",
+      "summary": "Freezes private server-mediated, attributed Ops image storage and prohibits public delivery until a later governed consumer exists.",
+      "sourcePrefixes": [
+        "packages/domain/src/knowledge/",
+        "apps/server/src/db/",
+        "apps/ops/src/app/api/knowledge/",
+        "infra/supabase/"
+      ]
+    },
 
     {
       "path": "docs/runbooks/README.md",

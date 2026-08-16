@@ -219,6 +219,7 @@ Append-only records of accepted and superseded binding decisions.
 | [ADR-0018: Multi-Meter Voice Call Cost Accounting](adr/ADR-0018-voice-call-cost-accounting.md) | decision | accepted | AI platform / data platform | Extends the retained cost ledger for token, audio-second, and character calls without activating voice providers. |
 | [ADR-0019: Authenticated Mobile Telemetry Observation](adr/ADR-0019-mobile-telemetry-observation.md) | decision | accepted | mobile / telemetry | Freezes authenticated, closed-set mobile observations with a bounded local retry queue and server-owned privacy controls. |
 | [ADR-0020: Creator Attribution Contract](adr/ADR-0020-creator-attribution-contract.md) | decision | accepted | commercial architecture / data platform | Freezes creator referrals as private server-resolved acquisition sources and keeps them separate from OTA outbound links. |
+| [ADR-0021: Ops POI Image Storage](adr/ADR-0021-ops-poi-image-storage.md) | decision | accepted | knowledge / security / operations | Freezes private server-mediated, attributed Ops image storage and prohibits public delivery until a later governed consumer exists. |
 
 ## Runbooks
 
