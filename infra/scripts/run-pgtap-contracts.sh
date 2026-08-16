@@ -3,14 +3,16 @@
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-test_files=("${repo_root}"/infra/supabase/tests/database/*.test.sql)
+test_dir="${repo_root}/infra/supabase/tests/database"
 
-if [[ ${#test_files[@]} -eq 0 ]]; then
+if ! compgen -G "${test_dir}/*.test.sql" >/dev/null; then
   echo "No pgTAP contract files found under infra/supabase/tests/database." >&2
   exit 1
 fi
 
-if ! output="$(supabase test db "${test_files[@]}" --local --workdir "${repo_root}/infra" 2>&1)"; then
+# Supabase CLI discovers its standard test directory from --workdir. Passing individual SQL paths
+# makes the current CLI treat them as an unsupported source and can leave CI's contract gate stuck.
+if ! output="$(supabase test db --local --workdir "${repo_root}/infra" 2>&1)"; then
   printf '%s\n' "${output}"
   exit 1
 fi

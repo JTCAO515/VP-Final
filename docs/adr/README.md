@@ -24,6 +24,7 @@ New ADRs are append-only and use the next numeric prefix.
 | [ADR-0017](ADR-0017-vise-pod-studio-provisioning.md)                   | Accepted | Uses scoped, online-validated Ops provisioning for server-side VisePod user/device bindings and rejects user browsing.                     |
 | [ADR-0018](ADR-0018-voice-call-cost-accounting.md)                     | Accepted | Extends the retained cost ledger for token, audio-second, and character calls without activating voice providers.                          |
 | [ADR-0019](ADR-0019-mobile-telemetry-observation.md)                   | Accepted | Freezes authenticated, closed-set mobile observations with a bounded local retry queue and server-owned privacy controls.                  |
+| [ADR-0020](ADR-0020-creator-attribution-contract.md)                   | Accepted | Freezes creator referrals as private server-resolved acquisition sources and keeps them separate from OTA outbound links.                  |
 
 ## When to Add an ADR
 

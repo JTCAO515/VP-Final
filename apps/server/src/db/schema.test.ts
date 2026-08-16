@@ -5,6 +5,7 @@ import {
   authUsers,
   copilotCompletionJobs,
   copilotConversationTurns,
+  creatorReferrals,
   humanTaskTransitions,
   humanTaskEvidence,
   humanTaskPayments,
@@ -207,6 +208,15 @@ describe("database schema", () => {
 
   it("maps the outbound commerce tables", () => {
     expect(partners.trackingParam.name).toBe("tracking_param");
+    expect(partners.kind.name).toBe("kind");
+    expect(getTableConfig(partners).checks.map((constraint) => constraint.name)).toContain(
+      "partners_kind_check",
+    );
+    expect(creatorReferrals.partnerKey.name).toBe("partner_key");
+    expect(creatorReferrals.landingPath.name).toBe("landing_path");
+    expect(getTableConfig(creatorReferrals).checks.map((constraint) => constraint.name)).toContain(
+      "creator_referrals_landing_path_check",
+    );
     expect(outboundClicks.targetUrl.name).toBe("target_url");
     expect(outboundClicks.userId.name).toBe("user_id");
     expect(outboundClicks.anonId.name).toBe("anon_id");

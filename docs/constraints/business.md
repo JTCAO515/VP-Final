@@ -8,6 +8,9 @@ Status: active
 - Commercial actions MUST be tied to explicit commercial intent and carry a clear disclosure.
 - Raw partner URLs MUST NOT be rendered; redirects MUST use the outbound gateway and create evidence.
 - Pending or inactive partners MUST NOT appear as available to public users.
+- A `creator` partner is an acquisition source, not an outbound destination. Its attribution MUST be
+  resolved from a private server-side referral mapping after an active record check; raw creator query
+  parameters, arbitrary target URLs, unverified social handles, and public reports are forbidden.
 - Missing inventory, price, commission, rating, booking state, or partner capability MUST be shown as
   unknown or unavailable.
 

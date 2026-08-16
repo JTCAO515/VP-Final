@@ -10,6 +10,7 @@ const partner: Partner = {
   categories: ["hotel"],
   cities: ["Shanghai"],
   trackingParam: "vp_click_id",
+  kind: "ota",
   status: "pending",
 };
 
@@ -43,5 +44,19 @@ describe("PartnerConfigurationCard", () => {
     expect(html).not.toContain("approved");
     expect(html).not.toContain("commission");
     expect(html).not.toContain("revenue");
+  });
+
+  it("labels a creator as an acquisition source without an outbound claim", () => {
+    const html = renderToStaticMarkup(
+      <PartnerConfigurationCard
+        disabled={false}
+        onEdit={() => undefined}
+        onStatusChange={() => undefined}
+        partner={{ ...partner, kind: "creator" }}
+      />,
+    );
+    expect(html).toContain("Creator acquisition source");
+    expect(html).toContain("cannot redirect or produce an outbound click");
+    expect(html).not.toMatch(/<a(?:\s|>)/);
   });
 });

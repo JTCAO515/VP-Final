@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const PartnerStatusSchema = z.enum(["pending", "active", "inactive"]);
+export const PartnerKindSchema = z.enum(["ota", "creator"]);
 
 const PartnerHostSchema = z
   .string()
@@ -29,6 +30,7 @@ export const PartnerSchema = z
     categories: z.array(z.string().trim().min(1)).default([]),
     cities: z.array(z.string().trim().min(1)).default([]),
     trackingParam: TrackingParameterSchema,
+    kind: PartnerKindSchema.default("ota"),
     status: PartnerStatusSchema,
   })
   .superRefine((partner, context) => {
@@ -68,6 +70,26 @@ export type Partner = z.infer<typeof PartnerSchema>;
 export type OutboundClick = z.infer<typeof OutboundClickSchema>;
 export type OutboundClickRecord = z.infer<typeof OutboundClickRecordSchema>;
 
+/**
+ * A creator is an acquisition source, not an outbound destination. Its public route is resolved
+ * server-side only after Ops has configured an active creator Partner; consumers must not derive it
+ * from an arbitrary query parameter.
+ */
+export const CreatorReferralSchema = z
+  .object({
+    key: z
+      .string()
+      .trim()
+      .regex(/^[a-z0-9][a-z0-9_-]{0,63}$/),
+    partnerKey: z.string().trim().min(1).max(64),
+    landingPath: z.string().regex(/^\/(?!\/)[A-Za-z0-9._~!$&'()*+,;=:@%/-]*$/),
+    createdAt: z.string().datetime(),
+    updatedAt: z.string().datetime(),
+  })
+  .strict();
+
+export type CreatorReferral = z.infer<typeof CreatorReferralSchema>;
+
 export const PARTNERS: Partner[] = [
   {
     key: "tripcom",
@@ -75,6 +97,7 @@ export const PARTNERS: Partner[] = [
     categories: ["hotel"],
     cities: ["Beijing", "Shanghai"],
     trackingParam: "vp_click_id",
+    kind: "ota",
     status: "pending",
   },
   {
@@ -83,6 +106,7 @@ export const PARTNERS: Partner[] = [
     categories: ["attraction", "experience"],
     cities: ["Beijing", "Shanghai"],
     trackingParam: "vp_click_id",
+    kind: "ota",
     status: "pending",
   },
   {
@@ -91,6 +115,7 @@ export const PARTNERS: Partner[] = [
     categories: ["attraction", "experience"],
     cities: ["Beijing", "Shanghai"],
     trackingParam: "vp_click_id",
+    kind: "ota",
     status: "pending",
   },
   {
@@ -99,6 +124,7 @@ export const PARTNERS: Partner[] = [
     categories: ["esim"],
     cities: [],
     trackingParam: "vp_click_id",
+    kind: "ota",
     status: "pending",
   },
 ];
@@ -141,6 +167,7 @@ export function buildApprovedOutboundUrl(input: {
 }): string {
   const partner = PartnerSchema.parse(input.partner);
   if (partner.status !== "active") throw new Error("Partner is not active");
+  if (partner.kind !== "ota") throw new Error("Creator partners are not outbound destinations");
 
   const hostname = httpsHostname(input.targetUrl);
   if (!partner.hosts.some((host) => hostMatches(hostname, host))) {

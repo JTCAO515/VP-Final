@@ -759,6 +759,7 @@ export const partners = pgTable(
     categories: jsonb("categories").notNull().default([]),
     cities: jsonb("cities").notNull().default([]),
     trackingParam: text("tracking_param").notNull(),
+    kind: text("kind").notNull().default("ota"),
     status: text("status").notNull().default("pending"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
@@ -768,6 +769,27 @@ export const partners = pgTable(
     statusCheck: check(
       "partners_status_check",
       sql`${table.status} in ('pending', 'active', 'inactive')`,
+    ),
+    kindCheck: check("partners_kind_check", sql`${table.kind} in ('ota', 'creator')`),
+  }),
+);
+
+export const creatorReferrals = pgTable(
+  "creator_referrals",
+  {
+    key: text("key").primaryKey(),
+    partnerKey: text("partner_key")
+      .notNull()
+      .unique()
+      .references(() => partners.key, { onDelete: "restrict" }),
+    landingPath: text("landing_path").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    landingPathCheck: check(
+      "creator_referrals_landing_path_check",
+      sql`${table.landingPath} ~ '^/(?!/)[A-Za-z0-9._~!$&''()*+,;=:@%/-]*$'`,
     ),
   }),
 );
@@ -1254,8 +1276,16 @@ export const poiCommercialLinksRelations = relations(poiCommercialLinks, ({ one 
   }),
 }));
 
-export const partnersRelations = relations(partners, ({ many }) => ({
+export const partnersRelations = relations(partners, ({ many, one }) => ({
   outboundClicks: many(outboundClicks),
+  creatorReferral: one(creatorReferrals),
+}));
+
+export const creatorReferralsRelations = relations(creatorReferrals, ({ one }) => ({
+  partner: one(partners, {
+    fields: [creatorReferrals.partnerKey],
+    references: [partners.key],
+  }),
 }));
 
 export const outboundClicksRelations = relations(outboundClicks, ({ one }) => ({

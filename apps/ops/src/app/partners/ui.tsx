@@ -9,6 +9,7 @@ type PartnerForm = {
   categories: string;
   cities: string;
   trackingParam: string;
+  kind: Partner["kind"];
 };
 
 const emptyForm: PartnerForm = {
@@ -17,6 +18,7 @@ const emptyForm: PartnerForm = {
   categories: "",
   cities: "",
   trackingParam: "vp_click_id",
+  kind: "ota",
 };
 
 export function PartnerManager() {
@@ -64,6 +66,7 @@ export function PartnerManager() {
           categories: values(form.categories),
           cities: values(form.cities),
           trackingParam: form.trackingParam,
+          kind: form.kind,
         }),
       });
       const payload = (await response.json()) as { error?: string };
@@ -91,6 +94,7 @@ export function PartnerManager() {
       categories: partner.categories.join(", "),
       cities: partner.cities.join(", "),
       trackingParam: partner.trackingParam,
+      kind: partner.kind,
     });
     setMessage("Editing configuration only. Saving cannot activate this partner.");
   }
@@ -99,7 +103,9 @@ export function PartnerManager() {
     const confirmActivation =
       status !== "active" ||
       window.confirm(
-        `Activate ${partner.key}? Public redirects remain possible only for exact configured HTTPS hosts.`,
+        partner.kind === "ota"
+          ? `Activate ${partner.key}? Public redirects remain possible only for exact configured HTTPS hosts.`
+          : `Activate ${partner.key}? This activates an acquisition-source record only and cannot create a public redirect.`,
       );
     if (!confirmActivation) return;
     setState("saving");
@@ -174,6 +180,18 @@ export function PartnerManager() {
               required
               value={form.trackingParam}
             />
+          </label>
+          <label>
+            Partner type
+            <select
+              onChange={(event) =>
+                setForm({ ...form, kind: event.target.value as Partner["kind"] })
+              }
+              value={form.kind}
+            >
+              <option value="ota">OTA outbound destination</option>
+              <option value="creator">Creator acquisition source</option>
+            </select>
           </label>
           <div className="rowActions">
             <button disabled={state === "saving"} type="submit">
@@ -276,9 +294,19 @@ export function PartnerConfigurationCard({
           <dt>Tracking parameter</dt>
           <dd>{partner.trackingParam}</dd>
         </div>
+        <div>
+          <dt>Partner type</dt>
+          <dd>
+            {partner.kind === "creator" ? "Creator acquisition source" : "OTA outbound destination"}
+          </dd>
+        </div>
       </dl>
       {partner.status === "pending" ? (
-        <p className="partnerPreviewNotice">Preview only. No redirect or click can be produced.</p>
+        <p className="partnerPreviewNotice">
+          {partner.kind === "creator"
+            ? "Preview only. This creator source cannot redirect or produce an outbound click."
+            : "Preview only. No redirect or click can be produced."}
+        </p>
       ) : null}
       <div className="partnerStatusActions" aria-label={`Change ${partner.key} status`}>
         {partner.status !== "pending" ? (

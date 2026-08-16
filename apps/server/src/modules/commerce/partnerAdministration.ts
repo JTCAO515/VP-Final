@@ -9,6 +9,7 @@ const PartnerConfigurationFieldsSchema = z
     categories: z.array(z.string()),
     cities: z.array(z.string()),
     trackingParam: z.string(),
+    kind: z.enum(["ota", "creator"]).optional(),
   })
   .strict();
 
@@ -45,7 +46,8 @@ export const PartnerStatusChangeInputSchema = z
 export type PartnerConfiguration = Omit<Partner, "status">;
 export type PartnerConfigurationInput = z.input<typeof PartnerConfigurationInputSchema>;
 export type PartnerStatusChangeInput = z.infer<typeof PartnerStatusChangeInputSchema>;
-export type PartnerConfigurationField = "hosts" | "categories" | "cities" | "trackingParam";
+export type PartnerConfigurationField =
+  "hosts" | "categories" | "cities" | "trackingParam" | "kind";
 
 export type PartnerAuditInput =
   | {
@@ -236,6 +238,7 @@ function configurationOf(partner: Partner): PartnerConfiguration {
     categories: [...partner.categories],
     cities: [...partner.cities],
     trackingParam: partner.trackingParam,
+    kind: partner.kind,
   };
 }
 
@@ -244,6 +247,7 @@ const configurationFields: PartnerConfigurationField[] = [
   "categories",
   "cities",
   "trackingParam",
+  "kind",
 ];
 
 function changedConfigurationFields(

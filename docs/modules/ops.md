@@ -41,8 +41,9 @@ the public Web application and protected by server-side role checks.
 - `/costs`: Admin-only server-rendered Copilot cost summary for the latest 14 UTC days. It displays
   retained daily/model aggregates, cache and fallback rates, pseudonymous top-identity references,
   and reconciliation health without exposing conversation content or raw identity ids.
-- `/partners`: Admin-only partner registry and editor. Configuration saves preserve status; activation
-  is a separate confirmed action. Pending records are non-clickable previews.
+- `/partners`: Admin-only partner registry and editor. Configuration saves preserve status; the
+  explicit type selector defaults to `ota`. A `creator` record is an acquisition source only and is
+  never an outbound destination. Pending records are non-clickable previews.
 - `/api/partners` and `/api/partners/:partnerKey`: Admin-only list/detail/create/update/status APIs.
   They reuse the domain Partner schema and return truthful validation, conflict, missing, and
   unavailable states.
@@ -97,6 +98,9 @@ the public Web application and protected by server-side role checks.
   host values, target URLs, contacts, credentials, cookies, and signatures are excluded. No partner
   is activated by repository defaults, and this surface does not represent affiliate approval,
   booking, commission, payment, reconciliation, or revenue.
+- Creator referrals remain a contract-only private relation until a separately reviewed server
+  consumer exists. Operations may not turn a creator key, social profile, arbitrary query parameter,
+  or unverified partner record into a public landing source or redirect.
 - Payment operations remain unavailable to travelers. The private Ops Checkout composition may create a
   hosted provider session only when every server-side configuration gate resolves; a signed webhook
   consumer is still required before any task can become `paid`.

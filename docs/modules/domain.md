@@ -23,7 +23,7 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
 | `seo`           | Deterministic evidence-gated POI/intent matrix plus private presentation-only editorial override schema for later public page, metadata, and sitemap consumers; it emits gaps instead of thin pages      |
 | `task`          | Human Task input, lifecycle, transition commands, private outcome evidence, and non-status updates                                                                                                       |
 | `tools`         | Versioned local-only preparation pack for eight execution-tool categories; deterministic action ids, no real-time API, partner URL, or live availability claim                                           |
-| `commerce`      | Validated partner configuration, trusted-identity outbound records, active-only HTTPS host validation, and tracking construction                                                                         |
+| `commerce`      | Validated OTA/creator partner configuration, private creator-referral records, trusted-identity outbound records, active-only HTTPS host validation, and tracking construction                           |
 | `events`        | Telemetry event contract                                                                                                                                                                                 |
 | `observability` | Redacted Copilot turn, per-attempt cost, product-event action, and forbidden-persistence contracts                                                                                                       |
 | `errors`        | Shared typed error shapes                                                                                                                                                                                |
@@ -104,6 +104,12 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
 - Tools content is a versioned local preparation pack. It uses local action identifiers rather than
   URLs and contains no partner/booking promise, real-time rate, inventory, or external API call.
   A future consumer must separately prove an action target is available before exposing it.
+- Commerce distinguishes `ota` from `creator` partners. Only an active OTA partner can pass the
+  outbound HTTPS allowlist and receive a click id. A creator is an acquisition source only: its
+  private referral record resolves to a same-origin landing path and cannot carry a raw target URL,
+  query attribution, identity, contact, cookie, or credential. A later server-side consumer may use
+  it only after the configured creator record is active; it must never reinterpret a creator as an
+  outbound destination.
 - Arrival Pack is a separate export projection, not a Trip write path. It includes only first-day
   block title/time/status, current reviewed Chinese-address receipts, fixed Readiness output, and
   version timestamps. It deliberately excludes raw block addresses, descriptions, notes, metadata,

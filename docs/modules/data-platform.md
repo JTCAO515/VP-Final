@@ -37,7 +37,7 @@ the same migration, and validation also checks the issuer's current Ops permissi
 | Knowledge         | `pois`, `poi_facts`, `poi_fact_editorial_audit`, `knowledge_gaps`, `poi_commercial_links`, `seo_editorial_overrides`              |
 | Safety phrases    | `safe_phrases` (private operator-verified fixed-expression editorial records)                                                     |
 | VisePod Studio    | `visepod_device_bindings`, `visepod_binding_idempotency`, `visepod_provisioning_grants` (private assignment/replay/grant history) |
-| Commerce          | `partners`, `outbound_clicks`                                                                                                     |
+| Commerce          | `partners`, private `creator_referrals`, `outbound_clicks`                                                                        |
 | Telemetry         | `events`, `trust_funnel_daily`, private Phase 0 funnel/outbound/Human Help live views                                             |
 | Human operations  | `human_tasks`, `human_task_transitions`, `human_task_evidence`                                                                    |
 | Ops authorization | `ops_memberships`, `ops_audit_events`                                                                                             |
@@ -82,6 +82,12 @@ the same migration, and validation also checks the issuer's current Ops permissi
   writes and event append occur in one transaction; public share tokens are revocable read-only
   capabilities. See [ADR-0004](../adr/ADR-0004-identity-trip-ownership-security.md).
 - Partner config, outbound clicks, telemetry, Human Tasks, and internal aggregates are server-only.
+- `creator_referrals` is a private acquisition-attribution relation, not an outbound-link catalog.
+  It binds one safe same-origin landing path to one `partners.kind = 'creator'` record. Database
+  triggers reject OTA bindings and prevent a referred creator partner from being downgraded to OTA;
+  RLS and revoked Data API privileges keep its key, path, and partner mapping internal. It stores no
+  creator contact, traveler identity, raw query attribution, target URL, cookie, credential, or
+  signature. A later consumer must still require an active creator record before accepting the source.
 - Retained outbound clicks may carry one verified user id or one signed anonymous id, never both.
   These fields are derived by the server and are not accepted from redirect query parameters. The
   public gateway requires an active database partner and an exact HTTPS allowlisted host, then writes
