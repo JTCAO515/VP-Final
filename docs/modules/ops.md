@@ -150,7 +150,10 @@ make the fact public: only the later per-item review action may assign the real 
 Bulk import accepts only the six-city collection-template header. A `dry-run` reports every malformed
 row before any write. `commit` refuses a file with any validation/conflict error, creates POIs and
 facts transactionally, leaves all facts `draft`, preserves reviewer provenance in the private audit
-relation, and uses collection-row digest plus fact identity to make replay idempotent. `missing`,
+relation, and uses collection-row digest plus fact identity to make replay idempotent. A non-empty
+committed import returns one private `importBatchId` for its new audit rows; dry-runs, duplicate-only
+commits, and historic rows use `null` rather than claiming an inferred batch. The batch is operational
+grouping only, never a review or publication signal. `missing`,
 `conflict`, and `rejected` collection rows are reported as skipped rather than treated as evidence.
 
 SEO overrides are intentionally not an alternate knowledge store. The route accepts only the frozen

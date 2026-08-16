@@ -1,7 +1,7 @@
-import { createHash } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { sql } from "drizzle-orm";
 import type { Db } from "./client.js";
-import { poiFactEditorialAudit, poiFacts, pois } from "./schema.js";
+import { knowledgeImportBatches, poiFactEditorialAudit, poiFacts, pois } from "./schema.js";
 import {
   prepareKnowledgeFactImport,
   type KnowledgeImportIssue,
@@ -16,6 +16,8 @@ export class KnowledgeImportValidationError extends Error {
 }
 
 export type KnowledgeImportReport = {
+  // Null for dry-runs, rejected/duplicate-only commits, and historical imports that predate batches.
+  importBatchId: string | null;
   totalRows: number;
   readyRows: number;
   skippedRows: PreparedKnowledgeImport["skippedRows"];
@@ -52,6 +54,10 @@ export function createDbKnowledgeBulkImportService(db: Db): KnowledgeBulkImportS
         const state = await loadState(tx);
         const report = inspect(prepared, state);
         if (report.errors.length > 0) throw new KnowledgeImportValidationError(report);
+        if (report.createdFacts === 0) return report;
+
+        const importBatchId = randomUUID();
+        await tx.insert(knowledgeImportBatches).values({ id: importBatchId });
 
         const createdPoiKeys = new Set<string>();
         const mergedPoiKeys = new Set<string>();
@@ -115,6 +121,7 @@ export function createDbKnowledgeBulkImportService(db: Db): KnowledgeBulkImportS
 
           await tx.insert(poiFactEditorialAudit).values({
             factId: fact.id,
+            importBatchId,
             collectionRowId: row.collectionRowId,
             contentDigest: contentDigest(row),
             collectionStatus: row.collectionStatus,
@@ -133,6 +140,7 @@ export function createDbKnowledgeBulkImportService(db: Db): KnowledgeBulkImportS
 
         return {
           ...report,
+          importBatchId,
           createdPois: createdPoiKeys.size,
           mergedPois: mergedPoiKeys.size,
           createdFacts,
@@ -232,6 +240,7 @@ function inspect(prepared: PreparedKnowledgeImport, state: LoadedState): Knowled
   }
 
   return {
+    importBatchId: null,
     totalRows: prepared.totalRows,
     readyRows: prepared.readyRows.length,
     skippedRows: prepared.skippedRows,
@@ -277,6 +286,7 @@ function decideRow(
 
 function reportFor(prepared: PreparedKnowledgeImport): KnowledgeImportReport {
   return {
+    importBatchId: null,
     totalRows: prepared.totalRows,
     readyRows: prepared.readyRows.length,
     skippedRows: prepared.skippedRows,

@@ -2,7 +2,24 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(6);
+select plan(10);
+
+select ok(
+  (select relrowsecurity from pg_class where oid = 'public.knowledge_import_batches'::regclass),
+  'knowledge import batches keep row level security enabled'
+);
+
+select is(
+  has_table_privilege('anon', 'public.knowledge_import_batches', 'select'),
+  false,
+  'anon cannot read private import batches'
+);
+
+select is(
+  has_table_privilege('authenticated', 'public.knowledge_import_batches', 'insert'),
+  false,
+  'authenticated clients cannot create private import batches'
+);
 
 select ok(
   (select relrowsecurity from pg_class where oid = 'public.poi_fact_editorial_audit'::regclass),
@@ -48,14 +65,21 @@ values (
 );
 
 select lives_ok(
+  $$insert into public.knowledge_import_batches (id)
+    values ('51000000-0000-0000-0000-000000000099')$$,
+  'private import batch can be created by the server role'
+);
+
+select lives_ok(
   $$insert into public.poi_fact_editorial_audit (
     fact_id, collection_row_id, content_digest, collection_status, researcher, reviewer,
-    evidence_reviewed_at, review_notes
+    evidence_reviewed_at, review_notes, import_batch_id
   ) values (
     '51000000-0000-0000-0000-000000000010', 'bulk-import-row-1', repeat('a', 64),
-    'reviewed', 'researcher_1', 'reviewer_1', now(), 'Independent check completed.'
+    'reviewed', 'researcher_1', 'reviewer_1', now(), 'Independent check completed.',
+    '51000000-0000-0000-0000-000000000099'
   )$$,
-  'reviewed collection audit retains its private evidence review metadata'
+  'reviewed collection audit retains private evidence and an import batch reference'
 );
 
 select throws_ok(
