@@ -34,17 +34,9 @@ export async function POST(request: Request) {
   }
 
   try {
-    await authorization.authorizationService.recordAudit(authorization.access, {
-      action: "knowledge.poi.create.attempt",
-      targetType: "poi",
-      metadata: { fields: ["city", "category", "nameEn", "nameZh", "latitude", "longitude"] },
-    });
-    const poi = await getKnowledgeService().createPoi(parsed.data);
-    await authorization.authorizationService.recordAudit(authorization.access, {
-      action: "knowledge.poi.create.completed",
-      targetType: "poi",
-      targetId: poi.id,
-      metadata: { fields: ["city", "category", "nameEn", "nameZh", "latitude", "longitude"] },
+    const poi = await getKnowledgeService().createPoi({
+      ...parsed.data,
+      actorId: authorization.access.userId,
     });
     return applyOpsCookies(NextResponse.json(poi, { status: 201 }), authorization.cookieResponse);
   } catch {
@@ -61,13 +53,10 @@ export async function PATCH(request: Request) {
   }
 
   try {
-    await authorization.authorizationService.recordAudit(authorization.access, {
-      action: "knowledge.poi.update.attempt",
-      targetType: "poi",
-      targetId: parsed.data.id,
-      metadata: { fields: ["city", "category", "nameEn", "nameZh", "latitude", "longitude"] },
+    const poi = await getKnowledgeService().updatePoi({
+      ...parsed.data,
+      actorId: authorization.access.userId,
     });
-    const poi = await getKnowledgeService().updatePoi(parsed.data);
     if (!poi) return NextResponse.json({ error: "POI not found." }, { status: 404 });
     await authorization.authorizationService.recordAudit(authorization.access, {
       action: "knowledge.poi.update.completed",

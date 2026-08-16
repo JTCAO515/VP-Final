@@ -28,8 +28,8 @@ export type KnowledgeService = {
     includeDeprecated?: boolean;
     includeDrafts?: boolean;
   }): Promise<Poi[]>;
-  createPoi(input: PoiCreateInput): Promise<Poi>;
-  updatePoi(input: PoiUpdateInput): Promise<Poi | null>;
+  createPoi(input: PoiCreateInput & { actorId: string }): Promise<Poi>;
+  updatePoi(input: PoiUpdateInput & { actorId: string }): Promise<Poi | null>;
   createFact(input: {
     poiId: string;
     factType: string;
@@ -98,7 +98,8 @@ export function createInMemoryKnowledgeService(
         );
     },
     async createPoi(input) {
-      const parsed = PoiCreateInputSchema.parse(input);
+      const { actorId: _actorId, ...candidate } = input;
+      const parsed = PoiCreateInputSchema.parse(candidate);
       const poi = PoiSchema.parse({
         id: crypto.randomUUID(),
         city: parsed.city,
@@ -115,7 +116,8 @@ export function createInMemoryKnowledgeService(
       return poi;
     },
     async updatePoi(input) {
-      const parsed = PoiUpdateInputSchema.parse(input);
+      const { actorId: _actorId, ...candidate } = input;
+      const parsed = PoiUpdateInputSchema.parse(candidate);
       const existing = pois.find((poi) => poi.id === parsed.id);
       if (!existing) return null;
       const {

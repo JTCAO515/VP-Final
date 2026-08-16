@@ -160,9 +160,10 @@ Next.js runtimes rather than deployed as an independent service.
   compositions do not pretend a persistent import occurred.
 - KnowledgeService separately owns canonical POI identity writes for authorized Ops users. It accepts
   only the bounded Domain POI create/update contract, generates ids and owns source ids, and preserves
-  facts unchanged. Database writes return an honest missing result for an unknown id and store either
-  both coordinates or neither; source, review, and public eligibility remain exclusively fact-lifecycle
-  concerns.
+  facts unchanged. The verified Ops actor is passed separately from the Domain contract so each accepted
+  durable write atomically appends a content-free completed audit record. Database writes return an
+  honest missing result for an unknown id and store either both coordinates or neither; source, review,
+  and public eligibility remain exclusively fact-lifecycle concerns.
 - SEO editorial overrides are a separate private presentation relation, keyed by POI and frozen
   intent. Its durable and in-memory services expose only get/save/delete of bounded title, summary,
   and emphasis fields. The server/ops writer derives the current evidence-gated candidate before it

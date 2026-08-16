@@ -5,6 +5,7 @@ describe("createInMemoryKnowledgeService canonical POI writes", () => {
   it("creates and updates a POI without creating or reviewing a fact", async () => {
     const service = createInMemoryKnowledgeService([], []);
     const created = await service.createPoi({
+      actorId: "30000000-0000-4000-8000-000000000021",
       city: "Shanghai",
       category: "attraction",
       nameEn: "Yu Garden",
@@ -22,6 +23,7 @@ describe("createInMemoryKnowledgeService canonical POI writes", () => {
     });
 
     const updated = await service.updatePoi({
+      actorId: "30000000-0000-4000-8000-000000000021",
       id: created.id,
       city: "Shanghai",
       category: "attraction",

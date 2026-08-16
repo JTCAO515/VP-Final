@@ -25,37 +25,60 @@ export function createDbKnowledgeService(db: Db): KnowledgeService {
       return listPois(db, input);
     },
     async createPoi(input) {
-      const parsed = PoiCreateInputSchema.parse(input);
-      const [row] = await db
-        .insert(pois)
-        .values({
-          city: parsed.city,
-          category: parsed.category,
-          nameEn: parsed.nameEn,
-          nameZh: parsed.nameZh,
-          latitude: parsed.latitude === null ? null : String(parsed.latitude),
-          longitude: parsed.longitude === null ? null : String(parsed.longitude),
-          sourceIds: {},
-        })
-        .returning();
-      if (!row) throw new Error("POI insert failed");
+      const { actorId, ...candidate } = input;
+      const parsed = PoiCreateInputSchema.parse(candidate);
+      const row = await db.transaction(async (transaction) => {
+        const [created] = await transaction
+          .insert(pois)
+          .values({
+            city: parsed.city,
+            category: parsed.category,
+            nameEn: parsed.nameEn,
+            nameZh: parsed.nameZh,
+            latitude: parsed.latitude === null ? null : String(parsed.latitude),
+            longitude: parsed.longitude === null ? null : String(parsed.longitude),
+            sourceIds: {},
+          })
+          .returning();
+        if (!created) throw new Error("POI insert failed");
+        await transaction.insert(opsAuditEvents).values({
+          actorId,
+          action: "knowledge.poi.create.completed",
+          targetType: "poi",
+          targetId: created.id,
+          metadataJsonb: { fields: POI_WRITABLE_FIELD_NAMES },
+        });
+        return created;
+      });
       return rowToPoi(row);
     },
     async updatePoi(input) {
-      const parsed = PoiUpdateInputSchema.parse(input);
-      const [row] = await db
-        .update(pois)
-        .set({
-          city: parsed.city,
-          category: parsed.category,
-          nameEn: parsed.nameEn,
-          nameZh: parsed.nameZh,
-          latitude: parsed.latitude === null ? null : String(parsed.latitude),
-          longitude: parsed.longitude === null ? null : String(parsed.longitude),
-          updatedAt: new Date(),
-        })
-        .where(eq(pois.id, parsed.id))
-        .returning();
+      const { actorId, ...candidate } = input;
+      const parsed = PoiUpdateInputSchema.parse(candidate);
+      const row = await db.transaction(async (transaction) => {
+        const [updated] = await transaction
+          .update(pois)
+          .set({
+            city: parsed.city,
+            category: parsed.category,
+            nameEn: parsed.nameEn,
+            nameZh: parsed.nameZh,
+            latitude: parsed.latitude === null ? null : String(parsed.latitude),
+            longitude: parsed.longitude === null ? null : String(parsed.longitude),
+            updatedAt: new Date(),
+          })
+          .where(eq(pois.id, parsed.id))
+          .returning();
+        if (!updated) return null;
+        await transaction.insert(opsAuditEvents).values({
+          actorId,
+          action: "knowledge.poi.update.completed",
+          targetType: "poi",
+          targetId: updated.id,
+          metadataJsonb: { fields: POI_WRITABLE_FIELD_NAMES },
+        });
+        return updated;
+      });
       return row ? rowToPoi(row) : null;
     },
     async createFact(input) {
@@ -255,6 +278,15 @@ export function createDbKnowledgeService(db: Db): KnowledgeService {
     },
   };
 }
+
+const POI_WRITABLE_FIELD_NAMES = [
+  "city",
+  "category",
+  "nameEn",
+  "nameZh",
+  "latitude",
+  "longitude",
+] as const;
 
 async function listPois(
   db: Db,

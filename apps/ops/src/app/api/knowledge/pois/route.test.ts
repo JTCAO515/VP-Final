@@ -1,11 +1,10 @@
 import { NextResponse } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { authorize, createPoi, updatePoi, audit } = vi.hoisted(() => ({
+const { authorize, createPoi, updatePoi } = vi.hoisted(() => ({
   authorize: vi.fn(),
   createPoi: vi.fn(),
   updatePoi: vi.fn(),
-  audit: vi.fn(),
 }));
 
 vi.mock("../store", () => ({
@@ -38,7 +37,6 @@ describe("Ops knowledge POI write route", () => {
         role: "editor",
         permissions: ["knowledge.read", "knowledge.write"],
       },
-      authorizationService: { recordAudit: audit },
       cookieResponse: new Response(),
     });
     createPoi.mockResolvedValue({ id: "30000000-0000-4000-8000-000000000001", ...fields });
@@ -51,7 +49,6 @@ describe("Ops knowledge POI write route", () => {
 
     expect(response.status).toBe(403);
     expect(createPoi).not.toHaveBeenCalled();
-    expect(audit).not.toHaveBeenCalled();
   });
 
   it("rejects non-canonical create fields", async () => {
@@ -59,23 +56,16 @@ describe("Ops knowledge POI write route", () => {
 
     expect(response.status).toBe(400);
     expect(createPoi).not.toHaveBeenCalled();
-    expect(audit).not.toHaveBeenCalled();
   });
 
-  it("uses the knowledge.write route to create a canonical POI and audits field names only", async () => {
+  it("uses the server-derived knowledge.write actor to create a canonical POI", async () => {
     const response = await POST(jsonRequest(fields));
 
     expect(response.status).toBe(201);
-    expect(createPoi).toHaveBeenCalledWith(fields);
-    expect(audit).toHaveBeenCalledWith(
-      expect.objectContaining({ userId: "30000000-0000-4000-8000-000000000021" }),
-      expect.objectContaining({
-        action: "knowledge.poi.create.attempt",
-        metadata: { fields: ["city", "category", "nameEn", "nameZh", "latitude", "longitude"] },
-      }),
-    );
-    expect(JSON.stringify(audit.mock.calls)).not.toContain("Yu Garden");
-    expect(JSON.stringify(audit.mock.calls)).not.toContain("豫园");
+    expect(createPoi).toHaveBeenCalledWith({
+      ...fields,
+      actorId: "30000000-0000-4000-8000-000000000021",
+    });
   });
 
   it("rejects a partial coordinate pair before any update write", async () => {

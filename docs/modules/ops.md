@@ -133,8 +133,10 @@ The review action derives reviewer identity from authenticated Ops access, appli
 v1 cadence, and cannot accept a client-authored reviewer or an expiry beyond the policy maximum.
 
 Canonical POI create and update use the same verified `knowledge.write` route as fact mutations, with
-authorization before any write and bounded audit metadata containing field names only. Editors can set
-English and optional Chinese names, city, category, and an all-or-nothing latitude/longitude pair.
+authorization before any write. The route derives the actor only from that verified access and passes it
+to the durable service; a successful POI write and its bounded completed-audit record commit together.
+Audit metadata contains field names only. Editors can set English and optional Chinese names, city,
+category, and an all-or-nothing latitude/longitude pair.
 The server owns ids and `source_ids`; this workflow cannot create a fact, source claim, review state,
 or public eligibility. A missing or partial coordinate pair is rejected instead of being interpreted
 as a usable location.
