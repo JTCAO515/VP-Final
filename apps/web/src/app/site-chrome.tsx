@@ -1,3 +1,8 @@
+"use client";
+
+import { LanguageSelector } from "../i18n/language-selector";
+import { useLocale } from "../i18n/locale-provider";
+
 type SiteSection = "copilot" | "explore" | "guides" | "rescue" | "help" | "account";
 
 type SiteHeaderProps = Readonly<{
@@ -5,22 +10,30 @@ type SiteHeaderProps = Readonly<{
   context?: string;
 }>;
 
-const NAV_ITEMS: ReadonlyArray<Readonly<{ section: SiteSection; href: string; label: string }>> = [
-  { section: "copilot", href: "/visepanda", label: "VisePanda" },
-  { section: "explore", href: "/explore", label: "Explore" },
-  { section: "guides", href: "/guides/payment", label: "Guides" },
-  { section: "rescue", href: "/rescue", label: "Rescue" },
-  { section: "help", href: "/human-help", label: "Human Help" },
+const NAV_ITEMS: ReadonlyArray<
+  Readonly<{
+    section: SiteSection;
+    href: string;
+    labelKey: "nav.visepanda" | "nav.explore" | "nav.guides" | "nav.rescue" | "nav.humanHelp";
+  }>
+> = [
+  { section: "copilot", href: "/visepanda", labelKey: "nav.visepanda" },
+  { section: "explore", href: "/explore", labelKey: "nav.explore" },
+  { section: "guides", href: "/guides/payment", labelKey: "nav.guides" },
+  { section: "rescue", href: "/rescue", labelKey: "nav.rescue" },
+  { section: "help", href: "/human-help", labelKey: "nav.humanHelp" },
 ];
 
-export function SiteHeader({ active, context = "China Travel AI Copilot" }: SiteHeaderProps) {
+export function SiteHeader({ active, context }: SiteHeaderProps) {
+  const { t } = useLocale();
+
   return (
     <>
       <a className="skipLink" href="#page-content">
-        Skip to main content
+        {t("skip.main")}
       </a>
       <header className="siteHeader">
-        <a className="brandMark" href="/" aria-label="VisePanda home">
+        <a className="brandMark" href="/" aria-label={t("brand.home")}>
           <span aria-hidden="true">V</span>
           <b>VisePanda</b>
         </a>
@@ -31,21 +44,22 @@ export function SiteHeader({ active, context = "China Travel AI Copilot" }: Site
               href={item.href}
               key={item.section}
             >
-              {item.label}
+              {t(item.labelKey)}
             </a>
           ))}
         </nav>
         <div className="siteUtilities">
           <p className="siteContext">
             <span aria-hidden="true" />
-            {context}
+            {context ?? t("context.default")}
           </p>
+          <LanguageSelector />
           <a
             aria-current={active === "account" ? "page" : undefined}
             className="siteNavLink siteAccountLink"
             href="/account"
           >
-            Account
+            {t("nav.account")}
           </a>
         </div>
       </header>
@@ -55,30 +69,32 @@ export function SiteHeader({ active, context = "China Travel AI Copilot" }: Site
 }
 
 export function SiteFooter() {
+  const { t } = useLocale();
+
   return (
     <footer className="siteFooter">
-      <a className="brandMark" href="/" aria-label="VisePanda home">
+      <a className="brandMark" href="/" aria-label={t("brand.home")}>
         <span aria-hidden="true">V</span>
         <b>VisePanda</b>
       </a>
-      <p>Practical guidance for confident travel in China.</p>
+      <p>{t("footer.description")}</p>
       <div className="siteFooterLinks">
-        <nav aria-label="Product links">
+        <nav aria-label={t("nav.product")}>
           <a href="/visepanda">VisePanda</a>
-          <a href="/readiness">Readiness check</a>
-          <a href="/arrival-pack">Arrival Pack</a>
-          <a href="/explore">Explore</a>
-          <a href="/guides/payment">Guides</a>
-          <a href="/rescue">Rescue</a>
-          <a href="/human-help">Human Help</a>
-          <a href="/account">Account</a>
+          <a href="/readiness">{t("footer.readiness")}</a>
+          <a href="/arrival-pack">{t("footer.arrivalPack")}</a>
+          <a href="/explore">{t("nav.explore")}</a>
+          <a href="/guides/payment">{t("nav.guides")}</a>
+          <a href="/rescue">{t("nav.rescue")}</a>
+          <a href="/human-help">{t("nav.humanHelp")}</a>
+          <a href="/account">{t("nav.account")}</a>
         </nav>
-        <nav aria-label="Trust and legal links">
-          <a href="/privacy">Privacy</a>
-          <a href="/terms">Terms</a>
-          <a href="/affiliate-disclosure">Affiliate disclosure</a>
-          <a href="/human-help-disclaimer">Human Help limits</a>
-          <a href="/emergency-disclaimer">Emergency</a>
+        <nav aria-label={t("nav.legal")}>
+          <a href="/privacy">{t("footer.privacy")}</a>
+          <a href="/terms">{t("footer.terms")}</a>
+          <a href="/affiliate-disclosure">{t("footer.affiliate")}</a>
+          <a href="/human-help-disclaimer">{t("footer.humanHelpLimits")}</a>
+          <a href="/emergency-disclaimer">{t("footer.emergency")}</a>
         </nav>
       </div>
     </footer>

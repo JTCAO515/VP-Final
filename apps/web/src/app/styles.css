@@ -4177,6 +4177,56 @@ summary:active {
   min-width: 0;
 }
 
+.languageSelector {
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+
+.languageSelector select {
+  appearance: none;
+  background:
+    linear-gradient(45deg, transparent 50%, var(--muted) 50%) calc(100% - 14px) 50% / 5px 5px,
+    linear-gradient(135deg, var(--muted) 50%, transparent 50%) calc(100% - 9px) 50% / 5px 5px,
+    var(--surface);
+  background-repeat: no-repeat;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  color: var(--ink-soft);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 720;
+  min-height: 38px;
+  padding: 0 28px 0 10px;
+}
+
+.languageSelector select:hover {
+  border-color: var(--vp-line-strong);
+  color: var(--ink);
+}
+
+.srOnly {
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+  clip: rect(0, 0, 0, 0);
+}
+
+html[dir="rtl"] .siteHeader {
+  direction: rtl;
+}
+
+html[dir="rtl"] .siteContext {
+  justify-content: flex-start;
+}
+
+html[dir="rtl"] .siteUtilities {
+  justify-content: flex-start;
+}
+
 .siteAccountLink {
   align-items: center;
   border-radius: 9px;
