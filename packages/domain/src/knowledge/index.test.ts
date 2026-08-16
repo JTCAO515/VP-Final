@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   PoiFactEvidenceSummarySchema,
   PoiCreateInputSchema,
+  PoiLocalPresentationFactValueSchema,
   PoiLocalPresentationFactSchema,
   PoiSchema,
   PoiUpdateInputSchema,
@@ -114,6 +115,14 @@ describe("canonical POI write inputs", () => {
   it("rejects invalid coordinates and empty canonical names", () => {
     expect(() => PoiCreateInputSchema.parse({ ...fields, latitude: 91 })).toThrow();
     expect(() => PoiCreateInputSchema.parse({ ...fields, nameEn: " " })).toThrow();
+  });
+});
+
+describe("local-presentation fact values", () => {
+  it("accepts only a bounded text value", () => {
+    expect(PoiLocalPresentationFactValueSchema.parse({ text: "豫园" })).toEqual({ text: "豫园" });
+    expect(() => PoiLocalPresentationFactValueSchema.parse({ label: "豫园" })).toThrow();
+    expect(() => PoiLocalPresentationFactValueSchema.parse({ text: "x".repeat(501) })).toThrow();
   });
 });
 

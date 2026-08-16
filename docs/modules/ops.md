@@ -141,6 +141,12 @@ The server owns ids and `source_ids`; this workflow cannot create a fact, source
 or public eligibility. A missing or partial coordinate pair is rejected instead of being interpreted
 as a usable location.
 
+The five local-display fact types use a dedicated authoring form rather than the generic `{ label }`
+editor shape. Each persists exactly one bounded `{ text }` value plus its own source class, locator,
+evidence summary, and confidence; it remains a visible `draft` with no `verifiedAt`. The Chinese-address
+field carries an explicit warning because it may later be shown to a stranger. Saving or editing cannot
+make the fact public: only the later per-item review action may assign the real verification time.
+
 Bulk import accepts only the six-city collection-template header. A `dry-run` reports every malformed
 row before any write. `commit` refuses a file with any validation/conflict error, creates POIs and
 facts transactionally, leaves all facts `draft`, preserves reviewer provenance in the private audit

@@ -173,7 +173,10 @@ Next.js runtimes rather than deployed as an independent service.
 - Local-facing Chinese POI values use the durable `poi_facts` lifecycle rather than promoting legacy
   `pois.name_zh` or `pois.address` strings. The Drizzle mapping mirrors the database constraint for
   five bounded local-presentation fact types; current eligible values are derived only in the domain
-  package, while later display guards own any user-facing fallback behavior.
+  package, while later display guards own any user-facing fallback behavior. Both create and update
+  paths parse those types as a strict `{ text }` value with a 500-character maximum, so a generic
+  `{ label }` write cannot silently remove the local-display meaning. Their source provenance remains
+  draft-only until the separate review transition writes `verifiedAt`.
 - Copilot knowledge retrieval resolves a unique POI or city through the domain's deterministic lexical
   resolver before it filters eligible facts. A known Chinese name, pinyin, approved alias, or bounded
   one-character Latin typo may resolve a candidate; unmatched and cross-city ambiguous references return

@@ -56,9 +56,22 @@ export const PoiLocalPresentationFactTypeSchema = z.enum([
   "local_address_visibility_note",
 ]);
 
-export const PoiLocalPresentationFactValueSchema = z.object({
-  text: z.string().trim().min(1).max(500),
-});
+export const PoiLocalPresentationFactValueSchema = z
+  .object({
+    text: z.string().trim().min(1).max(500),
+  })
+  .strict();
+
+// These values are shown to a real local person. They cannot silently fall back to the generic
+// `{ label }` fact shape, which would make a draft look editable while removing its typed meaning.
+export function parsePoiFactWriteValue(
+  factType: string,
+  value: Record<string, unknown>,
+): Record<string, unknown> {
+  return PoiLocalPresentationFactTypeSchema.safeParse(factType).success
+    ? PoiLocalPresentationFactValueSchema.parse(value)
+    : value;
+}
 
 const REVIEW_POLICY_DAYS = {
   "volatile-30d-v1": 30,

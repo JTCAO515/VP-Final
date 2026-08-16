@@ -5,6 +5,7 @@ import {
   isEligiblePoiFact,
   KnowledgeGapSchema,
   PoiFactEvidenceSchema,
+  parsePoiFactWriteValue,
   PoiCreateInputSchema,
   PoiSchema,
   PoiUpdateInputSchema,
@@ -139,7 +140,8 @@ export function createInMemoryKnowledgeService(
       return updated;
     },
     async createFact(input) {
-      assertWritableFact(input);
+      const value = parsePoiFactWriteValue(input.factType, input.value);
+      assertWritableFact({ ...input, value });
       const evidence = PoiFactEvidenceSchema.parse(input);
       const poi = pois.find((candidate) => candidate.id === input.poiId);
       if (!poi) throw new Error("POI not found");
@@ -148,7 +150,7 @@ export function createInMemoryKnowledgeService(
         id: crypto.randomUUID(),
         poiId: input.poiId,
         factType: input.factType,
-        value: input.value,
+        value,
         confidence: input.confidence,
         source: evidence.sourceLocator,
         ...evidence,
@@ -169,17 +171,18 @@ export function createInMemoryKnowledgeService(
     async updateFact(input) {
       const existing = findFact(pois, input.factId);
       if (!existing) throw new Error("Fact not found");
+      const value = parsePoiFactWriteValue(existing.factType, input.value);
       const evidence = PoiFactEvidenceSchema.parse({
         sourceClass: input.sourceClass ?? existing.sourceClass,
         sourceLocator: input.sourceLocator ?? existing.sourceLocator,
         evidenceSummary: input.evidenceSummary ?? existing.evidenceSummary,
       });
       assertWritableFact({
-        value: input.value,
+        value,
         confidence: input.confidence ?? existing.confidence,
         ...evidence,
       });
-      pois = updatePoiFact(pois, input.factId, input.value, {
+      pois = updatePoiFact(pois, input.factId, value, {
         ...(input.confidence !== undefined ? { confidence: input.confidence } : {}),
         source: evidence.sourceLocator,
         ...evidence,

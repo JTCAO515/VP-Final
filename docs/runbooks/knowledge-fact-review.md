@@ -17,6 +17,12 @@ Explore, and SEO, so provenance and freshness are release-critical.
 3. Record the stable source URL/internal locator, a maximum-240-character summary of exactly what it
    supports, confidence, and `expiresAt`. Do not include email, phone, prompts, or private transcripts.
    The system records `ingestedAt`; do not copy that value into `verifiedAt`.
+   For `local_name_zh`, `local_address_zh`, `local_address_district`,
+   `local_address_nearest_metro_exit`, and `local_address_visibility_note`, use the dedicated
+   Show-to-Local form. Enter one independently sourced `{ text }` value of at most 500 characters for
+   each fact; do not combine an address, district, metro exit, and visibility instruction into one row.
+   Treat `local_address_zh` as real-world safety data because it may be shown to a stranger. Saving the
+   form creates only a draft and cannot set `verifiedAt`.
 4. Save the fact as `draft`. Inspect the saved value and evidence, then use the separate review action.
    That action records the real `verifiedAt`, authenticated Ops reviewer privately, versioned cadence,
    bounded expiry, and append-only completion audit in one transaction. User reports, model output,
