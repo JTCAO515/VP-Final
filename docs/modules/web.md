@@ -17,6 +17,11 @@ the registered guide dataset; creating that index does not create, validate, or 
 `/favicon.ico` is a cacheable generated brand image route, so public browser icon requests do not
 fall through to the not-found response.
 
+The sitemap publishes static public routes without a fabricated `lastModified` value. Evidence-gated
+POI intent pages retain their own latest reviewed-fact timestamp from the domain SEO matrix. Any
+future static guide freshness signal must come from a registered editorial source, not a build date
+or a shared placeholder timestamp.
+
 The Web runtime applies a baseline response-header policy to every route. It disables the Next.js
 implementation header, blocks framing and plugin objects, narrows browser capabilities, protects
 referrer handling, and limits executable resources to the same origin. Next.js currently requires
