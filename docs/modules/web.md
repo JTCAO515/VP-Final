@@ -435,9 +435,11 @@ and truthful; retries are offered only for retryable jobs within the server-owne
 
 ## Locale Coverage
 
-English is the default public interface language. A traveler may choose Chinese, Spanish, Arabic,
-or Russian through the shared header selector; the same-origin `visepanda_locale` preference cookie
- persists the UI choice and Arabic applies RTL document direction. Shared route contexts, Account,
+English is the default public interface language. The server does not read the locale preference, so
+public HTML does not become private or personalized merely because a browser chose a UI language. A
+traveler may choose Chinese, Spanish, Arabic, or Russian through the shared header selector; after
+hydration the browser restores the allowlisted same-origin `visepanda_locale` preference cookie and
+Arabic applies RTL document direction. Shared route contexts, Account,
  Explore, Arrival Pack, Readiness, Rescue, Human Help, and public-guide navigation translate their
  authored UI chrome, including controls, derived scene/fact-kind labels, empty states, and
  illustrative preview copy. Rescue category identifiers, Human Help task values, telemetry event

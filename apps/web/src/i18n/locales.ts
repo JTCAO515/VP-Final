@@ -26,6 +26,21 @@ export function parseWebLocale(value: string | null | undefined): WebLocale {
   return WEB_LOCALES.includes(value as WebLocale) ? (value as WebLocale) : DEFAULT_WEB_LOCALE;
 }
 
+export function parseWebLocaleCookie(cookieHeader: string): WebLocale {
+  const entry = cookieHeader
+    .split(";")
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(`${WEB_LOCALE_COOKIE}=`));
+
+  if (!entry) return DEFAULT_WEB_LOCALE;
+
+  try {
+    return parseWebLocale(decodeURIComponent(entry.slice(WEB_LOCALE_COOKIE.length + 1)));
+  } catch {
+    return DEFAULT_WEB_LOCALE;
+  }
+}
+
 export function localeDirection(locale: WebLocale): LocaleDirection {
   return WEB_LOCALE_OPTIONS.find((option) => option.code === locale)?.direction ?? "ltr";
 }
