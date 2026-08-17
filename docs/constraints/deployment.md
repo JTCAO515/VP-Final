@@ -82,7 +82,9 @@ Status: active
   listed explicitly in the CI `Database contracts` job before their PR can claim durable verification.
   A skipped test in the general test job is not database evidence. The outbound Commerce adapter is
   included in this explicit database suite because redirect authorization depends on an authoritative
-  partner lookup and ledger commit.
+  partner lookup and ledger commit. The Content AI walking-skeleton service is also included because
+  its one-operation publication requires an authoritative version check and an audit write in the same
+  transaction.
 - Partner administration MUST use the durable database adapter in preview, staging, and production;
   no local-demo or process-memory fallback is allowed. Its explicit database integration suite MUST
   remain in the `Database contracts` job because configuration/audit atomicity and rollback cannot be
