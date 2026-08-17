@@ -115,7 +115,7 @@ existing safe trace pattern rather than raw content logging.
 
 ## Consequences
 
-- #510 first validates one existing test POI, one metro-exit operation, deterministic Change Set,
+- #511 first validates one existing test POI, one metro-exit operation, deterministic Change Set,
   Diff, human confirmation, atomic publish, audit, and conflict response.
 - #498 expands domain types only after the walking skeleton yields observed interface feedback.
 - #499 creates durable draft, RLS, retention, append-only audit, and publication boundaries.
@@ -129,4 +129,3 @@ Disable the Content AI route or remove its server-only configuration. Preserve d
 within retention, cancel pending Change Sets, and keep published facts governed by their ordinary
 review lifecycle. A failure tightens to unavailable, unknown, or private draft; it must not fall back
 to model-authored facts, partial publish, browser-side authority, or public media delivery.
-

@@ -73,8 +73,9 @@ transaction to publish both the fact and its audit record. The fixture route is 
 test runtime, so it cannot create hardcoded travel content in production.
 
 The slice confirms that fact-level optimistic locking exists, but POIs themselves do not currently carry
-a version. CONTENT-AI-02 MUST decide the generic POI version/concurrency contract before it promises
-POI-field operations. It also confirms that the current fixed Ops roles have no Contributor role; the
+a version. CONTENT-AI-02 therefore requires every generic operation to declare a positive expected version,
+but leaves POI-field publication unavailable until a later durable POI-version decision. It also confirms
+that the current fixed Ops roles have no Contributor role; the
 full draft-ownership/RLS mapping remains a CONTENT-AI-03 decision rather than an implicit role change in
 this probe.
 
