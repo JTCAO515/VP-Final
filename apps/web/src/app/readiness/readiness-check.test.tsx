@@ -7,6 +7,9 @@ import {
   statusLabel,
   summarizeReadinessItems,
 } from "./readiness-check";
+import { LocaleProvider } from "../../i18n/locale-provider";
+import { WEB_LOCALE_OPTIONS } from "../../i18n/locales";
+import { messageFor } from "../../i18n/messages";
 
 describe("China Readiness Check", () => {
   it("does not create a percentage score or commercial CTA", () => {
@@ -41,6 +44,23 @@ describe("China Readiness Check", () => {
         { status: "unknown" },
       ]),
     ).toEqual({ ready: 1, actionRequired: 1, unknown: 2 });
+  });
+
+  it("renders every authored Readiness chrome label from the selected locale catalog", () => {
+    for (const option of WEB_LOCALE_OPTIONS) {
+      const html = renderWithReact(
+        React.createElement(LocaleProvider, {
+          initialLocale: option.code,
+          children: React.createElement(ReadinessCheck),
+        }),
+      );
+
+      expect(html).toContain(messageFor(option.code, "readiness.lead"));
+      expect(html).toContain(messageFor(option.code, "readiness.fixedChecks"));
+      expect(html).toContain(messageFor(option.code, "readiness.answer.confirmed"));
+      expect(html).toContain(messageFor(option.code, "readiness.result.explainable"));
+      expect(html).toContain(messageFor(option.code, "readiness.saveLead"));
+    }
   });
 });
 
