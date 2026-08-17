@@ -8,6 +8,7 @@ import type {
   HumanTaskStatus,
   HumanTaskTransition,
 } from "@visepanda/domain";
+import { displayHumanTaskEvidenceKind, displayLifecycleValue } from "../../../lib/presentation";
 
 type TaskDetailResponse = {
   ok: true;
@@ -43,9 +44,7 @@ export function HumanTaskDetail({ taskId }: Readonly<{ taskId: string }>) {
       const response = await fetch(`/api/tasks/${encodeURIComponent(taskId)}`);
       const payload = (await response.json()) as TaskDetailResponse | { error?: string };
       if (!response.ok || !("task" in payload)) {
-        throw new Error(
-          ("error" in payload ? payload.error : undefined) ?? "Human Task detail is unavailable.",
-        );
+        throw new Error("人工协助任务详情暂不可用。");
       }
       setDetail(payload);
       setNote(payload.task.operator_note ?? "");
@@ -53,9 +52,7 @@ export function HumanTaskDetail({ taskId }: Readonly<{ taskId: string }>) {
       setGapEvidenceId(payload.evidence[0]?.id ?? "");
       setLoadState("ready");
     } catch (loadError) {
-      setError(
-        loadError instanceof Error ? loadError.message : "Human Task detail is unavailable.",
-      );
+      setError("人工协助任务详情暂不可用。");
       setLoadState("error");
     }
   }, [taskId]);
@@ -80,7 +77,7 @@ export function HumanTaskDetail({ taskId }: Readonly<{ taskId: string }>) {
         error?: string;
       };
       if (!response.ok || !payload.updated_at) {
-        throw new Error(payload.error ?? "Note was not saved.");
+        throw new Error("备注未保存。");
       }
       const updatedAt = payload.updated_at;
       setDetail((current) =>
@@ -98,7 +95,7 @@ export function HumanTaskDetail({ taskId }: Readonly<{ taskId: string }>) {
       setNote(payload.note ?? "");
       setNoteState("idle");
     } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : "Note was not saved.");
+      setError("备注未保存，请稍后重试。");
       setNoteState("error");
     }
   }
@@ -115,14 +112,12 @@ export function HumanTaskDetail({ taskId }: Readonly<{ taskId: string }>) {
         body: JSON.stringify({ to_status: selectedStatus, reason }),
       });
       const payload = (await response.json()) as { error?: string };
-      if (!response.ok) throw new Error(payload.error ?? "Task status was not changed.");
+      if (!response.ok) throw new Error("任务状态未更改。");
       setReason("");
       setTransitionState("idle");
       await loadTask();
     } catch (transitionError) {
-      setError(
-        transitionError instanceof Error ? transitionError.message : "Task status was not changed.",
-      );
+      setError("任务状态未更改，请稍后重试。");
       setTransitionState("error");
     }
   }
@@ -138,12 +133,12 @@ export function HumanTaskDetail({ taskId }: Readonly<{ taskId: string }>) {
         body: JSON.stringify({ kind: evidenceKind, content: evidenceContent }),
       });
       const payload = (await response.json()) as { error?: string };
-      if (!response.ok) throw new Error(payload.error ?? "Evidence was not saved.");
+      if (!response.ok) throw new Error("证据未保存。");
       setEvidenceContent("");
       setNoteState("idle");
       await loadTask();
     } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : "Evidence was not saved.");
+      setError("证据未保存，请稍后重试。");
       setNoteState("error");
     }
   }
@@ -164,27 +159,25 @@ export function HumanTaskDetail({ taskId }: Readonly<{ taskId: string }>) {
         },
       );
       const payload = (await response.json()) as { error?: string };
-      if (!response.ok) throw new Error(payload.error ?? "Gap proposal was not created.");
+      if (!response.ok) throw new Error("知识缺口草稿未创建。");
       setGapPattern("");
-      setGapConfirmation("Open knowledge-gap draft created for editorial review.");
+      setGapConfirmation("已创建待处理知识缺口草稿，等待编辑审核。 ");
       setTransitionState("idle");
     } catch (proposalError) {
-      setError(
-        proposalError instanceof Error ? proposalError.message : "Gap proposal was not created.",
-      );
+      setError("知识缺口草稿未创建，请稍后重试。");
       setTransitionState("error");
     }
   }
 
   if (loadState === "loading") {
-    return <section className="panel empty">Loading task detail...</section>;
+    return <section className="panel empty">正在加载任务详情…</section>;
   }
   if (loadState === "error" || !detail) {
     return (
       <section className="panel empty" role="alert">
-        <p>{error ?? "Human Task detail is unavailable."}</p>
+        <p>{error ?? "人工协助任务详情暂不可用。"}</p>
         <button onClick={() => void loadTask()} type="button">
-          Try again
+          重试
         </button>
       </section>
     );
@@ -202,11 +195,11 @@ export function HumanTaskDetail({ taskId }: Readonly<{ taskId: string }>) {
     <div className="taskDetail">
       <section className="heading taskHeading">
         <div>
-          <p className="eyebrow">Controlled preview task</p>
-          <h1>{task.city} request</h1>
+          <p className="eyebrow">受控预览任务</p>
+          <h1>{task.city} 请求</h1>
           <p className="muted">{task.id}</p>
         </div>
-        <span className="pill">{task.status}</span>
+        <span className="pill">{displayLifecycleValue(task.status)}</span>
       </section>
 
       {error ? (
@@ -217,18 +210,18 @@ export function HumanTaskDetail({ taskId }: Readonly<{ taskId: string }>) {
 
       <div className="taskDetailGrid">
         <section className="panel taskRequest" aria-labelledby="request-heading">
-          <h2 id="request-heading">Traveler request</h2>
+          <h2 id="request-heading">旅行者请求</h2>
           <dl>
             <div>
-              <dt>Type</dt>
+              <dt>类型</dt>
               <dd>{task.kind}</dd>
             </div>
             <div>
-              <dt>Contact</dt>
+              <dt>联系方式</dt>
               <dd>{task.contact}</dd>
             </div>
             <div>
-              <dt>Submitted</dt>
+              <dt>提交时间</dt>
               <dd>{new Date(task.created_at).toLocaleString()}</dd>
             </div>
           </dl>
@@ -236,39 +229,38 @@ export function HumanTaskDetail({ taskId }: Readonly<{ taskId: string }>) {
         </section>
 
         <section className="panel taskPolicy" aria-labelledby="policy-heading">
-          <h2 id="policy-heading">Preview boundary</h2>
+          <h2 id="policy-heading">预览边界</h2>
           <p>
-            Triage this request for scope, safety, capacity, and sufficient information. Do not
-            promise fulfilment, quote, payment, booking, emergency, medical, legal, or account
-            access support.
+            请从范围、安全性、服务能力和信息充分性方面分诊此请求。不得承诺履约、报价、支付、预订、紧急、医疗、法律或账号访问支持。
           </p>
         </section>
 
         <form className="panel taskForm" onSubmit={(event) => void saveNote(event)}>
-          <h2>Internal operator note</h2>
-          <label htmlFor="operator-note">Visible only to authorized Ops users</label>
+          <h2>内部运营备注</h2>
+          <label htmlFor="operator-note">仅授权的运营用户可见</label>
           <textarea
             id="operator-note"
             maxLength={2000}
             onChange={(event) => setNote(event.target.value)}
-            placeholder="Record only the minimum information needed for triage."
+            placeholder="仅记录分诊所需的最少信息。"
             value={note}
           />
           <button disabled={noteState === "saving"} type="submit">
-            {noteState === "saving" ? "Saving..." : "Save note"}
+            {noteState === "saving" ? "保存中…" : "保存备注"}
           </button>
         </form>
 
         <section className="panel taskHistory" aria-labelledby="history-heading">
-          <h2 id="history-heading">Status history</h2>
+          <h2 id="history-heading">状态历史</h2>
           {transitions.length === 0 ? (
-            <p className="muted">No status changes recorded.</p>
+            <p className="muted">尚未记录状态变更。</p>
           ) : (
             <ol>
               {transitions.map((transition) => (
                 <li key={transition.id}>
                   <strong>
-                    {transition.from_status} to {transition.to_status}
+                    {displayLifecycleValue(transition.from_status)} 至{" "}
+                    {displayLifecycleValue(transition.to_status)}
                   </strong>
                   <span>{transition.reason}</span>
                   <small>{new Date(transition.created_at).toLocaleString()}</small>
@@ -279,14 +271,14 @@ export function HumanTaskDetail({ taskId }: Readonly<{ taskId: string }>) {
         </section>
 
         <section className="panel taskHistory" aria-labelledby="evidence-heading">
-          <h2 id="evidence-heading">Private outcome evidence</h2>
+          <h2 id="evidence-heading">私有结果证据</h2>
           {evidence.length === 0 ? (
-            <p className="muted">No private evidence recorded.</p>
+            <p className="muted">尚未记录私有证据。</p>
           ) : (
             <ol>
               {evidence.map((item) => (
                 <li key={item.id}>
-                  <strong>{item.kind.replace("_", " ")}</strong>
+                  <strong>{displayHumanTaskEvidenceKind(item.kind)}</strong>
                   <span>{item.content}</span>
                   <small>{new Date(item.created_at).toLocaleString()}</small>
                 </li>
@@ -296,19 +288,19 @@ export function HumanTaskDetail({ taskId }: Readonly<{ taskId: string }>) {
         </section>
 
         <form className="panel taskForm" onSubmit={(event) => void appendEvidence(event)}>
-          <h2>Append private evidence</h2>
+          <h2>追加私有证据</h2>
           {evidenceWritable ? (
             <>
-              <label htmlFor="evidence-kind">Evidence type</label>
+              <label htmlFor="evidence-kind">证据类型</label>
               <select
                 id="evidence-kind"
                 onChange={(event) => setEvidenceKind(event.target.value as HumanTaskEvidenceKind)}
                 value={evidenceKind}
               >
-                <option value="outcome">Outcome</option>
-                <option value="transcript_excerpt">Redacted transcript excerpt</option>
+                <option value="outcome">结果</option>
+                <option value="transcript_excerpt">已脱敏的对话摘录</option>
               </select>
-              <label htmlFor="evidence-content">Minimum necessary, already redacted content</label>
+              <label htmlFor="evidence-content">最小必要且已脱敏的内容</label>
               <textarea
                 id="evidence-content"
                 maxLength={4000}
@@ -318,21 +310,21 @@ export function HumanTaskDetail({ taskId }: Readonly<{ taskId: string }>) {
                 value={evidenceContent}
               />
               <button disabled={noteState === "saving"} type="submit">
-                {noteState === "saving" ? "Saving..." : "Append evidence"}
+                {noteState === "saving" ? "保存中…" : "追加证据"}
               </button>
             </>
           ) : (
-            <p className="muted">Evidence opens only after the task is done or cancelled.</p>
+            <p className="muted">仅当任务完成或取消后才可记录证据。</p>
           )}
         </form>
 
         <form className="panel taskForm" onSubmit={(event) => void proposeGap(event)}>
-          <h2>Propose knowledge gap</h2>
+          <h2>提出知识缺口</h2>
           {evidence.length === 0 ? (
-            <p className="muted">Record private evidence first.</p>
+            <p className="muted">请先记录私有证据。</p>
           ) : (
             <>
-              <label htmlFor="gap-evidence">Source evidence</label>
+              <label htmlFor="gap-evidence">来源证据</label>
               <select
                 id="gap-evidence"
                 onChange={(event) => setGapEvidenceId(event.target.value)}
@@ -340,13 +332,11 @@ export function HumanTaskDetail({ taskId }: Readonly<{ taskId: string }>) {
               >
                 {evidence.map((item) => (
                   <option key={item.id} value={item.id}>
-                    {item.kind.replace("_", " ")} · {new Date(item.created_at).toLocaleString()}
+                    {displayEvidenceKind(item.kind)} · {new Date(item.created_at).toLocaleString()}
                   </option>
                 ))}
               </select>
-              <label htmlFor="gap-pattern">
-                Reusable question pattern, with no names or contacts
-              </label>
+              <label htmlFor="gap-pattern">可复用的问题模式，不包含姓名或联系方式</label>
               <textarea
                 id="gap-pattern"
                 maxLength={500}
@@ -356,7 +346,7 @@ export function HumanTaskDetail({ taskId }: Readonly<{ taskId: string }>) {
                 value={gapPattern}
               />
               <button disabled={transitionState === "saving"} type="submit">
-                {transitionState === "saving" ? "Saving..." : "Create gap draft"}
+                {transitionState === "saving" ? "保存中…" : "创建知识缺口草稿"}
               </button>
               {gapConfirmation ? <p role="status">{gapConfirmation}</p> : null}
             </>
@@ -364,12 +354,12 @@ export function HumanTaskDetail({ taskId }: Readonly<{ taskId: string }>) {
         </form>
 
         <form className="panel taskForm" onSubmit={(event) => void transitionTask(event)}>
-          <h2>Triage decision</h2>
+          <h2>分诊决策</h2>
           {allowedTransitions.length === 0 ? (
-            <p className="muted">No controlled-preview transition is available.</p>
+            <p className="muted">没有可用的受控预览状态变更。</p>
           ) : (
             <>
-              <label htmlFor="task-status">Next legal status</label>
+              <label htmlFor="task-status">下一合法状态</label>
               <select
                 id="task-status"
                 onChange={(event) => setSelectedStatus(event.target.value as HumanTaskStatus)}
@@ -377,11 +367,11 @@ export function HumanTaskDetail({ taskId }: Readonly<{ taskId: string }>) {
               >
                 {allowedTransitions.map((status) => (
                   <option key={status} value={status}>
-                    {status}
+                    {displayLifecycleValue(status)}
                   </option>
                 ))}
               </select>
-              <label htmlFor="transition-reason">Decision reason</label>
+              <label htmlFor="transition-reason">决策原因</label>
               <textarea
                 id="transition-reason"
                 maxLength={500}
@@ -391,7 +381,7 @@ export function HumanTaskDetail({ taskId }: Readonly<{ taskId: string }>) {
                 value={reason}
               />
               <button disabled={transitionState === "saving"} type="submit">
-                {transitionState === "saving" ? "Saving..." : "Save status change"}
+                {transitionState === "saving" ? "保存中…" : "保存状态变更"}
               </button>
             </>
           )}
@@ -399,4 +389,8 @@ export function HumanTaskDetail({ taskId }: Readonly<{ taskId: string }>) {
       </div>
     </div>
   );
+}
+
+function displayEvidenceKind(kind: HumanTaskEvidenceKind): string {
+  return kind === "outcome" ? "结果" : "已脱敏的对话摘录";
 }

@@ -8,6 +8,21 @@ The Ops Next.js application is an internal operations surface for execution fact
 Human Tasks, partner configuration, and later reconciliation. It must be deployed separately from
 the public Web application and protected by server-side role checks.
 
+## Interface Language And Error Presentation
+
+The current Ops console is a fixed Simplified Chinese operator interface. Navigation, forms, empty
+states, confirmation prompts, lifecycle labels, and controlled user-facing errors use Chinese so an
+operator does not have to interpret a mixed-language control surface. This is not a configurable
+locale system and does not alter API fields, permission identifiers, fact types, POI facts,
+evidence, traveler input, audit originals, or any other recorded data.
+
+An expected authorization or validation failure may return a concise Chinese explanation while
+retaining its existing HTTP status. Unknown database, provider, query, table, column, credential,
+or stack errors are never sent to the browser; the interface receives only a generic Chinese
+temporary-unavailable message. This presentation rule is additive and must not weaken
+authorization-before-data-access or the existing non-disclosure behavior for exact-email membership
+assignment.
+
 ## Current Routes
 
 - `/facts`: create and edit canonical POIs, then list, create, update, renew, reject, and deprecate

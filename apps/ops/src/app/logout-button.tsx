@@ -8,7 +8,7 @@ export function LogoutButton() {
 
   return (
     <button className="linkButton" onClick={() => void logout()} type="button">
-      Sign out
+      退出登录
     </button>
   );
 }

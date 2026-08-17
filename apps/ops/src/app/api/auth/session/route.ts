@@ -18,9 +18,9 @@ export async function GET(request: Request) {
       NextResponse.json({ ok: true, authenticated: true, access }),
       cookieResponse,
     );
-  } catch (error) {
+  } catch {
     return NextResponse.json(
-      { ok: false, error: error instanceof Error ? error.message : "Ops session is unavailable." },
+      { ok: false, error: "运营会话服务暂时不可用，请稍后重试。" },
       { status: 503 },
     );
   }

@@ -32,8 +32,7 @@ export async function POST(request: Request) {
   ) {
     return NextResponse.json(
       {
-        error:
-          "Expected poiId, factType, value, confidence, sourceClass, sourceLocator, and evidenceSummary.",
+        error: "需要 poiId、事实类型、内容、置信度、来源等级、来源定位信息和证据摘要。",
       },
       { status: 400 },
     );
@@ -59,11 +58,8 @@ export async function POST(request: Request) {
         : {}),
     });
     return applyOpsCookies(NextResponse.json(fact), authorization.cookieResponse);
-  } catch (error) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Fact create failed." },
-      { status: 400 },
-    );
+  } catch {
+    return NextResponse.json({ error: "事实草稿未保存，请检查内容后重试。" }, { status: 400 });
   }
 }
 
@@ -90,7 +86,7 @@ export async function PATCH(request: Request) {
       body.action !== "approve_draft" &&
       !isRecord(body.value))
   ) {
-    return NextResponse.json({ error: "Expected factId and object value." }, { status: 400 });
+    return NextResponse.json({ error: "需要事实 ID 和对象类型的内容。" }, { status: 400 });
   }
 
   try {
@@ -118,10 +114,7 @@ export async function PATCH(request: Request) {
         expectedVersion < 1
       ) {
         return applyOpsCookies(
-          NextResponse.json(
-            { error: "Expected a draft version for confirmation." },
-            { status: 400 },
-          ),
+          NextResponse.json({ error: "确认时需要草稿版本号。" }, { status: 400 }),
           authorization.cookieResponse,
         );
       }
@@ -132,7 +125,7 @@ export async function PATCH(request: Request) {
       });
       if (!result) {
         return applyOpsCookies(
-          NextResponse.json({ error: "Draft fact was not found." }, { status: 404 }),
+          NextResponse.json({ error: "未找到事实草稿。" }, { status: 404 }),
           authorization.cookieResponse,
         );
       }
@@ -149,14 +142,14 @@ export async function PATCH(request: Request) {
       });
       if (!result) {
         return applyOpsCookies(
-          NextResponse.json({ error: "Draft fact was not found." }, { status: 404 }),
+          NextResponse.json({ error: "未找到事实草稿。" }, { status: 404 }),
           authorization.cookieResponse,
         );
       }
       return applyOpsCookies(NextResponse.json(result), authorization.cookieResponse);
     }
     if (!isRecord(body.value)) {
-      return NextResponse.json({ error: "Expected object value." }, { status: 400 });
+      return NextResponse.json({ error: "需要对象类型的内容。" }, { status: 400 });
     }
     const result = await service.updateFact({
       factId: body.factId,
@@ -172,11 +165,8 @@ export async function PATCH(request: Request) {
         : {}),
     });
     return applyOpsCookies(NextResponse.json(result), authorization.cookieResponse);
-  } catch (error) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Fact update failed." },
-      { status: 400 },
-    );
+  } catch {
+    return NextResponse.json({ error: "事实未更新，请检查内容后重试。" }, { status: 400 });
   }
 }
 

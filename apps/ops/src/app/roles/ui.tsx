@@ -12,32 +12,28 @@ const ROLE_GUIDANCE: Array<{
 }> = [
   {
     role: "editor",
-    title: "Knowledge editor",
-    description: "Creates, reviews, and maintains traveler-facing knowledge facts.",
-    permissions: ["Read and write knowledge facts"],
+    title: "知识编辑",
+    description: "创建、审核并维护面向旅行者的知识事实。",
+    permissions: ["读取和编辑知识事实"],
   },
   {
     role: "operator",
-    title: "Human Help operator",
-    description: "Works on Human Help requests and their operational follow-up.",
-    permissions: ["Read tasks", "Update tasks", "Read traveler contact details"],
-    risks: ["Can view traveler contact details"],
+    title: "人工协助专员",
+    description: "处理人工协助请求及其运营跟进。",
+    permissions: ["读取任务", "更新任务", "读取旅行者联系方式"],
+    risks: ["可查看旅行者联系方式"],
   },
   {
     role: "admin",
-    title: "Ops administrator",
-    description: "Manages collaborator access, approved partners, costs, and VisePod provisioning.",
+    title: "运营管理员",
+    description: "管理协作者权限、已批准合作伙伴、成本和 VisePod 灌装。",
     permissions: [
-      "Read and change collaborator access",
-      "Read and manage approved partners",
-      "Read service cost summaries",
-      "Issue VisePod provisioning grants",
+      "读取和更改协作者权限",
+      "读取和管理已批准合作伙伴",
+      "读取服务成本汇总",
+      "签发 VisePod 灌装授权",
     ],
-    risks: [
-      "Can change other collaborators' access",
-      "Can view all cost summaries",
-      "Can issue VisePod provisioning grants",
-    ],
+    risks: ["可更改其他协作者的权限", "可查看全部成本汇总", "可签发 VisePod 灌装授权"],
   },
 ];
 
@@ -68,12 +64,12 @@ export function RoleManager({
     try {
       const response = await fetch("/api/roles");
       if (!response.ok) {
-        setError("Could not load memberships.");
+        setError("无法加载成员资格，请稍后重试。");
         return;
       }
       setMemberships((await response.json()) as OpsMembership[]);
     } catch {
-      setError("Could not load memberships.");
+      setError("无法加载成员资格，请稍后重试。");
     } finally {
       setIsLoading(false);
     }
@@ -90,9 +86,7 @@ export function RoleManager({
       body: JSON.stringify({ email, role }),
     });
     if (!response.ok) {
-      return setError(
-        "Could not add this collaborator. Ask them to register first, then verify the email.",
-      );
+      return setError("无法添加此协作者。请先请对方自行注册，再核对完整邮箱地址。");
     }
     setEmail("");
     await load();
@@ -108,9 +102,7 @@ export function RoleManager({
         body: JSON.stringify({ userId: membership.userId, role: nextRole }),
       });
       if (!response.ok) {
-        setError(
-          "Could not change this collaborator's role. The server may have rejected the change.",
-        );
+        setError("无法更改此协作者的角色；服务端可能拒绝了该变更。");
         return;
       }
       await load();
@@ -130,7 +122,7 @@ export function RoleManager({
         body: JSON.stringify({ userId: pendingRemoval.userId }),
       });
       if (!response.ok) {
-        setError("Could not remove this collaborator. The server may have rejected the change.");
+        setError("无法移除此协作者；服务端可能拒绝了该变更。");
         return;
       }
       setPendingRemoval(null);
@@ -145,11 +137,10 @@ export function RoleManager({
       <section className="panel membershipAssignment">
         <div className="membershipHeading">
           <div>
-            <p className="eyebrow">Add collaborator</p>
-            <h2>Assign one fixed role</h2>
+            <p className="eyebrow">添加协作者</p>
+            <h2>分配一个固定角色</h2>
             <p className="muted">
-              Enter the complete email address the collaborator used to register. We never search or
-              browse user accounts from Ops.
+              输入协作者注册时使用的完整邮箱地址。运营后台不会搜索或浏览用户账号。
             </p>
           </div>
         </div>
@@ -159,7 +150,7 @@ export function RoleManager({
             onSubmit={(event) => void assignByEmail(event)}
           >
             <label>
-              Registered email address
+              已注册邮箱地址
               <input
                 autoComplete="email"
                 onChange={(event) => setEmail(event.target.value)}
@@ -170,30 +161,25 @@ export function RoleManager({
               />
             </label>
             <label>
-              Role
+              角色
               <RoleSelect onChange={setRole} value={role} />
             </label>
-            <button type="submit">Add collaborator</button>
+            <button type="submit">添加协作者</button>
           </form>
         ) : (
-          <p className="empty">
-            You can view memberships, but only an Ops administrator can change them.
-          </p>
+          <p className="empty">你可以查看成员资格，但只有运营管理员可以更改它们。</p>
         )}
         <p className="membershipNote">
-          If this address has not registered yet, ask the person to create their own account first.
-          Ops does not create accounts or reveal whether an address exists.
+          如果该邮箱尚未注册，请让对方先自行创建账号。运营后台不会创建账号，也不会透露邮箱是否存在。
         </p>
       </section>
 
       <section className="panel membershipDirectory" aria-labelledby="member-list-title">
         <div className="membershipHeading">
           <div>
-            <p className="eyebrow">Current access</p>
-            <h2 id="member-list-title">Individual collaborator controls</h2>
-            <p className="muted">
-              Every role change and removal is audited. There is no bulk approval.
-            </p>
+            <p className="eyebrow">当前权限</p>
+            <h2 id="member-list-title">逐位协作者控制</h2>
+            <p className="muted">每一次角色变更和移除都会被审计，且不提供批量批准。</p>
           </div>
         </div>
         {error ? (
@@ -202,9 +188,9 @@ export function RoleManager({
           </p>
         ) : null}
         {isLoading ? (
-          <p className="empty">Loading memberships…</p>
+          <p className="empty">正在加载成员资格…</p>
         ) : memberships.length === 0 ? (
-          <p className="empty">No Ops memberships are available.</p>
+          <p className="empty">没有可用的运营成员资格。</p>
         ) : (
           <div className="membershipList">
             {memberships.map((membership) => {
@@ -214,17 +200,17 @@ export function RoleManager({
               return (
                 <article className="membershipRow" key={membership.userId}>
                   <div className="membershipIdentity">
-                    <strong>{isSelf ? "You" : "Collaborator"}</strong>
+                    <strong>{isSelf ? "当前账号" : "协作者"}</strong>
                     <code>{membership.userId}</code>
                     <small>
                       {isRevoked
-                        ? `Access removed ${formatDate(membership.revokedAt!)}`
-                        : `Updated ${formatDate(membership.updatedAt)}`}
+                        ? `已于 ${formatDate(membership.revokedAt!)} 移除权限`
+                        : `更新于 ${formatDate(membership.updatedAt)}`}
                     </small>
                   </div>
                   <div className="membershipControl">
                     <label>
-                      Role
+                      角色
                       <RoleSelect
                         disabled={!canWrite || isSelf || isBusy}
                         onChange={(nextRole) => {
@@ -235,9 +221,7 @@ export function RoleManager({
                         value={membership.role}
                       />
                     </label>
-                    {isSelf ? (
-                      <small className="muted">You cannot change your own access.</small>
-                    ) : null}
+                    {isSelf ? <small className="muted">你不能更改自己的访问权限。</small> : null}
                   </div>
                   <div className="membershipActions">
                     {canWrite && !isSelf && !isRevoked ? (
@@ -247,13 +231,13 @@ export function RoleManager({
                         onClick={() => setPendingRemoval(membership)}
                         type="button"
                       >
-                        Remove access
+                        移除权限
                       </button>
                     ) : null}
                     {isRevoked ? (
-                      <span className="pill">Removed</span>
+                      <span className="pill">已移除</span>
                     ) : (
-                      <span className="pill">Active</span>
+                      <span className="pill">有效</span>
                     )}
                   </div>
                 </article>
@@ -263,13 +247,13 @@ export function RoleManager({
         )}
       </section>
 
-      <section className="roleCapabilityGrid" aria-label="Role capability guide">
+      <section className="roleCapabilityGrid" aria-label="角色能力说明">
         {ROLE_GUIDANCE.map((entry) => (
           <article className="panel roleCapability" key={entry.role}>
             <p className="eyebrow">{entry.role}</p>
             <h2>{entry.title}</h2>
             <p className="muted">{entry.description}</p>
-            <h3>Includes</h3>
+            <h3>包含权限</h3>
             <ul>
               {entry.permissions.map((permission) => (
                 <li key={permission}>{permission}</li>
@@ -277,7 +261,7 @@ export function RoleManager({
             </ul>
             {entry.risks ? (
               <div className="roleRisk">
-                <strong>High-risk access</strong>
+                <strong>高风险权限</strong>
                 <ul>
                   {entry.risks.map((risk) => (
                     <li key={risk}>{risk}</li>
@@ -297,12 +281,9 @@ export function RoleManager({
           aria-labelledby="remove-access-title"
         >
           <div>
-            <p className="eyebrow">Confirm removal</p>
-            <h2 id="remove-access-title">Remove this collaborator’s Ops access?</h2>
-            <p>
-              Their existing session loses Ops authority on the next protected request. This action
-              is recorded in the audit ledger.
-            </p>
+            <p className="eyebrow">确认移除</p>
+            <h2 id="remove-access-title">移除此协作者的运营后台权限？</h2>
+            <p>此人的现有会话会在下一次受保护请求时失去运营权限；该操作会记入审计记录。</p>
           </div>
           <div className="rowActions">
             <button
@@ -311,7 +292,7 @@ export function RoleManager({
               onClick={() => setPendingRemoval(null)}
               type="button"
             >
-              Cancel
+              取消
             </button>
             <button
               className="dangerButton"
@@ -319,7 +300,7 @@ export function RoleManager({
               onClick={() => void confirmRemoval()}
               type="button"
             >
-              Confirm removal
+              确认移除
             </button>
           </div>
         </section>
@@ -333,14 +314,10 @@ export function RoleManager({
           role="alertdialog"
         >
           <div>
-            <p className="eyebrow">Confirm role change</p>
-            <h2 id="change-role-title">
-              Change this collaborator to {roleLabel(pendingRoleChange.role)}?
-            </h2>
+            <p className="eyebrow">确认角色变更</p>
+            <h2 id="change-role-title">将此协作者改为「{roleLabel(pendingRoleChange.role)}」？</h2>
             <p>
-              This updates their access on the next protected request and creates an audit record.
-              The server rejects a self-change or a change that would remove the final
-              administrator.
+              该变更会在下一次受保护请求时更新权限，并创建审计记录。服务端会拒绝自我变更或移除最后一位管理员的操作。
             </p>
           </div>
           <div className="rowActions">
@@ -350,7 +327,7 @@ export function RoleManager({
               onClick={() => setPendingRoleChange(null)}
               type="button"
             >
-              Cancel
+              取消
             </button>
             <button
               disabled={savingUserId !== null}
@@ -361,7 +338,7 @@ export function RoleManager({
               }}
               type="button"
             >
-              Confirm role change
+              确认角色变更
             </button>
           </div>
         </section>
@@ -385,9 +362,9 @@ function RoleSelect({
       onChange={(event) => onChange(event.target.value as OpsRole)}
       value={value}
     >
-      <option value="editor">Knowledge editor</option>
-      <option value="operator">Human Help operator</option>
-      <option value="admin">Ops administrator</option>
+      <option value="editor">知识编辑</option>
+      <option value="operator">人工协助专员</option>
+      <option value="admin">运营管理员</option>
     </select>
   );
 }

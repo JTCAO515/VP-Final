@@ -6,10 +6,9 @@ export default async function RolesPage() {
   return (
     <>
       <section className="heading">
-        <h1>Ops memberships</h1>
+        <h1>运营成员管理</h1>
         <p className="muted">
-          Give registered collaborators the smallest fixed role they need. Membership changes are
-          audited and take effect on the next protected request.
+          为已注册协作者授予其所需的最小固定角色。成员变更会被审计，并在下一次受保护请求时生效。
         </p>
       </section>
       <RoleManager

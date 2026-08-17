@@ -10,7 +10,7 @@ export default async function TaskDetailPage({
   return (
     <>
       <a className="backLink" href="/tasks">
-        Back to task queue
+        返回任务队列
       </a>
       <HumanTaskDetail taskId={taskId} />
     </>

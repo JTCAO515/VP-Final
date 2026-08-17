@@ -106,7 +106,7 @@ export async function handlePoiImageDelete(
   try {
     const body: unknown = await request.json();
     if (!isRecord(body) || typeof body.imageId !== "string" || !isUuid(body.imageId)) {
-      throw new PoiImageInputError("A valid image id is required.");
+      throw new PoiImageInputError("需要有效的图片 ID。 ");
     }
     imageId = body.imageId;
   } catch (error) {
@@ -114,7 +114,7 @@ export async function handlePoiImageDelete(
       NextResponse.json(
         {
           ok: false,
-          error: error instanceof Error ? error.message : "A valid image id is required.",
+          error: error instanceof PoiImageInputError ? error.message : "需要有效的图片 ID。",
         },
         { status: 400 },
       ),
@@ -126,7 +126,7 @@ export async function handlePoiImageDelete(
     const image = await dependencies.getImageService().getActive(imageId);
     if (!image) {
       return applyOpsCookies(
-        NextResponse.json({ ok: false, error: "Image not found." }, { status: 404 }),
+        NextResponse.json({ ok: false, error: "未找到图片。" }, { status: 404 }),
         authorization.cookieResponse,
       );
     }
@@ -162,14 +162,13 @@ function parseMetadata(form: FormData) {
     attribution: stringField(form, "attribution"),
     licenseNote: stringField(form, "licenseNote"),
   });
-  if (!parsed.success)
-    throw new PoiImageInputError("Image target, attribution, and license are required.");
+  if (!parsed.success) throw new PoiImageInputError("必须填写图片目标、归属和授权说明。 ");
   return parsed.data;
 }
 
 async function fileBytes(value: FormDataEntryValue | null): Promise<Uint8Array> {
   if (!isFileLike(value) || value.size <= 0 || value.size > OPS_POI_IMAGE_MAX_BYTES) {
-    throw new PoiImageInputError("A JPEG, PNG, or WebP image no larger than 5 MiB is required.");
+    throw new PoiImageInputError("需要不超过 5 MiB 的 JPEG、PNG 或 WebP 图片。 ");
   }
   return new Uint8Array(await value.arrayBuffer());
 }

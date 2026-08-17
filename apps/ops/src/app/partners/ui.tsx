@@ -38,13 +38,12 @@ export function PartnerManager() {
         partners?: Partner[];
         error?: string;
       };
-      if (!response.ok || !payload.partners)
-        throw new Error(payload.error ?? "Could not load partners.");
+      if (!response.ok || !payload.partners) throw new Error("无法加载合作伙伴配置。");
       setPartners(payload.partners);
       setState("ready");
       return true;
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Could not load partners.");
+      setMessage("无法加载合作伙伴配置，请稍后重试。");
       setState("error");
       return false;
     }
@@ -70,18 +69,14 @@ export function PartnerManager() {
         }),
       });
       const payload = (await response.json()) as { error?: string };
-      if (!response.ok) throw new Error(payload.error ?? "Could not save partner configuration.");
+      if (!response.ok) throw new Error("无法保存合作伙伴配置。");
       setForm(emptyForm);
       setEditingKey(null);
       if (await load({ preserveMessage: true })) {
-        setMessage(
-          editingKey
-            ? "Configuration saved. Status was not changed."
-            : "Partner created as pending.",
-        );
+        setMessage(editingKey ? "配置已保存，状态未改变。" : "已创建待启用合作伙伴。");
       }
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Could not save partner configuration.");
+      setMessage("无法保存合作伙伴配置，请稍后重试。");
       setState("error");
     }
   }
@@ -96,7 +91,7 @@ export function PartnerManager() {
       trackingParam: partner.trackingParam,
       kind: partner.kind,
     });
-    setMessage("Editing configuration only. Saving cannot activate this partner.");
+    setMessage("当前仅编辑配置；保存不会启用此合作伙伴。");
   }
 
   async function changeStatus(partner: Partner, status: Partner["status"]) {
@@ -104,8 +99,8 @@ export function PartnerManager() {
       status !== "active" ||
       window.confirm(
         partner.kind === "ota"
-          ? `Activate ${partner.key}? Public redirects remain possible only for exact configured HTTPS hosts.`
-          : `Activate ${partner.key}? This activates an acquisition-source record only and cannot create a public redirect.`,
+          ? `启用 ${partner.key}？公开跳转仍只会指向精确配置的 HTTPS 主机。`
+          : `启用 ${partner.key}？这只会启用获客来源记录，不能创建公开跳转。`,
       );
     if (!confirmActivation) return;
     setState("saving");
@@ -117,12 +112,12 @@ export function PartnerManager() {
         body: JSON.stringify({ key: partner.key, status, confirmActivation }),
       });
       const payload = (await response.json()) as { error?: string };
-      if (!response.ok) throw new Error(payload.error ?? "Could not change partner status.");
+      if (!response.ok) throw new Error("无法更改合作伙伴状态。");
       if (await load({ preserveMessage: true })) {
-        setMessage(`${partner.key} is now ${status}.`);
+        setMessage(`${partner.key} 当前状态为「${displayPartnerStatus(status)}」。`);
       }
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Could not change partner status.");
+      setMessage("无法更改合作伙伴状态，请稍后重试。");
       setState("error");
     }
   }
@@ -131,15 +126,13 @@ export function PartnerManager() {
     <div className="partnerWorkspace">
       <section className="panel partnerEditor" aria-labelledby="partner-editor-title">
         <div>
-          <p className="eyebrow">{editingKey ? "Edit configuration" : "New partner"}</p>
-          <h2 id="partner-editor-title">{editingKey ?? "Create pending partner"}</h2>
-          <p className="muted">
-            Hosts are bare DNS names. Saving configuration never changes status.
-          </p>
+          <p className="eyebrow">{editingKey ? "编辑配置" : "新建合作伙伴"}</p>
+          <h2 id="partner-editor-title">{editingKey ?? "创建待启用合作伙伴"}</h2>
+          <p className="muted">主机仅填写 DNS 名称；保存配置不会改变状态。</p>
         </div>
         <form onSubmit={(event) => void save(event)}>
           <label>
-            Partner key
+            合作伙伴标识
             <input
               disabled={editingKey !== null}
               onChange={(event) => setForm({ ...form, key: event.target.value })}
@@ -149,7 +142,7 @@ export function PartnerManager() {
             />
           </label>
           <label>
-            Exact hosts
+            精确主机名
             <input
               onChange={(event) => setForm({ ...form, hosts: event.target.value })}
               placeholder="partner.example.com, www.partner.example.com"
@@ -158,7 +151,7 @@ export function PartnerManager() {
             />
           </label>
           <label>
-            Categories
+            品类
             <input
               onChange={(event) => setForm({ ...form, categories: event.target.value })}
               placeholder="hotel, experience"
@@ -166,15 +159,15 @@ export function PartnerManager() {
             />
           </label>
           <label>
-            Cities
+            城市
             <input
               onChange={(event) => setForm({ ...form, cities: event.target.value })}
-              placeholder="Beijing, Shanghai"
+              placeholder="北京, 上海"
               value={form.cities}
             />
           </label>
           <label>
-            Tracking parameter
+            跟踪参数
             <input
               onChange={(event) => setForm({ ...form, trackingParam: event.target.value })}
               required
@@ -182,20 +175,20 @@ export function PartnerManager() {
             />
           </label>
           <label>
-            Partner type
+            合作伙伴类型
             <select
               onChange={(event) =>
                 setForm({ ...form, kind: event.target.value as Partner["kind"] })
               }
               value={form.kind}
             >
-              <option value="ota">OTA outbound destination</option>
-              <option value="creator">Creator acquisition source</option>
+              <option value="ota">OTA 外跳目标</option>
+              <option value="creator">内容创作者获客来源</option>
             </select>
           </label>
           <div className="rowActions">
             <button disabled={state === "saving"} type="submit">
-              {editingKey ? "Save configuration" : "Create pending"}
+              {editingKey ? "保存配置" : "创建待启用项"}
             </button>
             {editingKey ? (
               <button
@@ -207,7 +200,7 @@ export function PartnerManager() {
                 }}
                 type="button"
               >
-                Cancel
+                取消
               </button>
             ) : null}
           </div>
@@ -222,22 +215,22 @@ export function PartnerManager() {
       <section aria-labelledby="partner-list-title">
         <div className="partnerListHeading">
           <div>
-            <p className="eyebrow">Registry</p>
-            <h2 id="partner-list-title">Configured partners</h2>
+            <p className="eyebrow">登记册</p>
+            <h2 id="partner-list-title">已配置合作伙伴</h2>
           </div>
-          <span className="pill">{partners.length} records</span>
+          <span className="pill">{partners.length} 条记录</span>
         </div>
-        {state === "loading" ? <p className="panel empty">Loading partner configuration…</p> : null}
+        {state === "loading" ? <p className="panel empty">正在加载合作伙伴配置…</p> : null}
         {state === "error" && partners.length === 0 ? (
           <div className="panel empty">
-            <p>Partner configuration is unavailable.</p>
+            <p>合作伙伴配置暂不可用。</p>
             <button onClick={() => void load()} type="button">
-              Retry
+              重试
             </button>
           </div>
         ) : null}
         {state !== "loading" && partners.length === 0 && state !== "error" ? (
-          <p className="panel empty">No partner configuration exists.</p>
+          <p className="panel empty">尚未配置合作伙伴。</p>
         ) : null}
         <div className="partnerList">
           {partners.map((partner) => (
@@ -271,52 +264,52 @@ export function PartnerConfigurationCard({
       <header>
         <div>
           <strong>{partner.key}</strong>
-          <span className={`partnerStatus partnerStatus-${partner.status}`}>{partner.status}</span>
+          <span className={`partnerStatus partnerStatus-${partner.status}`}>
+            {displayPartnerStatus(partner.status)}
+          </span>
         </div>
         <button className="secondaryButton" disabled={disabled} onClick={onEdit} type="button">
-          Edit
+          编辑
         </button>
       </header>
       <dl>
         <div>
-          <dt>Exact hosts</dt>
+          <dt>精确主机名</dt>
           <dd>{partner.hosts.join(", ")}</dd>
         </div>
         <div>
-          <dt>Categories</dt>
-          <dd>{partner.categories.join(", ") || "None"}</dd>
+          <dt>品类</dt>
+          <dd>{partner.categories.join(", ") || "无"}</dd>
         </div>
         <div>
-          <dt>Cities</dt>
-          <dd>{partner.cities.join(", ") || "All configured contexts"}</dd>
+          <dt>城市</dt>
+          <dd>{partner.cities.join(", ") || "所有已配置场景"}</dd>
         </div>
         <div>
-          <dt>Tracking parameter</dt>
+          <dt>跟踪参数</dt>
           <dd>{partner.trackingParam}</dd>
         </div>
         <div>
-          <dt>Partner type</dt>
-          <dd>
-            {partner.kind === "creator" ? "Creator acquisition source" : "OTA outbound destination"}
-          </dd>
+          <dt>合作伙伴类型</dt>
+          <dd>{partner.kind === "creator" ? "内容创作者获客来源" : "OTA 外跳目标"}</dd>
         </div>
       </dl>
       {partner.status === "pending" ? (
         <p className="partnerPreviewNotice">
           {partner.kind === "creator"
-            ? "Preview only. This creator source cannot redirect or produce an outbound click."
-            : "Preview only. No redirect or click can be produced."}
+            ? "仅供预览。此创作者来源不能跳转，也不会产生外跳点击。"
+            : "仅供预览。不会产生跳转或点击。"}
         </p>
       ) : null}
-      <div className="partnerStatusActions" aria-label={`Change ${partner.key} status`}>
+      <div className="partnerStatusActions" aria-label={`更改 ${partner.key} 的状态`}>
         {partner.status !== "pending" ? (
           <button disabled={disabled} onClick={() => onStatusChange("pending")} type="button">
-            Set pending
+            设为待启用
           </button>
         ) : null}
         {partner.status !== "inactive" ? (
           <button disabled={disabled} onClick={() => onStatusChange("inactive")} type="button">
-            Set inactive
+            设为停用
           </button>
         ) : null}
         {partner.status !== "active" ? (
@@ -326,12 +319,16 @@ export function PartnerConfigurationCard({
             onClick={() => onStatusChange("active")}
             type="button"
           >
-            Activate…
+            启用…
           </button>
         ) : null}
       </div>
     </article>
   );
+}
+
+function displayPartnerStatus(status: Partner["status"]): string {
+  return { active: "有效", inactive: "停用", pending: "待启用" }[status];
 }
 
 function values(input: string): string[] {

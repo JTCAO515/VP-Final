@@ -87,22 +87,22 @@ describe("FactEditor local-display authoring", () => {
   it("renders a private image form without a public media claim", () => {
     const html = renderToStaticMarkup(<FactEditor />);
 
-    expect(html).toContain("POI image library");
-    expect(html).toContain("Store private image");
-    expect(html).toContain("converted to WebP without EXIF");
+    expect(html).toContain("地点图片库");
+    expect(html).toContain("保存私有图片");
+    expect(html).toContain("转换为不含 EXIF 的 WebP");
     expect(html).not.toContain("Public image URL");
   });
 
   it("renders the dedicated draft-only Show-to-Local form and address safety warning boundary", () => {
     const html = renderToStaticMarkup(<FactEditor />);
 
-    expect(html).toContain("Show-to-Local facts");
-    expect(html).toContain("Draft fact review queue");
-    expect(html).toContain("Each local-display fact starts as a draft");
-    expect(html).toContain("Save local-display draft");
-    expect(html).toContain("Text (maximum 500 characters)");
-    expect(html).toContain("Source URL or evidence reference");
-    expect(html).toContain("Evidence summary (no personal contact details)");
+    expect(html).toContain("向本地人展示的事实");
+    expect(html).toContain("事实草稿审核队列");
+    expect(html).toContain("每条本地展示事实都从草稿开始");
+    expect(html).toContain("保存本地展示草稿");
+    expect(html).toContain("文本（最多 500 个字符）");
+    expect(html).toContain("来源 URL 或证据引用");
+    expect(html).toContain("证据摘要（不含个人联系方式）");
     expect(html).not.toContain("verifiedAt");
     expect(html).not.toContain("Approve all");
     expect(html).not.toContain("Mark reviewed");
@@ -122,9 +122,8 @@ describe("FactEditor local-display authoring", () => {
       />,
     );
 
-    expect(html).toContain("Confirm approval");
-    expect(html).toContain("Confirm approve");
-    expect(html).toContain("This Chinese address may be shown to a real stranger.");
+    expect(html).toContain("确认批准");
+    expect(html).toContain("此中文地址可能会展示给真实的陌生人。");
     expect(html).not.toContain("Approve all");
     expect(html).not.toContain("bulk");
   });
@@ -139,11 +138,11 @@ describe("FactEditor local-display authoring", () => {
       />,
     );
 
-    expect(html).toContain("Expired facts");
-    expect(html).toContain("Expires within 30 days");
-    expect(html).toContain("Volatile · 30-day policy");
-    expect(html).toContain("Renew this fact");
-    expect(html).toContain("Deprecate this fact");
+    expect(html).toContain("已过期事实");
+    expect(html).toContain("30 天内到期");
+    expect(html).toContain("易变信息 · 30 天策略");
+    expect(html).toContain("续期此事实");
+    expect(html).toContain("废弃此事实");
     expect(html).not.toContain("Approve all");
   });
 });

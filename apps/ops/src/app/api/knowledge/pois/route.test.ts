@@ -88,7 +88,7 @@ describe("Ops knowledge POI write route", () => {
     );
 
     expect(response.status).toBe(404);
-    expect(await response.json()).toEqual({ error: "POI not found." });
+    expect(await response.json()).toEqual({ error: "未找到地点。" });
   });
 });
 

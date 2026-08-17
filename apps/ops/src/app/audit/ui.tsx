@@ -20,12 +20,11 @@ export function AuditLedger() {
       for (const [key, value] of Object.entries(nextFilters)) if (value) params.set(key, value);
       const response = await fetch(`/api/audit?${params.toString()}`, { cache: "no-store" });
       const payload = (await response.json()) as { error?: string; events?: OpsAuditEvent[] };
-      if (!response.ok || !payload.events)
-        throw new Error(payload.error ?? "Could not load audit events.");
+      if (!response.ok || !payload.events) throw new Error("无法加载审计记录。");
       setEvents(payload.events);
       setState("ready");
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Could not load audit events.");
+      setMessage("无法加载审计记录，请稍后重试。");
       setState("error");
     }
   }
@@ -42,7 +41,7 @@ export function AuditLedger() {
         }}
       >
         <label>
-          Exact actor id
+          精确操作者 ID
           <input
             onChange={(event) => setFilters({ ...filters, actorId: event.target.value })}
             placeholder="UUID"
@@ -50,7 +49,7 @@ export function AuditLedger() {
           />
         </label>
         <label>
-          Exact action
+          精确操作类型
           <input
             onChange={(event) => setFilters({ ...filters, action: event.target.value })}
             placeholder="membership.revoked"
@@ -58,7 +57,7 @@ export function AuditLedger() {
           />
         </label>
         <label>
-          From
+          开始时间
           <input
             onChange={(event) => setFilters({ ...filters, from: event.target.value })}
             type="datetime-local"
@@ -66,29 +65,27 @@ export function AuditLedger() {
           />
         </label>
         <label>
-          To
+          结束时间
           <input
             onChange={(event) => setFilters({ ...filters, to: event.target.value })}
             type="datetime-local"
             value={filters.to}
           />
         </label>
-        <button type="submit">Apply filters</button>
+        <button type="submit">应用筛选</button>
       </form>
-      <p className="auditNote">
-        Default: latest 30 days. A query may cover at most 90 days and returns at most 100 events.
-      </p>
-      {state === "loading" ? <p className="empty">Loading audit events…</p> : null}
+      <p className="auditNote">默认显示最近 30 天。单次查询最多覆盖 90 天，最多返回 100 条记录。</p>
+      {state === "loading" ? <p className="empty">正在加载审计记录…</p> : null}
       {state === "error" ? (
         <div className="empty taskError">
           <p>{message}</p>
           <button onClick={() => void load()} type="button">
-            Retry
+            重试
           </button>
         </div>
       ) : null}
       {state === "ready" && events.length === 0 ? (
-        <p className="empty">No audit events match these exact filters.</p>
+        <p className="empty">没有符合这些精确筛选条件的审计记录。</p>
       ) : null}
       {state === "ready" && events.length > 0 ? (
         <div className="auditList">
@@ -110,13 +107,13 @@ export function AuditEventCard({ event }: { event: OpsAuditEvent }) {
       </header>
       <dl>
         <div>
-          <dt>Actor</dt>
+          <dt>操作者</dt>
           <dd>
             <code>{event.actorId}</code>
           </dd>
         </div>
         <div>
-          <dt>Target</dt>
+          <dt>目标</dt>
           <dd>
             {event.targetType}
             {event.targetId ? ` · ${event.targetId}` : ""}
@@ -126,7 +123,7 @@ export function AuditEventCard({ event }: { event: OpsAuditEvent }) {
       {Object.keys(event.metadata).length > 0 ? (
         <pre>{JSON.stringify(event.metadata, null, 2)}</pre>
       ) : (
-        <p className="muted">No displayable metadata.</p>
+        <p className="muted">没有可显示的元数据。</p>
       )}
     </article>
   );

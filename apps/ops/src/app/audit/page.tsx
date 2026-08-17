@@ -6,11 +6,8 @@ export default async function AuditPage() {
   return (
     <>
       <section className="heading">
-        <h1>Ops audit ledger</h1>
-        <p className="muted">
-          Read-only evidence for sensitive Ops actions. Entries are limited to a bounded time
-          window.
-        </p>
+        <h1>运营审计记录</h1>
+        <p className="muted">用于敏感运营操作的只读证据；记录仅保留在限定的时间窗口内。</p>
       </section>
       <AuditLedger />
     </>

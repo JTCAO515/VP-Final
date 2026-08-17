@@ -59,11 +59,11 @@ describe("CostSummaryView", () => {
       <CostSummaryView budgetError={null} budgetUsd={null} summary={summary} />,
     );
 
-    expect(html).toContain("Cost summary");
+    expect(html).toContain("成本汇总");
     expect(html).toContain("kimi-k2.6");
     expect(html).toContain("user-7609b34ec129");
-    expect(html).toContain("Not configured");
-    expect(html).toContain("1 call needs review");
+    expect(html).toContain("未配置");
+    expect(html).toContain("1 次调用需要复核");
     expect(html).not.toContain("access_token");
     expect(html).not.toContain("provider key");
   });
@@ -87,10 +87,10 @@ describe("CostSummaryView", () => {
       />,
     );
 
-    expect(html).toContain("No retained calls in this window.");
-    expect(html).toContain("No model totals in this window.");
-    expect(html).toContain("No identity totals in this window.");
-    expect(html).toContain("No unpriced retained calls");
-    expect(html).toContain("$5.00 observation threshold");
+    expect(html).toContain("此时间窗口内没有保留的调用记录。");
+    expect(html).toContain("此时间窗口内没有模型汇总。");
+    expect(html).toContain("此时间窗口内没有身份汇总。");
+    expect(html).toContain("没有未定价的保留调用");
+    expect(html).toContain("$5.00 观察阈值");
   });
 });

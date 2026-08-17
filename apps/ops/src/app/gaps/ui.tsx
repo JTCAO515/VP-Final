@@ -15,7 +15,7 @@ export default function GapsPage() {
     const suffix = nextStatus === "all" ? "" : `?status=${nextStatus}`;
     const response = await fetch(`/api/knowledge/gaps${suffix}`);
     if (!response.ok) {
-      setError("Could not load gaps.");
+      setError("无法加载知识缺口，请稍后重试。");
       return;
     }
     setGaps((await response.json()) as KnowledgeGap[]);
@@ -33,7 +33,7 @@ export default function GapsPage() {
       body: JSON.stringify({ gapId, status: nextStatus }),
     });
     if (!response.ok) {
-      setError("Could not update this gap.");
+      setError("无法更新此知识缺口，请稍后重试。");
       return;
     }
     await loadGaps();
@@ -42,8 +42,8 @@ export default function GapsPage() {
   return (
     <>
       <section className="heading">
-        <h1>Knowledge gaps</h1>
-        <p className="muted">Questions Copilot could not answer well become editorial work.</p>
+        <h1>知识缺口</h1>
+        <p className="muted">VisePanda 无法可靠回答的问题会进入编辑处理队列。</p>
       </section>
       <section className="panel">
         <div className="filters">
@@ -54,32 +54,32 @@ export default function GapsPage() {
               onClick={() => setStatus(item)}
               type="button"
             >
-              {item}
+              {displayGapStatus(item)}
             </button>
           ))}
         </div>
         {error ? <p className="empty danger">{error}</p> : null}
         {gaps.length === 0 ? (
-          <p className="empty">No gaps in this queue.</p>
+          <p className="empty">此队列中没有知识缺口。</p>
         ) : (
           <table>
             <thead>
               <tr>
-                <th>City</th>
-                <th>Pattern</th>
-                <th>Frequency</th>
-                <th>Status</th>
-                <th>Action</th>
+                <th>城市</th>
+                <th>问题模式</th>
+                <th>出现次数</th>
+                <th>状态</th>
+                <th>操作</th>
               </tr>
             </thead>
             <tbody>
               {gaps.map((gap) => (
                 <tr key={gap.id}>
-                  <td>{gap.city ?? "All cities"}</td>
+                  <td>{gap.city ?? "全部城市"}</td>
                   <td>{gap.questionPattern}</td>
                   <td>{gap.frequency}</td>
                   <td>
-                    <span className="pill">{gap.status}</span>
+                    <span className="pill">{displayGapStatus(gap.status)}</span>
                     {gap.resolvedAt ? (
                       <>
                         <br />
@@ -90,10 +90,10 @@ export default function GapsPage() {
                   <td>
                     <div className="rowActions">
                       <button onClick={() => void updateGap(gap.id, "resolved")} type="button">
-                        Resolve
+                        标记已解决
                       </button>
                       <button onClick={() => void updateGap(gap.id, "ignored")} type="button">
-                        Ignore
+                        忽略
                       </button>
                     </div>
                   </td>
@@ -105,4 +105,13 @@ export default function GapsPage() {
       </section>
     </>
   );
+}
+
+function displayGapStatus(status: GapStatus): string {
+  return {
+    all: "全部",
+    ignored: "已忽略",
+    open: "待处理",
+    resolved: "已解决",
+  }[status];
 }

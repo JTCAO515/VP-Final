@@ -9,14 +9,14 @@ describe("RoleManager", () => {
   it("uses a complete email assignment flow and explains fixed least-privilege roles", () => {
     const html = renderToStaticMarkup(<RoleManager canWrite currentUserId={currentUserId} />);
 
-    expect(html).toContain("Registered email address");
-    expect(html).toContain("Add collaborator");
-    expect(html).toContain("We never search or browse user accounts from Ops.");
-    expect(html).toContain("Knowledge editor");
-    expect(html).toContain("Human Help operator");
-    expect(html).toContain("Ops administrator");
-    expect(html).toContain("High-risk access");
-    expect(html).toContain("Can view all cost summaries");
+    expect(html).toContain("已注册邮箱地址");
+    expect(html).toContain("添加协作者");
+    expect(html).toContain("运营后台不会搜索或浏览用户账号");
+    expect(html).toContain("知识编辑");
+    expect(html).toContain("人工协助专员");
+    expect(html).toContain("运营管理员");
+    expect(html).toContain("高风险权限");
+    expect(html).toContain("可查看全部成本汇总");
     expect(html).not.toContain("Supabase user UUID");
   });
 
@@ -25,8 +25,8 @@ describe("RoleManager", () => {
       <RoleManager canWrite={false} currentUserId={currentUserId} />,
     );
 
-    expect(html).toContain("only an Ops administrator can change them");
-    expect(html).not.toContain("Add collaborator</button>");
+    expect(html).toContain("只有运营管理员可以更改它们");
+    expect(html).not.toContain("添加协作者</button>");
   });
 
   it("renders the current collaborator as self-managed only by the server and disables local controls", () => {
@@ -48,8 +48,8 @@ describe("RoleManager", () => {
       />,
     );
 
-    expect(html).toContain("You cannot change your own access.");
-    expect(html).not.toContain("Remove access");
+    expect(html).toContain("你不能更改自己的访问权限。");
+    expect(html).not.toContain("移除权限");
     expect(html).toContain('disabled=""');
   });
 });

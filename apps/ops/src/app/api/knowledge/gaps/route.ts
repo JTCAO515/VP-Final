@@ -25,7 +25,7 @@ export async function POST(request: Request) {
   if (!isAuthorizedOpsRequest(authorization)) return authorization;
   const body = (await request.json()) as { question?: unknown; city?: unknown };
   if (typeof body.question !== "string") {
-    return NextResponse.json({ error: "Expected question." }, { status: 400 });
+    return NextResponse.json({ error: "需要问题内容。" }, { status: 400 });
   }
 
   await authorization.authorizationService.recordAudit(authorization.access, {
@@ -51,7 +51,7 @@ export async function PATCH(request: Request) {
     typeof body.gapId !== "string" ||
     (body.status !== "open" && body.status !== "resolved" && body.status !== "ignored")
   ) {
-    return NextResponse.json({ error: "Expected gapId and status." }, { status: 400 });
+    return NextResponse.json({ error: "需要知识缺口 ID 和状态。" }, { status: 400 });
   }
 
   await authorization.authorizationService.recordAudit(authorization.access, {
@@ -68,7 +68,7 @@ export async function PATCH(request: Request) {
       : {}),
   });
 
-  if (!result) return NextResponse.json({ error: "Gap not found." }, { status: 404 });
+  if (!result) return NextResponse.json({ error: "未找到知识缺口。" }, { status: 404 });
   return applyOpsCookies(NextResponse.json(result), authorization.cookieResponse);
 }
 

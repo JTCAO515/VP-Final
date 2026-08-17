@@ -6,9 +6,9 @@ import { AuditEventCard, AuditLedger } from "./ui";
 describe("AuditLedger", () => {
   it("renders only read-only exact filters and bounded-window guidance", () => {
     const html = renderToStaticMarkup(<AuditLedger />);
-    expect(html).toContain("Exact actor id");
-    expect(html).toContain("Exact action");
-    expect(html).toContain("at most 90 days");
+    expect(html).toContain("精确操作者 ID");
+    expect(html).toContain("精确操作类型");
+    expect(html).toContain("最多覆盖 90 天");
     expect(html).not.toContain("Delete");
     expect(html).not.toContain("Export");
   });

@@ -132,6 +132,6 @@ describe("Ops knowledge fact review route", () => {
     );
 
     expect(response.status).toBe(404);
-    await expect(response.json()).resolves.toEqual({ error: "Draft fact was not found." });
+    await expect(response.json()).resolves.toEqual({ error: "未找到事实草稿。" });
   });
 });
