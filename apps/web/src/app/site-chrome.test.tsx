@@ -8,9 +8,11 @@ describe("shared site chrome", () => {
   it("keeps the four primary product surfaces, account, and skip target reachable", () => {
     const html = renderWithReact(React.createElement(SiteHeader, { active: "guides" }));
 
+    expect(html).toContain('class="skipLink"');
     expect(html).toContain('href="#page-content"');
     expect(html).toContain('id="page-content"');
     expect(html).toContain('aria-label="Primary navigation"');
+    expect(html).toContain('class="siteContext"');
     for (const href of [
       "/visepanda",
       "/explore",
