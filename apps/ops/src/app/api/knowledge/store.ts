@@ -1,5 +1,6 @@
 import {
   createDb,
+  createDbContentAiWalkingSkeletonService,
   createDbKnowledgeBulkImportService,
   createDbKnowledgeService,
   createDbPoiImageService,
@@ -9,6 +10,7 @@ import {
   type KnowledgeBulkImportService,
   type KnowledgeService,
   type PoiImageService,
+  type ContentAiWalkingSkeletonService,
 } from "@visepanda/app-server";
 
 const store = globalThis as typeof globalThis & {
@@ -18,6 +20,7 @@ const store = globalThis as typeof globalThis & {
   __visepandaOpsTestKnowledge?: KnowledgeService;
   __visepandaOpsDurablePoiImages?: PoiImageService;
   __visepandaOpsTestPoiImages?: PoiImageService;
+  __visepandaOpsTestContentAiWalkingSkeleton?: ContentAiWalkingSkeletonService;
 };
 
 export function getKnowledgeService(): KnowledgeService {
@@ -94,4 +97,30 @@ export function getPoiImageService(): PoiImageService {
 export function setTestPoiImageService(service: PoiImageService | null): void {
   if (service) store.__visepandaOpsTestPoiImages = service;
   else delete store.__visepandaOpsTestPoiImages;
+}
+
+export function getContentAiWalkingSkeletonService(): ContentAiWalkingSkeletonService {
+  const runtime = resolveRuntimeMode(process.env);
+  if (!runtime.ok) throw new Error("Content AI walking skeleton is unavailable.");
+  if (runtime.mode === "test") {
+    if (!store.__visepandaOpsTestContentAiWalkingSkeleton) {
+      throw new Error("Ops test Content AI walking skeleton is not injected.");
+    }
+    return store.__visepandaOpsTestContentAiWalkingSkeleton;
+  }
+  if (runtime.mode === "local-demo") {
+    throw new Error("Content AI walking skeleton is test-only.");
+  }
+  const availability = resolveDatabaseAdapter(runtime, process.env);
+  if (availability.status !== "ready" || !process.env.DATABASE_URL) {
+    throw new Error("Content AI walking skeleton is unavailable.");
+  }
+  return createDbContentAiWalkingSkeletonService(createDb(process.env.DATABASE_URL));
+}
+
+export function setTestContentAiWalkingSkeletonService(
+  service: ContentAiWalkingSkeletonService | null,
+): void {
+  if (service) store.__visepandaOpsTestContentAiWalkingSkeleton = service;
+  else delete store.__visepandaOpsTestContentAiWalkingSkeleton;
 }

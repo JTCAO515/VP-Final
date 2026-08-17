@@ -5,6 +5,7 @@ import {
   authUsers,
   copilotCompletionJobs,
   copilotConversationTurns,
+  contentAiWalkingSkeletonDrafts,
   creatorReferrals,
   humanTaskTransitions,
   humanTaskEvidence,
@@ -162,6 +163,11 @@ describe("database schema", () => {
     expect(knowledgeGaps.questionPattern.name).toBe("question_pattern");
     expect(knowledgeGaps.resolvedAt.name).toBe("resolved_at");
     expect(poiCommercialLinks.poiId.name).toBe("poi_id");
+    expect(contentAiWalkingSkeletonDrafts.ownerId.name).toBe("owner_id");
+    expect(contentAiWalkingSkeletonDrafts.expectedFactVersion.name).toBe("expected_fact_version");
+    expect(
+      getTableConfig(contentAiWalkingSkeletonDrafts).checks.map((check) => check.name),
+    ).toContain("content_ai_walking_skeleton_fact_type_check");
   });
 
   it("maps private fixed-expression provenance without traveler ownership", () => {

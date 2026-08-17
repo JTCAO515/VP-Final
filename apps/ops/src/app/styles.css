@@ -88,6 +88,80 @@ td small {
   overflow: hidden;
 }
 
+.contentAiSkeletonPreview {
+  display: grid;
+  gap: 18px;
+  padding: 20px;
+}
+
+.contentAiSkeletonPreview header,
+.contentAiSkeletonPreview header > div {
+  align-items: flex-start;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.contentAiSkeletonPreview header > div {
+  display: block;
+}
+
+.contentAiSkeletonPreview h2,
+.contentAiSkeletonPreview p {
+  margin: 0;
+}
+
+.contentAiSkeletonPreview dl {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+
+.contentAiSkeletonPreview dl div {
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 8px;
+  grid-template-columns: minmax(110px, 0.25fr) 1fr;
+  padding-top: 10px;
+}
+
+.contentAiSkeletonPreview dt {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.contentAiSkeletonPreview dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.eyebrow {
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.statusChip {
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 10px;
+}
+
+.status-draft {
+  background: #fff1d6;
+  color: #7c5100;
+}
+.status-published {
+  background: #e1f4e7;
+  color: #23633a;
+}
+.status-conflict {
+  background: #fee7e7;
+  color: #9b1c1c;
+}
+
 .factWorkspace {
   display: grid;
   gap: 24px;

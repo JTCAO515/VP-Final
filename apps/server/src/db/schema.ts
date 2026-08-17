@@ -538,6 +538,55 @@ export const poiFacts = pgTable(
   }),
 );
 
+// CONTENT-AI-01b vertical-slice persistence. This is intentionally not the
+// final generic Change Set schema; see ADR-0022 and CONTENT-AI-02.
+export const contentAiWalkingSkeletonDrafts = pgTable(
+  "content_ai_walking_skeleton_drafts",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    ownerId: uuid("owner_id")
+      .notNull()
+      .references(() => authUsers.id, { onDelete: "restrict" }),
+    poiId: uuid("poi_id")
+      .notNull()
+      .references(() => pois.id, { onDelete: "restrict" }),
+    factId: uuid("fact_id")
+      .notNull()
+      .references(() => poiFacts.id, { onDelete: "restrict" }),
+    factType: text("fact_type").notNull(),
+    beforeValueJsonb: jsonb("before_value_jsonb"),
+    afterValueJsonb: jsonb("after_value_jsonb").notNull(),
+    sourceClass: text("source_class").notNull(),
+    sourceLocator: text("source_locator").notNull(),
+    evidenceSummary: text("evidence_summary").notNull(),
+    riskLevel: text("risk_level").notNull().default("execution"),
+    expectedFactVersion: integer("expected_fact_version").notNull(),
+    state: text("state").notNull().default("draft"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    factUnique: uniqueIndex("content_ai_walking_skeleton_fact_unique").on(table.factId),
+    ownerStateIdx: index("content_ai_walking_skeleton_owner_state_idx").on(
+      table.ownerId,
+      table.state,
+      table.createdAt,
+    ),
+    factTypeCheck: check(
+      "content_ai_walking_skeleton_fact_type_check",
+      sql`${table.factType} = 'local_address_nearest_metro_exit'`,
+    ),
+    expectedVersionCheck: check(
+      "content_ai_walking_skeleton_expected_fact_version_check",
+      sql`${table.expectedFactVersion} > 0`,
+    ),
+    stateCheck: check(
+      "content_ai_walking_skeleton_state_check",
+      sql`${table.state} in ('draft', 'published', 'conflict')`,
+    ),
+  }),
+);
+
 // Private editorial image metadata. The bytes live in the private Supabase Storage bucket named by
 // ADR-0021; this table deliberately retains no original filename, EXIF, or client-provided MIME.
 export const poiImages = pgTable(
