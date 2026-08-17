@@ -14,14 +14,14 @@ describe("shared site chrome", () => {
     for (const href of [
       "/visepanda",
       "/explore",
-      "/guides/payment",
+      "/guides",
       "/rescue",
       "/human-help",
       "/account",
     ]) {
       expect(html).toContain(`href="${href}"`);
     }
-    expect(html).toContain('aria-current="page" href="/guides/payment"');
+    expect(html).toContain('aria-current="page" href="/guides"');
     expect(html).toContain(">VisePanda<");
   });
 
@@ -34,7 +34,7 @@ describe("shared site chrome", () => {
       "/visepanda",
       "/arrival-pack",
       "/explore",
-      "/guides/payment",
+      "/guides",
       "/rescue",
       "/human-help",
       "/account",
