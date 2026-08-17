@@ -11,17 +11,34 @@ import {
   type ChinaReadinessSavedAssessment,
 } from "@visepanda/domain";
 import { useLocale } from "../../i18n/locale-provider";
+import { messageFor, type MessageKey } from "../../i18n/messages";
 
 const LAST_TRIP_ID_KEY = "visepanda.lastTripId";
-const ANSWER_OPTIONS: ReadonlyArray<{
+type Translate = (key: MessageKey) => string;
+
+function answerOptions(t: Translate): ReadonlyArray<{
   value: ChinaReadinessAnswerValue;
   label: string;
   detail: string;
-}> = [
-  { value: "confirmed", label: "Confirmed", detail: "I have checked this." },
-  { value: "not_confirmed", label: "Not yet", detail: "I still need to do this." },
-  { value: "unknown", label: "Not sure", detail: "I do not have enough information yet." },
-];
+}> {
+  return [
+    {
+      value: "confirmed",
+      label: t("readiness.answer.confirmed"),
+      detail: t("readiness.answer.confirmedDetail"),
+    },
+    {
+      value: "not_confirmed",
+      label: t("readiness.answer.notConfirmed"),
+      detail: t("readiness.answer.notConfirmedDetail"),
+    },
+    {
+      value: "unknown",
+      label: t("readiness.answer.unknown"),
+      detail: t("readiness.answer.unknownDetail"),
+    },
+  ];
+}
 
 type AnswerMap = Partial<Record<ChinaReadinessQuestionId, ChinaReadinessAnswerValue>>;
 type SessionState = "loading" | "anonymous" | "authenticated" | "unavailable";
@@ -30,7 +47,7 @@ type SaveState = "idle" | "saving" | "saved" | "error";
 type SavedResponse = { ok: true; assessment: unknown } | { ok: false; error: string };
 
 export function ReadinessCheck() {
-  const { t } = useLocale();
+  const { locale, t } = useLocale();
   const [answers, setAnswers] = useState<AnswerMap>({});
   const [hasStarted, setHasStarted] = useState(false);
   const [consent, setConsent] = useState(false);
@@ -55,6 +72,7 @@ export function ReadinessCheck() {
   const resultSummary = useMemo(() => summarizeReadinessItems(result.items), [result.items]);
   const answeredCount = assessment.answers.length;
   const canPersist = session === "authenticated" || tripId !== null;
+  const localizedAnswerOptions = useMemo(() => answerOptions(t), [t]);
 
   useEffect(() => {
     const currentTripId = window.localStorage.getItem(LAST_TRIP_ID_KEY);
@@ -99,7 +117,7 @@ export function ReadinessCheck() {
     setConsent(false);
     setSavedAt(saved.savedAt);
     setSaveState("saved");
-    setSaveMessage("Your last saved self-report was loaded. Review it before saving again.");
+    setSaveMessage(t("readiness.loaded"));
   }
 
   function selectAnswer(
@@ -124,17 +142,15 @@ export function ReadinessCheck() {
       });
       const body = (await response.json()) as SavedResponse;
       if (!response.ok || !body.ok) {
-        throw new Error(body.ok ? "Readiness could not be saved." : body.error);
+        throw new Error(body.ok ? t("readiness.saveError") : body.error);
       }
       const saved = ChinaReadinessSavedAssessmentSchema.parse(body.assessment);
       setSavedAt(saved.savedAt);
       setSaveState("saved");
-      setSaveMessage(
-        "Saved. This remains a self-report, not an externally verified travel record.",
-      );
-    } catch (error) {
+      setSaveMessage(t("readiness.saved"));
+    } catch {
       setSaveState("error");
-      setSaveMessage(error instanceof Error ? error.message : "Readiness could not be saved.");
+      setSaveMessage(t("readiness.saveError"));
     }
   }
 
@@ -144,27 +160,27 @@ export function ReadinessCheck() {
         <div>
           <p className="pageEyebrow">{t("readiness.eyebrow")}</p>
           <h1 id="readiness-title">{t("readiness.title")}</h1>
-          <p>
-            A short preparation self-check for the practical parts of arriving in China. This is not
-            a score, booking service, or verification of your travel arrangements.
-          </p>
+          <p>{t("readiness.lead")}</p>
         </div>
-        <aside className="readinessPrinciples" aria-label="How this check works">
-          <span>10 fixed checks</span>
-          <span>No percentage score</span>
-          <span>Unknown stays unknown</span>
+        <aside className="readinessPrinciples" aria-label={t("readiness.howWorks")}>
+          <span>{t("readiness.fixedChecks")}</span>
+          <span>{t("readiness.noScore")}</span>
+          <span>{t("readiness.unknownStaysUnknown")}</span>
         </aside>
       </section>
 
-      <section className="readinessContent" aria-label="China readiness self-check">
+      <section className="readinessContent" aria-label={t("readiness.title")}>
         <div className="readinessQuestions">
           <div className="readinessSectionHeading">
             <div>
               <p className="pageEyebrow">{t("readiness.selfReport")}</p>
-              <h2>Answer only what you know.</h2>
+              <h2>{t("readiness.answerKnown")}</h2>
             </div>
             <span aria-live="polite">
-              {answeredCount} of {CHINA_READINESS_QUESTIONS.length} answered
+              {formatTemplate(t("readiness.answered"), {
+                answered: answeredCount,
+                total: CHINA_READINESS_QUESTIONS.length,
+              })}
             </span>
           </div>
 
@@ -181,9 +197,11 @@ export function ReadinessCheck() {
                   </div>
                   <div
                     className="readinessAnswerOptions"
-                    aria-label={`Answer for ${question.prompt}`}
+                    aria-label={formatTemplate(t("readiness.answerFor"), {
+                      question: question.prompt,
+                    })}
                   >
-                    {ANSWER_OPTIONS.map((option) => (
+                    {localizedAnswerOptions.map((option) => (
                       <button
                         aria-pressed={answers[question.id] === option.value}
                         className={answers[question.id] === option.value ? "selected" : ""}
@@ -204,25 +222,21 @@ export function ReadinessCheck() {
 
         <aside className="readinessResults" aria-live="polite">
           <div className="readinessResultsHeading">
-            <p className="pageEyebrow">Explainable result</p>
+            <p className="pageEyebrow">{t("readiness.result.explainable")}</p>
             <h2>{t("readiness.items")}</h2>
-            <p>
-              {hasStarted
-                ? "Each item uses your answer and a fixed VisePanda rule."
-                : "Choose an answer to start. Unanswered items are shown as unknown."}
-            </p>
+            <p>{hasStarted ? t("readiness.result.started") : t("readiness.result.initial")}</p>
           </div>
           <div className="readinessResultSummary" aria-label={t("readiness.items")}>
             <div className="ready">
-              <span>{statusLabel("ready")}</span>
+              <span>{statusLabel("ready", t)}</span>
               <b>{resultSummary.ready}</b>
             </div>
             <div className="action_required">
-              <span>{statusLabel("action_required")}</span>
+              <span>{statusLabel("action_required", t)}</span>
               <b>{resultSummary.actionRequired}</b>
             </div>
             <div className="unknown">
-              <span>{statusLabel("unknown")}</span>
+              <span>{statusLabel("unknown", t)}</span>
               <b>{resultSummary.unknown}</b>
             </div>
           </div>
@@ -237,21 +251,23 @@ export function ReadinessCheck() {
                   <li key={item.ruleId}>
                     <details className={`readinessResult ${item.status}`}>
                       <summary>
-                        <span className="readinessStatus">{statusLabel(item.status)}</span>
+                        <span className="readinessStatus">{statusLabel(item.status, t)}</span>
                         <b>{question?.prompt}</b>
                       </summary>
                       <div className="readinessResultDetail">
                         <dl>
                           <div>
-                            <dt>Observed</dt>
-                            <dd>{answerLabel(item.observedAnswer, !answers[item.questionId])}</dd>
+                            <dt>{t("readiness.observed")}</dt>
+                            <dd>
+                              {answerLabel(item.observedAnswer, !answers[item.questionId], t)}
+                            </dd>
                           </div>
                           <div>
-                            <dt>Evidence</dt>
+                            <dt>{t("readiness.evidence")}</dt>
                             <dd>
                               {item.evidenceStatus === "self_reported"
-                                ? "Self-reported"
-                                : "Not provided"}
+                                ? t("readiness.selfReported")
+                                : t("readiness.notProvided")}
                             </dd>
                           </div>
                         </dl>
@@ -267,10 +283,7 @@ export function ReadinessCheck() {
 
           <div className="readinessSave">
             <h3>{t("readiness.save")}</h3>
-            <p>
-              Saving is optional. We only send these fixed selections after you explicitly agree; no
-              free-form travel notes are collected here.
-            </p>
+            <p>{t("readiness.saveLead")}</p>
             {canPersist ? (
               <label>
                 <input
@@ -282,16 +295,14 @@ export function ReadinessCheck() {
                   }}
                   type="checkbox"
                 />
-                I agree to save this fixed self-report with my current Trip or account.
+                {t("readiness.saveConsent")}
               </label>
             ) : session === "loading" ? (
               <p className="readinessSaveHint" role="status">
-                Checking whether saving is available.
+                {t("readiness.checkingAvailability")}
               </p>
             ) : (
-              <p className="readinessSaveHint">
-                You can complete this check without saving. Create a Trip or sign in to save it.
-              </p>
+              <p className="readinessSaveHint">{t("readiness.saveUnavailable")}</p>
             )}
             {canPersist ? (
               <button
@@ -302,7 +313,13 @@ export function ReadinessCheck() {
                 {saveState === "saving" ? t("readiness.saving") : t("readiness.save")}
               </button>
             ) : null}
-            {savedAt ? <small>Last saved: {formatSavedAt(savedAt)}</small> : null}
+            {savedAt ? (
+              <small>
+                {formatTemplate(t("readiness.lastSaved"), {
+                  date: formatSavedAt(savedAt, locale, t),
+                })}
+              </small>
+            ) : null}
             {saveMessage ? (
               <p
                 className={`readinessSaveMessage ${saveState}`}
@@ -318,15 +335,26 @@ export function ReadinessCheck() {
   );
 }
 
-export function answerLabel(answer: ChinaReadinessAnswerValue, unanswered: boolean): string {
-  if (unanswered) return "Not answered (unknown)";
-  return answer === "confirmed" ? "Confirmed" : answer === "not_confirmed" ? "Not yet" : "Not sure";
+export function answerLabel(
+  answer: ChinaReadinessAnswerValue,
+  unanswered: boolean,
+  t: Translate = (key) => messageFor("en", key),
+): string {
+  if (unanswered) return t("readiness.notAnswered");
+  return answer === "confirmed"
+    ? t("readiness.answer.confirmed")
+    : answer === "not_confirmed"
+      ? t("readiness.answer.notConfirmed")
+      : t("readiness.answer.unknown");
 }
 
-export function statusLabel(status: "ready" | "action_required" | "unknown"): string {
-  if (status === "ready") return "Ready";
-  if (status === "action_required") return "Action needed";
-  return "Unknown";
+export function statusLabel(
+  status: "ready" | "action_required" | "unknown",
+  t: Translate = (key) => messageFor("en", key),
+): string {
+  if (status === "ready") return t("readiness.status.ready");
+  if (status === "action_required") return t("readiness.status.actionRequired");
+  return t("readiness.status.unknown");
 }
 
 export function summarizeReadinessItems(
@@ -352,9 +380,16 @@ function isUuid(value: string | null): value is string {
   );
 }
 
-function formatSavedAt(savedAt: string): string {
+function formatSavedAt(savedAt: string, locale: string, t: Translate): string {
   const date = new Date(savedAt);
   return Number.isNaN(date.valueOf())
-    ? "just now"
-    : new Intl.DateTimeFormat("en", { dateStyle: "medium", timeStyle: "short" }).format(date);
+    ? t("readiness.justNow")
+    : new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" }).format(date);
+}
+
+function formatTemplate(
+  template: string,
+  values: Readonly<Record<string, string | number>>,
+): string {
+  return template.replace(/\{(\w+)\}/g, (_match, key: string) => String(values[key] ?? ""));
 }

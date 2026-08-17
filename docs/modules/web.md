@@ -50,6 +50,12 @@ an unreviewed legal translation authoritative, and it does not create locale SEO
 canonical/indexability behavior. See Issue #431 for the shared foundation, #432 for traveler utility
 surfaces, and #433 for the legal/editorial authority path.
 
+The Readiness consumer localizes its authored chrome through the same catalog: headings, answer
+controls, evidence/status labels, collapsed-result guidance, consent/save controls, and save feedback.
+The ten question prompts, categories, next actions, question ids, answer enum values, result rules, and
+API payload stay domain-owned and unchanged across locales. Arabic continues to use the shared RTL
+document direction; no browser translation service rewrites any readiness data.
+
 ## Routes
 
 | Route                                     | Purpose                                                                                               |
