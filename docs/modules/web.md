@@ -236,6 +236,11 @@ Unexpected Copilot persistence, driver, or internal runtime failures return the 
 names, connection details, cookies, signatures, prompts, and provider material must never cross the
 public response boundary; server diagnostics for this fallback are limited to a fixed failure class.
 
+If a valid DEMO-01 dialogue envelope contains a route, time, price, or address value unsupported by a
+cited verified fact, the server returns a fixed zero-action `Verified information unavailable` envelope.
+It does not return the rejected provider text or invent a replacement fact. This is distinct from the
+fail-closed behavior retained for non-demo Trip and write paths.
+
 DEMO-01b keeps the Web surface deliberately narrow: it renders only the validated assistant
 headline/body/highlights envelope, a static read-only preview of up to three returned Trip days,
 and visible request, failure, and retry states. Request labels describe observed lifecycle state; they

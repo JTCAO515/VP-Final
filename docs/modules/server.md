@@ -227,7 +227,9 @@ Next.js runtimes rather than deployed as an independent service.
 - After Zod envelope validation, the Copilot pipeline scans all user-presentable envelope fields for
   concrete address, route/line, time, and price values. Each such value must be present in a cited,
   currently retrieved fact value; an unsupported value throws before any Trip patch can be applied.
-  This is intentionally stricter than prompt grounding and has no model/fallback bypass.
+  This is intentionally stricter than prompt grounding. DEMO-01 dialogue-only mode may replace a
+  rejected executable value with a fixed zero-action unavailable notice that contains none of the
+  rejected value; every non-demo path still fails closed with no model/fallback bypass.
 - Human Task creation accepts only a trusted authenticated or signed-anonymous identity, a UUID
   idempotency key, and the minimized controlled-preview request. A successful idempotency replay is
   returned before capacity checks and never consumes another slot. For a verified identity, the

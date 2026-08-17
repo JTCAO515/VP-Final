@@ -238,6 +238,43 @@ describe("createCopilotPipeline", () => {
     await expect(tripService.list(identity)).resolves.toEqual([]);
   });
 
+  it("returns an honest zero-action notice for unsupported execution facts in demo dialogue mode", async () => {
+    const tripService = createVersionedInMemoryTripService();
+    const pipeline = createCopilotPipeline({
+      tripService,
+      routeIntent: () => "question",
+      retrieveContext: () => [],
+      generateEnvelope: () => ({
+        intent: "question",
+        message: {
+          headline: "Shanghai metro",
+          body: "Take Metro Line 2 for this route.",
+          highlights: [],
+        },
+        citations: [],
+      }),
+      demoDialogueOnly: true,
+    });
+
+    await expect(
+      pipeline.run({ message: "How does the Shanghai metro work?" }, identity),
+    ).resolves.toMatchObject({
+      envelope: {
+        intent: "question",
+        message: {
+          headline: "Verified information unavailable",
+          body: "I do not have enough verified local information to answer that safely, so I will not guess. Please check an official source or ask local staff.",
+        },
+        tripActions: [],
+        toolCards: [],
+        commercialActions: [],
+        humanHelp: null,
+        citations: [],
+      },
+    });
+    await expect(tripService.list(identity)).resolves.toEqual([]);
+  });
+
   it("records knowledge gaps for uncited question answers", async () => {
     const knowledgeService = createInMemoryKnowledgeService([], []);
     const pipeline = createCopilotPipeline({

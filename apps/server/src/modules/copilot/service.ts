@@ -28,6 +28,7 @@ import { recordTelemetrySafely } from "../telemetry/producer.js";
 import { DemoModelResponseError } from "./modelRuntime.js";
 import {
   classifyHighRiskRequest,
+  ExecutionFactSupportError,
   resolveHighRiskEnvelope,
   validateExecutionFactSupport,
   type SafePhraseResolver,
@@ -175,10 +176,13 @@ export function createCopilotPipeline({
           throw new DemoModelResponseError(attempts);
         }
         if (demoDialogueOnly) assertDemoDialogueEnvelope(parsedGeneration.envelope);
-        const envelope = validateExecutionFactSupport(
-          validateCitations(parsedGeneration.envelope, retrievedFacts),
+        const citedEnvelope = validateCitations(parsedGeneration.envelope, retrievedFacts);
+        const envelope = validateGeneratedEnvelopeForMode({
+          envelope: citedEnvelope,
           retrievedFacts,
-        );
+          intent,
+          demoDialogueOnly,
+        });
         if (knowledgeService && shouldRecordKnowledgeGap(envelope)) {
           const city = detectCity(parsedInput.message);
           await knowledgeService.recordGap({
@@ -833,6 +837,36 @@ function validateCitations(envelope: CopilotEnvelope, facts: RetrievalFact[]): C
       return { fact_id: fact.id, label: fact.label, source: fact.source };
     }),
   });
+}
+
+function validateGeneratedEnvelopeForMode(input: {
+  envelope: CopilotEnvelope;
+  retrievedFacts: RetrievalFact[];
+  intent: CopilotIntent;
+  demoDialogueOnly: boolean;
+}): CopilotEnvelope {
+  try {
+    return validateExecutionFactSupport(input.envelope, input.retrievedFacts);
+  } catch (error) {
+    // DEMO-01 never turns an unsupported execution claim into a plausible travel answer. It can
+    // only return this deterministic, zero-action notice while the curated fact base is incomplete.
+    if (input.demoDialogueOnly && error instanceof ExecutionFactSupportError) {
+      return CopilotEnvelopeSchema.parse({
+        intent: input.intent,
+        message: {
+          headline: "Verified information unavailable",
+          body: "I do not have enough verified local information to answer that safely, so I will not guess. Please check an official source or ask local staff.",
+          highlights: [],
+        },
+        tripActions: [],
+        toolCards: [],
+        commercialActions: [],
+        humanHelp: null,
+        citations: [],
+      });
+    }
+    throw error;
+  }
 }
 
 function citationsFor(facts: RetrievalFact[]) {
