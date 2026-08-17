@@ -662,7 +662,7 @@ describe("createCopilotPipeline", () => {
     ]);
   });
 
-  it("records billed attempts when every envelope repair candidate is invalid", async () => {
+  it("records billed attempts when every non-dialogue envelope repair candidate is invalid", async () => {
     const traceService = createInMemoryAgentTraceService();
     const pipeline = createCopilotPipeline({
       tripService: createVersionedInMemoryTripService(),
@@ -683,9 +683,9 @@ describe("createCopilotPipeline", () => {
       }),
     });
 
-    await expect(pipeline.run({ message: "Help me" }, identity)).rejects.toThrow(
-      "Copilot envelope validation failed",
-    );
+    await expect(pipeline.run({ message: "Help me" }, identity)).rejects.toMatchObject({
+      code: "MODEL_RESPONSE_INVALID",
+    });
     expect(traceService.listRuns()).toMatchObject([
       {
         status: "failed",
@@ -699,6 +699,57 @@ describe("createCopilotPipeline", () => {
         ],
       },
     ]);
+  });
+
+  it("recovers real provider prose into a dialogue-only envelope without inventing actions", async () => {
+    const pipeline = createCopilotPipeline({
+      tripService: createVersionedInMemoryTripService(),
+      routeIntent: () => "question",
+      generateEnvelope: () => ({
+        candidate:
+          "Use the official metro signs and buy a reusable transit card if it suits your route.",
+        attempts: [],
+      }),
+      demoDialogueOnly: true,
+    });
+
+    await expect(
+      pipeline.run({ message: "How does the Shanghai metro work?" }, identity),
+    ).resolves.toMatchObject({
+      envelope: {
+        intent: "question",
+        message: {
+          headline: "VisePanda",
+          body: "Use the official metro signs and buy a reusable transit card if it suits your route.",
+        },
+        tripActions: [],
+        toolCards: [],
+        commercialActions: [],
+        humanHelp: null,
+        citations: [],
+      },
+    });
+  });
+
+  it("does not recover a malformed envelope that declares a conflicting intent", async () => {
+    const pipeline = createCopilotPipeline({
+      tripService: createVersionedInMemoryTripService(),
+      routeIntent: () => "question",
+      generateEnvelope: () => ({
+        candidate: {
+          intent: "commerce_intent",
+          message: "This text must not be rewritten under another intent.",
+        },
+        attempts: [],
+      }),
+      demoDialogueOnly: true,
+    });
+
+    await expect(
+      pipeline.run({ message: "How does the Shanghai metro work?" }, identity),
+    ).rejects.toMatchObject({
+      code: "MODEL_RESPONSE_INVALID",
+    });
   });
 
   it("rejects non-dialogue output in DEMO-01 before it can create a Trip", async () => {

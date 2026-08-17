@@ -15,6 +15,7 @@ export {
   createDemoCopilotModelDependencies,
   createDemoModelRuntime,
   DemoModelExecutionError,
+  DemoModelResponseError,
   DemoModelUnavailableError,
 } from "./modelRuntime.js";
 export type { CopilotRunInput, CopilotRunResult, RetrievalFact } from "./service.js";

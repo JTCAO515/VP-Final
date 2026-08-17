@@ -225,10 +225,11 @@ The browser route does not accept phrase-selection keys, so public high-risk cha
 or enumerate editorial expressions. A later controlled surface may pass an exact server-validated
 selection; otherwise the Copilot pipeline returns the fixed unavailable response instead of model text.
 
-When configured model routes all fail, the route keeps the same public 503 contract and emits only a
-sanitized runtime diagnostic: route/provider id, configured model id, failure class, and latency. It
-never logs a prompt, provider response body, credential, cookie, or raw error payload. This is the
-minimum evidence needed to diagnose the real-provider gate without widening public error details.
+When configured model routes all fail, or a provider response cannot be safely validated or recovered
+as dialogue-only prose, the route keeps the same public 503 contract and emits only a sanitized runtime
+diagnostic: route/provider id, configured model id, failure class, and latency. It never logs a prompt,
+provider response body, credential, cookie, or raw error payload. This is the minimum evidence needed
+to diagnose the real-provider gate without widening public error details.
 
 Unexpected Copilot persistence, driver, or internal runtime failures return the stable public 502
 `COPILOT_REQUEST_FAILED` contract with generic retry guidance. Raw exception messages, SQL, relation

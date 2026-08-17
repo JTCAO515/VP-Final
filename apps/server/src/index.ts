@@ -154,6 +154,7 @@ export {
   createDemoCopilotModelDependencies,
   createDemoModelRuntime,
   DemoModelExecutionError,
+  DemoModelResponseError,
   DemoModelUnavailableError,
   reportDemoProviderReadiness,
 } from "./modules/copilot/modelRuntime.js";

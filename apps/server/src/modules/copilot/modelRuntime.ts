@@ -43,7 +43,7 @@ export class DemoModelExecutionError extends Error {
 export class DemoModelResponseError extends Error {
   readonly code = "MODEL_RESPONSE_INVALID";
 
-  constructor(readonly attempts: ModelAttempt[]) {
+  constructor(readonly attempts: Array<ModelAttempt | AgentAttemptTrace>) {
     super("The Copilot model returned an invalid structured response.");
     this.name = "DemoModelResponseError";
   }

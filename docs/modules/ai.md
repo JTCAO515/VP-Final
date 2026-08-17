@@ -61,8 +61,10 @@ Copilot-specific provider composition belong in their owning runtime module.
   providers can still execute within the total budget.
 - Missing keys or total provider failure must not return a fabricated answer.
 - DEMO-01 accepts a bounded locally repaired JSON candidate only after `CopilotEnvelopeSchema` passes.
-  It permits dialogue only: no Trip actions, tools, commerce, Human Help, or citations. A main-model
-  envelope whose intent differs from the low-cost router decision fails closed.
+  In dialogue-only mode, readable provider prose may be recovered into a deterministic empty-action
+  envelope only when no valid declared intent conflicts with the router decision. It permits no Trip
+  actions, tools, commerce, Human Help, or citations. A conflicting intent or unrecoverable response
+  fails closed as `MODEL_RESPONSE_INVALID`.
 - Provider setup follows the [AI provider configuration runbook](../runbooks/ai-provider-configuration.md)
   and the operator-action register. Keys remain trusted runtime configuration only.
 - Prompt, model, routing, parser, or tool changes require relevant evals.

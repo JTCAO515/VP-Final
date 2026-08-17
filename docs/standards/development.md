@@ -86,3 +86,7 @@ The gate also runs the deterministic Copilot policy-regression suite. It verifie
 actions remain gated by `commerce_intent`, Human Help is only a reviewable draft, malformed or
 business-invalid patches are rejected, insufficient verified knowledge stays honest, and medical or
 legal-sensitive requests cannot bypass the fixed-expression safety path.
+
+Each evaluation command MUST build every workspace package it imports at runtime before invoking its
+test runner. A passing developer machine with stale `dist/` output is not evidence that the clean CI
+checkout can resolve the same evaluation dependencies.

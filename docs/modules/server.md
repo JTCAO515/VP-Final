@@ -68,9 +68,12 @@ Next.js runtimes rather than deployed as an independent service.
 - Copilot retains deterministic defaults only in explicit tests and `local-demo`. In any other runtime,
   DEMO-01 injects the v3 provider route executor, records safe attempts through Trace, performs bounded
   JSON candidate repair before Zod validation, normalizes a provider string `message` into the typed
-  Copilot message object, forwards provider-specific compatibility body fields from the AI inventory,
-  and fails with a typed configuration-unavailable error when a required route lacks a trusted model
-  name or credential.
+  Copilot message object, and, in dialogue-only mode, may recover readable provider prose into a
+  deterministic empty-action envelope only when no declared intent conflicts with the router decision.
+  An unrecoverable or conflicting response becomes typed `MODEL_RESPONSE_INVALID`; no recovery can
+  introduce a Trip action, tool, commerce action, Human Help handoff, or citation. The executor forwards
+  provider-specific compatibility body fields from the AI inventory and fails with a typed
+  configuration-unavailable error when a required route lacks a trusted model name or credential.
 - The accepted ADR-0015 public-runtime policy has one server-owned parser for its numeric ceilings.
   Copilot input defaults to at most 8,000 JavaScript string code units, every model attempt defaults to
   at most 1,600 output tokens, and authenticated rate limits default to 20 requests/minute and
