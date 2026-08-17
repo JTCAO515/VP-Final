@@ -87,8 +87,9 @@ Next.js runtimes rather than deployed as an independent service.
   identity and China day; a safe idempotency replay is not a new submission, while the global
   Shanghai five-task capacity remains a final separate guard.
 - The deployed DEMO-01 path is dialogue-only. It rejects Trip actions, tools, commerce, Human Help,
-  and citations before any state-changing branch can run. Real provider evidence remains blocked on
-  OA-005 and is not claimed by this repository change.
+  and citations before any state-changing branch can run. OA-005 records accepted sanitized evidence
+  for the configured real-provider route; its current status and residual observations remain owned
+  by the operator-action register rather than this module explanation.
 - Anonymous Copilot access uses a server-owned turn-counter interface keyed only by a SHA-256 digest
   of the verified signed anonymous id. The Upstash adapter atomically reserves one of the configured
   slots (three by default), counts only successfully completed turns, releases model failures, and
