@@ -3,6 +3,13 @@
   "private": true,
   "packageManager": "pnpm@9.15.9",
   "engines": { "node": ">=22" },
+  "pnpm": {
+    "overrides": {
+      "nanoid": "3.3.18",
+      "postcss": "8.5.23",
+      "sharp": "0.35.3"
+    }
+  },
   "scripts": {
     "build": "turbo run build",
     "evals": "pnpm evals:trip_generation && pnpm evals:safety_runtime && pnpm evals:copilot_policy",
