@@ -5,7 +5,8 @@ create table public.content_ai_walking_skeleton_drafts (
   owner_id uuid not null references auth.users(id) on delete restrict,
   poi_id uuid not null references public.pois(id) on delete restrict,
   fact_id uuid not null references public.poi_facts(id) on delete restrict,
-  fact_type text not null check (fact_type = 'local_address_nearest_metro_exit'),
+  fact_type text not null constraint content_ai_walking_skeleton_fact_type_check
+    check (fact_type = 'local_address_nearest_metro_exit'),
   before_value_jsonb jsonb,
   after_value_jsonb jsonb not null,
   source_class text not null check (source_class in ('official', 'operator_verified', 'reputable_editorial', 'user_report', 'model_output', 'uncorroborated_scrape')),
@@ -13,7 +14,8 @@ create table public.content_ai_walking_skeleton_drafts (
   evidence_summary text not null check (char_length(btrim(evidence_summary)) between 1 and 240),
   risk_level text not null check (risk_level = 'execution'),
   expected_fact_version integer not null check (expected_fact_version > 0),
-  state text not null default 'draft' check (state in ('draft', 'published', 'conflict')),
+  state text not null default 'draft' constraint content_ai_walking_skeleton_state_check
+    check (state in ('draft', 'published', 'conflict')),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
