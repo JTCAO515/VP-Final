@@ -57,7 +57,7 @@ jobs:
       - run: pnpm --filter @visepanda/domain build
       - run: pnpm --filter @visepanda/app-server build
       # This group has no DDL-based failure injection and remains parallel inside Vitest.
-      - run: pnpm --filter @visepanda/app-server exec vitest run src/db/versionedTripService.integration.test.ts src/db/agentTraceService.integration.test.ts src/db/knowledgeService.integration.test.ts src/db/knowledgeBulkImportService.integration.test.ts src/db/humanTaskService.integration.test.ts src/db/opsCostSummaryService.integration.test.ts src/db/commerceService.integration.test.ts src/db/visePodBindingService.integration.test.ts src/db/visePodUserResolutionService.integration.test.ts
+      - run: pnpm --filter @visepanda/app-server exec vitest run src/db/versionedTripService.integration.test.ts src/db/agentTraceService.integration.test.ts src/db/knowledgeService.integration.test.ts src/db/knowledgeBulkImportService.integration.test.ts src/db/humanTaskService.integration.test.ts src/db/opsCostSummaryService.integration.test.ts src/db/commerceService.integration.test.ts src/db/visePodBindingService.integration.test.ts src/db/visePodUserResolutionService.integration.test.ts src/db/contentAiWalkingSkeletonService.integration.test.ts
         env:
           DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
       # These suites temporarily create a trigger on the shared audit table to prove rollback.

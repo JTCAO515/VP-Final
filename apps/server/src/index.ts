@@ -9,6 +9,12 @@ export { appRouter } from "./router.js";
 export type { AppRouter } from "./router.js";
 export { createDb } from "./db/client.js";
 export { createDbKnowledgeService } from "./db/knowledgeService.js";
+export {
+  ContentAiWalkingSkeletonConflictError,
+  ContentAiWalkingSkeletonNotFoundError,
+  createDbContentAiWalkingSkeletonService,
+} from "./db/contentAiWalkingSkeletonService.js";
+export type { ContentAiWalkingSkeletonService } from "./db/contentAiWalkingSkeletonService.js";
 export { createDbPoiImageService } from "./db/poiImageService.js";
 export { createDbSeoEditorialOverrideService } from "./db/seoEditorialOverrideService.js";
 export { createDbSafePhraseResolver } from "./db/safePhraseResolver.js";
