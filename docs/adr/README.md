@@ -26,6 +26,7 @@ New ADRs are append-only and use the next numeric prefix.
 | [ADR-0019](ADR-0019-mobile-telemetry-observation.md)                   | Accepted | Freezes authenticated, closed-set mobile observations with a bounded local retry queue and server-owned privacy controls.                  |
 | [ADR-0020](ADR-0020-creator-attribution-contract.md)                   | Accepted | Freezes creator referrals as private server-resolved acquisition sources and keeps them separate from OTA outbound links.                  |
 | [ADR-0021](ADR-0021-ops-poi-image-storage.md)                          | Accepted | Freezes private, server-mediated, attributed Ops image storage; it does not authorize public image delivery.                               |
+| [ADR-0022](ADR-0022-content-ai-control-boundary.md)                     | Accepted | Freezes Content AI as private Change Set drafting with deterministic retrieval, human all-or-nothing publication, and no model authority. |
 
 ## When to Add an ADR
 

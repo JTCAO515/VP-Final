@@ -284,6 +284,16 @@
       "summary": "Explicit runtime modes, safe adapter diagnostics, durable object owners, and canonical follow-ups.",
       "sourcePrefixes": ["apps/server/src/runtime/", "apps/server/package.json"]
     },
+    {
+      "path": "docs/architecture/content-ai-dependency-map.md",
+      "title": "Content AI v1 Current State and Dependency Map",
+      "category": "architecture",
+      "type": "explanation",
+      "status": "active",
+      "owner": "knowledge / operations / AI safety",
+      "summary": "Maps reusable knowledge, Ops, and AI foundations, frozen Content AI gaps, walking-skeleton feedback, and guarded delivery.",
+      "sourcePrefixes": ["apps/ops/", "apps/server/src/modules/knowledge/", "packages/domain/src/knowledge/", "packages/ai/"]
+    },
 
     {
       "path": "docs/modules/README.md",
@@ -473,6 +483,16 @@
       "owner": "engineering",
       "summary": "Mandatory quality, truthfulness, secret, migration, and scope rules.",
       "sourcePrefixes": []
+    },
+    {
+      "path": "docs/constraints/content-ai.md",
+      "title": "Content AI Constraints",
+      "category": "constraints",
+      "type": "constraint",
+      "status": "active",
+      "owner": "knowledge / operations / AI safety",
+      "summary": "Mandatory Content AI draft-only, authorization, provenance, conflict, audit, prompt-injection, media, provider, and GitHub-draft rules.",
+      "sourcePrefixes": ["apps/ops/", "apps/server/", "packages/domain/", "packages/ai/", "infra/"]
     },
     {
       "path": "docs/constraints/karpathy-guidelines.md",
@@ -948,6 +968,16 @@
         "apps/ops/src/app/api/knowledge/",
         "infra/supabase/"
       ]
+    },
+    {
+      "path": "docs/adr/ADR-0022-content-ai-control-boundary.md",
+      "title": "ADR-0022: Content AI Change Set Control Boundary",
+      "category": "decisions",
+      "type": "decision",
+      "status": "accepted",
+      "owner": "knowledge / operations / AI safety",
+      "summary": "Freezes Content AI as private typed Change Set drafting with deterministic retrieval, bounded Qwen work, human all-or-nothing publication, and no model authority.",
+      "sourcePrefixes": ["apps/ops/", "apps/server/", "packages/domain/", "packages/ai/", "infra/"]
     },
 
     {
