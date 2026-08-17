@@ -99,16 +99,19 @@ configuration fails composition rather than silently retaining data longer.
 
 `/readiness` is the traveler-facing consumer of that fixed contract. It is an explainable self-check,
 not a percentage score, recommendation engine, booking surface, or externally verified record. It
-renders all ten versioned questions and their rule ids, observed answer, evidence status, and next
-action; unanswered inputs remain explicit `unknown`. Its browser route accepts only the domain's
-fixed enum payload, resolves ownership server-side, and requires a separate opt-in before persistence.
-No partner CTA is rendered by this core flow, and no free-form text, passport data, or travel narrative
-is submitted through it.
+renders all ten versioned questions and an always-visible Ready/Action needed/Unknown summary. Once a
+traveler begins, each rule is an accessible, collapsed disclosure containing its rule id, observed
+answer, evidence status, and next action; unanswered inputs remain explicit `unknown`. Its browser
+route accepts only the domain's fixed enum payload, resolves ownership server-side, and requires a
+separate opt-in before persistence. No partner CTA is rendered by this core flow, and no free-form
+text, passport data, or travel narrative is submitted through it.
 
 [ADR-0005](../adr/ADR-0005-runtime-modes-and-production-adapter-ownership.md) requires explicit mode
 selection: only `local-demo` may use labelled fixtures/memory; deployed modes return honest
-unavailable states when a required durable dependency is absent. OA-004/OA-005 remain unverified, so
-no live durable Vercel claim is made.
+unavailable states when a required durable dependency is absent. The operator-action register remains
+the current authority for deployment evidence: it records accepted provider-route evidence for OA-005
+and the remaining durable-write/retention observation work for OA-004. This module makes no broader
+durable Vercel claim.
 
 The `/outbound` route resolves identity only from a verified Supabase session or the server-signed
 anonymous cookie; query parameters cannot supply ownership. It delegates partner lookup, URL

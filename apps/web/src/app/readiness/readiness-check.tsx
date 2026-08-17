@@ -52,6 +52,7 @@ export function ReadinessCheck() {
     [answers, consent],
   );
   const result = useMemo(() => deriveChinaReadinessResult(assessment), [assessment]);
+  const resultSummary = useMemo(() => summarizeReadinessItems(result.items), [result.items]);
   const answeredCount = assessment.answers.length;
   const canPersist = session === "authenticated" || tripId !== null;
 
@@ -211,35 +212,58 @@ export function ReadinessCheck() {
                 : "Choose an answer to start. Unanswered items are shown as unknown."}
             </p>
           </div>
-          <ul>
-            {result.items.map((item) => {
-              const question = CHINA_READINESS_QUESTIONS.find(
-                (candidate) => candidate.id === item.questionId,
-              );
-              return (
-                <li className={`readinessResult ${item.status}`} key={item.ruleId}>
-                  <div>
-                    <span className="readinessStatus">{statusLabel(item.status)}</span>
-                    <b>{question?.prompt}</b>
-                  </div>
-                  <dl>
-                    <div>
-                      <dt>Observed</dt>
-                      <dd>{answerLabel(item.observedAnswer, !answers[item.questionId])}</dd>
-                    </div>
-                    <div>
-                      <dt>Evidence</dt>
-                      <dd>
-                        {item.evidenceStatus === "self_reported" ? "Self-reported" : "Not provided"}
-                      </dd>
-                    </div>
-                  </dl>
-                  <p>{item.nextAction}</p>
-                  <code>{item.ruleId}</code>
-                </li>
-              );
-            })}
-          </ul>
+          <div className="readinessResultSummary" aria-label={t("readiness.items")}>
+            <div className="ready">
+              <span>{statusLabel("ready")}</span>
+              <b>{resultSummary.ready}</b>
+            </div>
+            <div className="action_required">
+              <span>{statusLabel("action_required")}</span>
+              <b>{resultSummary.actionRequired}</b>
+            </div>
+            <div className="unknown">
+              <span>{statusLabel("unknown")}</span>
+              <b>{resultSummary.unknown}</b>
+            </div>
+          </div>
+
+          {hasStarted ? (
+            <ul>
+              {result.items.map((item) => {
+                const question = CHINA_READINESS_QUESTIONS.find(
+                  (candidate) => candidate.id === item.questionId,
+                );
+                return (
+                  <li key={item.ruleId}>
+                    <details className={`readinessResult ${item.status}`}>
+                      <summary>
+                        <span className="readinessStatus">{statusLabel(item.status)}</span>
+                        <b>{question?.prompt}</b>
+                      </summary>
+                      <div className="readinessResultDetail">
+                        <dl>
+                          <div>
+                            <dt>Observed</dt>
+                            <dd>{answerLabel(item.observedAnswer, !answers[item.questionId])}</dd>
+                          </div>
+                          <div>
+                            <dt>Evidence</dt>
+                            <dd>
+                              {item.evidenceStatus === "self_reported"
+                                ? "Self-reported"
+                                : "Not provided"}
+                            </dd>
+                          </div>
+                        </dl>
+                        <p>{item.nextAction}</p>
+                        <code>{item.ruleId}</code>
+                      </div>
+                    </details>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : null}
 
           <div className="readinessSave">
             <h3>{t("readiness.save")}</h3>
@@ -303,6 +327,22 @@ export function statusLabel(status: "ready" | "action_required" | "unknown"): st
   if (status === "ready") return "Ready";
   if (status === "action_required") return "Action needed";
   return "Unknown";
+}
+
+export function summarizeReadinessItems(
+  items: ReadonlyArray<{
+    status: "ready" | "action_required" | "unknown";
+  }>,
+): Readonly<{ ready: number; actionRequired: number; unknown: number }> {
+  return items.reduce(
+    (summary, item) => {
+      if (item.status === "ready") summary.ready += 1;
+      else if (item.status === "action_required") summary.actionRequired += 1;
+      else summary.unknown += 1;
+      return summary;
+    },
+    { ready: 0, actionRequired: 0, unknown: 0 },
+  );
 }
 
 function isUuid(value: string | null): value is string {

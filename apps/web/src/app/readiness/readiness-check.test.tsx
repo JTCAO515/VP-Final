@@ -1,7 +1,12 @@
 import * as React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { answerLabel, ReadinessCheck, statusLabel } from "./readiness-check";
+import {
+  answerLabel,
+  ReadinessCheck,
+  statusLabel,
+  summarizeReadinessItems,
+} from "./readiness-check";
 
 describe("China Readiness Check", () => {
   it("does not create a percentage score or commercial CTA", () => {
@@ -12,7 +17,8 @@ describe("China Readiness Check", () => {
     expect(html).toContain("No percentage score");
     expect(html).toContain("Unknown stays unknown");
     expect(html).toContain("Save this self-report");
-    expect(html).toContain("Not answered (unknown)");
+    expect(html).toContain('class="readinessResultSummary"');
+    expect(html).not.toContain("<details");
     expect(html).not.toContain("% ready");
     expect(html).not.toContain("Book now");
     expect(html).not.toContain("Partner");
@@ -24,6 +30,17 @@ describe("China Readiness Check", () => {
     expect(answerLabel("not_confirmed", false)).toBe("Not yet");
     expect(statusLabel("unknown")).toBe("Unknown");
     expect(statusLabel("action_required")).toBe("Action needed");
+  });
+
+  it("summarizes each status without changing the underlying readiness result", () => {
+    expect(
+      summarizeReadinessItems([
+        { status: "ready" },
+        { status: "action_required" },
+        { status: "unknown" },
+        { status: "unknown" },
+      ]),
+    ).toEqual({ ready: 1, actionRequired: 1, unknown: 2 });
   });
 });
 
