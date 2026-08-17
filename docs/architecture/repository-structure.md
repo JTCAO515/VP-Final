@@ -34,6 +34,9 @@
 ## Directory Rules
 
 - Generated output (`dist`, `.next`, `.turbo`) is never a source of truth and must not be committed.
+- Turbo task output globs MUST describe only artifacts that the task really writes. A verification-only
+  task such as the mobile TypeScript build declares `outputs: []` and relies on cached logs; it must
+  not claim a generated `dist` directory.
 - A module exports its supported interface from its index or declared package export. Consumers must
   not depend on internal file layout without an explicit export.
 - Workspace type checking follows the upstream build graph so a clean CI checkout resolves declared
@@ -57,6 +60,7 @@ The structure is ahead of production readiness. The following distinctions must 
 - The Server may depend on `packages/ai` for provider-neutral route execution, but only an explicit
   composition root may wire it into a deployed Copilot request path.
 - A merged UI is not proof that authentication, payment, partner approval, or operational SLA exists.
-- The Mobile package is intentionally a compilation placeholder until Phase 1 triggers are met.
+- The Mobile package is a controlled pre-production shell. It remains outside public capability claims
+  until the relevant Phase 1 triggers and live dependency evidence are recorded.
 
 Module documents state these gaps explicitly and must be updated when they close.
