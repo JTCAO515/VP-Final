@@ -68,6 +68,10 @@ one another. See the [handoff workflow](handoff-workflow.md).
 
 - Module owners review their active explanation/constraint/runbook documents when their source area
   changes.
+- `README.md` current-status summaries MUST point readers to the generated handoff and the
+  operator-action register for live status. They MUST NOT retain superseded current-state claims
+  after the corresponding implementation baseline changes. `pnpm docs:check` enforces a narrow
+  regression list for known stale wording; that check is a backstop, not a substitute for review.
 - The overall design baseline is reviewed on D2/D3 deviations and at release retrospectives.
 - Runbooks are reviewed after use, incident, provider change, or every six months if still active.
 - A document with no current owner is a defect; assign or archive it.
