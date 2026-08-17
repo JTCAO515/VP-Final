@@ -30,8 +30,8 @@ returns connection strings or credentials.
 | Ops authorization/audit | Server Ops Authorization service + Postgres adapter | Implemented | Client role, email allowlist, default admin | #114 |
 | Human Tasks | Server Human Task service + Postgres adapter | Production fixture routes quarantined | App-local task ledger | P0-13 #150 |
 | Outbound clicks/partners | Server Commerce service + Postgres adapter | Production fixture route quarantined | Memory click ledger/raw redirect | P0-18 #155 |
-| Telemetry | Server Telemetry service + Postgres adapter | Not implemented for production | Per-route event array | P0-19 #156 |
-| Agent traces/tool calls | Server Trace service + Postgres adapter | P0-09 implementation pending verification | Provider-log-only record | P0-09 #73 |
+| Telemetry | Server Telemetry service + Postgres adapter | Implemented; strict browser/native capture boundaries and durable product events | Per-route event array | OA-008 external monitoring remains optional |
+| Agent traces/tool calls | Server Trace service + Postgres adapter | Implemented; safe per-attempt trace and fixed-point cost persistence | Provider-log-only record | Production observation remains governed by OA-004/OA-005 evidence |
 
 P0-06 does not steal the later business workflows. Until their canonical Issue lands, a deployed
 route that would accept those writes must be unavailable rather than acknowledge a process-memory
@@ -58,5 +58,7 @@ pnpm --filter @visepanda/app-server typecheck
 pnpm --filter @visepanda/app-server lint
 ```
 
-Production readiness additionally requires OA-004 (`DATABASE_URL`) and OA-005
-(`VISEPANDA_RUNTIME_MODE` plus provider configuration) to be verified in the target environment.
+Production readiness is controlled by the current operator-action register. OA-005 has accepted
+provider-route evidence; OA-004 retains the remaining durable write-path/retention observations.
+Neither a configured value nor a historical verification may be treated as a substitute for the
+register's current acceptance criteria.

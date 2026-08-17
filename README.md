@@ -22,25 +22,30 @@
 | 7 | [`docs/adr/`](docs/adr/) | 已接受决策；普通 PR 不重复争论 |
 | 8 | [Issues](https://github.com/JTCAO515/VP-Final/issues) | 可执行控制动作；按依赖和优先级认领 |
 
-## 当前状态（2026-07-10）
+## 当前状态（2026-08-17）
 
-- 已完成：monorepo、核心 domain、Trip/knowledge 数据模型与服务、Web/Ops 可演示骨架、
-  红金 Copilot 工作台及基础 CI/evals。
-- 当前阶段：**可信演示骨架**，尚非可公开收费的生产 MVP。
-- P0 阻塞：真实身份/授权、真实模型与知识检索、Human Task/outbound/telemetry 持久化、
-  Ops RBAC、支付证据、rate limit、observability、上线 runbook 与法律页。
-- 权威现状审计：[`docs/planning/visepanda-v2-project-review-2026-07-10.md`](docs/planning/visepanda-v2-project-review-2026-07-10.md)。
-- Phase 1 Mobile 仍应等待冻结基线的真实用户/Human Task 触发条件。
+- 已完成：monorepo、核心 Domain、持久化 Trip/Knowledge/Human Task/Outbound/Telemetry 边界、
+  真实 Provider 路由、成本与产品事件记录、匿名与可信 IP 保护、法律页、Ops RBAC、
+  知识审核工作流、私有 Ops 图片运行时、Web 多语言 UI，以及基础 CI/evals。
+- 当前阶段：**Phase 0/1 的生产加固与受控预览**。公开 Web 与 Ops 具备受限但真实的运行时；
+  所有缺失配置均诚实不可用，绝不以 mock 或占位成功替代。
+- 当前最大产品缺口：经过人工核实、可展示的执行事实仍很少；这不是代码问题，必须按
+  [知识事实审核流程](docs/runbooks/knowledge-fact-review.md)逐条录入、复核和续期。
+- 外部激活仍受事实门槛约束：Stripe 收款、批准合作伙伴跳转、运营服务、公开图片交付、
+  VisePod 设备服务与 Phase 2+ 商业化均未因仓库代码而自动上线。
+- **权威现状**：先读自动生成的 [`docs/INDEX.md`](docs/INDEX.md) handoff 快照、
+  [`docs/governance/operator-action-register.md`](docs/governance/operator-action-register.md) 和
+  当前 GitHub Issues；历史评审文档仅作为当日证据，不作为实时状态来源。
 
 ## 仓库结构
 
 ```
 packages/domain      唯一真理源：zod schemas + 纯函数（任何功能先改这里）
 packages/api-client  由 server router 生成的类型化客户端
-packages/ai          提示词档案(4个能力模块起步)、模型路由、输出校验、evals 胶水
+packages/ai          提示词档案、环境配置化模型路由、输出校验、evals 胶水
 packages/ui          设计 token + 跨端基础组件
-apps/web             Next.js — SEO + 完整 Web 产品（V2-10 落地真实脚手架）
-apps/mobile          Expo RN — 在华执行 App（Phase 1 触发后落地）
+apps/web             Next.js — 公开产品、VisePanda 工作台、SEO 与安全运行时
+apps/mobile          Expo RN — 受控预览的在华执行基础与 Phase 1 扩展面
 apps/server          模块化单体 API：copilot/trip/knowledge/task/commerce/identity/telemetry
 apps/ops             运营台：知识编辑、人工任务调度、商家白名单（V2-13 落地）
 infra/               migrations、seeds、部署配置
@@ -50,7 +55,10 @@ docs/                architecture / modules / standards / constraints / methodol
 
 ## 技术栈
 
-TypeScript 单语言 monorepo（pnpm + turborepo）。Next.js 15（Web/Ops）· Expo RN（App）· Node 模块化单体（Server）· Supabase Postgres + Drizzle + pgvector · Upstash Redis/QStash · Stripe + RevenueCat · PostHog + Sentry · 双供应商 LLM 路由（GPT-5.5 / Claude 互备，廉价档做分类）。
+TypeScript 单语言 monorepo（pnpm + turborepo）。Next.js 15（Web/Ops）· Expo RN（App）· Node
+模块化单体（Server）· Supabase Postgres + Drizzle + pgvector · Upstash Redis/QStash · Stripe +
+RevenueCat · PostHog + Sentry · 环境配置化的多 Provider LLM 路由（DashScope、DeepSeek、Moonshot、
+智谱）；未验证的外部配置始终返回诚实不可用。
 
 **不做**：原生双端、微服务/K8s、单一 LLM 供应商绑定、Agent 编排框架绑定、OTA 交易闭环、开放商家注册。完整反目标清单见基线 §10。
 
@@ -64,7 +72,8 @@ TypeScript 单语言 monorepo（pnpm + turborepo）。Next.js 15（Web/Ops）· 
 6. **禁止跨模块碰表** — server 模块间只走显式服务接口。
 7. **代码动，文档必动** — 运行 `pnpm docs:check` 和 `pnpm docs:impact -- --base <ref>`。
 8. **钱学森 Skills 闭环** — 每项工作明确目标、子系统、观测、偏差、控制动作和复盘证据。
-9. **接手状态永远同步** — 每次仓库变更更新 `docs/handoff.json` 并重新生成 Index。
+9. **接手状态永远同步** — 合并后的串行 handoff 动作更新 `docs/handoff.json` 并重新生成 Index；
+   普通功能 PR 只记录 expected handoff delta，避免并行冲突。
 10. **Karpathy 聚焦实现** — 显式假设，选择最小充分方案；每行改动可追溯，每步绑定验证，
    禁止预设功能、过早抽象和顺手重构。
 
@@ -72,7 +81,7 @@ TypeScript 单语言 monorepo（pnpm + turborepo）。Next.js 15（Web/Ops）· 
 
 | 阶段 | 触发条件 | 内容 |
 |---|---|---|
-| **Phase 0**（进行中，唯一按日历：8 周） | — | Web MVP：Copilot+画布、京沪知识库、三篇 SEO 深度指南、~200 张 programmatic SEO 页、Human Task 表单（创始人 concierge）、outbound 埋点、Ops 三列表页 |
+| **Phase 0**（进行中） | — | 公开 Web 的受控运行、执行事实审核、真实问题闭环、运营验证与安全/成本/质量证据 |
 | Phase 1 | 周活 ≥200 真实外国用户 或 Human Task ≥20 单 | Expo App（离线行程+Tools 八件套）、知识库扩 6 城、正式 affiliate 谈判 |
 | Phase 2 | 单城定制询价 ≥5 次/月 | Quote 市场（lead fee）、服务者网络、Trip Pass 定价实验 |
 | Phase 3 | 月撮合订单 ≥100 且法务实体就绪 | take rate + 平台内分账 |

@@ -141,6 +141,20 @@ if (!fs.existsSync(indexPath)) {
   errors.push("docs/INDEX.md is stale; run pnpm docs:index");
 }
 
+const readme = fs.readFileSync(path.join(repoRoot, "README.md"), "utf8");
+for (const staleClaim of [
+  "## 当前状态（2026-07-10）",
+  "**可信演示骨架**，尚非可公开收费的生产 MVP。",
+  "P0 阻塞：真实身份/授权、真实模型与知识检索",
+]) {
+  if (readme.includes(staleClaim)) {
+    errors.push(`README.md contains stale current-state claim: ${staleClaim}`);
+  }
+}
+if (!readme.includes("docs/INDEX.md") || !readme.includes("operator-action-register.md")) {
+  errors.push("README.md must link the current handoff and operator-action register as status authority");
+}
+
 if (errors.length > 0) {
   console.error(`Documentation check failed (${errors.length}):`);
   for (const error of errors) console.error(`- ${error}`);
