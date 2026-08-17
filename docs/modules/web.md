@@ -426,6 +426,9 @@ and truthful; retries are offered only for retryable jobs within the server-owne
   unchanged.
 - Every shared header provides a keyboard-visible skip link to the content immediately after the
   navigation. Primary navigation and account targets remain at least 44 pixels high.
+- At desktop widths the page-context label is visually suppressed because the route heading already
+  provides that context; this prevents locale-dependent tab overlap while retaining every navigation,
+  locale, and account control. The two-row tablet header may show the non-essential label again.
 - Interactive controls provide immediate press feedback and preserve a 44-pixel minimum target.
   Reduced-motion, reduced-transparency, and increased-contrast preferences must retain a complete,
   understandable experience.
@@ -443,12 +446,12 @@ public HTML does not become private or personalized merely because a browser cho
 traveler may choose Chinese, Spanish, Arabic, or Russian through the shared header selector; after
 hydration the browser restores the allowlisted same-origin `visepanda_locale` preference cookie and
 Arabic applies RTL document direction. Shared route contexts, Account,
- Explore, Arrival Pack, Readiness, Rescue, Human Help, and public-guide navigation translate their
- authored UI chrome, including controls, derived scene/fact-kind labels, empty states, and
- illustrative preview copy. Rescue category identifiers, Human Help task values, telemetry event
- values, and request payloads remain stable domain values even when their displayed labels change.
- The selection must not alter authentication requests, telemetry values, POI source values, partner
- disclosures, or any other server/domain data.
+Explore, Arrival Pack, Readiness, Rescue, Human Help, and public-guide navigation translate their
+authored UI chrome, including controls, derived scene/fact-kind labels, empty states, and
+illustrative preview copy. Rescue category identifiers, Human Help task values, telemetry event
+values, and request payloads remain stable domain values even when their displayed labels change.
+The selection must not alter authentication requests, telemetry values, POI source values, partner
+disclosures, or any other server/domain data.
 
 Evidence-bearing and regulated content keeps its recorded source language until its own reviewed
 translation authority exists: traveler prompts, model output, Trip data, POI fact values, legal and

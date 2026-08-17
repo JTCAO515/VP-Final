@@ -3358,6 +3358,12 @@ summary:active {
   width: 7px;
 }
 
+@media (min-width: 981px) {
+  .siteContext {
+    display: none;
+  }
+}
+
 .homeHero {
   padding-top: 84px;
 }
