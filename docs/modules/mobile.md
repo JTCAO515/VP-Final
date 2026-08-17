@@ -10,6 +10,8 @@ Trip access, Tools, Show to Local, Human Help, and account state.
 ## Current State
 
 The package is an Expo SDK 55 shell with four Execute-stage tabs: Today, Tools, Help, and Me.
+Its React 19.2.0 and React Native 0.83.10 pair is the Expo SDK 55-compatible baseline and is checked
+with `expo-doctor`; do not independently move either version without passing that check.
 It imports `mobileTheme` from `@visepanda/ui`: a React Native-ready projection of the canonical
 red/gold token record, including accessible semantic states, 44pt button minimums, cards, type scale,
 spacing, and radii. The shell imports shared domain content. A signed-in traveler can use

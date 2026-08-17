@@ -8,6 +8,10 @@ The public Next.js application owns acquisition and traveler-facing Phase 0 expe
 the product home, VisePanda workspace and Trip Canvas, Explore, guides, POI pages, Human Help, public Trip shares, and
 the outbound gateway.
 
+The Web runtime is pinned to the patched Next.js 15.5.21 security baseline. Root pnpm resolutions
+also keep its transitive `sharp`, PostCSS, and nanoid packages on their reviewed patched releases;
+dependency changes must keep the Web build and production audit evidence current.
+
 ## Locale and Content Boundary
 
 The public Web locale contract is owned by `apps/web/src/i18n`. English (`en`) is the deterministic

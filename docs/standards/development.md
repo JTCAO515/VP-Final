@@ -52,6 +52,11 @@ the repository.
 - A workspace package may depend on another accepted workspace package when it consumes an existing
   contract; update `pnpm-lock.yaml` in the same PR and rebuild the provider package before checking
   a consumer, so stale generated declarations cannot hide or invent an export.
+- Production dependency remediation must use an explicit patched direct version or a root `pnpm`
+  resolution only when the dependency remains within the upstream declared compatibility range. Run
+  `pnpm audit --prod --json`, `pnpm why <package> --recursive`, and affected application builds.
+  Do not force a major transitive replacement merely to suppress an advisory; record an upstream item
+  that has no safe compatible patch as an explicitly blocked follow-up instead.
 - An Expo shell MUST pin an Expo SDK-compatible React and React Native pair and keep its `app.json`
   explicit. A TypeScript or JS bundle check is not evidence of an iOS/Android simulator run; record
   missing Xcode/Android tooling honestly instead of labelling an unrun device check as passed.

@@ -8,6 +8,10 @@ The Ops Next.js application is an internal operations surface for execution fact
 Human Tasks, partner configuration, and later reconciliation. It must be deployed separately from
 the public Web application and protected by server-side role checks.
 
+Ops uses the same patched Next.js 15.5.21 baseline as the public Web application. Its image processor
+uses the root-reviewed sharp resolution, so an Ops dependency change must re-run both the image path
+build and the production dependency audit.
+
 ## Interface Language And Error Presentation
 
 The current Ops console is a fixed Simplified Chinese operator interface. Navigation, forms, empty
