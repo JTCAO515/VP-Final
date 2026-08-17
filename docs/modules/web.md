@@ -17,6 +17,13 @@ the registered guide dataset; creating that index does not create, validate, or 
 `/favicon.ico` is a cacheable generated brand image route, so public browser icon requests do not
 fall through to the not-found response.
 
+The Web runtime applies a baseline response-header policy to every route. It disables the Next.js
+implementation header, blocks framing and plugin objects, narrows browser capabilities, protects
+referrer handling, and limits executable resources to the same origin. Next.js currently requires
+inline bootstrap scripts and the design-token style element, so the baseline permits inline scripts
+and styles but does not permit `unsafe-eval`. Any future third-party browser resource, iframe, or
+capability must add a separately reviewed policy change and an end-to-end verification case.
+
 ## Locale and Content Boundary
 
 The public Web locale contract is owned by `apps/web/src/i18n`. English (`en`) is the deterministic
