@@ -1,6 +1,5 @@
-// @visepanda/app-server — placeholder entry. The real scaffold lands with its
-// first feature issue (see docs/planning baseline §8 issue list); until then
-// this only proves the workspace graph builds end to end.
+// @visepanda/app-server — public composition boundary for the modular-monolith
+// router, explicit runtime adapters, and test-only in-memory implementations.
 import { DOMAIN_VERSION } from "@visepanda/domain";
 
 export const APP = "server";
