@@ -11,6 +11,8 @@ Binding rules are kept separately under [`docs/constraints`](../constraints/READ
 - [Runtime mode and adapter inventory](runtime-adapter-inventory.md): explicit modes, safe
   diagnostics, durable owners, and canonical follow-ups.
 - [Dependency rules](dependency-rules.md): allowed and forbidden module dependencies.
+- [Content AI v1 dependency map](content-ai-dependency-map.md): existing foundations, safety gaps,
+  and the serial walking-skeleton-first delivery sequence for governed content proposals.
 
 Architecture direction changes require an ADR. Implementation detail changes update the relevant
 architecture and module docs in the same PR.

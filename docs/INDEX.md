@@ -121,6 +121,7 @@ Current system shape, boundaries, data flows, and overall design controls.
 | Document | Type | Status | Owner | Purpose |
 | --- | --- | --- | --- | --- |
 | [Architecture Guide](architecture/README.md) | reference | active | architecture | Navigation for architecture explanations and boundaries. |
+| [Content AI v1 Current State and Dependency Map](architecture/content-ai-dependency-map.md) | explanation | active | knowledge / operations / AI safety | Maps reusable knowledge, Ops, and AI foundations, frozen Content AI gaps, walking-skeleton feedback, and guarded delivery. |
 | [Dependency Rules](architecture/dependency-rules.md) | explanation | active | architecture | Allowed package/application dependencies and integration boundaries. |
 | [Overall Design Baseline](architecture/top-level-design.md) | explanation | active | overall design | Mission, controlled subsystems, interface baselines, observations, and lifecycle gates. |
 | [Repository Structure](architecture/repository-structure.md) | explanation | active | architecture | Monorepo layout, package ownership, and current maturity. |
@@ -171,6 +172,7 @@ Normative, testable rules that block merge or release when violated.
 | [Business Constraints](constraints/business.md) | constraint | active | commerce | Trust, commercial intent, partner, Human Task, payment, and revenue evidence rules. |
 | [Coding Constraints](constraints/coding.md) | constraint | active | engineering | Mandatory quality, truthfulness, secret, migration, and scope rules. |
 | [Constraint Guide](constraints/README.md) | reference | active | overall design | Index and normative interpretation for project constraints. |
+| [Content AI Constraints](constraints/content-ai.md) | constraint | active | knowledge / operations / AI safety | Mandatory Content AI draft-only, authorization, provenance, conflict, audit, prompt-injection, media, provider, and GitHub-draft rules. |
 | [Deployment Constraints](constraints/deployment.md) | constraint | active | platform | Environment, migration, health, observability, feature flag, and rollback gates. |
 | [Iteration Constraints](constraints/iteration.md) | constraint | active | overall design | Lifecycle, Issue, PR, documentation, eval, migration, and phase-trigger gates. |
 | [Karpathy Coding Discipline](constraints/karpathy-guidelines.md) | constraint | active | engineering | Mandatory assumption, simplicity, surgical-change, and goal-driven verification rules. |
@@ -224,6 +226,7 @@ Append-only records of accepted and superseded binding decisions.
 | [ADR-0019: Authenticated Mobile Telemetry Observation](adr/ADR-0019-mobile-telemetry-observation.md) | decision | accepted | mobile / telemetry | Freezes authenticated, closed-set mobile observations with a bounded local retry queue and server-owned privacy controls. |
 | [ADR-0020: Creator Attribution Contract](adr/ADR-0020-creator-attribution-contract.md) | decision | accepted | commercial architecture / data platform | Freezes creator referrals as private server-resolved acquisition sources and keeps them separate from OTA outbound links. |
 | [ADR-0021: Ops POI Image Storage](adr/ADR-0021-ops-poi-image-storage.md) | decision | accepted | knowledge / security / operations | Freezes private server-mediated, attributed Ops image storage and prohibits public delivery until a later governed consumer exists. |
+| [ADR-0022: Content AI Change Set Control Boundary](adr/ADR-0022-content-ai-control-boundary.md) | decision | accepted | knowledge / operations / AI safety | Freezes Content AI as private typed Change Set drafting with deterministic retrieval, bounded Qwen work, human all-or-nothing publication, and no model authority. |
 
 ## Runbooks
 
