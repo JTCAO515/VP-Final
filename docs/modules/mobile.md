@@ -92,6 +92,11 @@ for public capability claims until the relevant live dependencies and lifecycle 
 
 ## Current Verification
 
+`build` is intentionally a TypeScript-only verification (`tsc --noEmit`), not an iOS binary or
+Expo export. Its package-specific Turbo task therefore declares no filesystem outputs; Turbo caches
+the command log without pretending that a `dist` directory exists. `export` remains the explicit
+command for a local Expo export when that artifact is needed.
+
 ```bash
 pnpm --filter @visepanda/app-mobile typecheck
 pnpm --filter @visepanda/app-mobile test
