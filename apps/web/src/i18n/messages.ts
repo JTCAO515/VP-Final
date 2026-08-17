@@ -215,6 +215,22 @@ const englishMessages = {
   "account.tripClaimFailed": "Signed in, but anonymous trips could not be moved to this account.",
   "account.authenticationFailed": "Authentication failed.",
   "account.logoutFailed": "Logout failed.",
+  "account.forgotPassword": "Forgot password?",
+  "account.recoveryLead":
+    "Enter your email and we will send recovery instructions if an account can use them.",
+  "account.sendRecovery": "Send recovery instructions",
+  "account.backToSignIn": "Back to sign in",
+  "account.recoveryRequested":
+    "If an account can use this address, recovery instructions are on their way.",
+  "account.recoveryUnavailable": "Password recovery is temporarily unavailable.",
+  "account.recoveryInvalid": "This password recovery link is no longer valid. Request a new one.",
+  "account.resetLead": "Choose a new password to finish recovering your account.",
+  "account.newPassword": "New password",
+  "account.confirmPassword": "Confirm new password",
+  "account.passwordMismatch": "The two passwords do not match.",
+  "account.updatePassword": "Update password",
+  "account.passwordUpdated": "Your password has been updated.",
+  "account.passwordUpdateFailed": "Your password could not be updated.",
   "rescue.eyebrow": "When plans change",
   "rescue.title": "Rescue Mode",
   "rescue.lead":

@@ -3718,6 +3718,29 @@ summary:active {
   min-height: 50px;
 }
 
+.accountForm .accountTextAction {
+  align-self: start;
+  background: transparent;
+  border: 0;
+  color: var(--ink-soft);
+  min-height: 32px;
+  padding: 0;
+  text-decoration: underline;
+  text-decoration-color: var(--gold);
+  text-underline-offset: 4px;
+}
+
+.accountForm .accountTextAction:hover {
+  color: var(--ink);
+}
+
+.accountFormLead {
+  color: var(--ink-soft);
+  font-size: 14px;
+  line-height: 1.55;
+  margin: 0;
+}
+
 .accountLoading {
   align-items: center;
   color: var(--muted);
