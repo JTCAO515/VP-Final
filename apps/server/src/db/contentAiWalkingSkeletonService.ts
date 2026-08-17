@@ -122,14 +122,17 @@ export function createDbContentAiWalkingSkeletonService(db: Db): ContentAiWalkin
         throw new ContentAiWalkingSkeletonConflictError();
       }
 
-      return db.transaction(async (transaction) => {
+      const result = await db.transaction(async (transaction) => {
         const [fact] = await transaction
           .select()
           .from(poiFacts)
           .where(eq(poiFacts.id, draft.factId))
           .limit(1);
         if (!fact || fact.poiId !== draft.poiId || fact.status !== "draft") {
-          return markConflict(transaction, draft.id, input.reviewerId);
+          return {
+            kind: "conflict" as const,
+            draft: await markConflict(transaction, draft.id, input.reviewerId),
+          };
         }
         const evidence = PoiFactEvidenceSchema.parse({
           sourceClass: fact.sourceClass,
@@ -167,7 +170,12 @@ export function createDbContentAiWalkingSkeletonService(db: Db): ContentAiWalkin
             ),
           )
           .returning();
-        if (!reviewed) return markConflict(transaction, draft.id, input.reviewerId);
+        if (!reviewed) {
+          return {
+            kind: "conflict" as const,
+            draft: await markConflict(transaction, draft.id, input.reviewerId),
+          };
+        }
         const [published] = await transaction
           .update(contentAiWalkingSkeletonDrafts)
           .set({ state: "published", updatedAt: new Date() })
@@ -191,8 +199,10 @@ export function createDbContentAiWalkingSkeletonService(db: Db): ContentAiWalkin
             publishedFactVersion: reviewed.version,
           },
         });
-        return rowToDraft(published);
+        return { kind: "published" as const, draft: rowToDraft(published) };
       });
+      if (result.kind === "conflict") throw new ContentAiWalkingSkeletonConflictError();
+      return result.draft;
     },
   };
 }
@@ -201,7 +211,7 @@ async function markConflict(
   transaction: Parameters<Parameters<Db["transaction"]>[0]>[0],
   draftId: string,
   actorId: string,
-): Promise<never> {
+): Promise<ContentAiWalkingSkeletonDraft> {
   const [conflicted] = await transaction
     .update(contentAiWalkingSkeletonDrafts)
     .set({ state: "conflict", updatedAt: new Date() })
@@ -212,16 +222,15 @@ async function markConflict(
       ),
     )
     .returning();
-  if (conflicted) {
-    await transaction.insert(opsAuditEvents).values({
-      actorId,
-      action: "content_ai.walking_skeleton.conflict",
-      targetType: "content_ai_walking_skeleton_draft",
-      targetId: draftId,
-      metadataJsonb: {},
-    });
-  }
-  throw new ContentAiWalkingSkeletonConflictError();
+  if (!conflicted) throw new ContentAiWalkingSkeletonConflictError();
+  await transaction.insert(opsAuditEvents).values({
+    actorId,
+    action: "content_ai.walking_skeleton.conflict",
+    targetType: "content_ai_walking_skeleton_draft",
+    targetId: draftId,
+    metadataJsonb: {},
+  });
+  return rowToDraft(conflicted);
 }
 
 function rowToDraft(

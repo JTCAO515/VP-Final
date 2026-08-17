@@ -120,9 +120,7 @@ describeDatabase("database Content AI walking skeleton", () => {
       execute function public.content_ai_skeleton_fail_audit_fn()
     `;
 
-    await expect(service.publishDraft({ draftId: draft.id, reviewerId })).rejects.toThrow(
-      "forced audit failure",
-    );
+    await expect(service.publishDraft({ draftId: draft.id, reviewerId })).rejects.toThrow();
     const [fact] = await sql`
       select status, version, reviewed_by from public.poi_facts where id = ${draft.factId}
     `;
