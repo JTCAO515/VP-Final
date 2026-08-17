@@ -13,6 +13,7 @@ import {
   type PoiImage,
   type DraftFactReviewQueueItem,
 } from "@visepanda/domain";
+import { displayLifecycleValue, displayPoiCategory } from "../../lib/presentation";
 
 type SaveState = "idle" | "saving" | "saved" | "error";
 
@@ -105,9 +106,7 @@ export function FactEditor() {
     const form = new FormData(event.currentTarget);
     const factType = String(form.get("factType") ?? "");
     if (PoiLocalPresentationFactTypeSchema.safeParse(factType).success) {
-      setGenericFactMessage(
-        "Use the Show-to-Local facts form for this independently sourced field.",
-      );
+      setGenericFactMessage("此独立溯源字段请使用“向本地人展示”事实表单。");
       setSaveState("error");
       return;
     }
@@ -125,7 +124,7 @@ export function FactEditor() {
       }),
     });
     if (!response.ok) {
-      setGenericFactMessage("Fact draft could not be saved.");
+      setGenericFactMessage("事实草稿未保存，请稍后重试。");
       setSaveState("error");
       return;
     }
@@ -143,18 +142,18 @@ export function FactEditor() {
         <PoiEditor pois={pois} onChanged={loadPois} />
         <PoiImageEditor pois={pois} />
         <LocalPresentationFactEditor pois={pois} onChanged={loadPois} />
-        <h2>Other fact drafts</h2>
+        <h2>其他事实草稿</h2>
         <form className="inlineForm" onSubmit={(event) => void createFact(event)}>
           <select name="poiId" required>
-            <option value="">Choose POI</option>
+            <option value="">选择地点</option>
             {pois.map((poi) => (
               <option key={poi.id} value={poi.id}>
                 {poi.city} · {poi.nameEn}
               </option>
             ))}
           </select>
-          <input name="factType" placeholder="fact type" required />
-          <input name="label" placeholder="short label" required />
+          <input name="factType" placeholder="事实类型" required />
+          <input name="label" placeholder="简短标签" required />
           <input
             max="1"
             min="0"
@@ -165,30 +164,30 @@ export function FactEditor() {
             type="number"
           />
           <SourceClassSelect name="sourceClass" />
-          <input name="sourceLocator" placeholder="source URL or evidence reference" required />
+          <input name="sourceLocator" placeholder="来源 URL 或证据引用" required />
           <input
             maxLength={240}
             name="evidenceSummary"
-            placeholder="what this source supports (no PII)"
+            placeholder="此来源能证明什么（不含个人信息）"
             required
           />
           <button disabled={saveState === "saving"} type="submit">
-            Add fact
+            添加事实
           </button>
         </form>
         {genericFactMessage ? <p className="danger">{genericFactMessage}</p> : null}
         {rows.length === 0 ? (
-          <p className="empty">No facts loaded.</p>
+          <p className="empty">没有加载到事实。</p>
         ) : (
           <table>
             <thead>
               <tr>
-                <th>City</th>
-                <th>POI</th>
-                <th>Fact</th>
-                <th>Value</th>
-                <th>Version</th>
-                <th>Action</th>
+                <th>城市</th>
+                <th>地点</th>
+                <th>事实</th>
+                <th>内容</th>
+                <th>版本</th>
+                <th>操作</th>
               </tr>
             </thead>
             <tbody>
@@ -198,16 +197,16 @@ export function FactEditor() {
                   <td>
                     <strong>{poi.nameEn}</strong>
                     <br />
-                    <small>{poi.category}</small>
+                    <small>{displayPoiCategory(poi.category)}</small>
                   </td>
                   <td>
                     <span className="pill">{fact.factType}</span>
                     <br />
-                    <small>{fact.status}</small>
+                    <small>{displayLifecycleValue(fact.status)}</small>
                     {fact.expiresAt && Date.parse(fact.expiresAt) < Date.now() ? (
                       <>
                         <br />
-                        <small className="danger">expired</small>
+                        <small className="danger">已过期</small>
                       </>
                     ) : null}
                   </td>
@@ -215,9 +214,7 @@ export function FactEditor() {
                     {localFactType ? (
                       <>
                         {localFactType === "local_address_zh" ? (
-                          <small className="danger">
-                            Real-world address: verify against the cited source before review.
-                          </small>
+                          <small className="danger">真实世界地址：审核前请根据引用来源核验。</small>
                         ) : null}
                         <textarea
                           aria-label={`${fact.id} local-display text`}
@@ -267,19 +264,17 @@ export function FactEditor() {
                         onClick={() => void saveFact(fact)}
                         type="button"
                       >
-                        Save
+                        保存
                       </button>
                       {fact.status === "draft" ? (
-                        <small>
-                          Use the per-item review queue before this draft can be reviewed.
-                        </small>
+                        <small>此草稿必须在逐条审核队列中审核。</small>
                       ) : null}
                       <small>
-                        {fact.verifiedAt
-                          ? `verified ${fact.verifiedAt.slice(0, 10)}`
-                          : "unverified"}
+                        {fact.verifiedAt ? `已核验 ${fact.verifiedAt.slice(0, 10)}` : "未核验"}
                       </small>
-                      {saveState !== "idle" ? <small>{saveState}</small> : null}
+                      {saveState !== "idle" ? (
+                        <small>{displayLifecycleValue(saveState)}</small>
+                      ) : null}
                     </div>
                   </td>
                 </tr>
@@ -296,9 +291,7 @@ function PoiImageEditor({ pois }: { pois: Poi[] }) {
   const [images, setImages] = useState<PoiImage[]>([]);
   const [targetKind, setTargetKind] = useState<"poi" | "city" | "category">("poi");
   const [state, setState] = useState<SaveState>("idle");
-  const [message, setMessage] = useState(
-    "Private editorial assets only. Upload requires a verifiable attribution and license note.",
-  );
+  const [message, setMessage] = useState("仅限私有编辑素材。上传需要可核验的归属和授权说明。");
 
   async function loadImages() {
     const response = await fetch("/api/knowledge/images", { cache: "no-store" });
@@ -307,41 +300,39 @@ function PoiImageEditor({ pois }: { pois: Poi[] }) {
       error?: string;
     } | null;
     if (!response.ok || !payload || !Array.isArray(payload.images)) {
-      throw new Error(payload?.error ?? "Private image metadata is unavailable.");
+      throw new Error("私有图片元数据暂不可用。");
     }
     setImages(payload.images);
   }
 
   useEffect(() => {
-    void loadImages().catch((error) =>
-      setMessage(error instanceof Error ? error.message : "Private image metadata is unavailable."),
-    );
+    void loadImages().catch((error) => setMessage("私有图片元数据暂不可用。"));
   }, []);
 
   async function upload(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setState("saving");
-    setMessage("Validating and stripping private image metadata…");
+    setMessage("正在校验并剥除私有图片元数据…");
     try {
       const response = await fetch("/api/knowledge/images", {
         method: "POST",
         body: new FormData(event.currentTarget),
       });
       const payload = (await response.json().catch(() => null)) as { error?: string } | null;
-      if (!response.ok) throw new Error(payload?.error ?? "Image upload failed.");
+      if (!response.ok) throw new Error("图片上传失败。");
       event.currentTarget.reset();
       await loadImages();
       setState("saved");
-      setMessage("Private editorial image stored with its attribution and license note.");
+      setMessage("私有编辑图片已保存，并附带归属和授权说明。 ");
     } catch (error) {
       setState("error");
-      setMessage(error instanceof Error ? error.message : "Image upload failed.");
+      setMessage("图片上传失败，请稍后重试。");
     }
   }
 
   async function deleteImage(image: PoiImage) {
     setState("saving");
-    setMessage("Deleting this private image and revoking its metadata…");
+    setMessage("正在删除此私有图片并撤销其元数据…");
     try {
       const response = await fetch("/api/knowledge/images", {
         method: "DELETE",
@@ -349,13 +340,13 @@ function PoiImageEditor({ pois }: { pois: Poi[] }) {
         body: JSON.stringify({ imageId: image.id }),
       });
       const payload = (await response.json().catch(() => null)) as { error?: string } | null;
-      if (!response.ok) throw new Error(payload?.error ?? "Image deletion failed.");
+      if (!response.ok) throw new Error("图片删除失败。");
       await loadImages();
       setState("saved");
-      setMessage("Private image deleted and its metadata was revoked.");
+      setMessage("私有图片已删除，元数据已撤销。 ");
     } catch (error) {
       setState("error");
-      setMessage(error instanceof Error ? error.message : "Image deletion failed.");
+      setMessage("图片删除失败，请稍后重试。");
     }
   }
 
@@ -363,27 +354,27 @@ function PoiImageEditor({ pois }: { pois: Poi[] }) {
   return (
     <section className="poiImageEditor" aria-labelledby="poi-image-title">
       <div>
-        <p className="eyebrow">Private editorial media</p>
-        <h2 id="poi-image-title">POI image library</h2>
+        <p className="eyebrow">私有编辑媒体</p>
+        <h2 id="poi-image-title">地点图片库</h2>
         <p className="muted">
-          Files are checked by signature, converted to WebP without EXIF, and kept private. This
-          page does not create a public image URL or traveler-facing media.
+          文件会通过签名校验、转换为不含 EXIF 的 WebP，并保持私有。本页面不会创建公开图片 URL
+          或旅行者可见媒体。
         </p>
       </div>
       <form className="inlineForm" onSubmit={(event) => void upload(event)}>
         <select
-          aria-label="Image target type"
+          aria-label="图片目标类型"
           name="targetKind"
           onChange={(event) => setTargetKind(event.target.value as typeof targetKind)}
           value={targetKind}
         >
-          <option value="poi">POI</option>
-          <option value="city">City</option>
-          <option value="category">Category</option>
+          <option value="poi">地点</option>
+          <option value="city">城市</option>
+          <option value="category">品类</option>
         </select>
         {targetKind === "poi" ? (
-          <select aria-label="Image POI target" name="poiId" required>
-            <option value="">Choose POI</option>
+          <select aria-label="图片地点目标" name="poiId" required>
+            <option value="">选择地点</option>
             {pois.map((poi) => (
               <option key={poi.id} value={poi.id}>
                 {poi.city} · {poi.nameEn}
@@ -392,8 +383,8 @@ function PoiImageEditor({ pois }: { pois: Poi[] }) {
           </select>
         ) : null}
         {targetKind === "city" ? (
-          <select aria-label="Image city target" name="city" required>
-            <option value="">Choose city</option>
+          <select aria-label="图片城市目标" name="city" required>
+            <option value="">选择城市</option>
             {cities.map((city) => (
               <option key={city} value={city}>
                 {city}
@@ -402,44 +393,44 @@ function PoiImageEditor({ pois }: { pois: Poi[] }) {
           </select>
         ) : null}
         {targetKind === "category" ? (
-          <select aria-label="Image category target" name="category" required>
+          <select aria-label="图片品类目标" name="category" required>
             {PoiCategorySchema.options.map((category: PoiCategory) => (
               <option key={category} value={category}>
-                {category}
+                {displayPoiCategory(category)}
               </option>
             ))}
           </select>
         ) : null}
         <input
           accept="image/jpeg,image/png,image/webp"
-          aria-label="Editorial image file"
+          aria-label="编辑图片文件"
           name="file"
           required
           type="file"
         />
         <input
-          aria-label="Image attribution"
+          aria-label="图片归属"
           maxLength={500}
           name="attribution"
-          placeholder="source or copyright holder"
+          placeholder="来源或版权持有人"
           required
         />
         <input
-          aria-label="Image license note"
+          aria-label="图片授权说明"
           maxLength={500}
           name="licenseNote"
-          placeholder="licensed editorial use"
+          placeholder="已授权的编辑用途"
           required
         />
         <button disabled={state === "saving"} type="submit">
-          Store private image
+          保存私有图片
         </button>
       </form>
       <p className={state === "error" ? "danger" : "muted"} role="status">
         {message}
       </p>
       {images.length === 0 ? (
-        <p className="empty">No active private editorial images.</p>
+        <p className="empty">没有有效的私有编辑图片。</p>
       ) : (
         <ul className="factExpiryList">
           {images.map((image) => (
@@ -447,23 +438,23 @@ function PoiImageEditor({ pois }: { pois: Poi[] }) {
               <div>
                 <strong>
                   {image.target.kind === "poi"
-                    ? "POI"
+                    ? "地点"
                     : image.target.kind === "city"
                       ? image.target.city
-                      : image.target.category}
+                      : displayPoiCategory(image.target.category)}
                 </strong>
                 <p className="muted">
-                  {image.width} × {image.height} · {image.contentType} · Attribution:{" "}
+                  {image.width} × {image.height} · {image.contentType} · 图片归属：
                   {image.attribution}
                 </p>
-                <p className="muted">License: {image.licenseNote}</p>
+                <p className="muted">授权说明：{image.licenseNote}</p>
               </div>
               <button
                 disabled={state === "saving"}
                 onClick={() => void deleteImage(image)}
                 type="button"
               >
-                Delete private image
+                删除私有图片
               </button>
             </li>
           ))}
@@ -496,9 +487,7 @@ export function FactExpiryDashboard({
   const [expiredFactIds, setExpiredFactIds] = useState<Set<string> | null>(() =>
     initialExpiredFactIds ? new Set(initialExpiredFactIds) : null,
   );
-  const [message, setMessage] = useState(
-    "Review expired facts first, then facts that will expire within 30 days.",
-  );
+  const [message, setMessage] = useState("请先审核已过期的事实，再审核 30 天内将到期的事实。");
   const [pendingAction, setPendingAction] = useState<{
     factId: string;
     action: ExpiryAction;
@@ -520,7 +509,7 @@ export function FactExpiryDashboard({
       !Array.isArray(payload.expiredFactIds) ||
       !payload.expiredFactIds.every((id): id is string => typeof id === "string")
     ) {
-      throw new Error(payload?.error ?? "Fact expiry status is unavailable.");
+      throw new Error("事实到期状态暂不可用。");
     }
     setExpiredFactIds(new Set(payload.expiredFactIds));
   }
@@ -530,10 +519,10 @@ export function FactExpiryDashboard({
     try {
       await Promise.all([onChanged(), loadExpiredFactIds()]);
       setState("idle");
-      setMessage("Expiry windows were refreshed from the current fact lifecycle.");
+      setMessage("已根据当前事实生命周期刷新到期窗口。 ");
     } catch (error) {
       setState("error");
-      setMessage(error instanceof Error ? error.message : "Fact expiry status is unavailable.");
+      setMessage("事实到期状态暂不可用，请稍后重试。");
     }
   }
 
@@ -544,7 +533,7 @@ export function FactExpiryDashboard({
 
   async function applyAction(factId: string, action: ExpiryAction) {
     setState("saving");
-    setMessage(action === "renew" ? "Renewing this reviewed fact…" : "Deprecating this fact…");
+    setMessage(action === "renew" ? "正在续期此已核验事实…" : "正在废弃此事实…");
     try {
       const response = await fetch("/api/knowledge/facts", {
         method: "PATCH",
@@ -553,19 +542,19 @@ export function FactExpiryDashboard({
       });
       const payload = (await response.json().catch(() => null)) as { error?: string } | null;
       if (!response.ok || !payload || "error" in payload) {
-        throw new Error(payload?.error ?? "This fact could not be updated.");
+        throw new Error("此事实未更新。");
       }
       setPendingAction(null);
       await Promise.all([onChanged(), loadExpiredFactIds()]);
       setState("idle");
       setMessage(
         action === "renew"
-          ? "One reviewed fact was renewed using its existing evidence and policy."
-          : "One fact was deprecated and is unavailable to traveler-facing surfaces.",
+          ? "已根据现有证据和策略续期一条已核验事实。"
+          : "已废弃一条事实，它不会再显示给旅行者。",
       );
     } catch (error) {
       setState("error");
-      setMessage(error instanceof Error ? error.message : "This fact could not be updated.");
+      setMessage("此事实未更新，请稍后重试。");
     }
   }
 
@@ -573,11 +562,10 @@ export function FactExpiryDashboard({
     <section className="panel factExpiryDashboard" aria-labelledby="fact-expiry-title">
       <div className="factExpiryHeading">
         <div>
-          <p className="eyebrow">Evidence freshness</p>
-          <h2 id="fact-expiry-title">Fact expiry dashboard</h2>
+          <p className="eyebrow">证据新鲜度</p>
+          <h2 id="fact-expiry-title">事实到期看板</h2>
           <p className="muted">
-            Renew only when the existing evidence is still current. Deprecate facts that can no
-            longer be supported; neither action changes a draft into a reviewed fact.
+            仅当现有证据仍有效时才续期。无法继续支持的事实应废弃；两种操作都不会将草稿变为已核验事实。
           </p>
         </div>
         <button
@@ -586,7 +574,7 @@ export function FactExpiryDashboard({
           onClick={() => void refreshFacts()}
           type="button"
         >
-          Refresh facts
+          刷新事实
         </button>
       </div>
 
@@ -600,7 +588,7 @@ export function FactExpiryDashboard({
             groups={groups.expired}
             pendingAction={pendingAction}
             state={state}
-            title="Expired facts"
+            title="已过期事实"
             onCancelAction={() => setPendingAction(null)}
             onConfirmAction={(factId, action) => void applyAction(factId, action)}
             onProposeAction={(factId, action) => setPendingAction({ factId, action })}
@@ -609,14 +597,14 @@ export function FactExpiryDashboard({
             groups={groups.nearExpiry}
             pendingAction={pendingAction}
             state={state}
-            title="Expires within 30 days"
+            title="30 天内到期"
             onCancelAction={() => setPendingAction(null)}
             onConfirmAction={(factId, action) => void applyAction(factId, action)}
             onProposeAction={(factId, action) => setPendingAction({ factId, action })}
           />
         </>
       ) : (
-        <p className="muted">Loading the current expiry windows.</p>
+        <p className="muted">正在加载当前到期窗口。</p>
       )}
     </section>
   );
@@ -643,14 +631,14 @@ function FactExpiryWindow({
     <section className="factExpiryWindow" aria-label={title}>
       <h3>{title}</h3>
       {groups.size === 0 ? (
-        <p className="empty">No reviewed facts in this window.</p>
+        <p className="empty">此窗口内没有已核验事实。</p>
       ) : (
         [...groups.entries()].map(([factType, items]) => (
           <section className="factExpiryGroup" key={factType}>
             <h4>
               {factType}
               {items[0]?.fact.reviewPolicy === "volatile-30d-v1" ? (
-                <span className="pill">Volatile · 30-day policy</span>
+                <span className="pill">易变信息 · 30 天策略</span>
               ) : null}
             </h4>
             <div className="factExpiryList">
@@ -696,22 +684,23 @@ function FactExpiryCard({
     <article className="factExpiryItem">
       <div>
         <p className="eyebrow">
-          {item.window === "expired" ? "Expired" : "Near expiry"} · {item.poi.city}
+          {item.window === "expired" ? "已过期" : "即将到期"} · {item.poi.city}
         </p>
         <h5>{item.poi.nameEn}</h5>
         <p className="muted">
-          {factDisplayValue(item.fact)} · {expiryDate ? formatExpiryDate(expiryDate) : "No expiry"}
+          {factDisplayValue(item.fact)} ·{" "}
+          {expiryDate ? `到期 ${formatExpiryDate(expiryDate)}` : "无到期日期"}
         </p>
         <p className="muted">
-          {item.fact.reviewPolicy ?? "No review policy"}
-          {item.fact.sourceLocator ? ` · ${item.fact.sourceLocator}` : " · Missing source locator"}
+          {item.fact.reviewPolicy ?? "无审核策略"}
+          {item.fact.sourceLocator ? ` · ${item.fact.sourceLocator}` : " · 缺少来源定位信息"}
         </p>
       </div>
 
       {!actionPending ? (
         <div className="rowActions">
           <button disabled={busy} onClick={() => onProposeAction("renew")} type="button">
-            Renew this fact
+            续期此事实
           </button>
           <button
             className="secondaryButton"
@@ -719,20 +708,20 @@ function FactExpiryCard({
             onClick={() => onProposeAction("deprecate")}
             type="button"
           >
-            Deprecate this fact
+            废弃此事实
           </button>
         </div>
       ) : (
         <div className="reviewConfirmation" role="alert">
-          <strong>{actionPending === "renew" ? "Confirm renewal" : "Confirm deprecation"}</strong>
+          <strong>{actionPending === "renew" ? "确认续期" : "确认废弃"}</strong>
           <p>
             {actionPending === "renew"
-              ? "Confirm that the cited evidence remains current. Renewal recalculates the expiry from the existing review policy."
-              : "This removes the fact from traveler-facing eligibility. It does not delete the audit trail."}
+              ? "请确认引用证据仍有效。续期将根据现有审核策略重新计算到期日。"
+              : "此操作会将事实从旅行者可见资格中移除，但不会删除审计轨迹。"}
           </p>
           <div className="rowActions">
             <button disabled={busy} onClick={() => onConfirmAction(actionPending)} type="button">
-              {actionPending === "renew" ? "Confirm renew" : "Confirm deprecate"}
+              {actionPending === "renew" ? "确认续期" : "确认废弃"}
             </button>
             <button
               className="secondaryButton"
@@ -740,7 +729,7 @@ function FactExpiryCard({
               onClick={onCancelAction}
               type="button"
             >
-              Cancel
+              取消
             </button>
           </div>
         </div>
@@ -820,7 +809,7 @@ function DraftFactReviewQueue({ pois }: { pois: Poi[] }) {
     EMPTY_DRAFT_REVIEW_FILTERS,
   );
   const [state, setState] = useState<SaveState>("idle");
-  const [message, setMessage] = useState("Loading drafts that still need a human decision.");
+  const [message, setMessage] = useState("正在加载仍需人工决策的草稿。 ");
   const [pendingAction, setPendingAction] = useState<{
     factId: string;
     action: DraftReviewAction;
@@ -843,18 +832,18 @@ function DraftFactReviewQueue({ pois }: { pois: Poi[] }) {
         error?: string;
       } | null;
       if (!response.ok || !payload?.items) {
-        throw new Error(payload?.error ?? "Draft review queue is unavailable.");
+        throw new Error("草稿审核队列暂不可用。");
       }
       setItems(payload.items);
       setState("idle");
       setMessage(
         payload.items.length === 0
-          ? "No draft facts match these filters. Nothing has been approved or hidden."
-          : `${payload.items.length} draft fact${payload.items.length === 1 ? "" : "s"} need an individual decision.`,
+          ? "没有符合筛选条件的事实草稿。系统未批准或隐藏任何内容。"
+          : `${payload.items.length} 条事实草稿需要逐条决策。`,
       );
     } catch (error) {
       setState("error");
-      setMessage(error instanceof Error ? error.message : "Draft review queue is unavailable.");
+      setMessage("草稿审核队列暂不可用，请稍后重试。");
     }
   }
 
@@ -870,7 +859,7 @@ function DraftFactReviewQueue({ pois }: { pois: Poi[] }) {
 
   async function applyAction(factId: string, action: DraftReviewAction, expectedVersion: number) {
     setState("saving");
-    setMessage(action === "approve" ? "Recording this review…" : "Rejecting this draft…");
+    setMessage(action === "approve" ? "正在记录此审核…" : "正在拒绝此草稿…");
     try {
       const response = await fetch("/api/knowledge/facts", {
         method: "PATCH",
@@ -883,18 +872,18 @@ function DraftFactReviewQueue({ pois }: { pois: Poi[] }) {
       });
       const payload = (await response.json().catch(() => null)) as { error?: string } | null;
       if (!response.ok || !payload || "error" in payload) {
-        throw new Error(payload?.error ?? "This draft could not be updated.");
+        throw new Error("此草稿未更新。");
       }
       setPendingAction(null);
       await load(appliedFilters);
       setMessage(
         action === "approve"
-          ? "One draft was reviewed. It is now eligible only while its evidence remains current."
-          : "One draft was rejected. It remains unavailable to traveler-facing surfaces.",
+          ? "已审核一条草稿；仅在证据仍有效时它才具备资格。"
+          : "已拒绝一条草稿；它仍不会显示给旅行者。",
       );
     } catch (error) {
       setState("error");
-      setMessage(error instanceof Error ? error.message : "This draft could not be updated.");
+      setMessage("此草稿未更新，请稍后重试。");
     }
   }
 
@@ -913,7 +902,7 @@ function DraftFactReviewQueue({ pois }: { pois: Poi[] }) {
       !Number.isFinite(confidence)
     ) {
       setState("error");
-      setMessage("Correct the value, source, evidence summary, and confidence before saving.");
+      setMessage("请先更正内容、来源、证据摘要和置信度，再保存。 ");
       return false;
     }
 
@@ -933,16 +922,14 @@ function DraftFactReviewQueue({ pois }: { pois: Poi[] }) {
       });
       const payload = (await response.json().catch(() => null)) as { error?: string } | null;
       if (!response.ok || !payload || "error" in payload) {
-        throw new Error(payload?.error ?? "This draft correction could not be saved.");
+        throw new Error("此草稿更正未保存。");
       }
       await load(appliedFilters);
-      setMessage("Correction saved as a draft. Review it again, then confirm approval separately.");
+      setMessage("更正已作为草稿保存。请重新审核后再单独确认批准。 ");
       return true;
     } catch (error) {
       setState("error");
-      setMessage(
-        error instanceof Error ? error.message : "This draft correction could not be saved.",
-      );
+      setMessage("此草稿更正未保存，请稍后重试。");
       return false;
     }
   }
@@ -951,11 +938,10 @@ function DraftFactReviewQueue({ pois }: { pois: Poi[] }) {
     <section className="panel draftReviewQueue" aria-labelledby="draft-review-title">
       <div className="draftReviewHeading">
         <div>
-          <p className="eyebrow">Human review only</p>
-          <h2 id="draft-review-title">Draft fact review queue</h2>
+          <p className="eyebrow">仅人工审核</p>
+          <h2 id="draft-review-title">事实草稿审核队列</h2>
           <p className="muted">
-            Each action applies to exactly one draft. Imported or model-authored content stays a
-            draft until a person checks its evidence and confirms the decision here.
+            每次操作只作用于一条草稿。导入内容或模型生成内容会保持草稿状态，直到人工核验其证据并在此确认决策。
           </p>
         </div>
         <button
@@ -964,18 +950,18 @@ function DraftFactReviewQueue({ pois }: { pois: Poi[] }) {
           onClick={() => void load(appliedFilters)}
           type="button"
         >
-          Refresh queue
+          刷新队列
         </button>
       </div>
 
       <form className="filters" onSubmit={(event) => void submitFilters(event)}>
         <label>
-          POI
+          地点
           <select
             onChange={(event) => setFilters({ ...filters, poiId: event.target.value })}
             value={filters.poiId}
           >
-            <option value="">All POIs</option>
+            <option value="">全部地点</option>
             {pois.map((poi) => (
               <option key={poi.id} value={poi.id}>
                 {poi.city} · {poi.nameEn}
@@ -984,7 +970,7 @@ function DraftFactReviewQueue({ pois }: { pois: Poi[] }) {
           </select>
         </label>
         <label>
-          Fact type
+          事实类型
           <input
             list="draft-fact-types"
             onChange={(event) => setFilters({ ...filters, factType: event.target.value })}
@@ -998,16 +984,16 @@ function DraftFactReviewQueue({ pois }: { pois: Poi[] }) {
           </datalist>
         </label>
         <label>
-          Import batch
+          导入批次
           <input
             onChange={(event) => setFilters({ ...filters, importBatchId: event.target.value })}
-            placeholder="batch UUID or legacy-unbatched"
+            placeholder="批次 UUID 或 legacy-unbatched"
             value={filters.importBatchId}
           />
         </label>
         <div className="rowActions">
           <button disabled={state === "saving"} type="submit">
-            Apply filters
+            应用筛选
           </button>
           <button
             className="secondaryButton"
@@ -1019,7 +1005,7 @@ function DraftFactReviewQueue({ pois }: { pois: Poi[] }) {
             }}
             type="button"
           >
-            Clear filters
+            清除筛选
           </button>
         </div>
       </form>
@@ -1082,11 +1068,11 @@ export function DraftFactReviewCard({
     <article className="draftReviewItem" aria-labelledby={cardTitleId}>
       <header>
         <div>
-          <p className="eyebrow">Draft · {item.poi.city}</p>
+          <p className="eyebrow">草稿 · {item.poi.city}</p>
           <h3 id={cardTitleId}>{item.poi.nameEn}</h3>
           <p className="muted">
             {item.poi.nameZh ? `${item.poi.nameZh} · ` : ""}
-            {item.poi.category} · version {item.draft.version}
+            {displayPoiCategory(item.poi.category)} · 版本 {item.draft.version}
           </p>
         </div>
         <span className="pill">{item.draft.factType}</span>
@@ -1094,46 +1080,43 @@ export function DraftFactReviewCard({
 
       {item.draft.factType === "local_address_zh" ? (
         <p className="taskError">
-          This Chinese address may be shown to a real stranger. Verify it against the cited source
-          before any approval.
+          此中文地址可能会展示给真实的陌生人。任何批准前都必须根据引用来源核验。
         </p>
       ) : null}
 
       <dl className="draftFactDetails">
         <div>
-          <dt>Draft value</dt>
+          <dt>草稿内容</dt>
           <dd>{value}</dd>
         </div>
         <div>
-          <dt>Source class</dt>
+          <dt>来源等级</dt>
           <dd>
-            {item.draft.sourceClass
-              ? SOURCE_CLASS_LABELS[item.draft.sourceClass]
-              : "Missing source class"}
+            {item.draft.sourceClass ? SOURCE_CLASS_LABELS[item.draft.sourceClass] : "缺少来源等级"}
           </dd>
         </div>
         <div>
-          <dt>Source locator</dt>
+          <dt>来源定位信息</dt>
           <dd>{item.draft.sourceLocator}</dd>
         </div>
         <div>
-          <dt>Evidence summary</dt>
+          <dt>证据摘要</dt>
           <dd>{item.draft.evidenceSummary}</dd>
         </div>
         <div>
-          <dt>Import context</dt>
+          <dt>导入上下文</dt>
           <dd>
             {item.importContext
               ? `${item.importContext.importBatchId ?? "legacy-unbatched"} · ${item.importContext.collectionRowId} · ${item.importContext.collectionStatus}`
-              : "Not imported through a recorded batch."}
+              : "未通过已记录的批次导入。"}
           </dd>
         </div>
       </dl>
 
-      <section className="reviewedSiblings" aria-label={`Reviewed facts for ${item.poi.nameEn}`}>
-        <h4>Other reviewed facts at this POI</h4>
+      <section className="reviewedSiblings" aria-label={`${item.poi.nameEn} 的已核验事实`}>
+        <h4>此地点的其他已核验事实</h4>
         {item.reviewedSiblings.length === 0 ? (
-          <p className="muted">No other reviewed facts are available for comparison.</p>
+          <p className="muted">没有其他可用于交叉判断的已核验事实。</p>
         ) : (
           <ul>
             {item.reviewedSiblings.map((sibling) => (
@@ -1147,9 +1130,9 @@ export function DraftFactReviewCard({
 
       {editing ? (
         <form className="reviewCorrectionForm" onSubmit={(event) => void saveCorrection(event)}>
-          <h4>Correct this draft before approval</h4>
+          <h4>批准前更正此草稿</h4>
           <label>
-            Value
+            内容
             {localFactType.success ? (
               <textarea defaultValue={value} maxLength={500} name="value" required />
             ) : (
@@ -1157,11 +1140,11 @@ export function DraftFactReviewCard({
             )}
           </label>
           <label>
-            Source class
+            来源等级
             <SourceClassSelect defaultValue={item.draft.sourceClass ?? ""} name="sourceClass" />
           </label>
           <label>
-            Source locator
+            来源定位信息
             <input
               defaultValue={item.draft.sourceLocator ?? ""}
               maxLength={500}
@@ -1170,7 +1153,7 @@ export function DraftFactReviewCard({
             />
           </label>
           <label>
-            Evidence summary
+            证据摘要
             <input
               defaultValue={item.draft.evidenceSummary ?? ""}
               maxLength={240}
@@ -1179,7 +1162,7 @@ export function DraftFactReviewCard({
             />
           </label>
           <label>
-            Confidence
+            置信度
             <input
               defaultValue={item.draft.confidence}
               max="1"
@@ -1192,7 +1175,7 @@ export function DraftFactReviewCard({
           </label>
           <div className="rowActions">
             <button disabled={busy} type="submit">
-              Save correction as draft
+              将更正保存为草稿
             </button>
             <button
               className="secondaryButton"
@@ -1200,7 +1183,7 @@ export function DraftFactReviewCard({
               onClick={() => setEditing(false)}
               type="button"
             >
-              Cancel correction
+              取消更正
             </button>
           </div>
         </form>
@@ -1209,7 +1192,7 @@ export function DraftFactReviewCard({
       {!editing && !actionPending ? (
         <div className="rowActions">
           <button disabled={busy} onClick={() => onProposeAction("approve")} type="button">
-            Approve this draft
+            批准此草稿
           </button>
           <button
             className="secondaryButton"
@@ -1217,7 +1200,7 @@ export function DraftFactReviewCard({
             onClick={() => setEditing(true)}
             type="button"
           >
-            Correct before approval
+            批准前更正
           </button>
           <button
             className="secondaryButton"
@@ -1225,22 +1208,22 @@ export function DraftFactReviewCard({
             onClick={() => onProposeAction("reject")}
             type="button"
           >
-            Reject this draft
+            拒绝此草稿
           </button>
         </div>
       ) : null}
 
       {actionPending ? (
         <div className="reviewConfirmation" role="alert">
-          <strong>{actionPending === "approve" ? "Confirm approval" : "Confirm rejection"}</strong>
+          <strong>{actionPending === "approve" ? "确认批准" : "确认拒绝"}</strong>
           <p>
             {actionPending === "approve"
-              ? "This records a real review time for this one draft. Check the cited evidence before confirming."
-              : "This rejects this one draft. It will remain unavailable to traveler-facing surfaces."}
+              ? "这会记录此一条草稿的实际审核时间。确认前请检查引用证据。"
+              : "这会拒绝此一条草稿；它仍不会显示给旅行者。"}
           </p>
           <div className="rowActions">
             <button disabled={busy} onClick={() => onConfirmAction(actionPending)} type="button">
-              {actionPending === "approve" ? "Confirm approve" : "Confirm reject"}
+              {actionPending === "approve" ? "确认批准" : "确认拒绝"}
             </button>
             <button
               className="secondaryButton"
@@ -1248,7 +1231,7 @@ export function DraftFactReviewCard({
               onClick={onCancelAction}
               type="button"
             >
-              Cancel
+              取消
             </button>
           </div>
         </div>
@@ -1265,9 +1248,7 @@ function LocalPresentationFactEditor({
   onChanged: () => Promise<void>;
 }) {
   const [factType, setFactType] = useState<PoiLocalPresentationFactType>("local_name_zh");
-  const [message, setMessage] = useState(
-    "Each local-display fact starts as a draft and needs a separate per-item review.",
-  );
+  const [message, setMessage] = useState("每条本地展示事实都从草稿开始，且需要单独逐条审核。");
   const [saving, setSaving] = useState(false);
 
   async function create(event: FormEvent<HTMLFormElement>) {
@@ -1290,27 +1271,26 @@ function LocalPresentationFactEditor({
     setSaving(false);
     if (!response.ok) {
       const body = (await response.json().catch(() => null)) as { error?: string } | null;
-      setMessage(body?.error ?? "Local-display draft could not be saved.");
+      setMessage("本地展示草稿未保存，请稍后重试。 ");
       return;
     }
     event.currentTarget.reset();
     setFactType("local_name_zh");
     await onChanged();
-    setMessage("Draft saved. A separate per-item review assigns the verification time.");
+    setMessage("草稿已保存。单独逐条审核时才会记录核验时间。 ");
   }
 
   return (
     <section aria-labelledby="local-presentation-editor-title">
-      <h2 id="local-presentation-editor-title">Show-to-Local facts</h2>
+      <h2 id="local-presentation-editor-title">向本地人展示的事实</h2>
       <p className="muted">
-        These are independent execution facts. Saving one does not make it public, reviewed, or safe
-        to show to a local person.
+        这些是独立执行事实。保存不代表它已公开、已核验或可以安全展示给本地人。
       </p>
       <form className="stackForm" onSubmit={(event) => void create(event)}>
         <label>
-          POI
+          地点
           <select name="poiId" required>
-            <option value="">Choose POI</option>
+            <option value="">选择地点</option>
             {pois.map((poi) => (
               <option key={poi.id} value={poi.id}>
                 {poi.city} · {poi.nameEn}
@@ -1319,7 +1299,7 @@ function LocalPresentationFactEditor({
           </select>
         </label>
         <label>
-          Local-display field
+          本地展示字段
           <select
             name="factType"
             onChange={(event) => setFactType(event.target.value as PoiLocalPresentationFactType)}
@@ -1334,35 +1314,34 @@ function LocalPresentationFactEditor({
         </label>
         {factType === "local_address_zh" ? (
           <p className="danger" role="alert">
-            This Chinese address can be shown to a real stranger. Check it against the cited source
-            before saving, then complete a separate per-item review before it can be shown publicly.
+            此中文地址可能会展示给真实陌生人。保存前请根据引用来源核验；公开展示前还必须完成单独的逐条审核。
           </p>
         ) : null}
         <label>
-          Text (maximum 500 characters)
+          文本（最多 500 个字符）
           <textarea maxLength={500} name="text" required />
         </label>
         <label>
-          Source class
+          来源等级
           <SourceClassSelect name="sourceClass" />
         </label>
         <label>
-          Source URL or evidence reference
+          来源 URL 或证据引用
           <input maxLength={500} name="sourceLocator" required />
         </label>
         <label>
-          Evidence summary (no personal contact details)
+          证据摘要（不含个人联系方式）
           <input maxLength={240} name="evidenceSummary" required />
         </label>
         <label>
-          Confidence
+          置信度
           <input max="1" min="0" name="confidence" required step="0.05" type="number" />
         </label>
         <button disabled={saving} type="submit">
-          Save local-display draft
+          保存本地展示草稿
         </button>
       </form>
-      <p className={message.includes("could not") ? "danger" : "muted"}>{message}</p>
+      <p className={message.includes("未保存") ? "danger" : "muted"}>{message}</p>
     </section>
   );
 }
@@ -1380,11 +1359,11 @@ function factValueInputId(fact: Pick<PoiFact, "id">, isLocalPresentationFact: bo
 }
 
 const LOCAL_PRESENTATION_FACT_LABELS: Record<PoiLocalPresentationFactType, string> = {
-  local_name_zh: "Chinese local name",
-  local_address_zh: "Chinese address",
-  local_address_district: "District",
-  local_address_nearest_metro_exit: "Nearest metro exit",
-  local_address_visibility_note: "Visibility note",
+  local_name_zh: "中文本地名称",
+  local_address_zh: "中文地址",
+  local_address_district: "行政区",
+  local_address_nearest_metro_exit: "最近地铁出口",
+  local_address_visibility_note: "可见性说明",
 };
 
 type PoiDraft = {
@@ -1408,23 +1387,21 @@ const EMPTY_POI_DRAFT: PoiDraft = {
 function PoiEditor({ pois, onChanged }: { pois: Poi[]; onChanged: () => Promise<void> }) {
   const [selectedPoiId, setSelectedPoiId] = useState("");
   const [draft, setDraft] = useState<PoiDraft>(EMPTY_POI_DRAFT);
-  const [message, setMessage] = useState("Create a canonical POI before adding facts.");
+  const [message, setMessage] = useState("请先创建规范地点，再添加事实。 ");
   const [saving, setSaving] = useState(false);
 
   function choosePoi(id: string) {
     setSelectedPoiId(id);
     const poi = pois.find((candidate) => candidate.id === id);
     setDraft(poi ? draftFromPoi(poi) : EMPTY_POI_DRAFT);
-    setMessage(
-      poi ? "Edit canonical POI fields. Existing facts are unchanged." : "Create a new POI.",
-    );
+    setMessage(poi ? "正在编辑规范地点字段，既有事实不会改变。" : "创建新的地点。");
   }
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const payload = parsePoiDraft(draft);
     if (!payload) {
-      setMessage("Enter both coordinates or leave both blank. Coordinates must be valid numbers.");
+      setMessage("请同时填写经纬度或同时留空；坐标必须是有效数字。 ");
       return;
     }
 
@@ -1437,30 +1414,25 @@ function PoiEditor({ pois, onChanged }: { pois: Poi[]; onChanged: () => Promise<
     const data = (await response.json().catch(() => null)) as Poi | { error: string } | null;
     setSaving(false);
     if (!response.ok || !data || "error" in data) {
-      setMessage(data && "error" in data ? data.error : "POI save failed.");
+      setMessage("地点未保存，请稍后重试。 ");
       return;
     }
 
     setSelectedPoiId(data.id);
     setDraft(draftFromPoi(data));
     await onChanged();
-    setMessage(
-      selectedPoiId ? "POI saved. Facts remain independently reviewable." : "POI created.",
-    );
+    setMessage(selectedPoiId ? "地点已保存，事实仍可独立审核。" : "地点已创建。");
   }
 
   return (
     <section aria-labelledby="poi-editor-title">
-      <h2 id="poi-editor-title">Canonical POIs</h2>
-      <p className="muted">
-        Names, city, category, and coordinates identify a place. They do not create or verify any
-        travel fact.
-      </p>
+      <h2 id="poi-editor-title">规范地点（POI）</h2>
+      <p className="muted">名称、城市、品类和坐标仅用于识别地点，不会创建或核验任何旅行事实。</p>
       <form className="stackForm" onSubmit={(event) => void save(event)}>
         <label>
-          Existing POI (optional)
+          现有地点（可选）
           <select onChange={(event) => choosePoi(event.target.value)} value={selectedPoiId}>
-            <option value="">Create new POI</option>
+            <option value="">创建新地点</option>
             {pois.map((poi) => (
               <option key={poi.id} value={poi.id}>
                 {poi.city} · {poi.nameEn}
@@ -1469,7 +1441,7 @@ function PoiEditor({ pois, onChanged }: { pois: Poi[]; onChanged: () => Promise<
           </select>
         </label>
         <label>
-          English name
+          英文名称
           <input
             maxLength={200}
             onChange={(event) => setDraft({ ...draft, nameEn: event.target.value })}
@@ -1478,7 +1450,7 @@ function PoiEditor({ pois, onChanged }: { pois: Poi[]; onChanged: () => Promise<
           />
         </label>
         <label>
-          Chinese name (optional)
+          中文名称（可选）
           <input
             maxLength={200}
             onChange={(event) => setDraft({ ...draft, nameZh: event.target.value })}
@@ -1486,7 +1458,7 @@ function PoiEditor({ pois, onChanged }: { pois: Poi[]; onChanged: () => Promise<
           />
         </label>
         <label>
-          City
+          城市
           <input
             maxLength={100}
             onChange={(event) => setDraft({ ...draft, city: event.target.value })}
@@ -1495,7 +1467,7 @@ function PoiEditor({ pois, onChanged }: { pois: Poi[]; onChanged: () => Promise<
           />
         </label>
         <label>
-          Category
+          品类
           <select
             onChange={(event) =>
               setDraft({ ...draft, category: event.target.value as PoiCategory })
@@ -1504,13 +1476,13 @@ function PoiEditor({ pois, onChanged }: { pois: Poi[]; onChanged: () => Promise<
           >
             {PoiCategorySchema.options.map((category) => (
               <option key={category} value={category}>
-                {category}
+                {displayPoiCategory(category)}
               </option>
             ))}
           </select>
         </label>
         <label>
-          Latitude (optional; requires longitude)
+          纬度（可选；需同时填写经度）
           <input
             max="90"
             min="-90"
@@ -1521,7 +1493,7 @@ function PoiEditor({ pois, onChanged }: { pois: Poi[]; onChanged: () => Promise<
           />
         </label>
         <label>
-          Longitude (optional; requires latitude)
+          经度（可选；需同时填写纬度）
           <input
             max="180"
             min="-180"
@@ -1532,12 +1504,12 @@ function PoiEditor({ pois, onChanged }: { pois: Poi[]; onChanged: () => Promise<
           />
         </label>
         <button disabled={saving} type="submit">
-          {selectedPoiId ? "Save POI" : "Create POI"}
+          {selectedPoiId ? "保存地点" : "创建地点"}
         </button>
       </form>
       <p
         className={
-          message.includes("failed") || message.includes("Enter both") ? "danger" : "muted"
+          message.includes("未保存") || message.includes("请同时填写") ? "danger" : "muted"
         }
       >
         {message}
@@ -1597,7 +1569,7 @@ function SourceClassSelect({
 }) {
   return (
     <select aria-label={ariaLabel} defaultValue={defaultValue} id={id} name={name} required>
-      <option value="">Source class</option>
+      <option value="">来源等级</option>
       {PoiFactSourceClassSchema.options.map((sourceClass) => (
         <option key={sourceClass} value={sourceClass}>
           {SOURCE_CLASS_LABELS[sourceClass]}
@@ -1608,10 +1580,10 @@ function SourceClassSelect({
 }
 
 const SOURCE_CLASS_LABELS: Record<PoiFactSourceClass, string> = {
-  official: "Official",
-  operator_verified: "Operator verified",
-  reputable_editorial: "Reputable editorial",
-  user_report: "User report (draft only)",
-  model_output: "Model output (draft only)",
-  uncorroborated_scrape: "Uncorroborated scrape (draft only)",
+  official: "官方来源",
+  operator_verified: "运营人员已核验",
+  reputable_editorial: "可信编辑来源",
+  user_report: "用户报告（仅草稿）",
+  model_output: "模型输出（仅草稿）",
+  uncorroborated_scrape: "未证实抓取内容（仅草稿）",
 };

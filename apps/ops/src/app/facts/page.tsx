@@ -6,10 +6,9 @@ export default async function FactsPage() {
   return (
     <>
       <section className="heading">
-        <h1>Fact editor</h1>
+        <h1>知识事实编辑</h1>
         <p className="muted">
-          Create canonical POIs, then add independently sourced facts. A POI is not a verified
-          travel claim by itself.
+          先创建规范地点（POI），再录入独立溯源的事实。地点本身不代表已核验的旅行事实。
         </p>
       </section>
       <FactEditor />

@@ -46,7 +46,11 @@ export async function authorizeOpsRequest(
         {
           ok: false,
           error:
-            error instanceof Error ? error.message : "Ops authorization is currently unavailable.",
+            error instanceof OpsUnauthorizedError
+              ? "请先登录运营后台。"
+              : error instanceof OpsForbiddenError
+                ? "你没有执行此操作的权限。"
+                : "运营权限服务暂时不可用，请稍后重试。",
         },
         { status },
       ),

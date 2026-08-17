@@ -42,6 +42,6 @@ describe("Ops POI image processor", () => {
     })
       .png()
       .toBuffer();
-    await expect(processPoiImage(source)).rejects.toThrow("dimensions");
+    await expect(processPoiImage(source)).rejects.toThrow("图片尺寸");
   });
 });

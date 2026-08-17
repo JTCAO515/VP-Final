@@ -8,9 +8,9 @@ export async function POST(request: Request) {
     const supabase = createOpsSupabaseRequestClient(request, cookieResponse);
     await supabase.auth.signOut();
     return applyOpsCookies(NextResponse.json({ ok: true }), cookieResponse);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
-      { ok: false, error: error instanceof Error ? error.message : "Ops logout is unavailable." },
+      { ok: false, error: "退出登录服务暂时不可用，请稍后重试。" },
       { status: 503 },
     );
   }

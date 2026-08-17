@@ -124,10 +124,14 @@ function partnerErrorResponse(error: unknown, cookies: NextResponse, operation: 
             ? 409
             : 503;
   const message =
-    status === 503
-      ? `Partner configuration ${operation} is temporarily unavailable.`
-      : error instanceof Error
-        ? error.message
-        : `Partner configuration ${operation} failed.`;
+    status === 400
+      ? "合作伙伴配置内容无效。"
+      : status === 403
+        ? "你没有执行此操作的权限。"
+        : status === 404
+          ? "未找到合作伙伴配置。"
+          : status === 409
+            ? "合作伙伴配置操作未被接受。"
+            : "合作伙伴配置暂时不可用，请稍后重试。";
   return applyOpsCookies(NextResponse.json({ ok: false, error: message }, { status }), cookies);
 }

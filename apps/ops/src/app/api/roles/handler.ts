@@ -41,10 +41,7 @@ export async function handleMembershipSet(request: Request, dependencies: Depend
   if (!isAuthorizedOpsRequest(authorization)) return authorization;
   const parsed = MembershipInputSchema.safeParse(await request.json());
   if (!parsed.success) {
-    return NextResponse.json(
-      { ok: false, error: "Expected a valid userId and role." },
-      { status: 400 },
-    );
+    return NextResponse.json({ ok: false, error: "请输入有效的用户 ID 和角色。" }, { status: 400 });
   }
   try {
     const membership = await authorization.authorizationService.setMembership(
@@ -55,10 +52,7 @@ export async function handleMembershipSet(request: Request, dependencies: Depend
     return applyOpsCookies(NextResponse.json(membership), authorization.cookieResponse);
   } catch {
     return applyOpsCookies(
-      NextResponse.json(
-        { ok: false, error: "Membership change was not accepted." },
-        { status: 409 },
-      ),
+      NextResponse.json({ ok: false, error: "成员资格变更未被接受。" }, { status: 409 }),
       authorization.cookieResponse,
     );
   }
@@ -77,10 +71,7 @@ export async function handleMembershipAssignByExactEmail(
   const parsed = ExactEmailMembershipInputSchema.safeParse(await request.json());
   if (!parsed.success) {
     return applyOpsCookies(
-      NextResponse.json(
-        { ok: false, error: "Expected one complete email address and role." },
-        { status: 400 },
-      ),
+      NextResponse.json({ ok: false, error: "请输入一个完整邮箱地址和角色。" }, { status: 400 }),
       authorization.cookieResponse,
     );
   }
@@ -106,7 +97,7 @@ export async function handleMembershipRevoke(
   if (!isAuthorizedOpsRequest(authorization)) return authorization;
   const parsed = MembershipRemovalInputSchema.safeParse(await request.json());
   if (!parsed.success) {
-    return NextResponse.json({ ok: false, error: "Expected a valid userId." }, { status: 400 });
+    return NextResponse.json({ ok: false, error: "请输入有效的用户 ID。" }, { status: 400 });
   }
   try {
     const membership = await authorization.authorizationService.revokeMembership(
@@ -115,17 +106,14 @@ export async function handleMembershipRevoke(
     );
     if (!membership) {
       return applyOpsCookies(
-        NextResponse.json({ ok: false, error: "Membership was not found." }, { status: 404 }),
+        NextResponse.json({ ok: false, error: "未找到成员资格。" }, { status: 404 }),
         authorization.cookieResponse,
       );
     }
     return applyOpsCookies(NextResponse.json(membership), authorization.cookieResponse);
   } catch {
     return applyOpsCookies(
-      NextResponse.json(
-        { ok: false, error: "Membership removal was not accepted." },
-        { status: 409 },
-      ),
+      NextResponse.json({ ok: false, error: "成员资格移除未被接受。" }, { status: 409 }),
       authorization.cookieResponse,
     );
   }
@@ -135,7 +123,7 @@ function membershipAssignmentUnavailable() {
   return NextResponse.json(
     {
       ok: false,
-      error: "Membership assignment is unavailable. Ask the person to register first if needed.",
+      error: "无法分配成员资格。请在需要时先让对方自行注册。",
     },
     { status: 404 },
   );

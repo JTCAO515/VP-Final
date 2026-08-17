@@ -30,7 +30,7 @@ export async function POST(request: Request) {
   if (!isAuthorizedOpsRequest(authorization)) return authorization;
   const parsed = PoiCreateInputSchema.safeParse(await request.json());
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid canonical POI fields." }, { status: 400 });
+    return NextResponse.json({ error: "地点规范字段无效。" }, { status: 400 });
   }
 
   try {
@@ -40,7 +40,7 @@ export async function POST(request: Request) {
     });
     return applyOpsCookies(NextResponse.json(poi, { status: 201 }), authorization.cookieResponse);
   } catch {
-    return NextResponse.json({ error: "POI create failed." }, { status: 503 });
+    return NextResponse.json({ error: "地点创建暂时不可用，请稍后重试。" }, { status: 503 });
   }
 }
 
@@ -49,7 +49,7 @@ export async function PATCH(request: Request) {
   if (!isAuthorizedOpsRequest(authorization)) return authorization;
   const parsed = PoiUpdateInputSchema.safeParse(await request.json());
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid canonical POI fields." }, { status: 400 });
+    return NextResponse.json({ error: "地点规范字段无效。" }, { status: 400 });
   }
 
   try {
@@ -57,7 +57,7 @@ export async function PATCH(request: Request) {
       ...parsed.data,
       actorId: authorization.access.userId,
     });
-    if (!poi) return NextResponse.json({ error: "POI not found." }, { status: 404 });
+    if (!poi) return NextResponse.json({ error: "未找到地点。" }, { status: 404 });
     await authorization.authorizationService.recordAudit(authorization.access, {
       action: "knowledge.poi.update.completed",
       targetType: "poi",
@@ -66,6 +66,6 @@ export async function PATCH(request: Request) {
     });
     return applyOpsCookies(NextResponse.json(poi), authorization.cookieResponse);
   } catch {
-    return NextResponse.json({ error: "POI update failed." }, { status: 503 });
+    return NextResponse.json({ error: "地点更新暂时不可用，请稍后重试。" }, { status: 503 });
   }
 }

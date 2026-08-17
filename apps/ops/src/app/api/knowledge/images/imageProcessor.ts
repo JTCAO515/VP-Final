@@ -15,10 +15,10 @@ export type ProcessedPoiImage = {
 /** Validates bytes rather than an untrusted filename/MIME, then emits a metadata-free WebP. */
 export async function processPoiImage(source: Uint8Array): Promise<ProcessedPoiImage> {
   if (source.byteLength === 0 || source.byteLength > OPS_POI_IMAGE_MAX_BYTES) {
-    throw new PoiImageInputError("Image files must be no larger than 5 MiB.");
+    throw new PoiImageInputError("图片文件不得超过 5 MiB。 ");
   }
   if (!hasSupportedImageSignature(source)) {
-    throw new PoiImageInputError("Only JPEG, PNG, or WebP image files are supported.");
+    throw new PoiImageInputError("仅支持 JPEG、PNG 或 WebP 图片文件。 ");
   }
 
   try {
@@ -34,17 +34,17 @@ export async function processPoiImage(source: Uint8Array): Promise<ProcessedPoiI
       metadata.width > OPS_POI_IMAGE_MAX_DIMENSION ||
       metadata.height > OPS_POI_IMAGE_MAX_DIMENSION
     ) {
-      throw new PoiImageInputError("Image dimensions must not exceed 4096 by 4096 pixels.");
+      throw new PoiImageInputError("图片尺寸不得超过 4096 × 4096 像素。 ");
     }
 
     // `withMetadata` is intentionally absent: re-encoding strips EXIF/GPS and client metadata.
     const output = await decoded.rotate().webp({ effort: 4, quality: 82 }).toBuffer();
     if (output.byteLength === 0 || output.byteLength > OPS_POI_IMAGE_MAX_BYTES) {
-      throw new PoiImageInputError("Processed image files must be no larger than 5 MiB.");
+      throw new PoiImageInputError("处理后的图片文件不得超过 5 MiB。 ");
     }
     const outputMetadata = await sharp(output, { animated: false }).metadata();
     if (!outputMetadata.width || !outputMetadata.height || outputMetadata.exif) {
-      throw new PoiImageInputError("Image processing could not produce a safe editorial image.");
+      throw new PoiImageInputError("图片处理无法生成安全的编辑图片。 ");
     }
     return {
       bytes: output,
@@ -54,7 +54,7 @@ export async function processPoiImage(source: Uint8Array): Promise<ProcessedPoiI
     };
   } catch (error) {
     if (error instanceof PoiImageInputError) throw error;
-    throw new PoiImageInputError("The image could not be decoded safely.");
+    throw new PoiImageInputError("无法安全解码此图片。 ");
   }
 }
 

@@ -6,10 +6,9 @@ export default async function TasksPage() {
   return (
     <>
       <section className="heading">
-        <h1>Human tasks</h1>
+        <h1>人工协助任务</h1>
         <p className="muted">
-          Shanghai controlled-preview intake. Open a task to record triage notes or an allowed
-          lifecycle decision. Quoting and payment controls remain unavailable.
+          上海受控预览请求。打开任务可记录分诊备注或允许的生命周期决策；报价与支付控制仍不可用。
         </p>
       </section>
       <HumanTaskQueue />

@@ -19,7 +19,7 @@ export function OpsLoginForm() {
     });
     const data = (await response.json()) as { ok: boolean; role?: string; error?: string };
     if (!response.ok || !data.ok) {
-      setError(data.error ?? "Sign in failed.");
+      setError(data.error ?? "登录失败，请稍后重试。");
       setLoading(false);
       return;
     }
@@ -30,12 +30,12 @@ export function OpsLoginForm() {
 
   return (
     <section className="loginPanel">
-      <p className="eyebrow">Restricted operations</p>
-      <h1>Sign in to VisePanda Ops</h1>
-      <p className="muted">Traveler accounts do not receive operational access.</p>
+      <p className="eyebrow">受限运营区域</p>
+      <h1>登录 VisePanda 运营后台</h1>
+      <p className="muted">普通旅行者账号不具备运营后台访问权限。</p>
       <form onSubmit={(event) => void submit(event)}>
         <label>
-          Email
+          邮箱
           <input
             autoComplete="email"
             onChange={(event) => setEmail(event.target.value)}
@@ -45,7 +45,7 @@ export function OpsLoginForm() {
           />
         </label>
         <label>
-          Password
+          密码
           <input
             autoComplete="current-password"
             minLength={8}
@@ -56,7 +56,7 @@ export function OpsLoginForm() {
           />
         </label>
         <button disabled={loading} type="submit">
-          {loading ? "Signing in..." : "Sign in"}
+          {loading ? "登录中…" : "登录"}
         </button>
       </form>
       {error ? (

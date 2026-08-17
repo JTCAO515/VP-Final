@@ -19,7 +19,7 @@ export function SeoEditorialOverrideEditor() {
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
   const [emphasis, setEmphasis] = useState("");
-  const [message, setMessage] = useState("Choose a POI and intent to check current eligibility.");
+  const [message, setMessage] = useState("选择地点和意图以核验当前资格。");
   const [saveState, setSaveState] = useState<SaveState>("idle");
 
   useEffect(() => {
@@ -35,7 +35,7 @@ export function SeoEditorialOverrideEditor() {
     const response = await fetch("/api/knowledge/pois");
     if (!response.ok) {
       setSaveState("error");
-      setMessage("POIs are unavailable.");
+      setMessage("地点暂不可用。");
       return;
     }
     setPois((await response.json()) as Poi[]);
@@ -48,12 +48,12 @@ export function SeoEditorialOverrideEditor() {
     if (response.status === 404) {
       resetEditor();
       setSaveState("idle");
-      setMessage("No current evidence-backed page exists for this POI and intent.");
+      setMessage("此地点和意图当前没有证据支持的页面。 ");
       return;
     }
     if (!response.ok) {
       setSaveState("error");
-      setMessage("The editorial override is unavailable.");
+      setMessage("编辑文案覆盖暂不可用。");
       return;
     }
     const data = (await response.json()) as {
@@ -66,9 +66,7 @@ export function SeoEditorialOverrideEditor() {
     setSummary(data.override?.summary ?? "");
     setEmphasis(data.override?.emphasis ?? "");
     setSaveState("idle");
-    setMessage(
-      data.override ? "Editing saved presentation-only copy." : "Using generated copy until saved.",
-    );
+    setMessage(data.override ? "正在编辑已保存的仅展示文案。" : "保存前将使用自动生成的文案。");
   }
 
   async function save(event: FormEvent<HTMLFormElement>) {
@@ -82,13 +80,13 @@ export function SeoEditorialOverrideEditor() {
     });
     if (!response.ok) {
       setSaveState("error");
-      setMessage("The override was not saved. Keep at least one field and verify eligibility.");
+      setMessage("未保存覆盖文案。请至少保留一个字段并核验资格。");
       return;
     }
     const data = (await response.json()) as { override: SeoEditorialOverride };
     setOverride(data.override);
     setSaveState("saved");
-    setMessage("Saved. Public pages still require their current reviewed facts.");
+    setMessage("已保存。公开页面仍需要当前已核验的事实。 ");
   }
 
   async function remove() {
@@ -98,7 +96,7 @@ export function SeoEditorialOverrideEditor() {
     const response = await fetch(`/api/knowledge/seo-overrides?${query}`, { method: "DELETE" });
     if (!response.ok) {
       setSaveState("error");
-      setMessage("The override was not deleted.");
+      setMessage("未删除覆盖文案。 ");
       return;
     }
     setOverride(null);
@@ -106,7 +104,7 @@ export function SeoEditorialOverrideEditor() {
     setSummary("");
     setEmphasis("");
     setSaveState("saved");
-    setMessage("Deleted. The generated candidate copy is active again.");
+    setMessage("已删除，已恢复使用自动生成的候选文案。 ");
   }
 
   function resetEditor() {
@@ -121,11 +119,11 @@ export function SeoEditorialOverrideEditor() {
     <section className="panel">
       <div className="inlineForm">
         <select
-          aria-label="POI"
+          aria-label="地点"
           onChange={(event: ChangeEvent<HTMLSelectElement>) => setPoiId(event.target.value)}
           value={poiId}
         >
-          <option value="">Choose POI</option>
+          <option value="">选择地点</option>
           {pois.map((poi) => (
             <option key={poi.id} value={poi.id}>
               {poi.city} · {poi.nameEn}
@@ -133,7 +131,7 @@ export function SeoEditorialOverrideEditor() {
           ))}
         </select>
         <select
-          aria-label="SEO intent"
+          aria-label="SEO 意图"
           onChange={(event: ChangeEvent<HTMLSelectElement>) =>
             setIntent(event.target.value as (typeof SeoPageIntentSchema.options)[number])
           }
@@ -152,9 +150,9 @@ export function SeoEditorialOverrideEditor() {
       <p className={saveState === "error" ? "danger" : "muted"}>{message}</p>
       {candidate ? (
         <form className="stackForm" onSubmit={(event) => void save(event)}>
-          <p className="muted">Generated fallback: {candidate.title}</p>
+          <p className="muted">自动生成的备用文案：{candidate.title}</p>
           <label>
-            Title (optional, 140 characters)
+            标题（可选，最多 140 个字符）
             <input
               maxLength={140}
               onChange={(event) => setTitle(event.target.value)}
@@ -162,7 +160,7 @@ export function SeoEditorialOverrideEditor() {
             />
           </label>
           <label>
-            Summary (optional, 240 characters)
+            摘要（可选，最多 240 个字符）
             <textarea
               maxLength={240}
               onChange={(event) => setSummary(event.target.value)}
@@ -170,7 +168,7 @@ export function SeoEditorialOverrideEditor() {
             />
           </label>
           <label>
-            Editor&apos;s note (optional, 600 characters)
+            编辑备注（可选，最多 600 个字符）
             <textarea
               maxLength={600}
               onChange={(event) => setEmphasis(event.target.value)}
@@ -179,7 +177,7 @@ export function SeoEditorialOverrideEditor() {
           </label>
           <div className="rowActions">
             <button disabled={saveState === "saving" || saveState === "loading"} type="submit">
-              Save presentation copy
+              保存展示文案
             </button>
             {override ? (
               <button
@@ -187,7 +185,7 @@ export function SeoEditorialOverrideEditor() {
                 onClick={() => void remove()}
                 type="button"
               >
-                Restore generated copy
+                恢复自动生成文案
               </button>
             ) : null}
           </div>

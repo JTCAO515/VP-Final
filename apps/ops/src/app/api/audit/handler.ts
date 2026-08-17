@@ -37,8 +37,8 @@ export async function handleAuditLedgerGet(
           ok: false,
           error:
             status === 400
-              ? "Expected exact audit filters with a time range of no more than 90 days."
-              : "The audit ledger is temporarily unavailable.",
+              ? "请输入精确的审计筛选条件，时间范围不得超过 90 天。"
+              : "审计记录暂时不可用，请稍后重试。",
         },
         { status },
       ),

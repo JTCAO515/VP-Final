@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { HumanTask } from "@visepanda/domain";
+import { displayHumanTaskKind, displayLifecycleValue } from "../../lib/presentation";
 
 type LoadState = "loading" | "ready" | "error";
 
@@ -13,7 +14,7 @@ export function HumanTaskQueue() {
     async function loadTasks() {
       try {
         const response = await fetch("/api/tasks");
-        if (!response.ok) throw new Error("Human Task intake is unavailable.");
+        if (!response.ok) throw new Error("人工协助任务队列暂不可用。");
         setTasks((await response.json()) as HumanTask[]);
         setLoadState("ready");
       } catch {
@@ -23,23 +24,22 @@ export function HumanTaskQueue() {
     void loadTasks();
   }, []);
 
-  if (loadState === "loading")
-    return <section className="panel empty">Loading requests...</section>;
+  if (loadState === "loading") return <section className="panel empty">正在加载请求…</section>;
   if (loadState === "error") {
-    return <section className="panel empty">Could not load the durable Human Task queue.</section>;
+    return <section className="panel empty">无法加载持久化人工协助任务队列。</section>;
   }
-  if (tasks.length === 0) return <section className="panel empty">No human tasks yet.</section>;
+  if (tasks.length === 0) return <section className="panel empty">暂时没有人工协助任务。</section>;
 
   return (
     <section className="panel">
       <table>
         <thead>
           <tr>
-            <th>Request</th>
-            <th>Contact</th>
-            <th>Status</th>
-            <th>Submitted</th>
-            <th>Action</th>
+            <th>请求</th>
+            <th>联系方式</th>
+            <th>状态</th>
+            <th>提交时间</th>
+            <th>操作</th>
           </tr>
         </thead>
         <tbody>
@@ -48,15 +48,15 @@ export function HumanTaskQueue() {
               <td>
                 <strong>{task.city}</strong>
                 <br />
-                <small>{task.kind}</small>
+                <small>{displayHumanTaskKind(task.kind)}</small>
                 <p>{task.description}</p>
               </td>
               <td>{task.contact}</td>
-              <td>{task.status}</td>
+              <td>{displayLifecycleValue(task.status)}</td>
               <td>{new Date(task.created_at).toLocaleString()}</td>
               <td>
                 <a className="taskLink" href={`/tasks/${encodeURIComponent(task.id)}`}>
-                  Open task
+                  打开任务
                 </a>
               </td>
             </tr>

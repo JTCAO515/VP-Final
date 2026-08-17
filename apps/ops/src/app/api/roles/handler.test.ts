@@ -42,7 +42,7 @@ describe("Ops membership routes", () => {
     expect(response.status).toBe(404);
     await expect(response.json()).resolves.toEqual({
       ok: false,
-      error: "Membership assignment is unavailable. Ask the person to register first if needed.",
+      error: "无法分配成员资格。请在需要时先让对方自行注册。",
     });
     expect(lookup).not.toHaveBeenCalled();
   });
@@ -57,7 +57,7 @@ describe("Ops membership routes", () => {
     expect(response.status).toBe(404);
     await expect(response.json()).resolves.toEqual({
       ok: false,
-      error: "Membership assignment is unavailable. Ask the person to register first if needed.",
+      error: "无法分配成员资格。请在需要时先让对方自行注册。",
     });
   });
 

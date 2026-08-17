@@ -18,16 +18,12 @@ export async function GET(request: Request) {
   const authorization = await authorizeOpsRequest(request, "knowledge.read");
   if (!isAuthorizedOpsRequest(authorization)) return authorization;
   const selection = parseSelection(new URL(request.url).searchParams);
-  if (!selection)
-    return NextResponse.json({ error: "Expected poiId and intent." }, { status: 400 });
+  if (!selection) return NextResponse.json({ error: "需要 poiId 和意图参数。" }, { status: 400 });
 
   const candidate = await findEligibleCandidate(selection);
   if (!candidate) {
     return applyOpsCookies(
-      NextResponse.json(
-        { error: "No current evidence-backed SEO candidate exists." },
-        { status: 404 },
-      ),
+      NextResponse.json({ error: "当前没有具备证据支持的 SEO 候选页面。" }, { status: 404 }),
       authorization.cookieResponse,
     );
   }
@@ -48,7 +44,7 @@ export async function POST(request: Request) {
   });
   if (!mutation.success) {
     return NextResponse.json(
-      { error: "Expected a POI, supported intent, and at least one bounded presentation field." },
+      { error: "需要 POI、受支持的意图和至少一个长度受限的展示字段。" },
       { status: 400 },
     );
   }
@@ -56,10 +52,7 @@ export async function POST(request: Request) {
   const candidate = await findEligibleCandidate(mutation.data);
   if (!candidate) {
     return applyOpsCookies(
-      NextResponse.json(
-        { error: "No current evidence-backed SEO candidate exists." },
-        { status: 409 },
-      ),
+      NextResponse.json({ error: "当前没有具备证据支持的 SEO 候选页面。" }, { status: 409 }),
       authorization.cookieResponse,
     );
   }
@@ -81,10 +74,7 @@ export async function POST(request: Request) {
     );
   } catch (error) {
     return applyOpsCookies(
-      NextResponse.json(
-        { error: error instanceof Error ? error.message : "SEO editorial override save failed." },
-        { status: 400 },
-      ),
+      NextResponse.json({ error: "SEO 编辑文案覆盖未保存，请稍后重试。" }, { status: 400 }),
       authorization.cookieResponse,
     );
   }
@@ -94,8 +84,7 @@ export async function DELETE(request: Request) {
   const authorization = await authorizeOpsRequest(request, "knowledge.write");
   if (!isAuthorizedOpsRequest(authorization)) return authorization;
   const selection = parseSelection(new URL(request.url).searchParams);
-  if (!selection)
-    return NextResponse.json({ error: "Expected poiId and intent." }, { status: 400 });
+  if (!selection) return NextResponse.json({ error: "需要 poiId 和意图参数。" }, { status: 400 });
 
   try {
     await authorization.authorizationService.recordAudit(authorization.access, {
@@ -111,10 +100,7 @@ export async function DELETE(request: Request) {
     return applyOpsCookies(NextResponse.json({ removed }), authorization.cookieResponse);
   } catch (error) {
     return applyOpsCookies(
-      NextResponse.json(
-        { error: error instanceof Error ? error.message : "SEO editorial override delete failed." },
-        { status: 400 },
-      ),
+      NextResponse.json({ error: "SEO 编辑文案覆盖未删除，请稍后重试。" }, { status: 400 }),
       authorization.cookieResponse,
     );
   }

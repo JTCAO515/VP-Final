@@ -9,10 +9,7 @@ const LoginSchema = z.object({ email: z.string().email(), password: z.string().m
 export async function POST(request: Request) {
   const parsed = LoginSchema.safeParse(await request.json());
   if (!parsed.success) {
-    return NextResponse.json(
-      { ok: false, error: "Enter a valid email and password." },
-      { status: 400 },
-    );
+    return NextResponse.json({ ok: false, error: "请输入有效的邮箱和密码。" }, { status: 400 });
   }
   const cookieResponse = NextResponse.next();
   try {
@@ -20,7 +17,7 @@ export async function POST(request: Request) {
     const { data, error } = await supabase.auth.signInWithPassword(parsed.data);
     if (error || !data.user) {
       return applyOpsCookies(
-        NextResponse.json({ ok: false, error: "Email or password is incorrect." }, { status: 401 }),
+        NextResponse.json({ ok: false, error: "邮箱或密码不正确。" }, { status: 401 }),
         cookieResponse,
       );
     }
@@ -28,10 +25,7 @@ export async function POST(request: Request) {
     if (!access) {
       await supabase.auth.signOut();
       return applyOpsCookies(
-        NextResponse.json(
-          { ok: false, error: "This account has no Ops membership." },
-          { status: 403 },
-        ),
+        NextResponse.json({ ok: false, error: "此账号没有运营后台成员资格。" }, { status: 403 }),
         cookieResponse,
       );
     }
@@ -39,9 +33,9 @@ export async function POST(request: Request) {
       NextResponse.json({ ok: true, role: OpsRoleSchema.parse(access.role) }),
       cookieResponse,
     );
-  } catch (error) {
+  } catch {
     return NextResponse.json(
-      { ok: false, error: error instanceof Error ? error.message : "Ops login is unavailable." },
+      { ok: false, error: "登录服务暂时不可用，请稍后重试。" },
       { status: 503 },
     );
   }
