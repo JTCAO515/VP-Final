@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { DemoModelExecutionError, DemoModelUnavailableError } from "@visepanda/app-server";
+import {
+  DemoModelExecutionError,
+  DemoModelResponseError,
+  DemoModelUnavailableError,
+} from "@visepanda/app-server";
 import { summarizeModelFailure } from "./modelFailure.js";
 
 describe("summarizeModelFailure", () => {
@@ -48,6 +52,46 @@ describe("summarizeModelFailure", () => {
     expect(summarizeModelFailure(new DemoModelUnavailableError(["router_primary"]))).toEqual({
       code: "MODEL_CONFIGURATION_UNAVAILABLE",
       attempts: [],
+    });
+  });
+
+  it("classifies an unrecoverable structured response without exposing provider content", () => {
+    expect(
+      summarizeModelFailure(
+        new DemoModelResponseError([
+          {
+            route: "concierge_primary",
+            provider: "moonshot",
+            model: "kimi-k2.6",
+            ok: true,
+            latencyMs: 900,
+            costSnapshot: {
+              provider: "moonshot",
+              model: "kimi-k2.6",
+              effort: "medium",
+              inputTokens: 12,
+              cachedInputTokens: 0,
+              outputTokens: 34,
+              inputPricePerMillionUsd: "0.95000000",
+              cachedInputPricePerMillionUsd: "0.16000000",
+              outputPricePerMillionUsd: "4.00000000",
+              costUsd: "0.00014740",
+              pricingMissing: false,
+              fallbackTriggered: false,
+            },
+          },
+        ]),
+      ),
+    ).toEqual({
+      code: "MODEL_RESPONSE_INVALID",
+      attempts: [
+        {
+          provider: "moonshot",
+          model: "kimi-k2.6",
+          failureClass: null,
+          latencyMs: 900,
+        },
+      ],
     });
   });
 });

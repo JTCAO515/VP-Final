@@ -25,6 +25,7 @@ import { normalizeAgentFailure } from "../trace/service.js";
 import type { TripIdentity, VersionedTripService } from "../trip/versionedService.js";
 import type { TelemetryService } from "../telemetry/service.js";
 import { recordTelemetrySafely } from "../telemetry/producer.js";
+import { DemoModelResponseError } from "./modelRuntime.js";
 import {
   classifyHighRiskRequest,
   resolveHighRiskEnvelope,
@@ -79,13 +80,6 @@ export type GeneratedEnvelope = {
   candidate: unknown;
   attempts?: AgentAttemptTrace[];
 };
-
-class CopilotEnvelopeValidationError extends Error {
-  constructor(readonly attempts: AgentAttemptTrace[]) {
-    super("Copilot envelope validation failed.");
-    this.name = "CopilotEnvelopeValidationError";
-  }
-}
 
 type GenerateEnvelope =
   | ((request: CopilotGenerationRequest) => Promise<unknown | GeneratedEnvelope>)
@@ -171,11 +165,14 @@ export function createCopilotPipeline({
               attempts: [],
               repairCount: 0,
             }
-          : parseGeneratedEnvelope(await generateEnvelope({ ...request, intent, retrievedFacts }));
+          : parseGeneratedEnvelope(await generateEnvelope({ ...request, intent, retrievedFacts }), {
+              intent,
+              allowDialogueTextRecovery: demoDialogueOnly,
+            });
         attempts = [...attempts, ...parsedGeneration.attempts];
         repairCount = parsedGeneration.repairCount;
         if (demoDialogueOnly && parsedGeneration.envelope.intent !== intent) {
-          throw new Error("Copilot envelope intent does not match the router decision.");
+          throw new DemoModelResponseError(attempts);
         }
         if (demoDialogueOnly) assertDemoDialogueEnvelope(parsedGeneration.envelope);
         const envelope = validateExecutionFactSupport(
@@ -411,7 +408,13 @@ function normalizeIntentDecision(
   return typeof value === "string" ? { intent: value } : value;
 }
 
-function parseGeneratedEnvelope(value: unknown): {
+function parseGeneratedEnvelope(
+  value: unknown,
+  options: {
+    intent: CopilotIntent;
+    allowDialogueTextRecovery: boolean;
+  },
+): {
   envelope: CopilotEnvelope;
   attempts: AgentAttemptTrace[];
   repairCount: number;
@@ -427,7 +430,17 @@ function parseGeneratedEnvelope(value: unknown): {
       };
     } catch {}
   }
-  throw new CopilotEnvelopeValidationError(generated.attempts ?? []);
+  const recovered = options.allowDialogueTextRecovery
+    ? recoverDialogueEnvelope(candidates, options.intent)
+    : null;
+  if (recovered) {
+    return {
+      envelope: recovered,
+      attempts: generated.attempts ?? [],
+      repairCount: candidates.length,
+    };
+  }
+  throw new DemoModelResponseError(generated.attempts ?? []);
 }
 
 function repairCandidates(value: unknown): unknown[] {
@@ -458,6 +471,76 @@ function normalizeEnvelopeCandidate(value: unknown): unknown {
       highlights: [],
     },
   };
+}
+
+/**
+ * DEMO-01 exposes dialogue only. When a real provider supplies readable prose but misses the
+ * envelope wrapper, retain that provider-authored text while deterministically removing every
+ * mutable, commercial, handoff, and citation surface. A conflicting declared intent remains
+ * invalid instead of being silently rewritten.
+ */
+function recoverDialogueEnvelope(
+  candidates: readonly unknown[],
+  expectedIntent: CopilotIntent,
+): CopilotEnvelope | null {
+  if (candidates.some((candidate) => hasConflictingIntent(candidate, expectedIntent))) return null;
+
+  for (const candidate of candidates) {
+    const body = dialogueText(candidate);
+    if (!body) continue;
+    return CopilotEnvelopeSchema.parse({
+      intent: expectedIntent,
+      message: {
+        headline: "VisePanda",
+        body,
+        highlights: [],
+      },
+      tripActions: [],
+      toolCards: [],
+      commercialActions: [],
+      humanHelp: null,
+      citations: [],
+    });
+  }
+  return null;
+}
+
+function hasConflictingIntent(candidate: unknown, expectedIntent: CopilotIntent): boolean {
+  if (!isRecord(candidate)) return false;
+  const parsed = CopilotIntentSchema.safeParse(candidate.intent);
+  return parsed.success && parsed.data !== expectedIntent;
+}
+
+function dialogueText(candidate: unknown): string | null {
+  if (typeof candidate === "string") {
+    const text = candidate.trim();
+    return text.length > 0 && !looksLikeJson(text) ? text : null;
+  }
+  if (!isRecord(candidate)) return null;
+
+  return firstNonEmptyText(
+    candidate.message,
+    candidate.answer,
+    candidate.response,
+    candidate.content,
+    candidate.text,
+  );
+}
+
+function firstNonEmptyText(...values: unknown[]): string | null {
+  for (const value of values) {
+    if (typeof value === "string" && value.trim().length > 0) return value.trim();
+    if (!isRecord(value)) continue;
+    for (const key of ["body", "content", "answer", "text"]) {
+      const nested = value[key];
+      if (typeof nested === "string" && nested.trim().length > 0) return nested.trim();
+    }
+  }
+  return null;
+}
+
+function looksLikeJson(value: string): boolean {
+  return value.startsWith("{") || value.startsWith("[");
 }
 
 function assertDemoDialogueEnvelope(envelope: CopilotEnvelope): CopilotEnvelope {

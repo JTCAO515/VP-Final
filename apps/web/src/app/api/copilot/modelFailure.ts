@@ -1,9 +1,18 @@
-import { DemoModelExecutionError, DemoModelUnavailableError } from "@visepanda/app-server";
+import {
+  DemoModelExecutionError,
+  DemoModelResponseError,
+  DemoModelUnavailableError,
+} from "@visepanda/app-server";
 
-export type DemoModelFailure = DemoModelUnavailableError | DemoModelExecutionError;
+export type DemoModelFailure =
+  DemoModelUnavailableError | DemoModelExecutionError | DemoModelResponseError;
 
 export function findModelFailure(error: unknown): DemoModelFailure | null {
-  if (error instanceof DemoModelUnavailableError || error instanceof DemoModelExecutionError) {
+  if (
+    error instanceof DemoModelUnavailableError ||
+    error instanceof DemoModelExecutionError ||
+    error instanceof DemoModelResponseError
+  ) {
     return error;
   }
   if (error && typeof error === "object" && "cause" in error) {
@@ -29,7 +38,10 @@ export type SanitizedModelFailureDiagnostic = {
 export function summarizeModelFailure(error: unknown): SanitizedModelFailureDiagnostic | null {
   const failure = findModelFailure(error);
   if (!failure) return null;
-  if (!(failure instanceof DemoModelExecutionError)) {
+  if (
+    !(failure instanceof DemoModelExecutionError) &&
+    !(failure instanceof DemoModelResponseError)
+  ) {
     return { code: failure.code, attempts: [] };
   }
 
