@@ -21,7 +21,7 @@ const NAV_ITEMS: ReadonlyArray<
 > = [
   { section: "copilot", href: "/visepanda", labelKey: "nav.visepanda" },
   { section: "explore", href: "/explore", labelKey: "nav.explore" },
-  { section: "guides", href: "/guides/payment", labelKey: "nav.guides" },
+  { section: "guides", href: "/guides", labelKey: "nav.guides" },
   { section: "rescue", href: "/rescue", labelKey: "nav.rescue" },
   { section: "help", href: "/human-help", labelKey: "nav.humanHelp" },
 ];
@@ -86,7 +86,7 @@ export function SiteFooter() {
           <a href="/readiness">{t("footer.readiness")}</a>
           <a href="/arrival-pack">{t("footer.arrivalPack")}</a>
           <a href="/explore">{t("nav.explore")}</a>
-          <a href="/guides/payment">{t("nav.guides")}</a>
+          <a href="/guides">{t("nav.guides")}</a>
           <a href="/rescue">{t("nav.rescue")}</a>
           <a href="/human-help">{t("nav.humanHelp")}</a>
           <a href="/account">{t("nav.account")}</a>

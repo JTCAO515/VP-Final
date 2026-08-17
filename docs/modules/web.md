@@ -12,6 +12,11 @@ The Web runtime is pinned to the patched Next.js 15.5.21 security baseline. Root
 also keep its transitive `sharp`, PostCSS, and nanoid packages on their reviewed patched releases;
 dependency changes must keep the Web build and production audit evidence current.
 
+`/guides` is the public index for the already-published guide slugs. It may link only to guides from
+the registered guide dataset; creating that index does not create, validate, or translate travel facts.
+`/favicon.ico` is a cacheable generated brand image route, so public browser icon requests do not
+fall through to the not-found response.
+
 ## Locale and Content Boundary
 
 The public Web locale contract is owned by `apps/web/src/i18n`. English (`en`) is the deterministic
