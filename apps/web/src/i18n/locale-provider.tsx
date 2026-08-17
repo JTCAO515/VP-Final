@@ -14,6 +14,7 @@ import {
   WEB_LOCALE_COOKIE,
   localeDirection,
   parseWebLocale,
+  parseWebLocaleCookie,
   type WebLocale,
 } from "./locales";
 import { messageFor, type MessageKey } from "./messages";
@@ -34,12 +35,16 @@ const LocaleContext = createContext<LocaleContextValue>(defaultContext);
 
 export function LocaleProvider({
   children,
-  initialLocale,
+  initialLocale = DEFAULT_WEB_LOCALE,
 }: Readonly<{
   children: ReactNode;
-  initialLocale: WebLocale;
+  initialLocale?: WebLocale;
 }>) {
   const [locale, setLocaleState] = useState<WebLocale>(initialLocale);
+
+  useEffect(() => {
+    setLocaleState(parseWebLocaleCookie(document.cookie));
+  }, []);
 
   const setLocale = useCallback((nextLocale: WebLocale) => {
     const normalized = parseWebLocale(nextLocale);
