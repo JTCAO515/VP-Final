@@ -1069,9 +1069,46 @@ button:disabled {
 .readinessResults > ul {
   display: grid;
   gap: 10px;
-  max-height: 57vh;
-  overflow-y: auto;
+  margin-top: 16px;
   padding-right: 4px;
+}
+
+.readinessResultSummary {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.readinessResultSummary > div {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 4px;
+  min-height: 72px;
+  padding: 11px;
+}
+
+.readinessResultSummary span {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.readinessResultSummary b {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.readinessResultSummary .ready {
+  border-bottom: 3px solid var(--jade);
+}
+
+.readinessResultSummary .action_required {
+  border-bottom: 3px solid var(--red);
 }
 
 .readinessResult {
@@ -1090,12 +1127,32 @@ button:disabled {
   border-left-color: var(--red);
 }
 
-.readinessResult > div {
+.readinessResult summary {
+  cursor: pointer;
   display: grid;
   gap: 7px;
+  list-style: none;
 }
 
-.readinessResult > div > b {
+.readinessResult summary::-webkit-details-marker {
+  display: none;
+}
+
+.readinessResult summary::after {
+  color: var(--muted);
+  content: "+";
+  font-size: 18px;
+  font-weight: 400;
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  justify-self: end;
+}
+
+.readinessResult[open] summary::after {
+  content: "-";
+}
+
+.readinessResult summary > b {
   font-size: 13px;
   line-height: 1.4;
 }
@@ -1116,14 +1173,18 @@ button:disabled {
   color: var(--red);
 }
 
-.readinessResult dl {
+.readinessResultDetail {
+  padding-top: 12px;
+}
+
+.readinessResultDetail dl {
   display: flex;
   flex-wrap: wrap;
   gap: 10px 20px;
   margin: 12px 0;
 }
 
-.readinessResult dl > div {
+.readinessResultDetail dl > div {
   display: grid;
   gap: 2px;
 }
@@ -1139,14 +1200,14 @@ button:disabled {
   margin: 0;
 }
 
-.readinessResult > p {
+.readinessResultDetail > p {
   color: var(--ink-soft);
   font-size: 12px;
   line-height: 1.45;
   margin: 0 0 9px;
 }
 
-.readinessResult code {
+.readinessResultDetail code {
   overflow-wrap: anywhere;
 }
 
@@ -1836,6 +1897,16 @@ button:disabled {
     margin-left: -4px;
     margin-right: -4px;
     padding: 20px;
+  }
+
+  .readinessResultSummary {
+    grid-template-columns: 1fr;
+  }
+
+  .readinessResultSummary > div {
+    align-items: center;
+    grid-template-columns: 1fr auto;
+    min-height: 0;
   }
 }
 
