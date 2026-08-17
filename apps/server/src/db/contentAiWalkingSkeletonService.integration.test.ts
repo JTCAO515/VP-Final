@@ -31,6 +31,10 @@ describeDatabase("database Content AI walking skeleton", () => {
         (${reviewerId}, 'authenticated', 'authenticated', 'content-reviewer@example.com', '', '{}'::jsonb, '{}'::jsonb, now(), now())
     `;
     await sql`
+      insert into public.ops_memberships (user_id, role, created_by)
+      values (${reviewerId}, 'editor', ${ownerId})
+    `;
+    await sql`
       insert into public.pois (id, city, category, name_en, source_ids)
       values (${poiId}, 'Fixture City', 'attraction', 'Fixture POI', '{}'::jsonb)
     `;
