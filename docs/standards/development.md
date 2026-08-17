@@ -43,6 +43,12 @@ temporarily adds `VISEPANDA_ANON_SESSION_PREVIOUS_SECRET` and
 OA-003 in the [operator action register](../governance/operator-action-register.md); values never enter
 the repository.
 
+Password recovery adds the server-only `VISEPANDA_AUTH_RECOVERY_REDIRECT_URL` and
+`VISEPANDA_AUTH_RECOVERY_PROOF_SECRET` values. The redirect must be the exact same-origin
+`/auth/callback` URL for its environment; the proof secret is at least 32 characters and is distinct
+from anonymous-session and Supabase material. Recovery configuration and live email-delivery evidence
+are tracked separately as OA-023; a configured value without the required verification stays open.
+
 ## Dependency Policy
 
 - Prefer platform APIs and existing repository dependencies.

@@ -8,6 +8,7 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       disallow: [
         "/account",
+        "/auth/",
         "/arrival-pack",
         "/api/",
         "/copilot",

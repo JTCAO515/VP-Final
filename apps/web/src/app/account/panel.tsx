@@ -6,12 +6,13 @@ import { useLocale } from "../../i18n/locale-provider";
 type SessionResponse =
   | { ok: true; authenticated: boolean; user: { email: string | null } | null }
   | { ok: false; error: string };
-type AuthMode = "login" | "register";
+type AuthMode = "login" | "register" | "recover" | "reset";
 
 export function AccountPanel() {
   const { t } = useLocale();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordConfirmation, setPasswordConfirmation] = useState("");
   const [sessionEmail, setSessionEmail] = useState<string | null>(null);
   const [authMode, setAuthMode] = useState<AuthMode>("login");
   const [loading, setLoading] = useState(true);
@@ -20,6 +21,12 @@ export function AccountPanel() {
 
   useEffect(() => {
     void refreshSession();
+    const recovery = new URLSearchParams(window.location.search).get("recovery");
+    if (recovery === "1") setAuthMode("reset");
+    if (recovery === "failed") {
+      setAuthMode("recover");
+      setError(t("account.recoveryInvalid"));
+    }
   }, []);
 
   async function refreshSession() {
@@ -44,6 +51,43 @@ export function AccountPanel() {
     setError(null);
     setNotice(null);
     try {
+      if (authMode === "recover") {
+        const response = await fetch("/api/auth/recover", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ email }),
+        });
+        const data = (await response.json()) as { ok: boolean; error?: string };
+        if (!response.ok || !data.ok) {
+          throw new Error(data.error ?? t("account.recoveryUnavailable"));
+        }
+        setNotice(t("account.recoveryRequested"));
+        setLoading(false);
+        return;
+      }
+
+      if (authMode === "reset") {
+        if (password !== passwordConfirmation) {
+          throw new Error(t("account.passwordMismatch"));
+        }
+        const response = await fetch("/api/auth/recover/complete", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ password }),
+        });
+        const data = (await response.json()) as { ok: boolean; error?: string };
+        if (!response.ok || !data.ok) {
+          throw new Error(data.error ?? t("account.passwordUpdateFailed"));
+        }
+        setPassword("");
+        setPasswordConfirmation("");
+        setAuthMode("login");
+        window.history.replaceState({}, "", "/account");
+        setNotice(t("account.passwordUpdated"));
+        await refreshSession();
+        return;
+      }
+
       const response = await fetch(`/api/auth/${authMode === "register" ? "register" : "login"}`, {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -110,7 +154,7 @@ export function AccountPanel() {
             <span aria-hidden="true" />
             {t("account.checking")}
           </div>
-        ) : sessionEmail ? (
+        ) : sessionEmail && authMode !== "reset" ? (
           <div className="accountSession">
             <span>{t("account.signedInAs")}</span>
             <strong>{sessionEmail}</strong>
@@ -120,48 +164,102 @@ export function AccountPanel() {
           </div>
         ) : (
           <form className="accountForm" onSubmit={(event) => void authenticate(event)}>
-            <div className="accountMode" aria-label={t("account.action")}>
+            {authMode === "login" || authMode === "register" ? (
+              <div className="accountMode" aria-label={t("account.action")}>
+                <button
+                  aria-pressed={authMode === "login"}
+                  onClick={() => chooseAuthMode("login")}
+                  type="button"
+                >
+                  {t("account.signIn")}
+                </button>
+                <button
+                  aria-pressed={authMode === "register"}
+                  onClick={() => chooseAuthMode("register")}
+                  type="button"
+                >
+                  {t("account.create")}
+                </button>
+              </div>
+            ) : null}
+            {authMode === "recover" ? (
+              <p className="accountFormLead">{t("account.recoveryLead")}</p>
+            ) : null}
+            {authMode === "reset" ? (
+              <p className="accountFormLead">{t("account.resetLead")}</p>
+            ) : null}
+            {authMode !== "reset" ? (
+              <label>
+                {t("account.email")}
+                <input
+                  autoComplete="email"
+                  onChange={(event) => setEmail(event.target.value)}
+                  placeholder="you@example.com"
+                  required
+                  type="email"
+                  value={email}
+                />
+              </label>
+            ) : null}
+            {authMode !== "recover" ? (
+              <label>
+                {authMode === "reset" ? t("account.newPassword") : t("account.password")}
+                <input
+                  autoComplete={
+                    authMode === "register" || authMode === "reset"
+                      ? "new-password"
+                      : "current-password"
+                  }
+                  minLength={8}
+                  onChange={(event) => setPassword(event.target.value)}
+                  placeholder={t("account.passwordHint")}
+                  required
+                  type="password"
+                  value={password}
+                />
+              </label>
+            ) : null}
+            {authMode === "reset" ? (
+              <label>
+                {t("account.confirmPassword")}
+                <input
+                  autoComplete="new-password"
+                  minLength={8}
+                  onChange={(event) => setPasswordConfirmation(event.target.value)}
+                  placeholder={t("account.passwordHint")}
+                  required
+                  type="password"
+                  value={passwordConfirmation}
+                />
+              </label>
+            ) : null}
+            <button disabled={loading} type="submit">
+              {authMode === "register"
+                ? t("account.create")
+                : authMode === "recover"
+                  ? t("account.sendRecovery")
+                  : authMode === "reset"
+                    ? t("account.updatePassword")
+                    : t("account.signIn")}
+            </button>
+            {authMode === "login" ? (
               <button
-                aria-pressed={authMode === "login"}
+                className="accountTextAction"
+                onClick={() => chooseAuthMode("recover")}
+                type="button"
+              >
+                {t("account.forgotPassword")}
+              </button>
+            ) : null}
+            {authMode === "recover" ? (
+              <button
+                className="accountTextAction"
                 onClick={() => chooseAuthMode("login")}
                 type="button"
               >
-                {t("account.signIn")}
+                {t("account.backToSignIn")}
               </button>
-              <button
-                aria-pressed={authMode === "register"}
-                onClick={() => chooseAuthMode("register")}
-                type="button"
-              >
-                {t("account.create")}
-              </button>
-            </div>
-            <label>
-              {t("account.email")}
-              <input
-                autoComplete="email"
-                onChange={(event) => setEmail(event.target.value)}
-                placeholder="you@example.com"
-                required
-                type="email"
-                value={email}
-              />
-            </label>
-            <label>
-              {t("account.password")}
-              <input
-                autoComplete={authMode === "register" ? "new-password" : "current-password"}
-                minLength={8}
-                onChange={(event) => setPassword(event.target.value)}
-                placeholder={t("account.passwordHint")}
-                required
-                type="password"
-                value={password}
-              />
-            </label>
-            <button disabled={loading} type="submit">
-              {authMode === "register" ? t("account.create") : t("account.signIn")}
-            </button>
+            ) : null}
           </form>
         )}
         {notice ? (

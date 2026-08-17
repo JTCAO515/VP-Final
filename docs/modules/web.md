@@ -52,36 +52,51 @@ surfaces, and #433 for the legal/editorial authority path.
 
 ## Routes
 
-| Route                                     | Purpose                                                                        |
-| ----------------------------------------- | ------------------------------------------------------------------------------ |
-| `/`                                       | Product home with an illustrative, non-interactive VisePanda workspace preview |
-| `/visepanda`                              | Canonical VisePanda workspace and Trip Canvas                                  |
-| `/copilot`                                | Legacy redirect to `/visepanda`                                                |
-| `/readiness`                              | Explainable, fixed-answer China preparation self-check                         |
-| `/explore`                                | Execution-fact discovery                                                       |
-| `/guides/[slug]`                          | Editorial execution guides                                                     |
-| `/[city]/[poi]`                           | Programmatic POI page                                                          |
-| `/human-help`                             | Human Task request surface                                                     |
-| `/api/human-help/payments/stripe/webhook` | Provider-only signed Checkout completion consumer                              |
-| `/account`                                | Server-verified traveler session and email/password registration/sign-in       |
-| `/privacy`                                | Public Privacy Policy                                                          |
-| `/terms`                                  | Public Terms of Use                                                            |
-| `/affiliate-disclosure`                   | Public affiliate relationship disclosure                                       |
-| `/human-help-disclaimer`                  | Full Human Help controlled-preview limits                                      |
-| `/emergency-disclaimer`                   | Official emergency-channel guidance and product limits                         |
-| `/share/trips/[token]`                    | Public read-only Trip share                                                    |
-| `/outbound`                               | Validated partner redirect gateway                                             |
-| `/api/copilot`                            | First-pass Copilot request                                                     |
-| `/api/copilot/complete`                   | Silent second-pass completion                                                  |
-| `/api/copilot/complete/callback`          | Signed QStash completion delivery callback                                     |
-| `/api/auth/login`                         | Supabase email/password sign-in and SSR cookie issuance                        |
-| `/api/auth/logout`                        | Supabase sign-out and SSR cookie clearing                                      |
-| `/api/auth/session`                       | Verified display-safe session status and cookie refresh                        |
-| `/api/telemetry`                          | Strict privacy-safe browser telemetry capture                                  |
-| `/api/mobile/trips`                       | Verified mobile-session read-only Trip list                                    |
-| `/api/trips/*`                            | Trip read, claim, and share handlers                                           |
+| Route                                     | Purpose                                                                                               |
+| ----------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `/`                                       | Product home with an illustrative, non-interactive VisePanda workspace preview                        |
+| `/visepanda`                              | Canonical VisePanda workspace and Trip Canvas                                                         |
+| `/copilot`                                | Legacy redirect to `/visepanda`                                                                       |
+| `/readiness`                              | Explainable, fixed-answer China preparation self-check                                                |
+| `/explore`                                | Execution-fact discovery                                                                              |
+| `/guides/[slug]`                          | Editorial execution guides                                                                            |
+| `/[city]/[poi]`                           | Programmatic POI page                                                                                 |
+| `/human-help`                             | Human Task request surface                                                                            |
+| `/api/human-help/payments/stripe/webhook` | Provider-only signed Checkout completion consumer                                                     |
+| `/account`                                | Server-verified traveler session, email/password registration/sign-in, and recovery request/update UI |
+| `/auth/callback`                          | No-store, no-referrer Supabase recovery-code exchange and proof issuance                              |
+| `/privacy`                                | Public Privacy Policy                                                                                 |
+| `/terms`                                  | Public Terms of Use                                                                                   |
+| `/affiliate-disclosure`                   | Public affiliate relationship disclosure                                                              |
+| `/human-help-disclaimer`                  | Full Human Help controlled-preview limits                                                             |
+| `/emergency-disclaimer`                   | Official emergency-channel guidance and product limits                                                |
+| `/share/trips/[token]`                    | Public read-only Trip share                                                                           |
+| `/outbound`                               | Validated partner redirect gateway                                                                    |
+| `/api/copilot`                            | First-pass Copilot request                                                                            |
+| `/api/copilot/complete`                   | Silent second-pass completion                                                                         |
+| `/api/copilot/complete/callback`          | Signed QStash completion delivery callback                                                            |
+| `/api/auth/login`                         | Supabase email/password sign-in and SSR cookie issuance                                               |
+| `/api/auth/logout`                        | Supabase sign-out and SSR cookie clearing                                                             |
+| `/api/auth/session`                       | Verified display-safe session status and cookie refresh                                               |
+| `/api/auth/recover`                       | Enumeration-resistant Supabase password-recovery email handoff                                        |
+| `/api/auth/recover/complete`              | Recovery-proof and verified-session gated password update                                             |
+| `/api/telemetry`                          | Strict privacy-safe browser telemetry capture                                                         |
+| `/api/mobile/trips`                       | Verified mobile-session read-only Trip list                                                           |
+| `/api/trips/*`                            | Trip read, claim, and share handlers                                                                  |
 
 ## Data Access
+
+Password recovery is deliberately split between a generic request acknowledgement and a verified
+completion path. `POST /api/auth/recover` accepts a bounded email, uses only the configured exact
+same-origin callback, and returns the same `{ ok: true }` acknowledgement for every valid provider
+handoff; it never reports whether an account exists. `/auth/callback` exchanges the short-lived
+Supabase code on the server, immediately redirects to a clean account URL with no-store and no-referrer
+headers, and issues a ten-minute HttpOnly proof scoped to the completion endpoint. `POST
+/api/auth/recover/complete` requires both that proof and an online verified Supabase user with the same
+owner id before it changes a password. No route logs, returns, stores in browser storage, or persists a
+recovery code, password, session, or proof. If either configured recovery value is absent or invalid,
+the request path reports an honest unavailable state; no email-delivery claim is made until OA-023 has
+sanitized external evidence.
 
 The Next.js API layer creates an in-process server caller through one composition root. Explicit
 `preview`, `staging`, and `production` modes require `DATABASE_URL` and select only the existing
