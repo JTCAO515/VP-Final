@@ -64,9 +64,9 @@ type WorkspacePanel = "trip" | "chat";
 
 const LAST_TRIP_ID_KEY = "visepanda.lastTripId";
 const EXAMPLE_PROMPT_KEYS = [
-  "workspace.prompt.payment",
-  "workspace.prompt.metro",
-  "workspace.prompt.show",
+  "workspace.prompt.duration",
+  "workspace.prompt.cities",
+  "workspace.prompt.pace",
 ] as const;
 
 const SAFE_CONTEXT_PROMPTS: Readonly<Record<string, string>> = {

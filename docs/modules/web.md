@@ -433,6 +433,10 @@ and truthful; retries are offered only for retryable jobs within the server-owne
   introduce inert controls.
 - A new visitor begins with no active request and no generated Trip. The prompt submit action remains
   disabled until the traveler enters or chooses a question.
+- The anonymous controlled-preview examples advertise only bounded travel comparisons observed to
+  return useful dialogue in the deployed capability. Payment, metro, dietary-expression, booking,
+  navigation, and other execution prompts return only after their reviewed facts or fixed expressions
+  are production-eligible; the UI must not invite a known deterministic unavailable response.
 - The canonical visual source is the Red Gold Design System.
 - Public product routes share one navigation and footer rhythm. Floating navigation may use a
   translucent material, but content hierarchy and legibility take priority over decoration.

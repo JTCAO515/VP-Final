@@ -42,6 +42,9 @@ describe("Web locale contract", () => {
       expect(messageFor(option.code, "nav.visepanda")).not.toEqual("");
       expect(messageFor(option.code, "home.title")).not.toEqual("");
       expect(messageFor(option.code, "workspace.initialMessage")).not.toEqual("");
+      expect(messageFor(option.code, "workspace.prompt.duration")).not.toEqual("");
+      expect(messageFor(option.code, "workspace.prompt.cities")).not.toEqual("");
+      expect(messageFor(option.code, "workspace.prompt.pace")).not.toEqual("");
       expect(messageFor(option.code, "rescue.title")).not.toEqual("");
       expect(messageFor(option.code, "help.submit")).not.toEqual("");
       expect(messageFor(option.code, "arrival.title")).not.toEqual("");
