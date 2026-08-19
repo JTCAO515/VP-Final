@@ -31,6 +31,7 @@ import {
   ExecutionFactSupportError,
   resolveHighRiskEnvelope,
   validateExecutionFactSupport,
+  type CopilotAnswerDisposition,
   type SafePhraseResolver,
 } from "./executionSafety.js";
 
@@ -55,6 +56,7 @@ export const RetrievalFactSchema = z.object({
 
 export const CopilotRunResultSchema = z.object({
   envelope: CopilotEnvelopeSchema,
+  answerDisposition: z.enum(["answered", "unavailable"]),
   trip: TripStateSchema.nullable(),
   version: z.number().int().nonnegative().nullable(),
   trace: z.object({
@@ -154,7 +156,7 @@ export function createCopilotPipeline({
               : retrieveContext(request));
         const parsedGeneration = highRiskCategory
           ? {
-              envelope: await resolveHighRiskEnvelope({
+              ...(await resolveHighRiskEnvelope({
                 category: highRiskCategory,
                 intent,
                 ...(parsedInput.safePhraseSelection
@@ -162,14 +164,20 @@ export function createCopilotPipeline({
                   : {}),
                 resolveSafePhrase,
                 includeHumanHelp: !demoDialogueOnly,
-              }),
+              })),
               attempts: [],
               repairCount: 0,
             }
-          : parseGeneratedEnvelope(await generateEnvelope({ ...request, intent, retrievedFacts }), {
-              intent,
-              allowDialogueTextRecovery: demoDialogueOnly,
-            });
+          : {
+              ...parseGeneratedEnvelope(
+                await generateEnvelope({ ...request, intent, retrievedFacts }),
+                {
+                  intent,
+                  allowDialogueTextRecovery: demoDialogueOnly,
+                },
+              ),
+              answerDisposition: "answered" as const,
+            };
         attempts = [...attempts, ...parsedGeneration.attempts];
         repairCount = parsedGeneration.repairCount;
         if (demoDialogueOnly && parsedGeneration.envelope.intent !== intent) {
@@ -177,12 +185,14 @@ export function createCopilotPipeline({
         }
         if (demoDialogueOnly) assertDemoDialogueEnvelope(parsedGeneration.envelope);
         const citedEnvelope = validateCitations(parsedGeneration.envelope, retrievedFacts);
-        const envelope = validateGeneratedEnvelopeForMode({
+        const validatedAnswer = validateGeneratedEnvelopeForMode({
           envelope: citedEnvelope,
           retrievedFacts,
           intent,
           demoDialogueOnly,
+          answerDisposition: parsedGeneration.answerDisposition,
         });
+        const envelope = validatedAnswer.envelope;
         if (knowledgeService && shouldRecordKnowledgeGap(envelope)) {
           const city = detectCity(parsedInput.message);
           await knowledgeService.recordGap({
@@ -221,6 +231,7 @@ export function createCopilotPipeline({
 
         const result = CopilotRunResultSchema.parse({
           envelope,
+          answerDisposition: validatedAnswer.answerDisposition,
           trip,
           version,
           trace: {
@@ -844,26 +855,33 @@ function validateGeneratedEnvelopeForMode(input: {
   retrievedFacts: RetrievalFact[];
   intent: CopilotIntent;
   demoDialogueOnly: boolean;
-}): CopilotEnvelope {
+  answerDisposition: CopilotAnswerDisposition;
+}): { envelope: CopilotEnvelope; answerDisposition: CopilotAnswerDisposition } {
   try {
-    return validateExecutionFactSupport(input.envelope, input.retrievedFacts);
+    return {
+      envelope: validateExecutionFactSupport(input.envelope, input.retrievedFacts),
+      answerDisposition: input.answerDisposition,
+    };
   } catch (error) {
     // DEMO-01 never turns an unsupported execution claim into a plausible travel answer. It can
     // only return this deterministic, zero-action notice while the curated fact base is incomplete.
     if (input.demoDialogueOnly && error instanceof ExecutionFactSupportError) {
-      return CopilotEnvelopeSchema.parse({
-        intent: input.intent,
-        message: {
-          headline: "Verified information unavailable",
-          body: "I do not have enough verified local information to answer that safely, so I will not guess. Please check an official source or ask local staff.",
-          highlights: [],
-        },
-        tripActions: [],
-        toolCards: [],
-        commercialActions: [],
-        humanHelp: null,
-        citations: [],
-      });
+      return {
+        answerDisposition: "unavailable",
+        envelope: CopilotEnvelopeSchema.parse({
+          intent: input.intent,
+          message: {
+            headline: "Verified information unavailable",
+            body: "I do not have enough verified local information to answer that safely, so I will not guess. Please check an official source or ask local staff.",
+            highlights: [],
+          },
+          tripActions: [],
+          toolCards: [],
+          commercialActions: [],
+          humanHelp: null,
+          citations: [],
+        }),
+      };
     }
     throw error;
   }

@@ -11,7 +11,7 @@ type Environment = Readonly<Record<string, string | undefined>>;
 export type AnonymousTurnReservation = {
   allowed: true;
   complete(): Promise<AnonymousTurnUsage>;
-  release(): Promise<void>;
+  release(): Promise<AnonymousTurnUsage>;
 };
 
 export type AnonymousTurnAdmission =
@@ -147,6 +147,8 @@ export function createInMemoryAnonymousTurnCounter({
         async release() {
           if (!settled) entry!.leases.delete(leaseId);
           settled = true;
+          entry!.expiresAt = now() + ttlSeconds * 1_000;
+          return usage(entry!.completed, limit);
         },
       };
     },
@@ -196,10 +198,11 @@ function createScriptedAnonymousTurnCounter(
           return usage(parseInteger(value), config.limit);
         },
         async release() {
-          if (settled) return;
+          if (settled) return readUsage(client, key, config);
           try {
-            await client.eval(RELEASE_SCRIPT, [key], [leaseId, config.ttlSeconds]);
+            const value = await client.eval(RELEASE_SCRIPT, [key], [leaseId, config.ttlSeconds]);
             settled = true;
+            return usage(parseInteger(value), config.limit);
           } catch {
             throw new AnonymousTurnControlUnavailableError("redis_request_failed");
           }
@@ -327,10 +330,11 @@ local key = KEYS[1]
 local leaseField = "lease:" .. ARGV[1]
 local ttl = tonumber(ARGV[2])
 redis.call("HDEL", key, leaseField)
+local completed = tonumber(redis.call("HGET", key, "completed") or "0")
 if redis.call("EXISTS", key) == 1 then
   redis.call("EXPIRE", key, ttl)
 end
-return 1
+return completed
 `;
 
 const READ_SCRIPT = `

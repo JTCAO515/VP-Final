@@ -33,7 +33,13 @@ describe("anonymous Copilot turn counter", () => {
     const counter = createInMemoryAnonymousTurnCounter({ limit: 1 });
     const failed = await counter.reserve("anonymous-a");
     expect(failed.allowed).toBe(true);
-    if (failed.allowed) await failed.release();
+    if (failed.allowed) {
+      await expect(failed.release()).resolves.toEqual({
+        completedTurns: 0,
+        limit: 1,
+        remaining: 1,
+      });
+    }
 
     const retry = await counter.reserve("anonymous-a");
     expect(retry.allowed).toBe(true);
@@ -157,6 +163,32 @@ describe("Upstash anonymous turn counter", () => {
     expect(completionAttempts).toBe(2);
     expect(calls[1]?.script).toContain('local completionField = "done:" .. ARGV[1]');
     expect(calls[1]?.args[0]).toBe(calls[2]?.args[0]);
+  });
+
+  it("returns current usage when a reservation is released without completion", async () => {
+    const responses: unknown[] = [[1, 1, 1], 1];
+    const counter = createUpstashAnonymousTurnCounter(
+      {
+        url: "https://redis.example.test",
+        token: "configured",
+        limit: 3,
+        ttlSeconds: 60,
+      },
+      {
+        async eval() {
+          return responses.shift();
+        },
+      },
+    );
+
+    const reservation = await counter.reserve("anonymous-a");
+    expect(reservation.allowed).toBe(true);
+    if (!reservation.allowed) return;
+    await expect(reservation.release()).resolves.toEqual({
+      completedTurns: 1,
+      limit: 3,
+      remaining: 2,
+    });
   });
 
   it("normalizes Redis failures without exposing provider details", async () => {

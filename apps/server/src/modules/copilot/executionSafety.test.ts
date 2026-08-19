@@ -118,8 +118,11 @@ describe("resolveHighRiskEnvelope", () => {
         includeHumanHelp: true,
       }),
     ).resolves.toMatchObject({
-      message: { body: "我对花生严重过敏。" },
-      humanHelp: null,
+      answerDisposition: "answered",
+      envelope: {
+        message: { body: "我对花生严重过敏。" },
+        humanHelp: null,
+      },
     });
   });
 
@@ -134,10 +137,13 @@ describe("resolveHighRiskEnvelope", () => {
         includeHumanHelp: true,
       }),
     ).resolves.toMatchObject({
-      message: {
-        body: "I can’t safely create a card for this allergy or dietary restriction. Please use a verified card or ask the venue to confirm ingredients before consuming.",
+      answerDisposition: "unavailable",
+      envelope: {
+        message: {
+          body: "I can’t safely create a card for this allergy or dietary restriction. Please use a verified card or ask the venue to confirm ingredients before consuming.",
+        },
+        humanHelp: { kind: "task" },
       },
-      humanHelp: { kind: "task" },
     });
   });
 
@@ -152,7 +158,8 @@ describe("resolveHighRiskEnvelope", () => {
         includeHumanHelp: true,
       }),
     ).resolves.toMatchObject({
-      humanHelp: { kind: "task" },
+      answerDisposition: "unavailable",
+      envelope: { humanHelp: { kind: "task" } },
     });
   });
 });

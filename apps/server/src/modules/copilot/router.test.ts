@@ -71,6 +71,58 @@ describe("copilotRouter", () => {
     expect(productEventService.listProductEvents()[0]?.entityId).not.toBe(identity.anonId);
   });
 
+  it("does not consume an anonymous turn when verified content is unavailable", async () => {
+    const anonymousTurnCounter = createInMemoryAnonymousTurnCounter({ limit: 3 });
+    const caller = appRouter.createCaller({
+      tripService: createVersionedInMemoryTripService(),
+      identity,
+      anonymousTurnCounter,
+      demoDialogueOnly: true,
+      copilotModelDependencies: {
+        routeIntent: () => "question",
+        generateEnvelope: (request) =>
+          request.message.includes("metro")
+            ? {
+                intent: "question",
+                message: {
+                  headline: "Unsupported route",
+                  body: "Take Metro Line 99.",
+                  highlights: [],
+                },
+                citations: [],
+              }
+            : {
+                intent: "question",
+                message: { headline: "Answer", body: "Useful answer", highlights: [] },
+                citations: [],
+              },
+      },
+    });
+
+    await expect(
+      caller.copilot.run({ message: "How can I show a restaurant my dietary needs?" }),
+    ).resolves.toMatchObject({
+      answerDisposition: "unavailable",
+      anonymousUsage: { completedTurns: 0, limit: 3, remaining: 3 },
+    });
+
+    await expect(
+      caller.copilot.run({ message: "What should I know about the metro?" }),
+    ).resolves.toMatchObject({
+      answerDisposition: "unavailable",
+      anonymousUsage: { completedTurns: 0, limit: 3, remaining: 3 },
+    });
+
+    for (let turn = 1; turn <= 3; turn += 1) {
+      await expect(
+        caller.copilot.run({ message: `General question ${turn}` }),
+      ).resolves.toMatchObject({
+        answerDisposition: "answered",
+        anonymousUsage: { completedTurns: turn, limit: 3, remaining: 3 - turn },
+      });
+    }
+  });
+
   it("does not require the anonymous counter for an authenticated traveler", async () => {
     const caller = appRouter.createCaller({
       tripService: createVersionedInMemoryTripService(),

@@ -259,6 +259,7 @@ describe("createCopilotPipeline", () => {
     await expect(
       pipeline.run({ message: "How does the Shanghai metro work?" }, identity),
     ).resolves.toMatchObject({
+      answerDisposition: "unavailable",
       envelope: {
         intent: "question",
         message: {

@@ -17,6 +17,13 @@ export type SafePhraseResolver = (
   selection: SafePhraseSelection,
 ) => Promise<SafePhrase | null> | SafePhrase | null;
 
+export type CopilotAnswerDisposition = "answered" | "unavailable";
+
+export type HighRiskEnvelopeResolution = {
+  envelope: CopilotEnvelope;
+  answerDisposition: CopilotAnswerDisposition;
+};
+
 export class ExecutionFactSupportError extends Error {
   readonly code = "EXECUTION_FACT_UNSUPPORTED";
 
@@ -86,7 +93,7 @@ export async function resolveHighRiskEnvelope(input: {
   resolveSafePhrase: SafePhraseResolver;
   now?: Date;
   includeHumanHelp: boolean;
-}): Promise<CopilotEnvelope> {
+}): Promise<HighRiskEnvelopeResolution> {
   const phrase = input.selection ? await input.resolveSafePhrase(input.selection) : null;
   const eligiblePhrase =
     phrase !== null &&
@@ -97,40 +104,46 @@ export async function resolveHighRiskEnvelope(input: {
       : null;
 
   if (eligiblePhrase) {
-    return CopilotEnvelopeSchema.parse({
+    return {
+      answerDisposition: "answered",
+      envelope: CopilotEnvelopeSchema.parse({
+        intent: input.intent,
+        message: {
+          headline: "Verified fixed expression",
+          body: eligiblePhrase.chineseExpression,
+          highlights: [eligiblePhrase.englishIntent],
+        },
+        tripActions: [],
+        toolCards: [],
+        commercialActions: [],
+        humanHelp: null,
+        citations: [],
+      }),
+    };
+  }
+
+  return {
+    answerDisposition: "unavailable",
+    envelope: CopilotEnvelopeSchema.parse({
       intent: input.intent,
       message: {
-        headline: "Verified fixed expression",
-        body: eligiblePhrase.chineseExpression,
-        highlights: [eligiblePhrase.englishIntent],
+        headline: "Verified expression unavailable",
+        body: HIGH_RISK_FALLBACKS[input.category],
+        highlights: [],
       },
       tripActions: [],
       toolCards: [],
       commercialActions: [],
-      humanHelp: null,
+      humanHelp:
+        input.includeHumanHelp && input.category !== "emergency_help"
+          ? {
+              kind: "task",
+              prefill: `Need an operator-verified fixed expression for ${input.category}.`,
+            }
+          : null,
       citations: [],
-    });
-  }
-
-  return CopilotEnvelopeSchema.parse({
-    intent: input.intent,
-    message: {
-      headline: "Verified expression unavailable",
-      body: HIGH_RISK_FALLBACKS[input.category],
-      highlights: [],
-    },
-    tripActions: [],
-    toolCards: [],
-    commercialActions: [],
-    humanHelp:
-      input.includeHumanHelp && input.category !== "emergency_help"
-        ? {
-            kind: "task",
-            prefill: `Need an operator-verified fixed expression for ${input.category}.`,
-          }
-        : null,
-    citations: [],
-  });
+    }),
+  };
 }
 
 export function validateExecutionFactSupport(

@@ -77,7 +77,11 @@ export const copilotRouter = router({
         ...(ctx.demoDialogueOnly ? { demoDialogueOnly: true } : {}),
         tripService: ctx.tripService,
       }).run(input, identity);
-      const anonymousUsage = reservation ? await reservation.complete() : null;
+      const anonymousUsage = reservation
+        ? result.answerDisposition === "unavailable"
+          ? await releaseReservationSafely(reservation)
+          : await reservation.complete()
+        : null;
       return { ...result, anonymousUsage };
     } catch (error) {
       if (reservation) await releaseReservationSafely(reservation);
@@ -133,10 +137,11 @@ async function recordProductEventSafely(
 
 async function releaseReservationSafely(
   reservation: Awaited<ReturnType<typeof reserveAnonymousTurn>>,
-): Promise<void> {
+): Promise<Awaited<ReturnType<typeof reservation.release>> | null> {
   try {
-    await reservation.release();
+    return await reservation.release();
   } catch {
     console.warn("anonymous_turn_reservation_release_failed");
+    return null;
   }
 }
