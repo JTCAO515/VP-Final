@@ -74,6 +74,14 @@ describe("previewTripDays", () => {
     expect(html).toContain("Trip Canvas");
     expect(html).toContain("VisePanda");
     expect(html).toContain("No request yet");
+    expect(html).toContain("Should I spend two or three days in Shanghai on my first visit?");
+    expect(html).toContain("Help me compare Beijing and Shanghai for my first trip to China.");
+    expect(html).toContain(
+      "What should I consider when choosing a relaxed pace for my first China trip?",
+    );
+    expect(html).not.toContain("How do I prepare payment before arriving in China?");
+    expect(html).not.toContain("What is the easiest way to use the metro in Shanghai?");
+    expect(html).not.toContain("How can I show a restaurant my dietary needs?");
     expect(html).toContain('aria-label="Trip prompt"');
     expect(html).toContain('<button disabled="" type="submit">Ask VisePanda</button>');
     expect(html).not.toContain("productLiveDot");
