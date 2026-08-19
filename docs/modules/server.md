@@ -92,8 +92,9 @@ Next.js runtimes rather than deployed as an independent service.
   by the operator-action register rather than this module explanation.
 - Anonymous Copilot access uses a server-owned turn-counter interface keyed only by a SHA-256 digest
   of the verified signed anonymous id. The Upstash adapter atomically reserves one of the configured
-  slots (three by default), counts only successfully completed turns, releases model failures, and
-  expires inactive counters after 30 days. A per-lease completion marker makes an ambiguous HTTP
+  slots (three by default), counts only useful answered turns, releases model failures and honest
+  verified-content-unavailable responses without consuming the preview allowance, and expires
+  inactive counters after 30 days. A per-lease completion marker makes an ambiguous HTTP
   response safe to retry once without double-counting. A completed limit and capacity temporarily
   held by in-flight requests are distinct errors, so concurrency cannot create a false registration
   claim. Authenticated users bypass this anonymous-only control. Missing Redis configuration fails
