@@ -12,6 +12,7 @@ export * from "./content-ai/walkingSkeleton.js";
 export * from "./errors/index.js";
 export * from "./events/index.js";
 export * from "./knowledge/index.js";
+export * from "./knowledge/scopedFacts.js";
 export * from "./knowledge/placeResolver.js";
 export * from "./knowledge/seed.js";
 export * from "./offline/index.js";

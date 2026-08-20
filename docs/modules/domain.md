@@ -9,10 +9,13 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
 
 ## Chatbot-Core Responsibility
 
-The next Domain expansion is a closed scoped Execution Fact target contract so national, city, scene,
-and POI facts can retain the same provenance, review, expiry, conflict, and eligibility rules. It must
-remain schema-first and additive. A generic Execution Action card may extend the existing
-`CopilotEnvelope`; it must not introduce a universal task lifecycle or loosen execution-fact safety.
+The Domain package now has an additive closed scoped Execution Fact target contract for POI, city,
+scene, and China-national facts. It reuses the existing provenance, review, expiry, version, conflict,
+and eligibility semantics without changing legacy `PoiFactSchema`. Its deterministic retrieval order
+is POI, city, scene, then national. Persistence and Chatbot consumption remain later interfaces; this
+contract creates no facts or live execution capability. A future generic Execution Action card may
+extend the existing `CopilotEnvelope`; it must not introduce a universal task lifecycle or loosen
+execution-fact safety.
 
 ## Public Areas
 
@@ -20,7 +23,7 @@ remain schema-first and additive. A generic Execution Action card may extend the
 | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `trip`          | TripState, TripPatch operations, `applyPatch`, `diffTrips`, generation progress                                                                                                                          |
 | `copilot`       | Intent, message, citations, tool cards, commercial actions, Human Help handoff, envelope, completion-job contract                                                                                        |
-| `knowledge`     | POI, execution facts, private attributed editorial-image contract, knowledge gaps, scene-tag derivation, reviewed seed data, and ADR-0006 fact eligibility                                               |
+| `knowledge`     | POI facts plus additive POI/city/scene/China-national scoped execution facts, private attributed editorial-image contract, knowledge gaps, scene-tag derivation, reviewed seed data, and ADR-0006 eligibility |
 | `offline`       | Versioned read-only Trip package, local-storage/AsyncStorage serialization, expiry, and credential-free offline boundary                                                                                 |
 | `arrival`       | Versioned privacy-minimized Arrival Pack projection: first-day execution summary, verified-address receipts, fixed Readiness result, content versions, and print/offline eligibility                     |
 | `readiness`     | Versioned, deterministic China preparation questions, explainable self-reported results, and consented persistence request/result contracts; no score, LLM scoring, or commercial CTA                    |

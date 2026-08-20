@@ -335,7 +335,20 @@ export const TRAVELER_SCENE_TAGS = [
 
 export type TravelerSceneTag = (typeof TRAVELER_SCENE_TAGS)[number];
 
-export function isEligiblePoiFact(fact: PoiFact, now = new Date()): boolean {
+export function isEligibleFactLifecycle(
+  fact: Pick<
+    PoiFact,
+    | "status"
+    | "sourceClass"
+    | "sourceLocator"
+    | "evidenceSummary"
+    | "verifiedAt"
+    | "expiresAt"
+    | "reviewPolicy"
+    | "factType"
+  >,
+  now = new Date(),
+): boolean {
   return (
     fact.status === "reviewed" &&
     hasReviewablePoiFactEvidence(fact) &&
@@ -346,6 +359,10 @@ export function isEligiblePoiFact(fact: PoiFact, now = new Date()): boolean {
     Date.parse(fact.verifiedAt) <= now.getTime() &&
     Date.parse(fact.expiresAt) >= now.getTime()
   );
+}
+
+export function isEligiblePoiFact(fact: PoiFact, now = new Date()): boolean {
+  return isEligibleFactLifecycle(fact, now);
 }
 
 export function hasValidPoiFactReview(
