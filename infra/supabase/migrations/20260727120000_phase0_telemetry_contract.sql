@@ -1,6 +1,9 @@
 -- P0-19a: one server-owned event contract for Phase 0 observation.
 -- Existing rows were read-only audited before this tightening: every row has exactly
 -- one identity, an object payload, an accepted action, and a future retention deadline.
+-- A production catch-up can contain the two later-frozen Rescue lifecycle actions before
+-- this historical migration is recorded. They remain closed-set here and are re-declared
+-- by the additive Rescue migration below in version order.
 do $$
 begin
   if exists (
@@ -17,7 +20,8 @@ begin
          'skeleton_received', 'details_completed', 'patch_applied', 'copilot_failed',
          'human_help_suggested', 'guide_viewed', 'poi_viewed', 'scene_filter_used',
          'outbound_clicked', 'partner_redirected', 'human_help_viewed', 'task_started',
-         'task_submitted', 'quote_created', 'payment_link_clicked', 'task_paid', 'task_done'
+         'task_submitted', 'quote_created', 'payment_link_clicked', 'task_paid', 'task_done',
+         'rescue_started', 'rescue_route_selected'
        )
   ) then
     raise exception 'events contains rows that cannot satisfy the Phase 0 telemetry contract';
@@ -41,7 +45,8 @@ alter table public.events
         'skeleton_received', 'details_completed', 'patch_applied', 'copilot_failed',
         'human_help_suggested', 'guide_viewed', 'poi_viewed', 'scene_filter_used',
         'outbound_clicked', 'partner_redirected', 'human_help_viewed', 'task_started',
-        'task_submitted', 'quote_created', 'payment_link_clicked', 'task_paid', 'task_done'
+        'task_submitted', 'quote_created', 'payment_link_clicked', 'task_paid', 'task_done',
+        'rescue_started', 'rescue_route_selected'
       )
     ),
   add constraint events_props_object_check

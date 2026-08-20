@@ -180,6 +180,11 @@ bounded city/category/kind dimensions only, never raw identity, content, credent
 signature columns. Payment action names are contract-only until the separate payment boundary is
 accepted. See [ADR-0012](../adr/ADR-0012-phase0-telemetry-observation-contract.md).
 
+The historical P0-19 migration also recognizes the two later-frozen Rescue action names when a
+production environment is catching up through multiple already-accepted migrations. This narrow
+compatibility path preserves only `rescue_started` and `rescue_route_selected`; it does not admit
+free-form Rescue data, relax identity or retention rules, or promote any unregistered action.
+
 Rescue extends the registered event vocabulary only with fixed category and deterministic routing
 metadata: `rescue_started`, `rescue_route_selected`, and server-owned Human Help/resolution lifecycle
 actions. The ledger accepts no Rescue narrative, contact, location, health detail, or free-form outcome.
