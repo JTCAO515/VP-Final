@@ -37,15 +37,17 @@ inline bootstrap scripts and the design-token style element, so the baseline per
 and styles but does not permit `unsafe-eval`. Any future third-party browser resource, iframe, or
 capability must add a separately reviewed policy change and an end-to-end verification case.
 
-The root Landing is a public acquisition surface, not a second product workspace. It pairs a clearly
-labelled static Chatbot/Trip Canvas preview with scenario-guided product language and the exact
-`POST /api/early-access` boundary. The preview never represents booking, payment, live inventory,
-complete coverage, or Human Help fulfillment. The client fetches only when a traveller submits the
-bounded Early Access form. Its optional concern value is one fixed category, never free text; the
-client cannot create a category, overwrite a previous signup, or infer a profile from it. The UI
-renders the API's subscribed, already-subscribed, rate-limited, unavailable, and saved-but-not-delivered
-states without exposing an email, provider identifier, or server configuration. `/homepage` remains the
-unlisted full product overview and `/visepanda` remains the canonical interactive workspace.
+The root Landing is a public acquisition surface, not a second product workspace. Its Hero contains
+the one real action: the exact `POST /api/early-access` form. The static Chatbot/Trip Canvas preview,
+three concise Plan/Prepare/Adapt scenarios, and two FAQ answers explain that action without linking
+to a product preview or overview. The preview never represents booking, payment, live inventory,
+complete coverage, or Human Help fulfillment. The form accepts an email and one optional fixed concern
+category, never free text; the client cannot create a category, overwrite a previous signup, or infer
+a profile from it. Landing copy and the concern labels are catalogued for the shared English, Chinese,
+Spanish, Arabic, and Russian locales. The UI renders subscribed, already-subscribed, rate-limited,
+unavailable, and saved-but-not-delivered states without exposing an email, provider identifier, or
+server configuration. `/homepage` remains the unlisted full product overview and `/visepanda` remains
+the canonical interactive workspace.
 
 ## Locale and Content Boundary
 

@@ -5424,3 +5424,191 @@ html[dir="rtl"] .siteUtilities {
     justify-content: flex-start;
   }
 }
+
+/* Focused Early Access Landing: one real application action, not a product-navigation page. */
+.landingNav {
+  max-width: none;
+}
+
+.landingNav .languageSelector select {
+  border-color: var(--line);
+  color: var(--ink-soft);
+}
+
+.landingHero {
+  align-items: start;
+  gap: clamp(36px, 5vw, 72px);
+  grid-template-columns: minmax(0, 0.9fr) minmax(500px, 1.1fr);
+  min-height: auto;
+  padding-bottom: 104px;
+  padding-top: 64px;
+}
+
+.landingHeroCopy {
+  padding-top: 14px;
+}
+
+.landingHero .landingForm {
+  margin-top: 34px;
+  max-width: 560px;
+}
+
+.landingForm {
+  gap: 12px;
+}
+
+.landingFormRow {
+  gap: 8px;
+}
+
+.landingFormRow input,
+.landingForm button {
+  min-height: 54px;
+}
+
+.landingForm button {
+  min-width: 184px;
+}
+
+.landingConcernFieldset {
+  border: 0;
+  margin: 12px 0 0;
+  min-inline-size: 0;
+  padding: 0;
+}
+
+.landingConcernFieldset legend {
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.45;
+  padding: 0;
+}
+
+.landingConcernFieldset > p {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+  margin: 5px 0 12px;
+}
+
+.landingConcernGrid {
+  display: grid;
+  gap: 7px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.landingConcernGrid label {
+  align-items: center;
+  border: 1px solid var(--line);
+  cursor: pointer;
+  display: flex;
+  font-size: 12px;
+  gap: 8px;
+  line-height: 1.35;
+  min-height: 42px;
+  padding: 8px 10px;
+}
+
+.landingConcernGrid label:hover {
+  border-color: var(--gold-dark);
+}
+
+.landingConcernGrid input {
+  accent-color: var(--red);
+  flex: 0 0 auto;
+  height: 15px;
+  margin: 0;
+  width: 15px;
+}
+
+.landingConcernGrid label:has(input:checked) {
+  background: var(--gold-soft);
+  border-color: var(--gold-dark);
+}
+
+.landingFormNote {
+  max-width: 520px;
+}
+
+/* Do not use an off-canvas coordinate for the honeypot: in RTL it expands document width. */
+.landingHoneypot {
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  left: auto;
+  white-space: nowrap;
+}
+
+.landingPreview {
+  margin-top: 4px;
+}
+
+.landingSection {
+  padding-bottom: 104px;
+  padding-top: 104px;
+}
+
+.landingScenarios {
+  border-top: 1px solid var(--line);
+}
+
+.landingScenarioGrid {
+  margin-top: 42px;
+}
+
+.landingScenario {
+  min-height: 230px;
+  padding: 24px 26px 28px;
+}
+
+.landingScenario h3 {
+  margin-top: 48px;
+}
+
+.landingScenario > p {
+  max-width: 300px;
+}
+
+.landingFaq {
+  border-top: 1px solid var(--line);
+  padding-top: 84px;
+}
+
+@media (max-width: 980px) {
+  .landingHero {
+    grid-template-columns: 1fr;
+    padding-bottom: 80px;
+  }
+}
+
+@media (max-width: 720px) {
+  .landingHero {
+    padding-bottom: 70px;
+    padding-top: 48px;
+  }
+
+  .landingHeroCopy {
+    padding-top: 0;
+  }
+
+  .landingHero .landingForm {
+    margin-top: 28px;
+  }
+
+  .landingFormRow,
+  .landingConcernGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .landingForm button {
+    min-width: 0;
+  }
+
+  .landingSection {
+    padding-bottom: 72px;
+    padding-top: 72px;
+  }
+
+  .landingFaq {
+    padding-top: 72px;
+  }
+}
