@@ -25,6 +25,7 @@ describe("shared site chrome", () => {
     }
     expect(html).toContain('aria-current="page" href="/guides"');
     expect(html).toContain(">VisePanda<");
+    expect(html).toContain('class="brandMark" href="/homepage"');
   });
 
   it("keeps product and trust destinations grouped in the shared footer", () => {
@@ -32,6 +33,7 @@ describe("shared site chrome", () => {
 
     expect(html).toContain('aria-label="Product links"');
     expect(html).toContain('aria-label="Trust and legal links"');
+    expect(html).toContain('class="brandMark" href="/homepage"');
     for (const href of [
       "/visepanda",
       "/arrival-pack",
