@@ -72,8 +72,9 @@ Status: active
   telemetry views MUST expose aggregate measures only, and no `anon` or `authenticated` Data API role
   may read the ledger or those views.
 - Deletion/export/retention behavior MUST be documented before collecting a new personal-data class.
-- Early Access signup collection accepts only a normalized email plus validated locale/source labels,
-  HMAC-derived trusted-network digest, and a bounded user-agent value. Its table is server-only with
+- Early Access signup collection accepts only a normalized email, validated locale/source labels, an
+  optional fixed concern category, HMAC-derived trusted-network digest, and a bounded user-agent value.
+  Its table is server-only with
   RLS and no `anon`/`authenticated` grants; raw IP, salt, credential, cookie, signature, recipient
   list, and delivery-provider response MUST NOT be persisted or logged. Each record receives a
   server-derived deadline no later than 365 days after creation and the private purge wrapper deletes

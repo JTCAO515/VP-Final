@@ -1,10 +1,11 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(15);
+select plan(17);
 
 select has_table('public', 'early_access_signups', 'Private Early Access signup table exists');
 select has_column('public', 'early_access_signups', 'email', 'Normalized email exists');
+select has_column('public', 'early_access_signups', 'primary_concern', 'Optional fixed concern exists');
 select has_column('public', 'early_access_signups', 'ip_hash', 'HMAC digest exists');
 select has_column('public', 'early_access_signups', 'retention_expires_at', 'Retention deadline exists');
 select has_index('public', 'early_access_signups', 'early_access_signups_email_unique', 'One row per normalized email');
@@ -27,8 +28,8 @@ select is(
 );
 
 select lives_ok(
-  $$insert into public.early_access_signups (email, locale, source, ip_hash, created_at, retention_expires_at)
-    values ('traveler@example.com', 'en', 'landing', repeat('a', 64), now() - interval '2 days', now() - interval '1 day')$$,
+  $$insert into public.early_access_signups (email, locale, source, primary_concern, ip_hash, created_at, retention_expires_at)
+    values ('traveler@example.com', 'en', 'landing', 'payment_and_cash', repeat('a', 64), now() - interval '2 days', now() - interval '1 day')$$,
   'A normalized private signup with an internally consistent bounded deadline is accepted'
 );
 select throws_ok(
@@ -40,6 +41,11 @@ select throws_ok(
   $$insert into public.early_access_signups (email, locale, source, ip_hash, retention_expires_at)
     values ('second@example.com', 'en', 'landing', repeat('c', 64), now() + interval '366 days')$$,
   '23514', null, 'Retention cannot exceed 365 days'
+);
+select throws_ok(
+  $$insert into public.early_access_signups (email, locale, source, primary_concern, ip_hash, retention_expires_at)
+    values ('third@example.com', 'en', 'landing', 'unbounded_free_text', repeat('d', 64), now() + interval '180 days')$$,
+  '23514', null, 'Unknown concern categories are rejected'
 );
 
 select internal.run_retention_purge('early_access_signups');

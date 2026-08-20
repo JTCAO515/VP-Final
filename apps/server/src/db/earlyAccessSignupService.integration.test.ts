@@ -32,22 +32,36 @@ describeDatabase("database EarlyAccessSignupService", () => {
 
     await expect(
       service.submit(
-        { email: " EARLY-ACCESS-DB-FIRST@EXAMPLE.COM ", locale: "en", source: "landing" },
+        {
+          email: " EARLY-ACCESS-DB-FIRST@EXAMPLE.COM ",
+          locale: "en",
+          source: "landing",
+          primaryConcern: "payment_and_cash",
+        },
         metadata,
       ),
     ).resolves.toEqual({ status: "subscribed" });
     await expect(
-      service.submit({ email: firstEmail, locale: "en", source: "landing" }, metadata),
+      service.submit(
+        {
+          email: firstEmail,
+          locale: "en",
+          source: "landing",
+          primaryConcern: "language_and_communication",
+        },
+        metadata,
+      ),
     ).resolves.toEqual({ status: "already_subscribed" });
 
     const [row] = await sql`
-      select email, ip_hash, user_agent, retention_expires_at
+      select email, primary_concern, ip_hash, user_agent, retention_expires_at
       from public.early_access_signups
       where email = ${firstEmail}
     `;
     if (!row) throw new Error("Expected a durable Early Access signup row.");
     expect(row).toMatchObject({
       email: firstEmail,
+      primary_concern: "payment_and_cash",
       ip_hash: "a".repeat(64),
       user_agent: "VisePanda test agent",
     });

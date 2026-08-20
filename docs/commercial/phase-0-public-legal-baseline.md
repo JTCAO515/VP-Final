@@ -28,9 +28,12 @@ before the product, processing footprint, payment route, or jurisdictional reach
 
 ## Privacy Boundary
 
-Public copy may describe account identity and email, signed anonymous/session identifiers, messages
-and Trip content, Human Help request/contact details, model usage/cost metadata, product/security
-events, and necessary network/device operational metadata. It must state purpose and minimization.
+Public copy may describe account identity and email, an optional fixed Early Access concern category
+used only in aggregate to prioritize reviewed travel information, signed anonymous/session identifiers,
+messages and Trip content, Human Help request/contact details, model usage/cost metadata,
+product/security events, and necessary network/device operational metadata. The optional category is
+not free text, a sensitive-detail intake, an inferred profile, or an automatic fact-creation path.
+Public copy must state purpose and minimization.
 
 An access, correction, or deletion request is sent from the account email to
 `admin@go2china.space` with subject `VisePanda Data Deletion Request`. VisePanda acknowledges within
