@@ -1,27 +1,29 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
+import type { WebLocale } from "../../i18n/locales";
+import { LANDING_CONCERN_ORDER, type LandingCopy } from "./copy";
 
 type FormState =
   | { kind: "idle" }
   | { kind: "submitting" }
-  | { kind: "subscribed"; message: string }
-  | { kind: "duplicate"; message: string }
-  | { kind: "rate-limited"; message: string }
-  | { kind: "saved-not-delivered"; message: string }
-  | { kind: "error"; message: string };
+  | { kind: "subscribed" }
+  | { kind: "duplicate" }
+  | { kind: "rate-limited" }
+  | { kind: "saved-not-delivered" }
+  | { kind: "error" };
 
 type ApiResponse =
-  | { ok: true; status: "subscribed" | "already_subscribed" }
-  | { ok: false; code?: string; error?: string; retryAfterSeconds?: number };
+  { ok: true; status: "subscribed" | "already_subscribed" } | { ok: false; code?: string };
 
-export function EarlyAccessForm() {
+export function EarlyAccessForm({
+  copy,
+  locale,
+}: Readonly<{ copy: LandingCopy; locale: WebLocale }>) {
   const [state, setState] = useState<FormState>({ kind: "idle" });
   const [isHydrated, setIsHydrated] = useState(false);
 
-  useEffect(() => {
-    setIsHydrated(true);
-  }, []);
+  useEffect(() => setIsHydrated(true), []);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -29,6 +31,7 @@ export function EarlyAccessForm() {
     const formData = new FormData(form);
     const email = formData.get("email");
     const company = formData.get("company");
+    const primaryConcern = formData.get("primaryConcern");
     if (typeof email !== "string") return;
 
     setState({ kind: "submitting" });
@@ -38,8 +41,9 @@ export function EarlyAccessForm() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           email,
-          locale: document.documentElement.lang || "en",
+          locale,
           source: "landing",
+          ...(typeof primaryConcern === "string" && primaryConcern ? { primaryConcern } : {}),
           ...(typeof company === "string" && company ? { company } : {}),
         }),
       });
@@ -47,49 +51,30 @@ export function EarlyAccessForm() {
 
       if (payload?.ok && payload.status === "subscribed") {
         form.reset();
-        setState({
-          kind: "subscribed",
-          message: "You are on the list. Check your inbox for a confirmation email.",
-        });
+        setState({ kind: "subscribed" });
         return;
       }
       if (payload?.ok && payload.status === "already_subscribed") {
-        setState({
-          kind: "duplicate",
-          message: "This email is already on the Early Access list.",
-        });
+        setState({ kind: "duplicate" });
         return;
       }
       if (payload && !payload.ok && payload.code === "EARLY_ACCESS_RATE_LIMITED") {
-        setState({
-          kind: "rate-limited",
-          message: "Too many attempts were sent from this network. Please try again later.",
-        });
+        setState({ kind: "rate-limited" });
         return;
       }
       if (payload && !payload.ok && payload.code === "EARLY_ACCESS_CONFIRMATION_DELIVERY_FAILED") {
-        setState({
-          kind: "saved-not-delivered",
-          message: "Your signup was saved, but the confirmation email could not be sent.",
-        });
+        setState({ kind: "saved-not-delivered" });
         return;
       }
-      setState({
-        kind: "error",
-        message:
-          payload && !payload.ok && payload.error ? payload.error : "Please try again later.",
-      });
+      setState({ kind: "error" });
     } catch {
-      setState({
-        kind: "error",
-        message: "We could not reach Early Access right now. Please try again later.",
-      });
+      setState({ kind: "error" });
     }
   }
 
   return (
     <form className="landingForm" onSubmit={onSubmit} noValidate aria-busy={!isHydrated}>
-      <label htmlFor="early-access-email">Email address</label>
+      <label htmlFor="early-access-email">{copy.form.emailLabel}</label>
       <div className="landingFormRow">
         <input
           id="early-access-email"
@@ -97,14 +82,26 @@ export function EarlyAccessForm() {
           type="email"
           autoComplete="email"
           inputMode="email"
-          placeholder="you@example.com"
+          placeholder={copy.form.emailPlaceholder}
           required
           disabled={state.kind === "submitting"}
         />
         <button type="submit" disabled={!isHydrated || state.kind === "submitting"}>
-          {state.kind === "submitting" ? "Joining..." : "Join early access"}
+          {state.kind === "submitting" ? copy.form.submitting : copy.form.submit}
         </button>
       </div>
+      <fieldset className="landingConcernFieldset" disabled={state.kind === "submitting"}>
+        <legend>{copy.form.concernLegend}</legend>
+        <p>{copy.form.concernHint}</p>
+        <div className="landingConcernGrid">
+          {LANDING_CONCERN_ORDER.map((concern) => (
+            <label key={concern}>
+              <input name="primaryConcern" type="radio" value={concern} />
+              <span>{copy.concerns[concern]}</span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
       <div className="landingHoneypot" aria-hidden="true">
         <label htmlFor="early-access-company">Company</label>
         <input
@@ -115,12 +112,30 @@ export function EarlyAccessForm() {
           autoComplete="off"
         />
       </div>
-      <p className="landingFormNote">We only use this for access and material preview updates.</p>
+      <p className="landingFormNote">{copy.form.note}</p>
       {state.kind !== "idle" && state.kind !== "submitting" ? (
         <p className={`landingFormStatus ${state.kind}`} role="status" aria-live="polite">
-          {state.message}
+          {formStatusMessage(state.kind, copy)}
         </p>
       ) : null}
     </form>
   );
+}
+
+export function formStatusMessage(
+  kind: Exclude<FormState["kind"], "idle" | "submitting">,
+  copy: LandingCopy,
+): string {
+  switch (kind) {
+    case "subscribed":
+      return copy.form.subscribed;
+    case "duplicate":
+      return copy.form.duplicate;
+    case "rate-limited":
+      return copy.form.rateLimited;
+    case "saved-not-delivered":
+      return copy.form.savedNotDelivered;
+    case "error":
+      return copy.form.unavailable;
+  }
 }
