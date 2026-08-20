@@ -979,6 +979,23 @@
       "summary": "Freezes Content AI as private typed Change Set drafting with deterministic retrieval, bounded Qwen work, human all-or-nothing publication, and no model authority.",
       "sourcePrefixes": ["apps/ops/", "apps/server/", "packages/domain/", "packages/ai/", "infra/"]
     },
+    {
+      "path": "docs/adr/ADR-0023-chatbot-execution-core.md",
+      "title": "ADR-0023: Chatbot Execution Core",
+      "category": "decisions",
+      "type": "decision",
+      "status": "accepted",
+      "owner": "product / architecture",
+      "summary": "Narrows VisePanda delivery around one Chatbot and six fact-backed China-travel execution moments while retaining the accepted technical architecture.",
+      "sourcePrefixes": [
+        "packages/domain/src/copilot/",
+        "packages/domain/src/knowledge/",
+        "apps/server/src/modules/copilot/",
+        "apps/server/src/modules/knowledge/",
+        "apps/web/src/app/visepanda/",
+        "apps/ops/src/app/"
+      ]
+    },
 
     {
       "path": "docs/runbooks/README.md",

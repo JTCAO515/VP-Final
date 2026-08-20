@@ -8,6 +8,14 @@ The public Next.js application owns acquisition and traveler-facing Phase 0 expe
 the product home, VisePanda workspace and Trip Canvas, Explore, guides, POI pages, Human Help, public Trip shares, and
 the outbound gateway.
 
+## Chatbot-Core Responsibility
+
+`/visepanda` is the canonical VisePanda Chatbot workspace. Desktop keeps Trip Canvas as durable
+context beside the conversation; mobile makes Chatbot primary while preserving an expandable Trip view.
+Future Execution Action rendering is an additive, source-backed extension of the existing typed
+envelope. Until an action has reviewed facts and an accepted deterministic capability, the UI hides it
+or renders an honest unavailable/clarification state rather than a convincing placeholder.
+
 The Web runtime is pinned to the patched Next.js 15.5.21 security baseline. Root pnpm resolutions
 also keep its transitive `sharp`, PostCSS, and nanoid packages on their reviewed patched releases;
 dependency changes must keep the Web build and production audit evidence current.

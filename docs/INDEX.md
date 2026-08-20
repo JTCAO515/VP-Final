@@ -229,6 +229,7 @@ Append-only records of accepted and superseded binding decisions.
 | [ADR-0020: Creator Attribution Contract](adr/ADR-0020-creator-attribution-contract.md) | decision | accepted | commercial architecture / data platform | Freezes creator referrals as private server-resolved acquisition sources and keeps them separate from OTA outbound links. |
 | [ADR-0021: Ops POI Image Storage](adr/ADR-0021-ops-poi-image-storage.md) | decision | accepted | knowledge / security / operations | Freezes private server-mediated, attributed Ops image storage and prohibits public delivery until a later governed consumer exists. |
 | [ADR-0022: Content AI Change Set Control Boundary](adr/ADR-0022-content-ai-control-boundary.md) | decision | accepted | knowledge / operations / AI safety | Freezes Content AI as private typed Change Set drafting with deterministic retrieval, bounded Qwen work, human all-or-nothing publication, and no model authority. |
+| [ADR-0023: Chatbot Execution Core](adr/ADR-0023-chatbot-execution-core.md) | decision | accepted | product / architecture | Narrows VisePanda delivery around one Chatbot and six fact-backed China-travel execution moments while retaining the accepted technical architecture. |
 
 ## Runbooks
 

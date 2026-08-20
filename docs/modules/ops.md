@@ -8,6 +8,14 @@ The Ops Next.js application is an internal operations surface for execution fact
 Human Tasks, partner configuration, and later reconciliation. It must be deployed separately from
 the public Web application and protected by server-side role checks.
 
+## Chatbot-Core Responsibility
+
+Ops is the production and review surface for the execution facts that the VisePanda Chatbot may cite.
+It prioritizes Payment, Show to Local, Entry / Booking, Translate / Communicate, Network, and Rescue /
+Human Help facts over generic feed or marketplace expansion. Content AI remains a later guarded aid to
+draft and review facts; it does not replace manual fact review, grant publication authority, or justify
+unsupported content collection.
+
 Ops uses the same patched Next.js 15.5.21 baseline as the public Web application. Its image processor
 uses the root-reviewed sharp resolution, so an Ops dependency change must re-run both the image path
 build and the production dependency audit.

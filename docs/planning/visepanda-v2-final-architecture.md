@@ -6,6 +6,8 @@
 **基线修改规则**：只有两种输入有资格改动本基线——① 真实用户数据推翻假设；② 硬决策落定（见「V2 硬决策清单」issue）。改动一律走「修正案」（diff + 理由），禁止全文重写。新的 AI 观点不构成修改理由（三轮蒸馏已收敛，diff 趋零）。
 前提不变：不复用、不迁移、不兼容旧代码/旧数据/旧接口/旧进度；唯一继承的是产品想法与「信任漏斗」商业方向。
 
+> **2026-08-20 修正案（ADR-0023）：** 本定稿的技术架构、单语言 monorepo、模块化单体、Zod 契约、TripPatch、知识溯源与商业/外部证据门控保持不变。产品交付顺序收窄为以 VisePanda Chatbot 为中心的六个执行时刻：Payment、Show to Local、Entry / Booking、Translate / Communicate、Network、Rescue / Human Help。Trip、Explore、Tools、Ops 与 Content AI 成为该闭环的支持面；先完成 scoped execution facts 和 Payment/Show to Local/Entry 的真实闭环，再恢复通用 Content AI、地图候选、SEO 扩张、VisePod 新功能或商业市场。本文其余历史路线描述必须以此修正案和 ADR-0023 为准。
+
 ---
 
 ## 0. 两版对照裁决（先给结论，再给方案）
@@ -47,14 +49,14 @@
 
 ### 2.1 定位
 
-> **The execution copilot for foreigners in China.**
-> AI 决策 + 现场工具 + 交易转化 + 人工兜底 + 商家网络。规划免费，执行可靠，出事有人管。
+> **VisePanda is the conversational execution companion for independent travel in China.**
+> 规划可以免费；以 Chatbot 推进现场执行、失败恢复和诚实升级才是当前产品核心。
 
 ### 2.2 用户分层与痛点排序
 
 （与前版一致，摘要）首次自由行游客=免费主体与 affiliate 来源；重复/商务访客=定制服务唯一可行对象；出发前研究者=SEO 获客入口。痛点排序：支付 > 网络 > 语言 > 交通执行 > 门票预约 > 突发求助 > 行程规划（重要但已商品化）。
 
-### 2.3 产品面（五个 Surface + 旅程阶段）
+### 2.3 产品面（Chatbot 主线 + 支持 Surface + 旅程阶段）
 
 ```
 阶段          重心       功能                                     商业动作
@@ -64,9 +66,9 @@ Execute      App        Tools 八件套；离线行程；Human Help         Huma
 Return       Web+App    回顾；复访识别；定制入口(仅重复访客)        定制询价 lead fee；分享获客
 ```
 
-五个 Surface：**Copilot**（唯一 AI 交互面，对话+画布）、**Explore**（策展 POI + 场景标签：First time in China / Low Mandarin / Good in rain / Near metro / Avoid peak hours…）、**Tools**（八件套：Translate、Show to Local、Payment Helper、Transport Helper、Emergency、Entry Checklist、Network/eSIM、Human Help——全部离线可用）、**Human Help**（人工任务+定制询价）、**Me**（账号/权益/记忆可见可删/行程史/离线包）。
+当前主 Surface：**VisePanda Chatbot**（唯一 AI 交互面；对话+Trip Canvas；围绕六执行时刻交付有来源的下一步）。支持 Surface：**Explore**（可被 Chatbot 使用的 POI/事实候选与次级发现面，而非独立 Feed 投资）、**Tools**（由 Chatbot 选择的确定性执行器）、**Human Help**（自动能力失败后的受控升级）、**Me**（账号、权益、记忆、行程史与离线包）。这些职责不代表尚未验证的支付、预订、人工 SLA、离线或商业能力已经上线。
 
-TripBlock 类型与块级动作采 Codex 版清单：`hotel/attraction/restaurant/transport/shopping/experience/free_time/emergency/human_task`；块动作 `Ask Copilot / Navigate / Translate address / Show to Local / Book / Add note / Request human help`。
+TripBlock 类型与块级动作采 Codex 版清单：`hotel/attraction/restaurant/transport/shopping/experience/free_time/emergency/human_task`；产品动作 `Ask VisePanda / Navigate / Translate address / Show to Local / Book / Add note / Request human help`。内部 Copilot API 名称保持稳定。
 
 ### 2.4 三条产品链路（Codex 框架）× 一个数据飞轮（Fable 5 框架）
 

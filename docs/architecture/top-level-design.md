@@ -2,7 +2,7 @@
 
 Status: active
 Method: [钱学森 Skills](../methodology/qian-systems-engineering.md)
-Product authority: [V2 frozen baseline](../planning/visepanda-v2-final-architecture.md)
+Product authority: [V2 frozen baseline](../planning/visepanda-v2-final-architecture.md), amended by [ADR-0023](../adr/ADR-0023-chatbot-execution-core.md)
 
 This document is the operational “overall design department” baseline. It does not replace the
 frozen product architecture. It translates that architecture into objectives, controlled
@@ -10,14 +10,16 @@ subsystems, interface baselines, observations, and lifecycle gates used by daily
 
 ## 1. System Mission
 
-VisePanda helps foreign travellers execute travel in China reliably. Planning is the acquisition
-surface; trustworthy execution, Human Tasks, and qualified referrals are the commercial value.
+VisePanda helps independent foreign travellers execute travel in China reliably. The VisePanda
+Chatbot is the single AI interaction and execution-orchestration surface. Its first product focus is
+the six execution moments: Payment, Show to Local, Entry / Booking, Translate / Communicate, Network,
+and Rescue / Human Help. Planning remains context, not the primary delivery loop.
 
 ## 2. System Boundary
 
 ### In scope
 
-- Copilot planning and execution assistance through typed envelopes and TripPatch.
+- VisePanda Chatbot execution assistance through typed Copilot envelopes and TripPatch.
 - Trip materialization, history, sharing, and offline-ready consumption.
 - Source-backed execution knowledge used by Copilot, Explore, and search pages.
 - Human Task request, quote, payment evidence, fulfilment, and operational learning.
@@ -38,7 +40,7 @@ surface; trustworthy execution, Human Tasks, and qualified referrals are the com
 | --- | --- | --- | --- | --- |
 | Mission | Travellers complete China travel actions with less uncertainty | successful execution flows, support outcomes | operator | release + monthly |
 | Trust | Recommendations are honest, sourced, and reversible | citation coverage, stale-fact exposure, error reports | knowledge + Copilot owners | weekly |
-| Product | Copilot produces valid, useful Trips and handoffs | patch validity, generation success, task handoff | Copilot/Trip owners | each release |
+| Product | VisePanda Chatbot produces source-backed next actions and recovery | cited execution action, unavailable honesty, recovery outcome | Chatbot/Knowledge owners | each release |
 | Commercial | Trusted intent converts to traceable revenue opportunities | outbound trace completeness, task funnel, paid evidence | commerce owner | weekly/monthly |
 | Reliability | Public flows are observable and recoverable | CI, smoke tests, Sentry, rollback rehearsal | platform owner | each release |
 | Efficiency | AI and human work deliver value within budget | token/task cost, retries, handling time | operator + AI owner | weekly |
@@ -51,9 +53,9 @@ real users reach 200 or Human Tasks reach 20, unless a superseding ADR changes t
 
 | Subsystem | Responsibility | Primary modules | Must not own |
 | --- | --- | --- | --- |
-| Copilot | intent, retrieval, typed generation, citations, handoff | `packages/ai`, server copilot, web Copilot | direct database mutation |
+| VisePanda Chatbot | intent, scoped retrieval, typed generation, citations, structured action, recovery handoff | `packages/ai`, server copilot, web workspace | direct database mutation or unsupported action claims |
 | Trip | schema, patch validation, event log, materialized snapshot | `packages/domain`, server trip, clients | model prompts or partner routing |
-| Knowledge | POIs, execution facts, gaps, freshness, editorial workflow | domain, server knowledge, Ops, Explore | fabricated facts |
+| Knowledge | scoped execution facts, POIs, gaps, freshness, editorial workflow | domain, server knowledge, Ops, Chatbot | fabricated facts |
 | Human Help | Human Task state machine and fulfilment evidence | domain task, server task, Ops, user surfaces | automatic service guarantees |
 | Commerce | partner status, outbound audit, entitlements, payment evidence | domain commerce, server commerce | raw untracked affiliate links |
 | Identity | auth, ownership, memory transparency, consent | server identity, Supabase Auth, clients | service-role credentials in clients |

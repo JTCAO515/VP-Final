@@ -7,6 +7,13 @@ Path: `packages/domain`
 The domain package is the only source of runtime-validated business types and deterministic business
 functions. It must remain portable across Web, Server, Ops, and future Mobile.
 
+## Chatbot-Core Responsibility
+
+The next Domain expansion is a closed scoped Execution Fact target contract so national, city, scene,
+and POI facts can retain the same provenance, review, expiry, conflict, and eligibility rules. It must
+remain schema-first and additive. A generic Execution Action card may extend the existing
+`CopilotEnvelope`; it must not introduce a universal task lifecycle or loosen execution-fact safety.
+
 ## Public Areas
 
 | Area            | Owns                                                                                                                                                                                                     |

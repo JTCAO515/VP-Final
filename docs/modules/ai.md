@@ -8,6 +8,14 @@ The AI package defines provider-neutral model routing, effort levels, token usag
 fallback attempts, the cost-ledger interface, and bounded provider adapters. Prompt profiles and
 Copilot-specific provider composition belong in their owning runtime module.
 
+## Chatbot-Core Responsibility
+
+Under [ADR-0023](../adr/ADR-0023-chatbot-execution-core.md), this package serves one VisePanda
+Chatbot pipeline rather than competing AI product surfaces. Its future execution role is to reason
+over bounded, reviewed scoped facts and emit an additive typed action through the existing Copilot
+envelope. It MUST return clarification or unavailable when facts do not support an action; it MUST
+NOT invent a tool, URL, reservation, payment state, or execution completion.
+
 ## Implemented
 
 - Task classes: router, Trip writer, knowledge QA, and commerce/human handoff.
