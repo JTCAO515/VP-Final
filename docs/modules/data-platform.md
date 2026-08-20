@@ -32,6 +32,7 @@ the same migration, and validation also checks the issuer's current Ops permissi
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Identity and Trip | `users`, `trips`, `trip_events`, `copilot_completion_jobs`                                                                                       |
 | Readiness         | `readiness_assessments` (private, consented fixed-answer self-reports and deterministic results)                                                 |
+| Early Access      | `early_access_signups` (private normalized email opt-ins with bounded metadata and 365-day maximum retention)                                   |
 | AI trace          | `agent_runs`, `tool_calls`, `llm_call_costs`                                                                                                     |
 | Copilot dialogue  | `copilot_conversation_turns`                                                                                                                     |
 | Knowledge         | `pois`, `poi_facts`, `knowledge_import_batches`, `poi_fact_editorial_audit`, `knowledge_gaps`, `poi_commercial_links`, `seo_editorial_overrides` |
@@ -78,6 +79,12 @@ the same migration, and validation also checks the issuer's current Ops permissi
   assessment; the server stops reads at expiry and `internal.purge_expired_readiness_assessments()`
   deletes expired rows through the existing private daily retention wrapper. The default maximum is
   180 days, and deployment configuration may only shorten it.
+- `early_access_signups` is a server-only acquisition record, not an account, mailing-list export, or
+  browser Data API surface. It stores one normalized email, validated locale/source labels, an HMAC-derived
+  trusted-address digest, and an optional bounded user-agent. RLS is enabled and direct public grants
+  are revoked. One normalized email has one immutable creation/retention window; duplicate submission
+  is idempotent and never extends its maximum 365-day lifetime. The private daily retention wrapper
+  purges expired records and records only a normalized row count.
 - Trip rows require one exclusive authenticated or signed-anonymous owner. Owner-scoped conditional
   writes and event append occur in one transaction; public share tokens are revocable read-only
   capabilities. See [ADR-0004](../adr/ADR-0004-identity-trip-ownership-security.md).

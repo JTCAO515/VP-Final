@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(31);
+select plan(33);
 
 select ok(
   exists (select 1 from pg_extension where extname = 'pg_cron'),
@@ -40,8 +40,8 @@ select throws_ok(
 
 select is(
   (select count(*) from cron.job where jobname like 'visepanda-purge-%'),
-  4::bigint,
-  'exactly four VisePanda retention jobs are scheduled'
+  5::bigint,
+  'exactly five VisePanda retention jobs are scheduled'
 );
 select is(
   (select schedule from cron.job where jobname = 'visepanda-purge-agent-traces'),
@@ -63,6 +63,11 @@ select is(
   '40 2 * * *',
   'Readiness assessment purge runs daily at 02:40 UTC'
 );
+select is(
+  (select schedule from cron.job where jobname = 'visepanda-purge-early-access-signups'),
+  '50 2 * * *',
+  'Early Access signup purge runs daily at 02:50 UTC'
+);
 select matches(
   (select command from cron.job where jobname = 'visepanda-purge-agent-traces'),
   $$run_retention_purge\('agent_traces'\)$$,
@@ -82,6 +87,11 @@ select matches(
   (select command from cron.job where jobname = 'visepanda-purge-readiness-assessments'),
   $$run_retention_purge\('readiness_assessments'\)$$,
   'Readiness job calls only the reviewed wrapper target'
+);
+select matches(
+  (select command from cron.job where jobname = 'visepanda-purge-early-access-signups'),
+  $$run_retention_purge\('early_access_signups'\)$$,
+  'Early Access job calls only the reviewed wrapper target'
 );
 
 insert into public.agent_runs (id, anon_id, status, expires_at)

@@ -154,6 +154,50 @@ export const readinessAssessments = pgTable(
   }),
 );
 
+export const earlyAccessSignups = pgTable(
+  "early_access_signups",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    email: text("email").notNull(),
+    locale: text("locale").notNull().default("en"),
+    source: text("source").notNull().default("landing"),
+    ipHash: text("ip_hash").notNull(),
+    userAgent: text("user_agent"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    retentionExpiresAt: timestamp("retention_expires_at", { withTimezone: true }).notNull(),
+  },
+  (table) => ({
+    emailUnique: uniqueIndex("early_access_signups_email_unique").on(table.email),
+    retentionExpiresIdx: index("early_access_signups_retention_expires_idx").on(
+      table.retentionExpiresAt,
+    ),
+    emailCheck: check(
+      "early_access_signups_email_check",
+      sql`${table.email} = lower(btrim(${table.email})) and char_length(${table.email}) between 3 and 254`,
+    ),
+    localeCheck: check(
+      "early_access_signups_locale_check",
+      sql`${table.locale} ~ '^[A-Za-z0-9-]{2,16}$'`,
+    ),
+    sourceCheck: check(
+      "early_access_signups_source_check",
+      sql`${table.source} ~ '^[a-z0-9][a-z0-9_-]{0,63}$'`,
+    ),
+    ipHashCheck: check(
+      "early_access_signups_ip_hash_check",
+      sql`${table.ipHash} ~ '^[a-f0-9]{64}$'`,
+    ),
+    userAgentCheck: check(
+      "early_access_signups_user_agent_check",
+      sql`${table.userAgent} is null or char_length(${table.userAgent}) between 1 and 512`,
+    ),
+    retentionCheck: check(
+      "early_access_signups_retention_check",
+      sql`${table.retentionExpiresAt} > ${table.createdAt} and ${table.retentionExpiresAt} <= ${table.createdAt} + interval '365 days'`,
+    ),
+  }),
+);
+
 export const copilotCompletionJobs = pgTable(
   "copilot_completion_jobs",
   {

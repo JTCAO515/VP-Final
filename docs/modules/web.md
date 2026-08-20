@@ -96,6 +96,7 @@ document direction; no browser translation service rewrites any readiness data.
 | `/api/auth/recover`                       | Enumeration-resistant Supabase password-recovery email handoff                                        |
 | `/api/auth/recover/complete`              | Recovery-proof and verified-session gated password update                                             |
 | `/api/telemetry`                          | Strict privacy-safe browser telemetry capture                                                         |
+| `/api/early-access`                       | Idempotent, rate-protected private Early Access signup capture                                        |
 | `/api/mobile/trips`                       | Verified mobile-session read-only Trip list                                                           |
 | `/api/trips/*`                            | Trip read, claim, and share handlers                                                                  |
 

@@ -9,6 +9,7 @@ export * from "./copilot/index.js";
 export * from "./commerce/index.js";
 export * from "./content-ai/index.js";
 export * from "./content-ai/walkingSkeleton.js";
+export * from "./early-access/index.js";
 export * from "./errors/index.js";
 export * from "./events/index.js";
 export * from "./knowledge/index.js";

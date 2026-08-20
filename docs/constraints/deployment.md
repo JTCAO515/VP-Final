@@ -47,6 +47,11 @@ Status: active
   explicit `local-demo` may use the fixed local limiter identity.
   The Vercel system marker `VERCEL` is part of the Turborepo env contract; it is platform evidence,
   not a substitute for the explicit `VISEPANDA_RUNTIME_MODE` runtime selection.
+- Early Access signup uses the same server-only Upstash endpoint/token, `VISEPANDA_IP_HASH_SALT`, and
+  Vercel-only trusted-address resolver, but it prefixes the address before HMAC hashing so its fixed
+  five-per-hour admission window never shares a Redis key with Copilot. Missing Redis, hash salt,
+  trusted Vercel address, or durable database configuration MUST return an honest unavailable response;
+  production MUST NOT fall back to process-local admission or a fabricated signup receipt.
 - Public Copilot numeric safety policy MUST follow accepted ADR-0015. The optional server-only
   `VISEPANDA_COPILOT_MAX_INPUT_CODE_UNITS` and `VISEPANDA_COPILOT_MAX_OUTPUT_TOKENS` settings default
   to `8000` and `1600`; `VISEPANDA_AUTHENTICATED_RATE_LIMIT_MINUTE` and
