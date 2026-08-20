@@ -161,6 +161,7 @@ export const earlyAccessSignups = pgTable(
     email: text("email").notNull(),
     locale: text("locale").notNull().default("en"),
     source: text("source").notNull().default("landing"),
+    primaryConcern: text("primary_concern"),
     ipHash: text("ip_hash").notNull(),
     userAgent: text("user_agent"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -182,6 +183,15 @@ export const earlyAccessSignups = pgTable(
     sourceCheck: check(
       "early_access_signups_source_check",
       sql`${table.source} ~ '^[a-z0-9][a-z0-9_-]{0,63}$'`,
+    ),
+    primaryConcernCheck: check(
+      "early_access_signups_primary_concern_check",
+      sql`${table.primaryConcern} is null or ${table.primaryConcern} in (
+        'payment_and_cash', 'transport_and_navigation', 'internet_and_essential_apps',
+        'language_and_communication', 'entry_tickets_and_booking',
+        'finding_places_and_addresses', 'food_and_dietary_needs', 'accommodation_and_check_in',
+        'changing_plans_or_getting_help', 'something_else'
+      )`,
     ),
     ipHashCheck: check(
       "early_access_signups_ip_hash_check",

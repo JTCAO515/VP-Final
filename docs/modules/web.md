@@ -41,10 +41,11 @@ The root Landing is a public acquisition surface, not a second product workspace
 labelled static Chatbot/Trip Canvas preview with scenario-guided product language and the exact
 `POST /api/early-access` boundary. The preview never represents booking, payment, live inventory,
 complete coverage, or Human Help fulfillment. The client fetches only when a traveller submits the
-bounded Early Access form; its UI renders the API's subscribed, already-subscribed, rate-limited,
-unavailable, and saved-but-not-delivered states without exposing an email, provider identifier, or
-server configuration. `/homepage` remains the unlisted full product overview and `/visepanda` remains
-the canonical interactive workspace.
+bounded Early Access form. Its optional concern value is one fixed category, never free text; the
+client cannot create a category, overwrite a previous signup, or infer a profile from it. The UI
+renders the API's subscribed, already-subscribed, rate-limited, unavailable, and saved-but-not-delivered
+states without exposing an email, provider identifier, or server configuration. `/homepage` remains the
+unlisted full product overview and `/visepanda` remains the canonical interactive workspace.
 
 ## Locale and Content Boundary
 

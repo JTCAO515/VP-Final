@@ -9,8 +9,9 @@ service interfaces, persistence adapters, and the root tRPC router. During Phase
 Next.js runtimes rather than deployed as an independent service.
 
 The Early Access service is a narrow public acquisition write boundary: it accepts the domain-owned
-normalized input plus a server-derived HMAC network digest and bounded user-agent metadata, then uses
-a unique normalized-email insert to return `subscribed` or `already_subscribed`. A separately
+normalized input, including one optional fixed content-priority category, plus a server-derived HMAC
+network digest and bounded user-agent metadata, then uses a unique normalized-email insert to return
+`subscribed` or `already_subscribed`. A separately
 configured server-only Resend adapter may send exactly one confirmation after the first durable
 `subscribed` result; no delivery-provider response is retained, a duplicate never sends, and a
 provider failure remains an honest non-success response. The service has no account, mailing-list

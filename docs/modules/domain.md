@@ -48,10 +48,10 @@ execution-fact safety.
 - Trip mutation is only performed through `applyPatch`.
 - Domain enums are never copied into app-local constants.
 - Optional fields stay optional; consumers do not fabricate values to make a card look complete.
-- Early Access accepts one normalized email and a bounded locale. Its public source is currently the
-  literal `landing`; accepting a new attribution source requires a separate contract rather than a
-  client-controlled string. The domain result does not expose a stored email, row id, metadata, or
-  delivery-provider detail.
+- Early Access accepts one normalized email, a bounded locale, and an optional fixed concern category.
+  Its public source is currently the literal `landing`; accepting a new attribution source, category,
+  or free-text travel explanation requires a separate contract rather than a client-controlled string.
+  The domain result does not expose a stored email, row id, metadata, concern, or delivery-provider detail.
 - Knowledge consumers follow [ADR-0006](../adr/ADR-0006-knowledge-evidence-and-index-quality.md): model output cannot invent facts or citations. Facts retain typed source class/locator, a bounded PII-free evidence summary, ingestion time, nullable independent verification time, and a versioned review policy. Public eligibility additionally requires a private authenticated reviewer and bounded expiry. Retrieval accepts only `isEligiblePoiFact` results, citation ids are request-allowlisted, and no-match answers are explicit. `DraftFactReviewQueueItem` is an Ops-only composition: it may carry an imported row id, collection status, optional batch UUID, the draft, and same-POI reviewed facts, but deliberately excludes internal notes and researcher/reviewer identities.
 - Public fact provenance is derived only after `isEligiblePoiFact` succeeds. The accepted public source
   classes are `official`, `operator_verified`, and `reputable_editorial`; user reports, model output,

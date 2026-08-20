@@ -58,6 +58,15 @@ describe("POST /api/early-access", () => {
       ok: false,
       error: "Enter a valid email address.",
     });
+
+    const invalidConcern = await POST(
+      postRequest({ email: "traveler@example.com", primaryConcern: "unbounded_free_text" }),
+    );
+    expect(invalidConcern.status).toBe(400);
+    await expect(invalidConcern.json()).resolves.toEqual({
+      ok: false,
+      error: "Enter a valid email address.",
+    });
   });
 
   it("rejects malformed JSON as invalid input rather than claiming service unavailability", async () => {

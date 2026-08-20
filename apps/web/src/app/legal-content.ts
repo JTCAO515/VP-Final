@@ -46,7 +46,7 @@ export const LEGAL_DOCUMENTS: Readonly<Record<LegalDocumentId, LegalDocument>> =
         heading: "Information we process",
         bullets: [
           "Account identity and email when you register or sign in.",
-          "A normalized email, locale/source label, HMAC-derived network digest, and bounded device metadata when you join Early Access.",
+          "A normalized email, locale/source label, optional fixed travel-concern category, HMAC-derived network digest, and bounded device metadata when you join Early Access.",
           "Signed anonymous and session identifiers used for continuity, security, and product limits.",
           "Messages, Trip content, and the context needed to answer a VisePanda request.",
           "Human Help request details and the reply contact you choose to provide.",
@@ -61,7 +61,7 @@ export const LEGAL_DOCUMENTS: Readonly<Record<LegalDocumentId, LegalDocument>> =
           "Maintain your session and Trip, enforce abuse and anonymous-use limits, and diagnose failures.",
           "Route relevant VisePanda content to a configured model provider and return the validated result.",
           "Review a Human Help request within the published controlled-preview boundary.",
-          "Record an Early Access request and contact you only about access or material preview updates when that delivery capability is configured.",
+          "Record an Early Access request, use the optional fixed concern category only in aggregate to prioritize reviewed travel information, and contact you only about access when that delivery capability is configured.",
           "Measure service reliability and reconcile model usage and operating costs.",
         ],
       },
