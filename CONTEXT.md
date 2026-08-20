@@ -6,15 +6,18 @@ code, Issues, ADRs, runbooks, product copy, and operational discussion. Detailed
 
 ## Product Thesis
 
-VisePanda is the execution copilot for foreigners travelling in China. Planning attracts users;
-reliable execution, paid human help, and qualified partner referrals create value and revenue.
-VisePanda is not an OTA, a generic itinerary generator, or a collection of unrelated travel tools.
+VisePanda is the conversational execution companion for independent travel in China. The VisePanda
+Chatbot is the product center: it turns a traveller's message into an honest, structured next action
+for Payment, Show to Local, Entry / Booking, Translate / Communicate, Network, or Rescue / Human Help.
+Planning can attract users, but reliable execution is the current product responsibility. VisePanda is
+not an OTA, a generic itinerary generator, or a collection of unrelated travel tools.
 
 ## Canonical Terms
 
 | Term | Meaning | Avoid |
 | --- | --- | --- |
-| Copilot | The single user-facing AI interaction surface | Butler, chatbot, bot |
+| VisePanda Chatbot | The single user-facing AI interaction and execution-orchestration surface | Butler, bot, separate AI features |
+| Copilot | Stable internal module/API name for the VisePanda Chatbot pipeline | A second user-facing product surface |
 | Copilot envelope | Typed response containing a message and optional actions, citations, tools, or handoff | Raw model response |
 | Trip | The current materialized travel plan | Itinerary blob |
 | TripPatch | A typed, validated request to change a Trip | Direct Trip mutation |
@@ -44,9 +47,9 @@ VisePanda is not an OTA, a generic itinerary generator, or a collection of unrel
 
 ## Relationships
 
-- A user message enters Copilot and produces one validated Copilot envelope.
+- A user message enters the VisePanda Chatbot through the Copilot pipeline and produces one validated Copilot envelope.
 - A Copilot envelope may contain TripPatch values; deterministic application creates Trip events.
-- Execution facts feed Explore, Copilot retrieval, and search pages.
+- Execution facts feed VisePanda Chatbot retrieval first; Explore and search pages are secondary consumers.
 - Unanswered questions create knowledge gaps; reviewed gaps may become execution facts.
 - Commercial actions reference active partners and create outbound clicks through the gateway.
 - Human Tasks have an explicit state machine and must produce payment and telemetry evidence when

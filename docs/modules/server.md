@@ -8,6 +8,14 @@ The server package is the modular monolith. It owns request validation, business
 service interfaces, persistence adapters, and the root tRPC router. During Phase 0 it is imported by
 Next.js runtimes rather than deployed as an independent service.
 
+## Chatbot-Core Responsibility
+
+The Server makes the VisePanda Chatbot operational: it derives trusted identity and bounded context,
+retrieves only eligible reviewed execution facts, validates the typed envelope, invokes deterministic
+Tools where an accepted capability exists, and preserves honest unavailable/recovery states otherwise.
+The next structural delivery is scoped execution-fact retrieval; generic Content AI persistence and
+new map/media consumers remain paused until fact-driven execution slices produce evidence.
+
 ## Root Router
 
 `apps/server/src/router.ts` composes:

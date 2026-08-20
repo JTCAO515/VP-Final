@@ -1,9 +1,9 @@
 # VisePanda V2 (VP-Final)
 
-> **The execution copilot for foreigners in China.**
-> 规划免费，执行可靠，出事有人管。
+> **VisePanda is the conversational execution companion for independent travel in China.**
+> 规划可以免费，真正价值在于把中国旅行现场的下一步可靠地推进下去。
 
-面向来华外国旅行者的执行副驾：AI 行程规划是免费获客入口，产品的真正核心是「中国现场执行」——支付、网络、语言、交通、预约、突发求助——配付费人工兜底（Human Task）与定制行程询价（lead fee）变现。不是 AI 攻略生成器，不是 OTA，不是工具箱合集。
+面向来华外国自由行游客的对话式执行助手：VisePanda Chatbot 是唯一 AI 交互中心，围绕支付、向本地人展示目的地、入场/预约、现场沟通、网络与救援六个执行时刻，把用户的一句话转化为有来源、有边界、可恢复的下一步。Trip、可信事实、Tools、Rescue、Human Help、Explore 与 Ops 都服务这一闭环。不是 AI 攻略生成器，不是 OTA，不是工具箱合集。
 
 **本仓库是 VisePanda V2 的唯一开发仓库。** V1（`VP-Codex-Final`）自 2026-07-07 起只收尾不开新功能，V2 Web MVP 公开后冻结（见 [ADR-0001](docs/adr/ADR-0001-repo-and-v1-disposition.md)）。V2 为绿地重构，不继承 V1 任何代码、数据与文档。
 
@@ -22,7 +22,7 @@
 | 7 | [`docs/adr/`](docs/adr/) | 已接受决策；普通 PR 不重复争论 |
 | 8 | [Issues](https://github.com/JTCAO515/VP-Final/issues) | 可执行控制动作；按依赖和优先级认领 |
 
-## 当前状态（2026-08-17）
+## 当前状态（2026-08-20）
 
 - 已完成：monorepo、核心 Domain、持久化 Trip/Knowledge/Human Task/Outbound/Telemetry 边界、
   真实 Provider 路由、成本与产品事件记录、匿名与可信 IP 保护、法律页、Ops RBAC、
@@ -31,6 +31,7 @@
   所有缺失配置均诚实不可用，绝不以 mock 或占位成功替代。
 - 当前最大产品缺口：经过人工核实、可展示的执行事实仍很少；这不是代码问题，必须按
   [知识事实审核流程](docs/runbooks/knowledge-fact-review.md)逐条录入、复核和续期。
+- 当前产品开发顺序由 [ADR-0023](docs/adr/ADR-0023-chatbot-execution-core.md) 收窄：先让 Chatbot 可靠地完成 Payment、Show to Local、Entry / Booking 三个事实驱动的执行闭环，再扩张 Content AI、地图候选、SEO、VisePod 或商业市场。
 - 外部激活仍受事实门槛约束：Stripe 收款、批准合作伙伴跳转、运营服务、公开图片交付、
   VisePod 设备服务与 Phase 2+ 商业化均未因仓库代码而自动上线。
 - **权威现状**：先读自动生成的 [`docs/INDEX.md`](docs/INDEX.md) handoff 快照、
@@ -81,7 +82,7 @@ RevenueCat · PostHog + Sentry · 环境配置化的多 Provider LLM 路由（Da
 
 | 阶段 | 触发条件 | 内容 |
 |---|---|---|
-| **Phase 0**（进行中） | — | 公开 Web 的受控运行、执行事实审核、真实问题闭环、运营验证与安全/成本/质量证据 |
+| **Phase 0**（进行中） | — | Chatbot 六执行时刻中的事实驱动闭环；先 Payment，再 Show to Local 与 Entry / Booking；同时保持公开 Web 的受控运行、事实审核与安全/成本/质量证据 |
 | Phase 1 | 周活 ≥200 真实外国用户 或 Human Task ≥20 单 | Expo App（离线行程+Tools 八件套）、知识库扩 6 城、正式 affiliate 谈判 |
 | Phase 2 | 单城定制询价 ≥5 次/月 | Quote 市场（lead fee）、服务者网络、Trip Pass 定价实验 |
 | Phase 3 | 月撮合订单 ≥100 且法务实体就绪 | take rate + 平台内分账 |

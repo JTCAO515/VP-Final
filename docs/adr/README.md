@@ -27,6 +27,7 @@ New ADRs are append-only and use the next numeric prefix.
 | [ADR-0020](ADR-0020-creator-attribution-contract.md)                   | Accepted | Freezes creator referrals as private server-resolved acquisition sources and keeps them separate from OTA outbound links.                  |
 | [ADR-0021](ADR-0021-ops-poi-image-storage.md)                          | Accepted | Freezes private, server-mediated, attributed Ops image storage; it does not authorize public image delivery.                               |
 | [ADR-0022](ADR-0022-content-ai-control-boundary.md)                     | Accepted | Freezes Content AI as private Change Set drafting with deterministic retrieval, human all-or-nothing publication, and no model authority. |
+| [ADR-0023](ADR-0023-chatbot-execution-core.md)                           | Accepted | Narrows delivery around the VisePanda Chatbot and six source-backed China-travel execution moments without replacing the accepted technical architecture. |
 
 ## When to Add an ADR
 
