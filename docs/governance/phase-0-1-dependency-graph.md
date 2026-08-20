@@ -2,8 +2,8 @@
 
 > **Status:** Active control baseline  
 > **Owner:** Overall design / architecture  
-> **Last reviewed:** 2026-07-21
-> **Authority:** This document is the dependency source of truth for Phase 0/1. GitHub Issue prose may link here but must not create a contradictory dependency.
+> **Last reviewed:** 2026-08-20
+> **Authority:** This document is the dependency source of truth for Phase 0/1. [ADR-0023](../adr/ADR-0023-chatbot-execution-core.md) is the current product-order amendment; GitHub Issue prose may link here but must not create a contradictory dependency.
 
 ## 1. Operating Rules
 
@@ -14,7 +14,38 @@
 - Ordinary implementation and governance PRs must not edit `docs/handoff.json` or the generated `docs/INDEX.md`. They record the expected handoff delta in the PR; a dedicated serialized snapshot PR refreshes both files after the merge queue settles.
 - External accounts, secrets, payment entities, DNS, deployment, or other operator-only actions stay as placeholders until recorded in the operator-action register. No implementation may claim a third-party capability is live before its verification evidence exists.
 
-## 2. Canonical Phase 0 Control Graph
+## 2. Current Canonical Focus Queue (ADR-0023)
+
+The completed Phase 0 controls in the next section remain prerequisite evidence, not competing product
+work. The only current implementation order is the Chatbot execution-core queue below.
+
+| Control action | Canonical Issue | Subsystem | Blocked by | Unblocks / constrains | State | Milestone |
+| --- | --- | --- | --- | --- | --- | --- |
+| Chatbot execution-core baseline | [FOCUS-00 #521](https://github.com/JTCAO515/VP-Final/issues/521) | D3 product authority | Operator-approved decision | FOCUS-01; FACT-SCOPE-01 | Complete; ADR-0023 and PR #522 merged | 0 |
+| Backlog reclassification | [FOCUS-01 #525](https://github.com/JTCAO515/VP-Final/issues/525) | D3 governance | FOCUS-00 | FACT-SCOPE-01 | Active | 0 |
+| Scoped Execution Fact contract | FACT-SCOPE-01 (created after FOCUS-01) | D2 domain/knowledge | FOCUS-01 | scoped persistence, Chatbot actions, Payment | Not opened | 1 |
+| Scoped fact persistence/retrieval | FACT-SCOPE-02 (created after FACT-SCOPE-01) | D2 data/knowledge | FACT-SCOPE-01 | Chatbot scoped retrieval | Not opened | 1 |
+| Minimal Execution Action contract | CHAT-ACTION-01 (created after FACT-SCOPE-01) | D2 domain/Copilot | FACT-SCOPE-01 | Chatbot execution rendering and routing | Not opened | 1 |
+| Chatbot scoped retrieval/action routing | CHAT-RUNTIME-01 | D2 server/AI | FACT-SCOPE-02; CHAT-ACTION-01 | Chatbot execution workspace | Not opened | 1 |
+| Chatbot Execution Action rendering | CHAT-WEB-01 | D1 Web | CHAT-RUNTIME-01 | Payment vertical slice | Not opened | 1 |
+| Payment fact content and deterministic action | PAY-EXEC-01 -> PAY-EXEC-03 | D3 knowledge/product | Chatbot action path; operator-reviewed facts | Show to Local / Entry comparison | Not opened; external content remains operator-owned | 2 |
+| Show to Local vertical slice | LOCAL-EXEC-01 -> reframed [#347](https://github.com/JTCAO515/VP-Final/issues/347) | D2 knowledge/Chatbot | Payment slice evidence; resolved POI facts | Entry slice | Deferred, not frozen | 3 |
+| Entry / Booking vertical slice | ENTRY-EXEC-01 -> ENTRY-EXEC-02 | D3 knowledge/Chatbot | Show to Local operating evidence | execution-model review | Not opened | 3 |
+| Narrowed Content AI v0 | [#499](https://github.com/JTCAO515/VP-Final/issues/499) -> #503 | D3 Ops/knowledge | scoped facts plus Payment/Show to Local/Entry operating evidence | controlled content production | Paused | 4 |
+| Focused production runbook/smoke | reframed [#92](https://github.com/JTCAO515/VP-Final/issues/92) and [#93](https://github.com/JTCAO515/VP-Final/issues/93) | D3 release evidence | three vertical slices | controlled public MVP decision | Deferred | 5 |
+
+### Explicitly deferred or frozen queues
+
+- Content AI #504 through #510: media, provider candidates, GitHub draft export, broad E2E, and map
+  data-rights research are deferred. They do not block the scoped-fact or first three execution slices.
+- VisePod #278 through #304 is frozen under ADR-0023. Its evidence records remain historical and no
+  new device runtime work is current product work.
+- Stripe #154, model-rights #194, Phase 2/3 commerce, and trigger-gated mobile work remain deferred
+  behind their independent legal, commercial, external-evidence, or adoption gates.
+- Operator-owned #343 is reframed as real six-moment traveller research. It is not a coding task and
+  cannot be replaced with AI-generated samples.
+
+## 3. Historical Phase 0 Foundation
 
 | Control action                        | Canonical Issue                                                                                                                                                                                                                                                                                                                 | Subsystem                 | Blocked by                                                                           | Unblocks / constrains                                                       | State                                                                                     | Milestone |
 | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- | ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- | --------- |
@@ -54,7 +85,7 @@ P0-05 + P0-06 + P0-12 -> P0-18 -> P0-19 -> P0-20
 P0-21 -> every future Database contracts pass claim
 ```
 
-## 3. Historical Migration Map
+## 4. Historical Migration Map
 
 The following remain open only as historical V2 records and carry `status:superseded`. Their original body preserves evidence; implementation starts from the canonical owner.
 
@@ -70,9 +101,10 @@ The following remain open only as historical V2 records and carry `status:supers
 | V2-57 #90, V2-58 #91                                  | P0-20 #157                    |
 | V2-60 #73                                             | renamed in place as P0-09 #73 |
 
-## 4. Retained Standalone Queue and Required Decision
+## 5. Historical Retained Standalone Queue Before Focus
 
-These Issues are not duplicated by a P0 owner today. They remain their own active owner until a future G3 review explicitly maps, retires, or renumbers them. No Agent may silently create a competing P0 replacement.
+This table records the pre-ADR-0023 standalone queue. Section 2 supersedes it as the active product
+order; its rows remain evidence and external gates, not implementation entry points.
 
 | Area                              | Current owner                              | Gate                                                                          |
 | --------------------------------- | ------------------------------------------ | ----------------------------------------------------------------------------- |
@@ -80,16 +112,16 @@ These Issues are not duplicated by a P0 owner today. They remain their own activ
 | Explore commercial link           | V2-37 #58                                  | P0-18 terminal boundary plus active-partner/operator evidence; no partner is active |
 | SEO matrix/data/override/indexing | V2-38 #59, V2-39 #84, V2-40 #85, V2-41 #86 | DOC-P0-03; quality review, no raw page-count target                           |
 | Provider self-check/evals         | V2-59 #72, V2-61 #74                       | P0-07/P0-09/P0-20; real-provider evidence only                                |
-| Legal/runbook/smoke               | V2-62 #75, V2-63 #92, V2-64 #93            | #75 is complete in PR #274; terminal runbook/smoke remain gated by P0-17/P0-20 as applicable |
+| Legal/runbook/smoke               | V2-62 #75, V2-63 #92, V2-64 #93            | #75 remains complete; #92/#93 are reframed in Section 2 behind three execution slices, not P0-17/P0-20 alone |
 | Phase 1 and 2 V2 queues           | #76-83, #94-101                            | Phase trigger evidence or explicit operator override recorded in an ADR/Issue |
 
-## 5. Phase 1 and Phase 2 Gates
+## 6. Phase 1 and Phase 2 Gates
 
 - **Phase 1:** Do not begin functional work merely because a ticket exists. Require the stated Phase 0 evidence threshold, or a documented operator override with owner, date, commercial reason, and rollback criterion.
 - **P1-04 Rescue Mode #124:** blocked by accepted DOC-P0-04 #134 and P0-15 #152, P0-16 #153, P0-20 #157. It is not a substitute for official emergency services.
 - **Phase 2/mobile:** require the Phase 1 trigger decision. Store/IAP, supplier, and payment work additionally requires the manual-action register and the relevant legal/entity decision.
 
-## 6. Dependency Validation Procedure
+## 7. Dependency Validation Procedure
 
 Before merging a backlog-changing PR:
 
@@ -99,7 +131,7 @@ Before merging a backlog-changing PR:
 4. Reconcile this table, the master backlog #102, `docs/handoff.json`, and generated `docs/INDEX.md`.
 5. Record the scan command/result in the PR. GitHub metadata is not available to offline documentation CI, so this manual API scan is required until a token-safe backlog linter is introduced.
 
-## 7. Observations and Corrective Action
+## 8. Observations and Corrective Action
 
 - **Observed deviation:** two independently numbered task systems caused overlapping execution paths and dangling identifiers.
 - **Correction:** P0/P1/P2 is canonical; superseded V2 records retain history and point one way to their owner.
@@ -123,3 +155,8 @@ Before merging a backlog-changing PR:
   complete P0-12 against the merged #75 routes, and preserve the accepted #248/#297 cost contracts in
   all consumers. Keep trigger-gated Phase 1/2/3 rollout and payment work blocked until their explicit
   evidence gates are met.
+- **Observed correction (2026-08-20):** ADR-0023 and PR #522 narrowed product delivery around the
+  VisePanda Chatbot and six execution moments. This section now preserves the completed Phase 0
+  foundation as history while Section 2 is the only current implementation queue. FOCUS-01 owns the
+  matching GitHub reclassification; no Content AI, VisePod, marketplace, SEO expansion, or mobile-scale
+  issue may bypass the scoped-fact and vertical-slice order.
