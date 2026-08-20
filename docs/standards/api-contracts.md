@@ -55,6 +55,18 @@ Every interface baseline documents:
   `COPILOT_IP_RATE_LIMIT_UNAVAILABLE`. Neither response invokes the model or exposes the address,
   key, salt, configured thresholds, Redis detail, cookie, or signature.
 
+`POST /api/early-access` accepts the domain-owned `{ email, locale?, source? }` shape, where email is
+trimmed/lowercased and the only currently registered source is `landing`. It returns only
+`{ ok: true, status: "subscribed" | "already_subscribed" }`; stored email, HMAC-derived network digest,
+user agent, row id, and future delivery-provider detail are never returned. A filled bounded
+`company` honeypot receives the same `subscribed` receipt without trusted-address resolution, rate
+admission, or a durable write. All other requests require the existing Vercel-only trusted-address
+resolver and an isolated HMAC-prefixed Upstash window of five submissions per hour. The sixth request
+returns 429 `EARLY_ACCESS_RATE_LIMITED` plus a positive `Retry-After`; missing trusted platform, Redis,
+hash-salt, or durable runtime returns 503 `EARLY_ACCESS_UNAVAILABLE` without a fabricated receipt.
+The unique normalized-email insert is the idempotency rule: a duplicate never creates a second row or
+extends its retention deadline.
+
 ## Trip Contract
 
 AI returns a typed Copilot envelope and optional TripPatch. Deterministic domain code validates and

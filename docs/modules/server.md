@@ -8,6 +8,13 @@ The server package is the modular monolith. It owns request validation, business
 service interfaces, persistence adapters, and the root tRPC router. During Phase 0 it is imported by
 Next.js runtimes rather than deployed as an independent service.
 
+The Early Access service is a narrow public acquisition write boundary: it accepts the domain-owned
+normalized input plus a server-derived HMAC network digest and bounded user-agent metadata, then uses
+a unique normalized-email insert to return `subscribed` or `already_subscribed`. It has no account,
+mailing-list export, browser table access, provider-delivery, or analytics responsibility. The Web
+composition root supplies it only from the durable Postgres adapter outside explicit local-demo/test
+mode.
+
 ## Chatbot-Core Responsibility
 
 The Server makes the VisePanda Chatbot operational: it derives trusted identity and bounded context,

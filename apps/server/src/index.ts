@@ -57,6 +57,7 @@ export { createDbVisePodBindingService } from "./db/visePodBindingService.js";
 export { createDbVisePodUserResolutionService } from "./db/visePodUserResolutionService.js";
 export { createDbVersionedTripService } from "./db/versionedTripService.js";
 export { createDbReadinessService } from "./db/readinessService.js";
+export { createDbEarlyAccessSignupService } from "./db/earlyAccessSignupService.js";
 export { createDbCompletionJobService } from "./db/completionJobService.js";
 export {
   adapterInventory,
@@ -227,6 +228,20 @@ export {
   resolveReadinessRetentionDays,
 } from "./modules/readiness/service.js";
 export {
+  EARLY_ACCESS_RATE_LIMIT_PER_HOUR,
+  EarlyAccessRateLimitUnavailableError,
+  createEarlyAccessRateLimiter,
+  createInMemoryEarlyAccessRateLimiter,
+  createUpstashEarlyAccessRateLimiter,
+  resolveEarlyAccessRateLimiterConfig,
+} from "./modules/earlyAccess/rateLimiter.js";
+export {
+  EARLY_ACCESS_RETENTION_DAYS,
+  EARLY_ACCESS_USER_AGENT_MAX_LENGTH,
+  createInMemoryEarlyAccessSignupService,
+  normalizeEarlyAccessUserAgent,
+} from "./modules/earlyAccess/service.js";
+export {
   createCommerceService,
   InvalidOutboundTargetError,
   PartnerUnavailableError,
@@ -244,6 +259,11 @@ export {
 export { OutboundRedirectInputSchema } from "./modules/commerce/router.js";
 export type { RequestIdentity } from "./context.js";
 export type { ReadinessIdentity, ReadinessService } from "./modules/readiness/service.js";
+export type { EarlyAccessRateLimiter } from "./modules/earlyAccess/rateLimiter.js";
+export type {
+  EarlyAccessSignupMetadata,
+  EarlyAccessSignupService,
+} from "./modules/earlyAccess/service.js";
 export type { AdapterAvailability, RuntimeMode, RuntimeResolution } from "./runtime/runtimeMode.js";
 export type { KnowledgeService } from "./modules/knowledge/service.js";
 export type { PoiImageService, PoiImageWriteInput } from "./db/poiImageService.js";

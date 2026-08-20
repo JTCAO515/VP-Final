@@ -34,6 +34,7 @@ execution-fact safety.
 | `task`          | Human Task input, lifecycle, transition commands, private outcome evidence, and non-status updates                                                                                                       |
 | `tools`         | Versioned local-only preparation pack for eight execution-tool categories; deterministic action ids, no real-time API, partner URL, or live availability claim                                           |
 | `commerce`      | Validated OTA/creator partner configuration, private creator-referral records, trusted-identity outbound records, active-only HTTPS host validation, and tracking construction                           |
+| `early-access`  | Normalized public opt-in input and the only two receipt states: `subscribed` and `already_subscribed`                                                                                                    |
 | `events`        | Telemetry event contract                                                                                                                                                                                 |
 | `observability` | Redacted Copilot turn, per-attempt cost, product-event action, and forbidden-persistence contracts                                                                                                       |
 | `errors`        | Shared typed error shapes                                                                                                                                                                                |
@@ -47,6 +48,10 @@ execution-fact safety.
 - Trip mutation is only performed through `applyPatch`.
 - Domain enums are never copied into app-local constants.
 - Optional fields stay optional; consumers do not fabricate values to make a card look complete.
+- Early Access accepts one normalized email and a bounded locale. Its public source is currently the
+  literal `landing`; accepting a new attribution source requires a separate contract rather than a
+  client-controlled string. The domain result does not expose a stored email, row id, metadata, or
+  delivery-provider detail.
 - Knowledge consumers follow [ADR-0006](../adr/ADR-0006-knowledge-evidence-and-index-quality.md): model output cannot invent facts or citations. Facts retain typed source class/locator, a bounded PII-free evidence summary, ingestion time, nullable independent verification time, and a versioned review policy. Public eligibility additionally requires a private authenticated reviewer and bounded expiry. Retrieval accepts only `isEligiblePoiFact` results, citation ids are request-allowlisted, and no-match answers are explicit. `DraftFactReviewQueueItem` is an Ops-only composition: it may carry an imported row id, collection status, optional batch UUID, the draft, and same-POI reviewed facts, but deliberately excludes internal notes and researcher/reviewer identities.
 - Public fact provenance is derived only after `isEligiblePoiFact` succeeds. The accepted public source
   classes are `official`, `operator_verified`, and `reputable_editorial`; user reports, model output,

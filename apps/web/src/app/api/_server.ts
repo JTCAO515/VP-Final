@@ -2,6 +2,7 @@ import {
   appRouter,
   createDb,
   createDbAgentTraceService,
+  createDbEarlyAccessSignupService,
   createDbCompletionJobService,
   createDbHumanTaskService,
   createDbHumanTaskPaymentWebhookService,
@@ -23,6 +24,8 @@ import {
   createInMemorySeoEditorialOverrideService,
   createInMemoryHumanTaskService,
   createInMemoryAgentTraceService,
+  createInMemoryEarlyAccessRateLimiter,
+  createInMemoryEarlyAccessSignupService,
   createInMemoryTelemetryService,
   createInMemoryTelemetryRateLimiter,
   createInMemoryReadinessService,
@@ -33,11 +36,13 @@ import {
   createUpstashAuthenticatedCopilotRateLimiter,
   createUpstashCopilotIpRateLimiter,
   createUpstashTelemetryRateLimiter,
+  createUpstashEarlyAccessRateLimiter,
   resolveQStashCompletionQueueConfig,
   resolveUpstashAnonymousTurnCounterConfig,
   resolveUpstashAuthenticatedCopilotRateLimiterConfig,
   resolveUpstashCopilotIpRateLimiterConfig,
   resolveUpstashTelemetryRateLimiterConfig,
+  resolveEarlyAccessRateLimiterConfig,
   resolveDatabaseAdapter,
   resolveRuntimeMode,
   resolveStripeWebhookConfig,
@@ -45,6 +50,8 @@ import {
   type AnonymousTurnCounter,
   type AuthenticatedCopilotRateLimiter,
   type CopilotIpRateLimiter,
+  type EarlyAccessRateLimiter,
+  type EarlyAccessSignupService,
   type CopilotProductEventService,
   type CompleteDay,
   type CompletionJobService,
@@ -78,6 +85,8 @@ type WebServerServices = {
   authenticatedCopilotRateLimiter?: AuthenticatedCopilotRateLimiter;
   copilotIpRateLimiter?: CopilotIpRateLimiter;
   telemetryRateLimiter?: TelemetryRateLimiter;
+  earlyAccessRateLimiter?: EarlyAccessRateLimiter;
+  earlyAccessSignupService?: EarlyAccessSignupService;
   commerceService?: CommerceService;
   telemetryService?: TelemetryService;
   safePhraseResolver?: SafePhraseResolver;
@@ -152,6 +161,8 @@ export function createWebServerServices(environment: Environment): WebServerServ
       authenticatedCopilotRateLimiter: createInMemoryAuthenticatedCopilotRateLimiter(),
       copilotIpRateLimiter: createInMemoryCopilotIpRateLimiter(),
       telemetryRateLimiter: createInMemoryTelemetryRateLimiter(),
+      earlyAccessRateLimiter: createInMemoryEarlyAccessRateLimiter(),
+      earlyAccessSignupService: createInMemoryEarlyAccessSignupService(),
     };
   }
 
@@ -167,6 +178,7 @@ export function createWebServerServices(environment: Environment): WebServerServ
   const authenticatedCopilotRateLimiter = resolveAuthenticatedCopilotRateLimiter(environment);
   const copilotIpRateLimiter = resolveCopilotIpRateLimiter(environment);
   const telemetryRateLimiter = resolveTelemetryRateLimiter(environment);
+  const earlyAccessRateLimiter = resolveEarlyAccessRateLimiter(environment);
   const tripService = createDbVersionedTripService(db);
   return {
     humanTaskService: createDbHumanTaskService(db),
@@ -179,6 +191,7 @@ export function createWebServerServices(environment: Environment): WebServerServ
     traceService,
     productEventService: traceService,
     telemetryService,
+    earlyAccessSignupService: createDbEarlyAccessSignupService(db),
     safePhraseResolver: createDbSafePhraseResolver(db),
     tripService,
     readinessService: createDbReadinessService(db, {
@@ -190,6 +203,7 @@ export function createWebServerServices(environment: Environment): WebServerServ
     ...(authenticatedCopilotRateLimiter ? { authenticatedCopilotRateLimiter } : {}),
     ...(copilotIpRateLimiter ? { copilotIpRateLimiter } : {}),
     ...(telemetryRateLimiter ? { telemetryRateLimiter } : {}),
+    ...(earlyAccessRateLimiter ? { earlyAccessRateLimiter } : {}),
     completionDay: createModelCompleteDay({ environment, traceService }),
   };
 }
@@ -217,6 +231,16 @@ function resolveAuthenticatedCopilotRateLimiter(
 function resolveTelemetryRateLimiter(environment: Environment): TelemetryRateLimiter | undefined {
   try {
     return createUpstashTelemetryRateLimiter(resolveUpstashTelemetryRateLimiterConfig(environment));
+  } catch {
+    return undefined;
+  }
+}
+
+function resolveEarlyAccessRateLimiter(
+  environment: Environment,
+): EarlyAccessRateLimiter | undefined {
+  try {
+    return createUpstashEarlyAccessRateLimiter(resolveEarlyAccessRateLimiterConfig(environment));
   } catch {
     return undefined;
   }
@@ -266,6 +290,16 @@ export function getAuthenticatedCopilotRateLimiter(): AuthenticatedCopilotRateLi
 
 export function getTelemetryRateLimiter(): TelemetryRateLimiter | undefined {
   return getWebServerServices(process.env).telemetryRateLimiter;
+}
+
+export function getEarlyAccessRateLimiter(): EarlyAccessRateLimiter | undefined {
+  return getWebServerServices(process.env).earlyAccessRateLimiter;
+}
+
+export function getEarlyAccessSignupService(): EarlyAccessSignupService {
+  const service = getWebServerServices(process.env).earlyAccessSignupService;
+  if (!service) throw new WebRuntimeUnavailableError("early_access_signup_unavailable");
+  return service;
 }
 
 export function getSeoEditorialOverrideService(): SeoEditorialOverrideService | undefined {
