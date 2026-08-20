@@ -1,15 +1,11 @@
+import type { Metadata } from "next";
+import { EarlyAccessLanding } from "./_landing/landing";
+
+export const metadata: Metadata = {
+  title: "VisePanda | Plan and execute China travel with AI",
+  description: "The AI planning and execution workspace for independent travel in China.",
+};
+
 export default function Page() {
-  return (
-    <main className="shell" id="page-content">
-      <section className="hero pageHero" aria-labelledby="early-access-placeholder-title">
-        <div>
-          <p className="pageEyebrow">VisePanda</p>
-          <h1 id="early-access-placeholder-title">Early access is opening soon.</h1>
-          <p>
-            We are preparing a focused way to help independent travelers handle China in the moment.
-          </p>
-        </div>
-      </section>
-    </main>
-  );
+  return <EarlyAccessLanding />;
 }

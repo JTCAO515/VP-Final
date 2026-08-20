@@ -37,6 +37,15 @@ inline bootstrap scripts and the design-token style element, so the baseline per
 and styles but does not permit `unsafe-eval`. Any future third-party browser resource, iframe, or
 capability must add a separately reviewed policy change and an end-to-end verification case.
 
+The root Landing is a public acquisition surface, not a second product workspace. It pairs a clearly
+labelled static Chatbot/Trip Canvas preview with scenario-guided product language and the exact
+`POST /api/early-access` boundary. The preview never represents booking, payment, live inventory,
+complete coverage, or Human Help fulfillment. The client fetches only when a traveller submits the
+bounded Early Access form; its UI renders the API's subscribed, already-subscribed, rate-limited,
+unavailable, and saved-but-not-delivered states without exposing an email, provider identifier, or
+server configuration. `/homepage` remains the unlisted full product overview and `/visepanda` remains
+the canonical interactive workspace.
+
 ## Locale and Content Boundary
 
 The public Web locale contract is owned by `apps/web/src/i18n`. English (`en`) is the deterministic
@@ -68,7 +77,7 @@ document direction; no browser translation service rewrites any readiness data.
 
 | Route                                     | Purpose                                                                                               |
 | ----------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `/`                                       | Early Access landing placeholder until the separately governed Landing UI is delivered                 |
+| `/`                                       | Early Access Landing: planning/execution workspace preview and real private signup entry               |
 | `/homepage`                               | Existing full product home; accessible but page-level noindex and excluded from sitemap                |
 | `/visepanda`                              | Canonical VisePanda workspace and Trip Canvas                                                         |
 | `/copilot`                                | Legacy redirect to `/visepanda`                                                                       |
