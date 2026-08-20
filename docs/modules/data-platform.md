@@ -34,7 +34,7 @@ the same migration, and validation also checks the issuer's current Ops permissi
 | Readiness         | `readiness_assessments` (private, consented fixed-answer self-reports and deterministic results)                                                 |
 | AI trace          | `agent_runs`, `tool_calls`, `llm_call_costs`                                                                                                     |
 | Copilot dialogue  | `copilot_conversation_turns`                                                                                                                     |
-| Knowledge         | `pois`, `poi_facts`, `knowledge_import_batches`, `poi_fact_editorial_audit`, `knowledge_gaps`, `poi_commercial_links`, `seo_editorial_overrides` |
+| Knowledge         | `pois`, legacy `poi_facts`, private `scoped_execution_facts`, `knowledge_import_batches`, `poi_fact_editorial_audit`, `knowledge_gaps`, `poi_commercial_links`, `seo_editorial_overrides` |
 | Safety phrases    | `safe_phrases` (private operator-verified fixed-expression editorial records)                                                                    |
 | VisePod Studio    | `visepod_device_bindings`, `visepod_binding_idempotency`, `visepod_provisioning_grants` (private assignment/replay/grant history)                |
 | Commerce          | `partners`, private `creator_referrals`, `outbound_clicks`                                                                                       |
@@ -60,6 +60,11 @@ the same migration, and validation also checks the issuer's current Ops permissi
   real and not in the future, and it is not expired. `created_at` is ingestion time, not verification.
   Legacy rows lacking typed evidence are retained as `draft`; a migration MUST NOT infer evidence from
   their old `source` string or promote them without review.
+- `scoped_execution_facts` is an additive server-owned relation for exactly one POI, normalized city,
+  six-moment scene, or China-national target. Database checks enforce the closed target, source/review
+  lifecycle, expiry window, and positive version. Partial indexes match the four bounded lookup paths.
+  RLS is enabled and all Data API privileges are revoked; neither drafts nor reviewed rows are a direct
+  browser table surface. Existing `poi_facts` rows and policies are unchanged.
 - `pois.name_zh` and `pois.address` are legacy compatibility fields, not independently reviewable
   local-facing facts. Local Chinese names, addresses, districts, metro exits, and visibility notes use
   five dedicated `poi_facts.fact_type` values. Each row keeps its own evidence and expiry; a raw POI

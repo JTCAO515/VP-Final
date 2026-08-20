@@ -24,6 +24,7 @@ import {
   pois,
   readinessAssessments,
   safePhrases,
+  scopedExecutionFacts,
   telemetryEvents,
   toolCalls,
   tripEvents,
@@ -168,6 +169,20 @@ describe("database schema", () => {
     expect(
       getTableConfig(contentAiWalkingSkeletonDrafts).checks.map((check) => check.name),
     ).toContain("content_ai_walking_skeleton_fact_type_check");
+    expect(scopedExecutionFacts.scope.name).toBe("scope");
+    expect(scopedExecutionFacts.countryCode.name).toBe("country_code");
+    expect(scopedExecutionFacts.reviewedBy.name).toBe("reviewed_by");
+    expect(getTableConfig(scopedExecutionFacts).checks.map((check) => check.name)).toContain(
+      "scoped_execution_facts_target_check",
+    );
+    expect(getTableConfig(scopedExecutionFacts).indexes.map((index) => index.config.name)).toEqual(
+      expect.arrayContaining([
+        "scoped_execution_facts_poi_lookup_idx",
+        "scoped_execution_facts_city_lookup_idx",
+        "scoped_execution_facts_scene_lookup_idx",
+        "scoped_execution_facts_national_lookup_idx",
+      ]),
+    );
   });
 
   it("maps private fixed-expression provenance without traveler ownership", () => {

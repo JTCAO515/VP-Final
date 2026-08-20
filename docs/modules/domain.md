@@ -12,8 +12,9 @@ functions. It must remain portable across Web, Server, Ops, and future Mobile.
 The Domain package now has an additive closed scoped Execution Fact target contract for POI, city,
 scene, and China-national facts. It reuses the existing provenance, review, expiry, version, conflict,
 and eligibility semantics without changing legacy `PoiFactSchema`. Its deterministic retrieval order
-is POI, city, scene, then national. Persistence and Chatbot consumption remain later interfaces; this
-contract creates no facts or live execution capability. A future generic Execution Action card may
+is POI, city, scene, then national. Persistence now exists behind a private server-owned relation and
+KnowledgeService; Chatbot consumption remains a later interface. The contract and persistence create no
+reviewed content or live execution capability. A future generic Execution Action card may
 extend the existing `CopilotEnvelope`; it must not introduce a universal task lifecycle or loosen
 execution-fact safety.
 

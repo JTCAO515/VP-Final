@@ -13,6 +13,11 @@ import {
   PoiUpdateInputSchema,
   sanitizeEvidenceDerivedGapPattern,
   resolvePoiFactReview,
+  ScopedExecutionFactSchema,
+  deriveExecutionFactTargetOrder,
+  executionFactTargetKey,
+  isEligibleScopedExecutionFact,
+  resolveExecutionFactVersion,
   updatePoiFact,
   type KnowledgeGap,
   type DraftFactReviewQueueFilter,
@@ -23,7 +28,32 @@ import {
   type PoiFact,
   type PoiFactSourceClass,
   type PoiUpdateInput,
+  type ExecutionFactRetrievalContext,
+  type ExecutionFactTarget,
+  type ScopedExecutionFact,
 } from "@visepanda/domain";
+import type { OpsAccess } from "../opsAuthorization/service.js";
+
+export type ScopedFactWriteResult =
+  | { status: "updated"; fact: ScopedExecutionFact }
+  | { status: "not_found" }
+  | {
+      status: "conflict";
+      reason: "target_missing" | "stale_version" | "not_reviewable";
+      expectedVersion: number;
+      currentVersion: number | null;
+    };
+
+export type ScopedFactRetrievalResult = {
+  facts: ScopedExecutionFact[];
+  ambiguities: Array<{ target: ExecutionFactTarget; factType: string; factIds: string[] }>;
+};
+
+export type ResolvedScopedFactRetrievalInput = {
+  targets: ExecutionFactTarget[];
+  factTypes: string[];
+  now: Date;
+};
 
 export type KnowledgeService = {
   listPois(input?: {
@@ -54,6 +84,43 @@ export type KnowledgeService = {
     evidenceSummary?: string;
     expiresAt?: string | null;
   }): Promise<Poi[]>;
+  createScopedFact(input: {
+    actor: OpsAccess;
+    target: ExecutionFactTarget;
+    factType: string;
+    value: Record<string, unknown>;
+    confidence: number;
+    sourceClass: PoiFactSourceClass;
+    sourceLocator: string;
+    evidenceSummary: string;
+    expiresAt?: string | null;
+  }): Promise<ScopedExecutionFact>;
+  updateScopedFact(input: {
+    actor: OpsAccess;
+    factId: string;
+    expectedVersion: number;
+    value: Record<string, unknown>;
+    confidence?: number;
+    sourceClass?: PoiFactSourceClass;
+    sourceLocator?: string;
+    evidenceSummary?: string;
+    expiresAt?: string | null;
+  }): Promise<ScopedFactWriteResult>;
+  reviewScopedFact(input: {
+    actor: OpsAccess;
+    factId: string;
+    expectedVersion: number;
+  }): Promise<ScopedFactWriteResult>;
+  deprecateScopedFact(input: {
+    actor: OpsAccess;
+    factId: string;
+    expectedVersion: number;
+  }): Promise<ScopedFactWriteResult>;
+  retrieveScopedFacts(input: {
+    context: ExecutionFactRetrievalContext;
+    factTypes: string[];
+    now?: Date;
+  }): Promise<ScopedFactRetrievalResult>;
   listExpiredFacts(input?: { now?: Date }): Promise<PoiFact[]>;
   listDraftFactReviewQueue(input?: DraftFactReviewQueueFilter): Promise<DraftFactReviewQueueItem[]>;
   approveDraftFact(input: {
@@ -87,9 +154,11 @@ export type KnowledgeService = {
 export function createInMemoryKnowledgeService(
   seed: Poi[] = INITIAL_POIS,
   seedGaps: KnowledgeGap[] = INITIAL_KNOWLEDGE_GAPS,
+  seedScopedFacts: ScopedExecutionFact[] = [],
 ): KnowledgeService {
   let pois = seed;
   let gaps = seedGaps.map((gap) => KnowledgeGapSchema.parse(gap));
+  let scopedFacts = seedScopedFacts.map((fact) => ScopedExecutionFactSchema.parse(fact));
 
   return {
     async listPois(input = {}) {
@@ -203,6 +272,127 @@ export function createInMemoryKnowledgeService(
         reviewPolicy: null,
       });
       return this.listPois({ includeDrafts: true, includeExpired: true, includeDeprecated: true });
+    },
+    async createScopedFact(input) {
+      requireKnowledgePermission(input.actor, "knowledge.write");
+      const target = input.target;
+      if (target.scope === "poi" && !pois.some((poi) => poi.id === target.poiId)) {
+        throw new Error("POI not found");
+      }
+      const value = parsePoiFactWriteValue(input.factType, input.value);
+      assertWritableFact({ ...input, value });
+      const evidence = PoiFactEvidenceSchema.parse(input);
+      const fact = ScopedExecutionFactSchema.parse({
+        id: crypto.randomUUID(),
+        target,
+        factType: input.factType,
+        value,
+        confidence: input.confidence,
+        source: evidence.sourceLocator,
+        ...evidence,
+        ingestedAt: new Date().toISOString(),
+        verifiedAt: null,
+        expiresAt: input.expiresAt ?? null,
+        reviewPolicy: null,
+        version: 1,
+        status: "draft",
+      });
+      scopedFacts = [...scopedFacts, fact];
+      return fact;
+    },
+    async updateScopedFact(input) {
+      requireKnowledgePermission(input.actor, "knowledge.write");
+      const index = scopedFacts.findIndex((fact) => fact.id === input.factId);
+      if (index < 0) return { status: "not_found" };
+      const existing = scopedFacts[index] as ScopedExecutionFact;
+      const version = resolveExecutionFactVersion({
+        expectedVersion: input.expectedVersion,
+        currentVersion: existing.version,
+      });
+      if (version.status === "conflict") return version;
+      const evidence = PoiFactEvidenceSchema.parse({
+        sourceClass: input.sourceClass ?? existing.sourceClass,
+        sourceLocator: input.sourceLocator ?? existing.sourceLocator,
+        evidenceSummary: input.evidenceSummary ?? existing.evidenceSummary,
+      });
+      const value = parsePoiFactWriteValue(existing.factType, input.value);
+      assertWritableFact({
+        value,
+        confidence: input.confidence ?? existing.confidence,
+        ...evidence,
+      });
+      const updated = ScopedExecutionFactSchema.parse({
+        ...existing,
+        value,
+        confidence: input.confidence ?? existing.confidence,
+        source: evidence.sourceLocator,
+        ...evidence,
+        expiresAt: input.expiresAt === undefined ? existing.expiresAt : input.expiresAt,
+        verifiedAt: null,
+        reviewPolicy: null,
+        version: existing.version + 1,
+        status: "draft",
+      });
+      scopedFacts = scopedFacts.map((fact, candidateIndex) =>
+        candidateIndex === index ? updated : fact,
+      );
+      return { status: "updated", fact: updated };
+    },
+    async reviewScopedFact(input) {
+      requireKnowledgePermission(input.actor, "knowledge.write");
+      const index = scopedFacts.findIndex((fact) => fact.id === input.factId);
+      if (index < 0) return { status: "not_found" };
+      const existing = scopedFacts[index] as ScopedExecutionFact;
+      const version = resolveExecutionFactVersion({
+        expectedVersion: input.expectedVersion,
+        currentVersion: existing.version,
+      });
+      if (version.status === "conflict") return version;
+      if (existing.status !== "draft" || !hasReviewablePoiFactEvidence(existing)) {
+        return {
+          status: "conflict",
+          reason: "not_reviewable",
+          expectedVersion: input.expectedVersion,
+          currentVersion: existing.version,
+        };
+      }
+      const verifiedAt = new Date();
+      const review = resolvePoiFactReview({ factType: existing.factType, verifiedAt });
+      const reviewed = ScopedExecutionFactSchema.parse({
+        ...existing,
+        verifiedAt: verifiedAt.toISOString(),
+        expiresAt: review.expiresAt,
+        reviewPolicy: review.reviewPolicy,
+        version: existing.version + 1,
+        status: "reviewed",
+      });
+      scopedFacts = scopedFacts.map((fact, candidateIndex) =>
+        candidateIndex === index ? reviewed : fact,
+      );
+      return { status: "updated", fact: reviewed };
+    },
+    async deprecateScopedFact(input) {
+      requireKnowledgePermission(input.actor, "knowledge.write");
+      const index = scopedFacts.findIndex((fact) => fact.id === input.factId);
+      if (index < 0) return { status: "not_found" };
+      const existing = scopedFacts[index] as ScopedExecutionFact;
+      const version = resolveExecutionFactVersion({
+        expectedVersion: input.expectedVersion,
+        currentVersion: existing.version,
+      });
+      if (version.status === "conflict") return version;
+      const deprecated = ScopedExecutionFactSchema.parse({
+        ...existing,
+        version: existing.version + 1,
+        status: "deprecated",
+      });
+      scopedFacts = scopedFacts.map((fact, candidateIndex) =>
+        candidateIndex === index ? deprecated : fact,
+      );
+      return { status: "updated", fact: deprecated };
+    },
+    async retrieveScopedFacts(input) {
+      return resolveScopedFactRetrieval(scopedFacts, input);
     },
     async listExpiredFacts(input = {}) {
       const now = input.now ?? new Date();
@@ -346,11 +536,90 @@ export function createInMemoryKnowledgeService(
   };
 }
 
+export function resolveScopedFactRetrieval(
+  facts: ScopedExecutionFact[],
+  input: {
+    context: ExecutionFactRetrievalContext;
+    factTypes: string[];
+    now?: Date;
+  },
+): ScopedFactRetrievalResult {
+  const resolved = resolveScopedFactRetrievalInput(input);
+  const { factTypes, now, targets } = resolved;
+
+  const eligible = facts.filter((fact) => isEligibleScopedExecutionFact(fact, now));
+  const resolvedTypes = new Set<string>();
+  const blockedTypes = new Set<string>();
+  const result: ScopedFactRetrievalResult = { facts: [], ambiguities: [] };
+
+  for (const target of targets) {
+    const targetKey = executionFactTargetKey(target);
+    const groups = new Map<string, ScopedExecutionFact[]>();
+    for (const fact of eligible) {
+      if (executionFactTargetKey(fact.target) !== targetKey) continue;
+      if (factTypes.length > 0 && !factTypes.includes(fact.factType)) continue;
+      if (resolvedTypes.has(fact.factType) || blockedTypes.has(fact.factType)) continue;
+      const candidates = groups.get(fact.factType) ?? [];
+      candidates.push(fact);
+      groups.set(fact.factType, candidates);
+    }
+
+    for (const [factType, candidates] of [...groups.entries()].sort(([left], [right]) =>
+      left.localeCompare(right),
+    )) {
+      const ordered = [...candidates].sort((left, right) => left.id.localeCompare(right.id));
+      if (ordered.length === 1) {
+        result.facts.push(ordered[0] as ScopedExecutionFact);
+        resolvedTypes.add(factType);
+      } else {
+        result.ambiguities.push({
+          target,
+          factType,
+          factIds: ordered.map((fact) => fact.id),
+        });
+        blockedTypes.add(factType);
+      }
+    }
+  }
+
+  return result;
+}
+
+export function resolveScopedFactRetrievalInput(input: {
+  context: ExecutionFactRetrievalContext;
+  factTypes: string[];
+  now?: Date;
+}): ResolvedScopedFactRetrievalInput {
+  const factTypes = input.factTypes.map((factType) => factType.trim());
+  if (
+    factTypes.length === 0 ||
+    factTypes.length > 20 ||
+    factTypes.some((factType) => factType.length === 0 || factType.length > 120) ||
+    new Set(factTypes).size !== factTypes.length
+  ) {
+    throw new Error("Scoped fact types must contain 1-20 unique non-empty values");
+  }
+  return {
+    targets: deriveExecutionFactTargetOrder(input.context),
+    factTypes,
+    now: input.now ?? new Date(),
+  };
+}
+
+export function requireKnowledgePermission(
+  actor: OpsAccess,
+  permission: "knowledge.read" | "knowledge.write",
+): void {
+  if (!actor.permissions.includes(permission)) {
+    throw new Error("Forbidden Ops permission");
+  }
+}
+
 function findFact(pois: Poi[], factId: string): PoiFact | null {
   return pois.flatMap((poi) => poi.facts).find((fact) => fact.id === factId) ?? null;
 }
 
-function assertWritableFact(input: {
+export function assertWritableFact(input: {
   value: Record<string, unknown>;
   confidence: number;
   sourceClass: PoiFactSourceClass;

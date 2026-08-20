@@ -13,8 +13,12 @@ Next.js runtimes rather than deployed as an independent service.
 The Server makes the VisePanda Chatbot operational: it derives trusted identity and bounded context,
 retrieves only eligible reviewed execution facts, validates the typed envelope, invokes deterministic
 Tools where an accepted capability exists, and preserves honest unavailable/recovery states otherwise.
-The next structural delivery is scoped execution-fact retrieval; generic Content AI persistence and
-new map/media consumers remain paused until fact-driven execution slices produce evidence.
+KnowledgeService now persists and retrieves scoped execution facts behind a server-only boundary.
+Ops mutations require `knowledge.write` before any row access, use optimistic versions, and commit a
+minimized audit event atomically. Retrieval returns only current reviewed facts in POI, city, scene,
+then national order and reports same-level ambiguity instead of choosing or silently falling back.
+No public router or Chatbot consumer is included yet; generic Content AI and map/media consumers remain
+paused until fact-driven execution slices produce evidence.
 
 ## Root Router
 
@@ -192,6 +196,13 @@ new map/media consumers remain paused until fact-driven execution slices produce
   durable write atomically appends a content-free completed audit record. Database writes return an
   honest missing result for an unknown id and store either both coordinates or neither; source, review,
   and public eligibility remain exclusively fact-lifecycle concerns.
+- The same service owns private scoped execution-fact create/update/review/deprecate operations and
+  internal bounded retrieval. Permission checks precede mutation lookups. Successful mutations and
+  minimized `ops_audit_events` rows share one transaction; stale versions return explicit conflicts.
+  Retrieval groups each fact type by target specificity. One eligible match wins; multiple eligible
+  matches at the same target block that fact type and prevent a misleading broader fallback. There is
+  no traveler route, seed content, source-locator projection, or claim that Payment/Network guidance is
+  available.
 - SEO editorial overrides are a separate private presentation relation, keyed by POI and frozen
   intent. Its durable and in-memory services expose only get/save/delete of bounded title, summary,
   and emphasis fields. The server/ops writer derives the current evidence-gated candidate before it

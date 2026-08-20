@@ -10,7 +10,10 @@ import {
   PoiFactEvidenceSchema,
   PoiFactSchema,
   PoiSchema,
+  ScopedExecutionFactSchema,
+  ExecutionFactTargetSchema,
   PoiUpdateInputSchema,
+  resolveExecutionFactVersion,
   resolvePoiFactReview,
   type KnowledgeGap,
   type DraftFactReviewQueueFilter,
@@ -18,8 +21,10 @@ import {
   type Poi,
   type PoiCategory,
   type PoiFact,
+  type ExecutionFactTarget,
+  type ScopedExecutionFact,
 } from "@visepanda/domain";
-import { and, eq, inArray, isNotNull, isNull } from "drizzle-orm";
+import { and, eq, gte, inArray, isNotNull, isNull, lte, or } from "drizzle-orm";
 import type { Db } from "./client.js";
 import {
   knowledgeGaps,
@@ -28,8 +33,16 @@ import {
   poiFactEditorialAudit,
   poiFacts,
   pois,
+  scopedExecutionFacts,
 } from "./schema.js";
-import type { KnowledgeService } from "../modules/knowledge/service.js";
+import {
+  requireKnowledgePermission,
+  resolveScopedFactRetrieval,
+  resolveScopedFactRetrievalInput,
+  assertWritableFact,
+  type KnowledgeService,
+  type ScopedFactWriteResult,
+} from "../modules/knowledge/service.js";
 
 export function createDbKnowledgeService(db: Db): KnowledgeService {
   return {
@@ -155,6 +168,234 @@ export function createDbKnowledgeService(db: Db): KnowledgeService {
         includeExpired: true,
         includeDeprecated: true,
       });
+    },
+    async createScopedFact(input) {
+      requireKnowledgePermission(input.actor, "knowledge.write");
+      const evidence = PoiFactEvidenceSchema.parse(input);
+      const value = parsePoiFactWriteValue(input.factType, input.value);
+      assertWritableFact({ ...input, value });
+      const candidate = ScopedExecutionFactSchema.parse({
+        id: crypto.randomUUID(),
+        target: input.target,
+        factType: input.factType,
+        value,
+        confidence: input.confidence,
+        source: evidence.sourceLocator,
+        ...evidence,
+        ingestedAt: new Date().toISOString(),
+        verifiedAt: null,
+        expiresAt: input.expiresAt ?? null,
+        reviewPolicy: null,
+        version: 1,
+        status: "draft",
+      });
+      const row = await db.transaction(async (transaction) => {
+        const [created] = await transaction
+          .insert(scopedExecutionFacts)
+          .values(scopedFactInsertValues(candidate))
+          .returning();
+        if (!created) throw new Error("Scoped fact insert failed");
+        await transaction.insert(opsAuditEvents).values({
+          actorId: input.actor.userId,
+          action: "knowledge.scoped_fact.create.completed",
+          targetType: "scoped_execution_fact",
+          targetId: created.id,
+          metadataJsonb: {
+            scope: candidate.target.scope,
+            factType: candidate.factType,
+            version: created.version,
+          },
+        });
+        return created;
+      });
+      return rowToScopedFact(row);
+    },
+    async updateScopedFact(input) {
+      requireKnowledgePermission(input.actor, "knowledge.write");
+      return db.transaction(async (transaction) => {
+        const [row] = await transaction
+          .select()
+          .from(scopedExecutionFacts)
+          .where(eq(scopedExecutionFacts.id, input.factId))
+          .limit(1);
+        if (!row) return { status: "not_found" } as const;
+        const existing = rowToScopedFact(row);
+        const version = resolveExecutionFactVersion({
+          expectedVersion: input.expectedVersion,
+          currentVersion: existing.version,
+        });
+        if (version.status === "conflict") return version;
+        const evidence = PoiFactEvidenceSchema.parse({
+          sourceClass: input.sourceClass ?? existing.sourceClass,
+          sourceLocator: input.sourceLocator ?? existing.sourceLocator,
+          evidenceSummary: input.evidenceSummary ?? existing.evidenceSummary,
+        });
+        const value = parsePoiFactWriteValue(existing.factType, input.value);
+        assertWritableFact({
+          value,
+          confidence: input.confidence ?? existing.confidence,
+          ...evidence,
+        });
+        const candidate = ScopedExecutionFactSchema.parse({
+          ...existing,
+          value,
+          confidence: input.confidence ?? existing.confidence,
+          source: evidence.sourceLocator,
+          ...evidence,
+          expiresAt: input.expiresAt === undefined ? existing.expiresAt : input.expiresAt,
+          verifiedAt: null,
+          reviewPolicy: null,
+          version: existing.version + 1,
+          status: "draft",
+        });
+        const [updated] = await transaction
+          .update(scopedExecutionFacts)
+          .set({
+            valueJsonb: candidate.value,
+            confidence: String(candidate.confidence),
+            source: candidate.source,
+            sourceClass: candidate.sourceClass,
+            sourceLocator: candidate.sourceLocator,
+            evidenceSummary: candidate.evidenceSummary,
+            verifiedAt: null,
+            expiresAt: candidate.expiresAt ? new Date(candidate.expiresAt) : null,
+            reviewPolicy: null,
+            reviewedBy: null,
+            version: candidate.version,
+            status: "draft",
+            updatedAt: new Date(),
+          })
+          .where(
+            and(
+              eq(scopedExecutionFacts.id, input.factId),
+              eq(scopedExecutionFacts.version, input.expectedVersion),
+            ),
+          )
+          .returning();
+        if (!updated)
+          return scopedConflictAfterRace(transaction, input.factId, input.expectedVersion);
+        await transaction.insert(opsAuditEvents).values({
+          actorId: input.actor.userId,
+          action: "knowledge.scoped_fact.update.completed",
+          targetType: "scoped_execution_fact",
+          targetId: updated.id,
+          metadataJsonb: { fields: ["value", "evidence"], version: updated.version },
+        });
+        return { status: "updated", fact: rowToScopedFact(updated) } as const;
+      });
+    },
+    async reviewScopedFact(input) {
+      requireKnowledgePermission(input.actor, "knowledge.write");
+      return db.transaction(async (transaction) => {
+        const [row] = await transaction
+          .select()
+          .from(scopedExecutionFacts)
+          .where(eq(scopedExecutionFacts.id, input.factId))
+          .limit(1);
+        if (!row) return { status: "not_found" } as const;
+        const existing = rowToScopedFact(row);
+        const version = resolveExecutionFactVersion({
+          expectedVersion: input.expectedVersion,
+          currentVersion: existing.version,
+        });
+        if (version.status === "conflict") return version;
+        if (existing.status !== "draft" || !hasReviewablePoiFactEvidence(existing)) {
+          return {
+            status: "conflict",
+            reason: "not_reviewable",
+            expectedVersion: input.expectedVersion,
+            currentVersion: existing.version,
+          } as const;
+        }
+        const verifiedAt = new Date();
+        const review = resolvePoiFactReview({ factType: existing.factType, verifiedAt });
+        const [reviewed] = await transaction
+          .update(scopedExecutionFacts)
+          .set({
+            verifiedAt,
+            expiresAt: new Date(review.expiresAt),
+            reviewPolicy: review.reviewPolicy,
+            reviewedBy: input.actor.userId,
+            version: existing.version + 1,
+            status: "reviewed",
+            updatedAt: verifiedAt,
+          })
+          .where(
+            and(
+              eq(scopedExecutionFacts.id, input.factId),
+              eq(scopedExecutionFacts.status, "draft"),
+              eq(scopedExecutionFacts.version, input.expectedVersion),
+            ),
+          )
+          .returning();
+        if (!reviewed)
+          return scopedConflictAfterRace(transaction, input.factId, input.expectedVersion);
+        await transaction.insert(opsAuditEvents).values({
+          actorId: input.actor.userId,
+          action: "knowledge.scoped_fact.review.completed",
+          targetType: "scoped_execution_fact",
+          targetId: reviewed.id,
+          metadataJsonb: { reviewPolicy: review.reviewPolicy, version: reviewed.version },
+        });
+        return { status: "updated", fact: rowToScopedFact(reviewed) } as const;
+      });
+    },
+    async deprecateScopedFact(input) {
+      requireKnowledgePermission(input.actor, "knowledge.write");
+      return db.transaction(async (transaction) => {
+        const [row] = await transaction
+          .select()
+          .from(scopedExecutionFacts)
+          .where(eq(scopedExecutionFacts.id, input.factId))
+          .limit(1);
+        if (!row) return { status: "not_found" } as const;
+        const existing = rowToScopedFact(row);
+        const version = resolveExecutionFactVersion({
+          expectedVersion: input.expectedVersion,
+          currentVersion: existing.version,
+        });
+        if (version.status === "conflict") return version;
+        const [deprecated] = await transaction
+          .update(scopedExecutionFacts)
+          .set({
+            status: "deprecated",
+            version: existing.version + 1,
+            updatedAt: new Date(),
+          })
+          .where(
+            and(
+              eq(scopedExecutionFacts.id, input.factId),
+              eq(scopedExecutionFacts.version, input.expectedVersion),
+            ),
+          )
+          .returning();
+        if (!deprecated)
+          return scopedConflictAfterRace(transaction, input.factId, input.expectedVersion);
+        await transaction.insert(opsAuditEvents).values({
+          actorId: input.actor.userId,
+          action: "knowledge.scoped_fact.deprecate.completed",
+          targetType: "scoped_execution_fact",
+          targetId: deprecated.id,
+          metadataJsonb: { version: deprecated.version },
+        });
+        return { status: "updated", fact: rowToScopedFact(deprecated) } as const;
+      });
+    },
+    async retrieveScopedFacts(input) {
+      const { factTypes, now, targets } = resolveScopedFactRetrievalInput(input);
+      const targetConditions = targets.map((target) => scopedTargetCondition(target));
+      const conditions = [
+        eq(scopedExecutionFacts.status, "reviewed"),
+        lte(scopedExecutionFacts.verifiedAt, now),
+        gte(scopedExecutionFacts.expiresAt, now),
+        or(...targetConditions),
+        factTypes.length ? inArray(scopedExecutionFacts.factType, factTypes) : undefined,
+      ].filter((condition): condition is NonNullable<typeof condition> => condition !== undefined);
+      const rows = await db
+        .select()
+        .from(scopedExecutionFacts)
+        .where(and(...conditions));
+      return resolveScopedFactRetrieval(rows.map(rowToScopedFact), { ...input, now });
     },
     async listExpiredFacts(input = {}) {
       const all = await listPois(db, { includeExpired: true });
@@ -304,6 +545,125 @@ export function createDbKnowledgeService(db: Db): KnowledgeService {
       return row ? rowToGap(row) : null;
     },
   };
+}
+
+function scopedFactInsertValues(fact: ScopedExecutionFact) {
+  const target = {
+    poiId: null as string | null,
+    city: null as string | null,
+    sceneKey: null as string | null,
+    countryCode: null as string | null,
+  };
+  switch (fact.target.scope) {
+    case "poi":
+      target.poiId = fact.target.poiId;
+      break;
+    case "city":
+      target.city = fact.target.city;
+      break;
+    case "scene":
+      target.sceneKey = fact.target.sceneKey;
+      break;
+    case "national":
+      target.countryCode = fact.target.countryCode;
+      break;
+  }
+  return {
+    id: fact.id,
+    scope: fact.target.scope,
+    ...target,
+    factType: fact.factType,
+    valueJsonb: fact.value,
+    confidence: String(fact.confidence),
+    source: fact.source,
+    sourceClass: fact.sourceClass,
+    sourceLocator: fact.sourceLocator,
+    evidenceSummary: fact.evidenceSummary,
+    verifiedAt: fact.verifiedAt ? new Date(fact.verifiedAt) : null,
+    expiresAt: fact.expiresAt ? new Date(fact.expiresAt) : null,
+    reviewPolicy: fact.reviewPolicy,
+    version: fact.version,
+    status: fact.status,
+  };
+}
+
+function scopedTargetCondition(target: ExecutionFactTarget) {
+  switch (target.scope) {
+    case "poi":
+      return and(
+        eq(scopedExecutionFacts.scope, "poi"),
+        eq(scopedExecutionFacts.poiId, target.poiId),
+      )!;
+    case "city":
+      return and(
+        eq(scopedExecutionFacts.scope, "city"),
+        eq(scopedExecutionFacts.city, target.city),
+      )!;
+    case "scene":
+      return and(
+        eq(scopedExecutionFacts.scope, "scene"),
+        eq(scopedExecutionFacts.sceneKey, target.sceneKey),
+      )!;
+    case "national":
+      return and(
+        eq(scopedExecutionFacts.scope, "national"),
+        eq(scopedExecutionFacts.countryCode, target.countryCode),
+      )!;
+  }
+}
+
+async function scopedConflictAfterRace(
+  transaction: Parameters<Parameters<Db["transaction"]>[0]>[0],
+  factId: string,
+  expectedVersion: number,
+): Promise<ScopedFactWriteResult> {
+  const [current] = await transaction
+    .select({ version: scopedExecutionFacts.version })
+    .from(scopedExecutionFacts)
+    .where(eq(scopedExecutionFacts.id, factId))
+    .limit(1);
+  return {
+    status: "conflict",
+    reason: current ? "stale_version" : "target_missing",
+    expectedVersion,
+    currentVersion: current?.version ?? null,
+  };
+}
+
+function rowToScopedFact(row: typeof scopedExecutionFacts.$inferSelect): ScopedExecutionFact {
+  const target = ExecutionFactTargetSchema.parse(
+    (() => {
+      switch (row.scope) {
+        case "poi":
+          return { scope: "poi", poiId: row.poiId ?? "" };
+        case "city":
+          return { scope: "city", city: row.city ?? "" };
+        case "scene":
+          return { scope: "scene", sceneKey: row.sceneKey ?? "" };
+        case "national":
+          return { scope: "national", countryCode: row.countryCode ?? "" };
+        default:
+          throw new Error("Scoped fact row has an unsupported target scope");
+      }
+    })(),
+  );
+  return ScopedExecutionFactSchema.parse({
+    id: row.id,
+    target,
+    factType: row.factType,
+    value: row.valueJsonb,
+    confidence: Number(row.confidence),
+    source: row.source,
+    sourceClass: row.sourceClass,
+    sourceLocator: row.sourceLocator,
+    evidenceSummary: row.evidenceSummary,
+    ingestedAt: row.createdAt.toISOString(),
+    verifiedAt: row.verifiedAt?.toISOString() ?? null,
+    expiresAt: row.expiresAt?.toISOString() ?? null,
+    reviewPolicy: row.reviewPolicy,
+    version: row.version,
+    status: row.status,
+  });
 }
 
 const POI_WRITABLE_FIELD_NAMES = [

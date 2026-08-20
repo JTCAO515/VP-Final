@@ -538,6 +538,94 @@ export const poiFacts = pgTable(
   }),
 );
 
+export const scopedExecutionFacts = pgTable(
+  "scoped_execution_facts",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    scope: text("scope").notNull(),
+    poiId: uuid("poi_id").references(() => pois.id, { onDelete: "restrict" }),
+    city: text("city"),
+    sceneKey: text("scene_key"),
+    countryCode: text("country_code"),
+    factType: text("fact_type").notNull(),
+    valueJsonb: jsonb("value_jsonb").notNull(),
+    confidence: numeric("confidence", { precision: 4, scale: 3 }).notNull(),
+    source: text("source").notNull(),
+    sourceClass: text("source_class"),
+    sourceLocator: text("source_locator"),
+    evidenceSummary: text("evidence_summary"),
+    verifiedAt: timestamp("verified_at", { withTimezone: true }),
+    expiresAt: timestamp("expires_at", { withTimezone: true }),
+    reviewPolicy: text("review_policy"),
+    reviewedBy: uuid("reviewed_by").references(() => opsMemberships.userId, {
+      onDelete: "restrict",
+    }),
+    version: integer("version").notNull().default(1),
+    status: text("status").notNull().default("draft"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    poiLookupIdx: index("scoped_execution_facts_poi_lookup_idx")
+      .on(table.poiId, table.factType, table.status, table.expiresAt)
+      .where(sql`${table.scope} = 'poi'`),
+    cityLookupIdx: index("scoped_execution_facts_city_lookup_idx")
+      .on(table.city, table.factType, table.status, table.expiresAt)
+      .where(sql`${table.scope} = 'city'`),
+    sceneLookupIdx: index("scoped_execution_facts_scene_lookup_idx")
+      .on(table.sceneKey, table.factType, table.status, table.expiresAt)
+      .where(sql`${table.scope} = 'scene'`),
+    nationalLookupIdx: index("scoped_execution_facts_national_lookup_idx")
+      .on(table.countryCode, table.factType, table.status, table.expiresAt)
+      .where(sql`${table.scope} = 'national'`),
+    targetCheck: check(
+      "scoped_execution_facts_target_check",
+      sql`(${table.scope} = 'poi' and ${table.poiId} is not null and ${table.city} is null and ${table.sceneKey} is null and ${table.countryCode} is null) or (${table.scope} = 'city' and ${table.poiId} is null and ${table.city} is not null and ${table.city} = lower(btrim(${table.city})) and char_length(${table.city}) between 1 and 100 and ${table.city} !~ '[[:space:]]{2,}' and ${table.sceneKey} is null and ${table.countryCode} is null) or (${table.scope} = 'scene' and ${table.poiId} is null and ${table.city} is null and ${table.sceneKey} in ('payment', 'show_to_local', 'entry_booking', 'translate_communicate', 'network', 'rescue_human_help') and ${table.countryCode} is null) or (${table.scope} = 'national' and ${table.poiId} is null and ${table.city} is null and ${table.sceneKey} is null and ${table.countryCode} = 'CN')`,
+    ),
+    factTypeCheck: check(
+      "scoped_execution_facts_fact_type_check",
+      sql`char_length(btrim(${table.factType})) between 1 and 120`,
+    ),
+    confidenceCheck: check(
+      "scoped_execution_facts_confidence_check",
+      sql`${table.confidence} >= 0 and ${table.confidence} <= 1`,
+    ),
+    sourceCheck: check(
+      "scoped_execution_facts_source_check",
+      sql`char_length(btrim(${table.source})) between 1 and 500`,
+    ),
+    versionCheck: check("scoped_execution_facts_version_check", sql`${table.version} > 0`),
+    statusCheck: check(
+      "scoped_execution_facts_status_check",
+      sql`${table.status} in ('draft', 'reviewed', 'deprecated', 'rejected')`,
+    ),
+    sourceClassCheck: check(
+      "scoped_execution_facts_source_class_check",
+      sql`${table.sourceClass} is null or ${table.sourceClass} in ('official', 'operator_verified', 'reputable_editorial', 'user_report', 'model_output', 'uncorroborated_scrape')`,
+    ),
+    sourceLocatorCheck: check(
+      "scoped_execution_facts_source_locator_check",
+      sql`${table.sourceLocator} is null or char_length(btrim(${table.sourceLocator})) between 1 and 500`,
+    ),
+    evidenceSummaryCheck: check(
+      "scoped_execution_facts_evidence_summary_check",
+      sql`${table.evidenceSummary} is null or char_length(btrim(${table.evidenceSummary})) between 1 and 240`,
+    ),
+    reviewedEvidenceCheck: check(
+      "scoped_execution_facts_reviewed_evidence_check",
+      sql`${table.status} <> 'reviewed' or (${table.sourceClass} in ('official', 'operator_verified', 'reputable_editorial') and ${table.sourceLocator} is not null and ${table.evidenceSummary} is not null and ${table.verifiedAt} is not null and ${table.expiresAt} is not null and ${table.expiresAt} > ${table.verifiedAt} and ${table.reviewPolicy} in ('volatile-30d-v1', 'execution-90d-v1', 'stable-180d-v1') and ${table.reviewedBy} is not null)`,
+    ),
+    reviewPolicyAssignmentCheck: check(
+      "scoped_execution_facts_review_policy_assignment_check",
+      sql`${table.status} <> 'reviewed' or ${table.reviewPolicy} = case when ${table.factType} in ('booking_required', 'hours', 'payment_acceptance', 'reservation_helpful', 'ticket_availability') then 'volatile-30d-v1' when ${table.factType} = 'rainy_fit' then 'stable-180d-v1' else 'execution-90d-v1' end`,
+    ),
+    reviewExpiryCheck: check(
+      "scoped_execution_facts_review_expiry_check",
+      sql`${table.status} <> 'reviewed' or (${table.reviewPolicy} = 'volatile-30d-v1' and ${table.expiresAt} <= ${table.verifiedAt} + interval '30 days') or (${table.reviewPolicy} = 'execution-90d-v1' and ${table.expiresAt} <= ${table.verifiedAt} + interval '90 days') or (${table.reviewPolicy} = 'stable-180d-v1' and ${table.expiresAt} <= ${table.verifiedAt} + interval '180 days')`,
+    ),
+  }),
+);
+
 // CONTENT-AI-01b vertical-slice persistence. This is intentionally not the
 // final generic Change Set schema; see ADR-0022 and CONTENT-AI-02.
 export const contentAiWalkingSkeletonDrafts = pgTable(

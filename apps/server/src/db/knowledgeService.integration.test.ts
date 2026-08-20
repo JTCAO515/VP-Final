@@ -3,11 +3,17 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import * as schema from "./schema.js";
 import { createDbKnowledgeService } from "./knowledgeService.js";
+import type { OpsAccess } from "../modules/opsAuthorization/service.js";
 
 const databaseUrl = process.env.DATABASE_URL;
 const describeDatabase = databaseUrl ? describe : describe.skip;
 const poiId = "30000000-0000-0000-0000-000000000001";
 const reviewerId = "30000000-0000-4000-8000-000000000011";
+const knowledgeEditor: OpsAccess = {
+  userId: reviewerId,
+  role: "editor",
+  permissions: ["knowledge.read", "knowledge.write"],
+};
 
 describeDatabase("database KnowledgeService", () => {
   const sql = postgres(databaseUrl!);
@@ -16,6 +22,7 @@ describeDatabase("database KnowledgeService", () => {
   beforeEach(async () => {
     await sql`delete from public.ops_audit_events where actor_id = ${reviewerId}`;
     await sql`delete from public.knowledge_gaps where city = 'Evidence City'`;
+    await sql`delete from public.scoped_execution_facts where reviewed_by = ${reviewerId} or reviewed_by is null`;
     await sql`delete from public.pois where id = ${poiId}`;
     await sql`delete from public.ops_memberships where user_id = ${reviewerId}`;
     await sql`delete from auth.users where id = ${reviewerId}`;
@@ -35,6 +42,7 @@ describeDatabase("database KnowledgeService", () => {
   afterAll(async () => {
     await sql`delete from public.ops_audit_events where actor_id = ${reviewerId}`;
     await sql`delete from public.knowledge_gaps where city = 'Evidence City'`;
+    await sql`delete from public.scoped_execution_facts where reviewed_by = ${reviewerId} or reviewed_by is null`;
     await sql`delete from public.pois where id = ${poiId}`;
     await sql`delete from public.ops_memberships where user_id = ${reviewerId}`;
     await sql`delete from auth.users where id = ${reviewerId}`;
@@ -85,6 +93,127 @@ describeDatabase("database KnowledgeService", () => {
     await expect(service.listPois({ city: "Integration City" })).resolves.toMatchObject([
       { id: poiId, facts: [{ id: created.id, status: "reviewed" }] },
     ]);
+  });
+
+  it("persists, reviews, retrieves, and audits a scoped fact", async () => {
+    const created = await service.createScopedFact({
+      actor: knowledgeEditor,
+      target: { scope: "national", countryCode: "CN" },
+      factType: "payment_acceptance",
+      value: { summary: "Database fixture only" },
+      confidence: 0.9,
+      sourceClass: "official",
+      sourceLocator: "https://example.com/scoped-payment",
+      evidenceSummary: "Official fixture evidence for scoped payment guidance.",
+    });
+    expect(created).toMatchObject({ status: "draft", verifiedAt: null, version: 1 });
+    await expect(
+      service.retrieveScopedFacts({ context: {}, factTypes: ["payment_acceptance"] }),
+    ).resolves.toEqual({ facts: [], ambiguities: [] });
+
+    const reviewed = await service.reviewScopedFact({
+      actor: knowledgeEditor,
+      factId: created.id,
+      expectedVersion: created.version,
+    });
+    expect(reviewed).toMatchObject({
+      status: "updated",
+      fact: { id: created.id, status: "reviewed", reviewPolicy: "volatile-30d-v1", version: 2 },
+    });
+    await expect(
+      service.retrieveScopedFacts({ context: {}, factTypes: ["payment_acceptance"] }),
+    ).resolves.toMatchObject({ facts: [{ id: created.id }], ambiguities: [] });
+
+    const auditRows = await sql`
+      select action, target_id, metadata_jsonb from public.ops_audit_events
+      where actor_id = ${reviewerId} and target_id = ${created.id}
+      order by created_at asc
+    `;
+    expect(auditRows).toEqual([
+      {
+        action: "knowledge.scoped_fact.create.completed",
+        target_id: created.id,
+        metadata_jsonb: { scope: "national", factType: "payment_acceptance", version: 1 },
+      },
+      {
+        action: "knowledge.scoped_fact.review.completed",
+        target_id: created.id,
+        metadata_jsonb: { reviewPolicy: "volatile-30d-v1", version: 2 },
+      },
+    ]);
+  });
+
+  it("checks permission before a scoped fact lookup", async () => {
+    await expect(
+      service.updateScopedFact({
+        actor: { userId: reviewerId, role: "operator", permissions: [] },
+        factId: crypto.randomUUID(),
+        expectedVersion: 1,
+        value: { summary: "must not be read" },
+      }),
+    ).rejects.toThrow("Forbidden Ops permission");
+  });
+
+  it("rolls back a scoped fact mutation when its audit row cannot be written", async () => {
+    const missingActor: OpsAccess = {
+      userId: "30000000-0000-4000-8000-000000000099",
+      role: "editor",
+      permissions: ["knowledge.read", "knowledge.write"],
+    };
+    await expect(
+      service.createScopedFact({
+        actor: missingActor,
+        target: { scope: "national", countryCode: "CN" },
+        factType: "network_setup",
+        value: { summary: "must roll back" },
+        confidence: 0.8,
+        sourceClass: "official",
+        sourceLocator: "https://example.com/audit-rollback",
+        evidenceSummary: "Fixture evidence for an intentional audit failure.",
+      }),
+    ).rejects.toMatchObject({ code: "23503" });
+    const [count] = await sql`
+      select count(*)::integer as count from public.scoped_execution_facts
+      where source_locator = 'https://example.com/audit-rollback'
+    `;
+    expect(count).toEqual({ count: 0 });
+  });
+
+  it("does not overwrite a scoped fact after an optimistic conflict", async () => {
+    const created = await service.createScopedFact({
+      actor: knowledgeEditor,
+      target: { scope: "scene", sceneKey: "network" },
+      factType: "network_setup",
+      value: { summary: "Version one" },
+      confidence: 0.8,
+      sourceClass: "official",
+      sourceLocator: "https://example.com/scoped-network-one",
+      evidenceSummary: "Official fixture evidence version one.",
+    });
+    const updated = await service.updateScopedFact({
+      actor: knowledgeEditor,
+      factId: created.id,
+      expectedVersion: created.version,
+      value: { summary: "Version two" },
+    });
+    expect(updated).toMatchObject({ status: "updated", fact: { version: 2 } });
+    await expect(
+      service.updateScopedFact({
+        actor: knowledgeEditor,
+        factId: created.id,
+        expectedVersion: created.version,
+        value: { summary: "Stale overwrite" },
+      }),
+    ).resolves.toEqual({
+      status: "conflict",
+      reason: "stale_version",
+      expectedVersion: 1,
+      currentVersion: 2,
+    });
+    const [row] = await sql`
+      select value_jsonb, version from public.scoped_execution_facts where id = ${created.id}
+    `;
+    expect(row).toEqual({ value_jsonb: { summary: "Version two" }, version: 2 });
   });
 
   it("does not approve a draft that changed after the reviewer opened it", async () => {
