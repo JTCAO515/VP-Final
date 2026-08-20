@@ -13,6 +13,10 @@ Status: active
   Mobile clients.
 - Ops surfaces MUST require server-verified role authorization and MUST produce audit evidence for
   sensitive mutations.
+- Scoped execution facts MUST remain server-owned. Ops mutations MUST require `knowledge.write`
+  before any fact lookup and atomically append minimized audit evidence. `anon` and `authenticated`
+  Data API roles MUST have no direct table grants; an internal retrieval consumer may receive only
+  current reviewed rows and MUST NOT expose source locators, evidence summaries, or reviewer identity.
 - Ops role authority MUST come only from `ops_memberships`. Roles are non-hierarchical and explicit;
   client claims, Auth user metadata, email allowlists, and hidden navigation MUST NOT grant access.
 - Ops membership assignment by email MUST authorize `membership.write` before one complete normalized
