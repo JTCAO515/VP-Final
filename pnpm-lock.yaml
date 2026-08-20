@@ -144,6 +144,9 @@ importers:
       postgres:
         specifier: ^3.4.9
         version: 3.4.9
+      resend:
+        specifier: 6.20.0
+        version: 6.20.0
       zod:
         specifier: ^3.24.1
         version: 3.25.76
@@ -1528,6 +1531,9 @@ packages:
   '@sinonjs/fake-timers@10.3.0':
     resolution: {integrity: sha512-V4BG07kuYSUkTCSBHG8G8TNhM+F19jXFWnQtzj+we8DrkpSBCee9Z3Ms8yiGer/dlmhe35/Xdgyo3/0rQKg7YA==}
 
+  '@stablelib/base64@1.0.1':
+    resolution: {integrity: sha512-1bnPQqSxSuc3Ii6MhBysoWCg58j97aUjuCSZrGSmDxNqtytIi0k8utUenAwTZN4V5mXXYGsVUI9zeBqy+jBOSQ==}
+
   '@supabase/auth-js@2.110.2':
     resolution: {integrity: sha512-Qj7a6EDP+AMMQFWqGv+qFa8r6re//dk+qQI5bA0KK+PZmnI3JPu97TDeNt6SMiQ2FkklP79hP2yDFYSnA989OA==}
     engines: {node: '>=22.0.0'}
@@ -2331,6 +2337,9 @@ packages:
   fast-json-stable-stringify@2.1.0:
     resolution: {integrity: sha512-lhd/wF+Lk98HZoTCtlVraHtfh5XYijIjalXck7saUtuanSDyLMxnHhSXEDJqHxD7msR8D0uCmqlkwjCV8xvwHw==}
 
+  fast-sha256@1.3.0:
+    resolution: {integrity: sha512-n11RGP/lrWEFI/bWdygLxhI+pVeo1ZYIVwvvPkW7azl/rOy+F3HYRZ2K5zeE9mmkhQppyv9sQFx0JM9UabnpPQ==}
+
   fb-dotslash@0.5.8:
     resolution: {integrity: sha512-XHYLKk9J4BupDxi9bSEhkfss0m+Vr9ChTrjhf9l2iw3jB5C7BnY4GVPoMcqbrTutsKJso6yj2nAB6BI/F2oZaA==}
     engines: {node: '>=20'}
@@ -2983,6 +2992,9 @@ packages:
     resolution: {integrity: sha512-NCrCHhWmnQklfH4MtJMRjZ2a8c80qXeMlQMv2uVp9ISJMTt562SbGd6n2oq0PaPgKm7Z6pL9E2UlLIhC+SHL3w==}
     engines: {node: '>=4.0.0'}
 
+  postal-mime@2.7.5:
+    resolution: {integrity: sha512-GNEXKvWFQnbgO5NlrGzVa0FmWzBZ24PersAWErttSg1Hjpf0ATxTwS5DOMGaOpTG6bUh5cTr7xi0jAD942wCJA==}
+
   postcss@8.5.23:
     resolution: {integrity: sha512-g50586zr4bZmwFiTlflMu8E0bDTb5I5gertgwAKmsdUlTQIhZtunzUlD1WSzwcVWPoAVpsrA6vlfCD7oXvRwgg==}
     engines: {node: ^10 || ^12 || >=14}
@@ -3080,6 +3092,15 @@ packages:
   require-directory@2.1.1:
     resolution: {integrity: sha512-fGxEI7+wsG9xrvdjsrlmL22OMTTiHRwAMroiEeMgq8gzoLC/PQr7RsRDSTLUg/bZAZtF+TVIkHc6/4RIKrui+Q==}
     engines: {node: '>=0.10.0'}
+
+  resend@6.20.0:
+    resolution: {integrity: sha512-fXDFt7jVMuka6ruS79DzaQFKPyxOAUtoYUGSl3dTUyOnFK9klmUULxADQRzFFtHfHRipYyy62jYcm4cMKqvtjw==}
+    engines: {node: '>=20'}
+    peerDependencies:
+      '@react-email/render': '*'
+    peerDependenciesMeta:
+      '@react-email/render':
+        optional: true
 
   resolve-from@5.0.0:
     resolution: {integrity: sha512-qYg9KP24dD5qka9J47d0aVky0N+b4fTU89LN9iDnjB5waksiC49rvMB0PrUJQGoTmH50XPiqOvAjDfaijGxYZw==}
@@ -3213,6 +3234,9 @@ packages:
   stacktrace-parser@0.1.11:
     resolution: {integrity: sha512-WjlahMgHmCJpqzU8bIBy4qtsZdU9lRlcZE3Lvyej6t4tuOuv1vk57OW3MBrj6hXBFx/nNoC9MPMTcr5YA7NQbg==}
     engines: {node: '>=6'}
+
+  standardwebhooks@1.0.0:
+    resolution: {integrity: sha512-BbHGOQK9olHPMvQNHWul6MYlrRTAOKn03rOe4A8O3CLWhNf4YHBqq2HJKKC+sfqpxiBY52pNeesD6jIiLDz8jg==}
 
   statuses@1.5.0:
     resolution: {integrity: sha512-OpZ3zP+jT1PI7I8nemJX4AKmAX070ZkYPVWV/AaKTJl+tXCTGyVdC1a4SL8RUQYEwk/f34ZX8UTykN68FwrqAA==}
@@ -5015,6 +5039,8 @@ snapshots:
     dependencies:
       '@sinonjs/commons': 3.0.1
 
+  '@stablelib/base64@1.0.1': {}
+
   '@supabase/auth-js@2.110.2':
     dependencies:
       tslib: 2.8.1
@@ -5784,6 +5810,8 @@ snapshots:
 
   fast-json-stable-stringify@2.1.0: {}
 
+  fast-sha256@1.3.0: {}
+
   fb-dotslash@0.5.8: {}
 
   fb-watchman@2.0.2:
@@ -6498,6 +6526,8 @@ snapshots:
 
   pngjs@3.4.0: {}
 
+  postal-mime@2.7.5: {}
+
   postcss@8.5.23:
     dependencies:
       nanoid: 3.3.18
@@ -6632,6 +6662,11 @@ snapshots:
       jsesc: 3.1.0
 
   require-directory@2.1.1: {}
+
+  resend@6.20.0:
+    dependencies:
+      postal-mime: 2.7.5
+      standardwebhooks: 1.0.0
 
   resolve-from@5.0.0: {}
 
@@ -6806,6 +6841,11 @@ snapshots:
   stacktrace-parser@0.1.11:
     dependencies:
       type-fest: 0.7.1
+
+  standardwebhooks@1.0.0:
+    dependencies:
+      '@stablelib/base64': 1.0.1
+      fast-sha256: 1.3.0
 
   statuses@1.5.0: {}
 

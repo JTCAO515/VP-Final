@@ -52,6 +52,12 @@ Status: active
   five-per-hour admission window never shares a Redis key with Copilot. Missing Redis, hash salt,
   trusted Vercel address, or durable database configuration MUST return an honest unavailable response;
   production MUST NOT fall back to process-local admission or a fabricated signup receipt.
+- Early Access confirmation delivery requires only server-side `RESEND_API_KEY` and
+  `EARLY_ACCESS_EMAIL_FROM` in `vp-final-web`. The sender must be a Resend-verified mailbox and both
+  values are unavailable to browser bundles, logs, model context, repository files, and screenshots.
+  Missing or malformed sender configuration prevents the first durable signup write; a provider failure
+  after that write reports a truthful confirmation-delivery failure and MUST NOT retry on a duplicate
+  request or claim that an email was sent.
 - Public Copilot numeric safety policy MUST follow accepted ADR-0015. The optional server-only
   `VISEPANDA_COPILOT_MAX_INPUT_CODE_UNITS` and `VISEPANDA_COPILOT_MAX_OUTPUT_TOKENS` settings default
   to `8000` and `1600`; `VISEPANDA_AUTHENTICATED_RATE_LIMIT_MINUTE` and
