@@ -1,26 +1,26 @@
 {
   "schemaVersion": 1,
   "updatedAt": "2026-08-20",
-  "updatedBy": "Codex / serialized post-#515/#516 VisePanda availability refresh",
+  "updatedBy": "Codex / serialized post-#522 Chatbot execution-core baseline refresh",
   "baseBranch": "main",
   "lastVerifiedCommit": "df70644 Merge pull request #518 from JTCAO515/codex/issue516-answerable-prompts; main CI run 32283065573 and Documentation Governance run 32283065435 completed successfully, both Vercel production deployments succeeded, and post-deploy anonymous smoke verified the new prompt and turn-accounting behavior",
-  "currentPhase": "Phase 0/1 — production hardening and controlled mobile expansion",
-  "maturity": "The real-provider Copilot, durable Trip completion, signed anonymous identity, cost and product-event persistence, three-turn and trusted-IP guards, truthful request states, controlled-preview Human Tasks, legal pages, retention enforcement, durable outbound ledger, Admin-only partner configuration, P0-19 telemetry, and P0-20 public-runtime controls are merged. Execution-fact safety has reviewed safe phrases, fail-closed model bypass/grounding guards, blocking runtime evals, provenance-qualified local addresses, deterministic aliases, and a no-fallback presentation guard. The public home is product-first while /visepanda is the canonical workspace; /copilot redirects there and scenario context remains editable, allowlisted, and unsent until the traveler submits it. Shared Web chrome, home, workspace, Account, Explore, Arrival Pack, Readiness, Rescue, Human Help, and public-guide navigation support English by default plus Chinese, Spanish, Arabic (RTL), and Russian interface copy through a local preference cookie; traveler input, model output, Trip data, facts, safe phrases, policy bodies, and SEO content remain untranslated until separately reviewed. Ops has safe POI creation, draft-by-draft fact review, expiry review, collaborator administration, and a private editorial-image runtime with provenance/EXIF/file-signature controls; no traveler image delivery is active. Controlled-preproduction foundations include the multi-meter VisePod voice-cost domain ledger, device lifecycle domain, portable OfflineTripPackage contract, mobile red/gold token projection, local-only eight-item Tools content, authenticated read-only Web Trip sync, a privacy-safe mobile telemetry queue, and an authenticated Mobile Human Help form. The four external advancement tracks have an active runbook and OA-006/OA-019/OA-020/OA-021 records, but none has crossed its factual verification gate. Missing configuration remains unavailable; no card data, secret, provider payload, placeholder success, partner redirect, payment, device service, image delivery, or paid-task claim is exposed before verified external evidence. The anonymous VisePanda preview now releases honest verified-information or fixed-expression unavailable responses without consuming its three answered-turn allowance. The workspace advertises only bounded comparison prompts observed to return useful production dialogue; payment, metro, dietary-expression and other execution prompts remain gated on reviewed facts or fixed expressions.",
-  "lastCompleted": "PR #518 merged as df70644 after its head 56d449e passed verify, evals, docs, Database contracts, Vercel Preview Comments, and both Vercel previews. It replaced three known-unavailable workspace examples with five-locale, production-observed answerable comparison prompts without changing the request path. PR #517 merged as 593c502 after Tier B review and the same core gates; it added a structural answered/unavailable disposition so honest safety fallbacks release anonymous reservations instead of consuming a useful turn.",
+  "currentPhase": "Phase 0 — Chatbot execution-core focus",
+  "maturity": "The real-provider Copilot, durable Trip completion, signed anonymous identity, cost and product-event persistence, three-turn and trusted-IP guards, truthful request states, controlled-preview Human Tasks, legal pages, retention enforcement, durable outbound ledger, Admin-only partner configuration, P0-19 telemetry, and P0-20 public-runtime controls are merged. Execution-fact safety has reviewed safe phrases, fail-closed model bypass/grounding guards, blocking runtime evals, provenance-qualified local addresses, deterministic aliases, and a no-fallback presentation guard. The public home is product-first while /visepanda is the canonical workspace; /copilot redirects there and scenario context remains editable, allowlisted, and unsent until the traveler submits it. Shared Web chrome, home, workspace, Account, Explore, Arrival Pack, Readiness, Rescue, Human Help, and public-guide navigation support English by default plus Chinese, Spanish, Arabic (RTL), and Russian interface copy through a local preference cookie; traveler input, model output, Trip data, facts, safe phrases, policy bodies, and SEO content remain untranslated until separately reviewed. Ops has safe POI creation, draft-by-draft fact review, expiry review, collaborator administration, and a private editorial-image runtime with provenance/EXIF/file-signature controls; no traveler image delivery is active. ADR-0023 now narrows the product center to the VisePanda Chatbot and six execution moments. This changes delivery order, not runtime capability: scoped national/city/scene/POI facts, structured Execution Action delivery, and the Payment, Show to Local, and Entry / Booking loops remain unimplemented. Generic Content AI persistence is paused until those fact-driven slices yield real operating evidence. Controlled-preproduction VisePod and external commercial/mobile gates remain unavailable without their independent evidence.",
+  "lastCompleted": "PR #522 merged as 4a55119 after its head 55bdeab passed GitHub verify, evals, docs, Database contracts, Vercel Preview Comments, and both Vercel previews. It accepted ADR-0023, amended the frozen product baseline, and made the VisePanda Chatbot plus six execution moments the product-development center. It changed no runtime code, schema, route, provider, external configuration, or public capability.",
   "activeWork": [
     {
-      "ref": "ADR-0020 / Issue #99",
-      "title": "Creator attribution contract and evidence-bound public consumer",
-      "state": "The `ota`/`creator` domain and private referral contract are merged. A Creator is acquisition-only and is explicitly rejected by the outbound URL path. No real Creator agreement, active record, disclosure, public link, redirect, report, or commission evidence exists.",
-      "owner": "Operator/Ops for approved active Creator facts; Codex for a future separately scoped server-side consumer",
-      "next": "Keep public Creator attribution unavailable until the operator records a real agreement, active partner, approved landing/disclosure facts, and the consumer can enforce active status, trusted identity/retention semantics, and no raw-query attribution."
+      "ref": "ADR-0023 / Issue #521",
+      "title": "Chatbot execution-core product baseline",
+      "state": "ADR-0023 is merged. VisePanda Chatbot is the only AI interaction and execution-orchestration surface; Payment, Show to Local, Entry / Booking, Translate / Communicate, Network, and Rescue / Human Help are the product boundary. No new execution capability is implied by this documentation decision.",
+      "owner": "Codex for FOCUS-01 and FACT-SCOPE-01; operator for real content and traveller observations",
+      "next": "Reclassify the open backlog before opening any consumer branch, then freeze scoped Execution Facts as the structural prerequisite for Payment, Show to Local, Entry, and later Content AI v0."
     },
     {
       "ref": "ADR-0017 / Issues #335-#341",
       "title": "VisePod Studio provisioning and binding sequence",
-      "state": "The accepted Studio binding contract is published, but VisePod remains controlled-preproduction. Any provisioning, registry, speech, gateway, or firmware consumer must preserve its exact authorization, audit, and device-evidence boundaries.",
+      "state": "The accepted Studio binding contract is published, but ADR-0023 freezes new VisePod feature work while the Chatbot execution-core focus is established. Existing evidence gates remain factual constraints; no device runtime is authorized.",
       "owner": "Codex implementation with operator and hardware evidence for activation",
-      "next": "Only take the next independently scoped VisePod consumer after its Issue prerequisites and external evidence gate are satisfied; do not convert the contract into an unverified live-device claim."
+      "next": "Do not take a new VisePod consumer during the current focus. Retain the accepted contract and evidence records for a future separately re-opened decision."
     },
     {
       "ref": "OA-021 / Issues #279, #280, #282, #278",
@@ -33,25 +33,26 @@
   "nextActions": [
     {
       "priority": "P0",
-      "action": "Run the four evidence tracks in docs/runbooks/parallel-external-unblock.md: Creator/disclosure (OA-019), lawful Stripe test-mode decision (OA-006), VisePod evidence (OA-021), and consented operating metrics (OA-020).",
-      "exitCriteria": "Each linked register row has dated, sanitized, independently checkable evidence. Codex then opens only the consumer or phase work whose exact factual gate is satisfied."
+      "action": "Complete FOCUS-01: reclassify the current open backlog and dependency graph against ADR-0023 before opening a scoped-fact or Content AI consumer branch.",
+      "exitCriteria": "Every affected open Issue is marked continue, reframe, defer, freeze, close, or blocked with an explicit dependency; no competing Phase 0 list remains."
     },
     {
       "priority": "P1",
-      "action": "Keep P0-17 code inactive until OA-006 is explicitly reopened with a legal receiving-entity/payment-route decision and sanitized test-mode evidence; do not turn configuration placeholders into a collection claim.",
-      "exitCriteria": "The external activation record, test-mode Checkout/session/webhook evidence, and lawful production decision agree. Until then, the merged code remains truthful and unavailable when configuration is absent."
+      "action": "After FOCUS-01, freeze FACT-SCOPE-01: an additive closed execution-fact target union for POI, city, national, and scene facts with existing provenance, review, expiry, conflict, and eligibility controls.",
+      "exitCriteria": "A schema-first contract rejects invalid target combinations, preserves legacy POI facts, and gives the next persistence/retrieval slice an explicit interface."
     },
     {
       "priority": "P0",
-      "action": "Keep VisePod consumer work bounded to its accepted protocol, account-binding, and real-device evidence gates.",
-      "exitCriteria": "A scoped VisePod implementation has its required device/operator evidence and does not claim live speech, firmware, or provisioning behavior before observation."
+      "action": "Keep external payment, partner, VisePod, hardware, provider, and operational-service records at their existing factual gates while the product focus changes internal delivery order.",
+      "exitCriteria": "No code, copy, or status marks an external capability live without its independent dated and sanitized evidence."
     }
   ],
   "blockers": [
     "P0-17 implementation is merged, but OA-006 remains deferred: no legal receiving-entity/payment-route decision or sanitized Stripe activation evidence is recorded. No payment, booking, commission, or paid Human Help capability is live.",
     "Issue #99's Creator contract is merged, but public activation remains blocked on a real approved active Creator record, disclosure/landing facts, and a separately scoped server-side consumer. No Creator redirect, click, report, or commission is live.",
     "SEO publication #59 and #84 through #86 still require an eligibility-driven matrix and no-empty-page gate for any public indexability claim. Commercial Explore #58 requires a real active approved-partner record before a live redirect is rendered; implementation may proceed without fabricating that external status.",
-    "The operator opened default implementation scheduling gates for remaining coding Issues. External payment, settlement, partner, store, hardware, speech, and operational-service evidence gates remain factual constraints rather than reasons to fabricate a live capability."
+    "ADR-0023 pauses generic Content AI persistence (#499 and consumers) until scoped Execution Facts and the first fact-driven Payment, Show to Local, and Entry / Booking slices provide real operating evidence. This is an intentional product-order gate, not a claim that Content AI is complete.",
+    "External payment, settlement, partner, store, hardware, speech, and operational-service evidence gates remain factual constraints rather than reasons to fabricate a live capability."
   ],
   "verification": [
     "PR #309, #315, and #317 merged P0-18a/18b/18c with their required GitHub checks green. P0-18 is closed; no partner was activated and no affiliate/payment claim was introduced.",
@@ -108,6 +109,10 @@
     {
       "path": "docs/planning/visepanda-v2-final-architecture.md",
       "reason": "Read the frozen product, commercial, architecture, roadmap, and anti-goal baseline."
+    },
+    {
+      "path": "docs/adr/ADR-0023-chatbot-execution-core.md",
+      "reason": "Apply the accepted D3 product-focus amendment before taking any Phase 0 execution, fact, Content AI, VisePod, or commercial Issue."
     },
     {
       "path": "docs/planning/visepanda-v2-project-review-2026-07-10.md",
