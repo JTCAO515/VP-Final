@@ -8,6 +8,8 @@
 
 > **2026-08-20 修正案（ADR-0023）：** 本定稿的技术架构、单语言 monorepo、模块化单体、Zod 契约、TripPatch、知识溯源与商业/外部证据门控保持不变。产品交付顺序收窄为以 VisePanda Chatbot 为中心的六个执行时刻：Payment、Show to Local、Entry / Booking、Translate / Communicate、Network、Rescue / Human Help。Trip、Explore、Tools、Ops 与 Content AI 成为该闭环的支持面；先完成 scoped execution facts 和 Payment/Show to Local/Entry 的真实闭环，再恢复通用 Content AI、地图候选、SEO 扩张、VisePod 新功能或商业市场。本文其余历史路线描述必须以此修正案和 ADR-0023 为准。
 
+> **2026-08-20 修正案（ADR-0024）：** VisePanda 的产品定位修正为 **“The AI planning and execution workspace for independent travel in China.”** VisePanda Chatbot 与 Trip Canvas 共同构成工作台：前者理解目标、形成或调整计划、解释并处理问题；后者呈现日程、地点、路线、准备状态和已获准的执行动作。该修正恢复规划与 Canvas 的产品核心地位，但不放宽 ADR-0023 的事实优先交付顺序、TripPatch 不变量、六执行时刻边界或任何支付、预订、人工服务、实时可用性与外部能力门控。本文其余历史定位以本修正案为准。
+
 ---
 
 ## 0. 两版对照裁决（先给结论，再给方案）
@@ -49,8 +51,8 @@
 
 ### 2.1 定位
 
-> **VisePanda is the conversational execution companion for independent travel in China.**
-> 规划可以免费；以 Chatbot 推进现场执行、失败恢复和诚实升级才是当前产品核心。
+> **VisePanda is the AI planning and execution workspace for independent travel in China.**
+> VisePanda Chatbot 与 Trip Canvas 共同把规划、日程审阅、现场执行、调整与恢复带入同一工作台；每一项外部执行能力仍必须有来源、边界与真实证据。
 
 ### 2.2 用户分层与痛点排序
 
@@ -66,7 +68,7 @@ Execute      App        Tools 八件套；离线行程；Human Help         Huma
 Return       Web+App    回顾；复访识别；定制入口(仅重复访客)        定制询价 lead fee；分享获客
 ```
 
-当前主 Surface：**VisePanda Chatbot**（唯一 AI 交互面；对话+Trip Canvas；围绕六执行时刻交付有来源的下一步）。支持 Surface：**Explore**（可被 Chatbot 使用的 POI/事实候选与次级发现面，而非独立 Feed 投资）、**Tools**（由 Chatbot 选择的确定性执行器）、**Human Help**（自动能力失败后的受控升级）、**Me**（账号、权益、记忆、行程史与离线包）。这些职责不代表尚未验证的支付、预订、人工 SLA、离线或商业能力已经上线。
+当前主工作台：**VisePanda Chatbot + Trip Canvas**（唯一 AI 对话面 + 唯一可见 Trip 状态面；围绕六执行时刻交付有来源的计划、下一步与恢复）。支持 Surface：**Explore**（可被工作台使用的 POI/事实候选与次级发现面，而非独立 Feed 投资）、**Tools**（由 Chatbot 选择的确定性执行器）、**Human Help**（自动能力失败后的受控升级）、**Me**（账号、权益、记忆、行程史与离线包）。这些职责不代表尚未验证的支付、预订、人工 SLA、离线或商业能力已经上线。
 
 TripBlock 类型与块级动作采 Codex 版清单：`hotel/attraction/restaurant/transport/shopping/experience/free_time/emergency/human_task`；产品动作 `Ask VisePanda / Navigate / Translate address / Show to Local / Book / Add note / Request human help`。内部 Copilot API 名称保持稳定。
 
