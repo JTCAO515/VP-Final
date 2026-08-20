@@ -77,7 +77,9 @@ Status: active
   RLS and no `anon`/`authenticated` grants; raw IP, salt, credential, cookie, signature, recipient
   list, and delivery-provider response MUST NOT be persisted or logged. Each record receives a
   server-derived deadline no later than 365 days after creation and the private purge wrapper deletes
-  expired rows. A duplicate email is idempotent and must not create a second row or extend retention.
+  expired rows. A duplicate email is idempotent and must not create a second row, extend retention, or
+  trigger a second confirmation-delivery attempt. Resend key and sender validation are server-only;
+  an external provider failure never becomes a stored provider response or a browser success claim.
 - China Readiness self-reports are server-only, fixed-enum records. Their persistence requires
   explicit consent, one server-derived authenticated owner or owned Trip reference, and a retention
   deadline no later than 180 days after creation. Direct Data API access is forbidden; expired rows

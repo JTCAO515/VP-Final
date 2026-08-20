@@ -242,6 +242,13 @@ export {
   normalizeEarlyAccessUserAgent,
 } from "./modules/earlyAccess/service.js";
 export {
+  EarlyAccessConfirmationEmailDeliveryError,
+  EarlyAccessConfirmationEmailUnavailableError,
+  createInMemoryEarlyAccessConfirmationEmailSender,
+  createResendEarlyAccessConfirmationEmailSender,
+  resolveEarlyAccessConfirmationEmailConfig,
+} from "./modules/earlyAccess/email.js";
+export {
   createCommerceService,
   InvalidOutboundTargetError,
   PartnerUnavailableError,
@@ -264,6 +271,10 @@ export type {
   EarlyAccessSignupMetadata,
   EarlyAccessSignupService,
 } from "./modules/earlyAccess/service.js";
+export type {
+  EarlyAccessConfirmationEmailConfig,
+  EarlyAccessConfirmationEmailSender,
+} from "./modules/earlyAccess/email.js";
 export type { AdapterAvailability, RuntimeMode, RuntimeResolution } from "./runtime/runtimeMode.js";
 export type { KnowledgeService } from "./modules/knowledge/service.js";
 export type { PoiImageService, PoiImageWriteInput } from "./db/poiImageService.js";

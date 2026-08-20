@@ -65,7 +65,12 @@ resolver and an isolated HMAC-prefixed Upstash window of five submissions per ho
 returns 429 `EARLY_ACCESS_RATE_LIMITED` plus a positive `Retry-After`; missing trusted platform, Redis,
 hash-salt, or durable runtime returns 503 `EARLY_ACCESS_UNAVAILABLE` without a fabricated receipt.
 The unique normalized-email insert is the idempotency rule: a duplicate never creates a second row or
-extends its retention deadline.
+extends its retention deadline. A deployed first-time submission additionally requires a configured
+server-only Resend sender before its durable write and attempts exactly one confirmation after that
+write. A duplicate, honeypot, invalid request, or unavailable sender never sends. If the provider
+fails after the durable write, the route returns 502 `EARLY_ACCESS_CONFIRMATION_DELIVERY_FAILED` with
+the explicit statement that signup was saved but confirmation was not sent; it never returns a provider
+id, recipient, key, template body, or fabricated delivery success.
 
 ## Trip Contract
 

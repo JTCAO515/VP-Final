@@ -59,6 +59,7 @@
     "@visepanda/domain": "workspace:*",
     "drizzle-orm": "^0.45.2",
     "postgres": "^3.4.9",
+    "resend": "6.20.0",
     "zod": "^3.24.1"
   },
   "devDependencies": {

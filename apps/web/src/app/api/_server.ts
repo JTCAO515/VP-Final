@@ -25,6 +25,7 @@ import {
   createInMemoryHumanTaskService,
   createInMemoryAgentTraceService,
   createInMemoryEarlyAccessRateLimiter,
+  createInMemoryEarlyAccessConfirmationEmailSender,
   createInMemoryEarlyAccessSignupService,
   createInMemoryTelemetryService,
   createInMemoryTelemetryRateLimiter,
@@ -37,12 +38,14 @@ import {
   createUpstashCopilotIpRateLimiter,
   createUpstashTelemetryRateLimiter,
   createUpstashEarlyAccessRateLimiter,
+  createResendEarlyAccessConfirmationEmailSender,
   resolveQStashCompletionQueueConfig,
   resolveUpstashAnonymousTurnCounterConfig,
   resolveUpstashAuthenticatedCopilotRateLimiterConfig,
   resolveUpstashCopilotIpRateLimiterConfig,
   resolveUpstashTelemetryRateLimiterConfig,
   resolveEarlyAccessRateLimiterConfig,
+  resolveEarlyAccessConfirmationEmailConfig,
   resolveDatabaseAdapter,
   resolveRuntimeMode,
   resolveStripeWebhookConfig,
@@ -51,6 +54,7 @@ import {
   type AuthenticatedCopilotRateLimiter,
   type CopilotIpRateLimiter,
   type EarlyAccessRateLimiter,
+  type EarlyAccessConfirmationEmailSender,
   type EarlyAccessSignupService,
   type CopilotProductEventService,
   type CompleteDay,
@@ -86,6 +90,7 @@ type WebServerServices = {
   copilotIpRateLimiter?: CopilotIpRateLimiter;
   telemetryRateLimiter?: TelemetryRateLimiter;
   earlyAccessRateLimiter?: EarlyAccessRateLimiter;
+  earlyAccessConfirmationEmailSender?: EarlyAccessConfirmationEmailSender;
   earlyAccessSignupService?: EarlyAccessSignupService;
   commerceService?: CommerceService;
   telemetryService?: TelemetryService;
@@ -162,6 +167,7 @@ export function createWebServerServices(environment: Environment): WebServerServ
       copilotIpRateLimiter: createInMemoryCopilotIpRateLimiter(),
       telemetryRateLimiter: createInMemoryTelemetryRateLimiter(),
       earlyAccessRateLimiter: createInMemoryEarlyAccessRateLimiter(),
+      earlyAccessConfirmationEmailSender: createInMemoryEarlyAccessConfirmationEmailSender(),
       earlyAccessSignupService: createInMemoryEarlyAccessSignupService(),
     };
   }
@@ -179,6 +185,7 @@ export function createWebServerServices(environment: Environment): WebServerServ
   const copilotIpRateLimiter = resolveCopilotIpRateLimiter(environment);
   const telemetryRateLimiter = resolveTelemetryRateLimiter(environment);
   const earlyAccessRateLimiter = resolveEarlyAccessRateLimiter(environment);
+  const earlyAccessConfirmationEmailSender = resolveEarlyAccessConfirmationEmailSender(environment);
   const tripService = createDbVersionedTripService(db);
   return {
     humanTaskService: createDbHumanTaskService(db),
@@ -204,6 +211,7 @@ export function createWebServerServices(environment: Environment): WebServerServ
     ...(copilotIpRateLimiter ? { copilotIpRateLimiter } : {}),
     ...(telemetryRateLimiter ? { telemetryRateLimiter } : {}),
     ...(earlyAccessRateLimiter ? { earlyAccessRateLimiter } : {}),
+    ...(earlyAccessConfirmationEmailSender ? { earlyAccessConfirmationEmailSender } : {}),
     completionDay: createModelCompleteDay({ environment, traceService }),
   };
 }
@@ -241,6 +249,18 @@ function resolveEarlyAccessRateLimiter(
 ): EarlyAccessRateLimiter | undefined {
   try {
     return createUpstashEarlyAccessRateLimiter(resolveEarlyAccessRateLimiterConfig(environment));
+  } catch {
+    return undefined;
+  }
+}
+
+function resolveEarlyAccessConfirmationEmailSender(
+  environment: Environment,
+): EarlyAccessConfirmationEmailSender | undefined {
+  try {
+    return createResendEarlyAccessConfirmationEmailSender(
+      resolveEarlyAccessConfirmationEmailConfig(environment),
+    );
   } catch {
     return undefined;
   }
@@ -294,6 +314,11 @@ export function getTelemetryRateLimiter(): TelemetryRateLimiter | undefined {
 
 export function getEarlyAccessRateLimiter(): EarlyAccessRateLimiter | undefined {
   return getWebServerServices(process.env).earlyAccessRateLimiter;
+}
+
+export function getEarlyAccessConfirmationEmailSender():
+  EarlyAccessConfirmationEmailSender | undefined {
+  return getWebServerServices(process.env).earlyAccessConfirmationEmailSender;
 }
 
 export function getEarlyAccessSignupService(): EarlyAccessSignupService {

@@ -1,13 +1,15 @@
 import {
   createInMemoryAgentTraceService,
   createInMemoryEarlyAccessRateLimiter,
+  createInMemoryEarlyAccessConfirmationEmailSender,
   createInMemoryEarlyAccessSignupService,
   createInMemoryHumanTaskService,
   createInMemoryKnowledgeService,
   createVersionedInMemoryTripService,
   type EarlyAccessSignupService,
+  type EarlyAccessConfirmationEmailSender,
 } from "@visepanda/app-server";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { setTestWebServerServices } from "../_server";
 import { hashEarlyAccessClientAddress } from "./ipHash";
 import { POST } from "./route";
@@ -30,15 +32,19 @@ afterEach(() => {
 describe("POST /api/early-access", () => {
   it("normalizes and persists the first submission, then reports a duplicate idempotently", async () => {
     const service = createInMemoryEarlyAccessSignupService();
-    inject(service);
+    const send = vi.fn().mockResolvedValue(undefined);
+    inject(service, { send });
 
     const first = await POST(postRequest({ email: " Traveler@Example.COM " }));
     const duplicate = await POST(postRequest({ email: "traveler@example.com" }));
 
     expect(first.status).toBe(200);
-    await expect(first.json()).resolves.toEqual({ ok: true, status: "subscribed" });
+    const firstBody = await first.json();
+    expect(firstBody).toEqual({ ok: true, status: "subscribed" });
+    expect(JSON.stringify(firstBody)).not.toContain("traveler@example.com");
     expect(duplicate.status).toBe(200);
     await expect(duplicate.json()).resolves.toEqual({ ok: true, status: "already_subscribed" });
+    expect(send).toHaveBeenCalledTimes(1);
   });
 
   it("rejects invalid input without invoking the durable signup service", async () => {
@@ -78,6 +84,39 @@ describe("POST /api/early-access", () => {
 
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual({ ok: true, status: "subscribed" });
+  });
+
+  it("fails before a durable write when the confirmation sender is unavailable", async () => {
+    const submit = vi.fn();
+    inject({ submit }, null);
+
+    const response = await POST(postRequest({ email: "traveler@example.com" }));
+
+    expect(response.status).toBe(503);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: false,
+      code: "EARLY_ACCESS_CONFIRMATION_UNAVAILABLE",
+    });
+    expect(submit).not.toHaveBeenCalled();
+  });
+
+  it("does not claim delivery when the provider fails after the durable signup", async () => {
+    const service = createInMemoryEarlyAccessSignupService();
+    const send = vi.fn().mockRejectedValue(new Error("provider unavailable"));
+    inject(service, { send });
+
+    const failedDelivery = await POST(postRequest({ email: "traveler@example.com" }));
+    const duplicate = await POST(postRequest({ email: "traveler@example.com" }));
+
+    expect(failedDelivery.status).toBe(502);
+    await expect(failedDelivery.json()).resolves.toEqual({
+      ok: false,
+      code: "EARLY_ACCESS_CONFIRMATION_DELIVERY_FAILED",
+      error: "Your Early Access signup was saved, but we could not send a confirmation email.",
+    });
+    expect(duplicate.status).toBe(200);
+    await expect(duplicate.json()).resolves.toEqual({ ok: true, status: "already_subscribed" });
+    expect(send).toHaveBeenCalledTimes(1);
   });
 
   it("limits the sixth request before durable storage and ignores spoofed forwarding headers", async () => {
@@ -135,7 +174,10 @@ describe("POST /api/early-access", () => {
   });
 });
 
-function inject(service: EarlyAccessSignupService = createInMemoryEarlyAccessSignupService()) {
+function inject(
+  service: EarlyAccessSignupService = createInMemoryEarlyAccessSignupService(),
+  emailSender: EarlyAccessConfirmationEmailSender | null = createInMemoryEarlyAccessConfirmationEmailSender(),
+) {
   setTestWebServerServices({
     humanTaskService: createInMemoryHumanTaskService(),
     knowledgeService: createInMemoryKnowledgeService(),
@@ -143,6 +185,7 @@ function inject(service: EarlyAccessSignupService = createInMemoryEarlyAccessSig
     tripService: createVersionedInMemoryTripService(),
     earlyAccessSignupService: service,
     earlyAccessRateLimiter: createInMemoryEarlyAccessRateLimiter(),
+    ...(emailSender ? { earlyAccessConfirmationEmailSender: emailSender } : {}),
   });
 }
 
