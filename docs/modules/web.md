@@ -5,8 +5,8 @@ Path: `apps/web`
 ## Responsibility
 
 The public Next.js application owns acquisition and traveler-facing Phase 0 experiences. It renders
-the product home, VisePanda workspace and Trip Canvas, Explore, guides, POI pages, Human Help, public Trip shares, and
-the outbound gateway.
+the Early Access root, unlisted product home, VisePanda workspace and Trip Canvas, Explore, guides,
+POI pages, Human Help, public Trip shares, and the outbound gateway.
 
 ## Chatbot-Core Responsibility
 
@@ -68,7 +68,8 @@ document direction; no browser translation service rewrites any readiness data.
 
 | Route                                     | Purpose                                                                                               |
 | ----------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `/`                                       | Product home with an illustrative, non-interactive VisePanda workspace preview                        |
+| `/`                                       | Early Access landing placeholder until the separately governed Landing UI is delivered                 |
+| `/homepage`                               | Existing full product home; accessible but page-level noindex and excluded from sitemap                |
 | `/visepanda`                              | Canonical VisePanda workspace and Trip Canvas                                                         |
 | `/copilot`                                | Legacy redirect to `/visepanda`                                                                       |
 | `/readiness`                              | Explainable, fixed-answer China preparation self-check                                                |

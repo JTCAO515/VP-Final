@@ -35,7 +35,7 @@ export function SiteHeader({ active, context, contextKey }: SiteHeaderProps) {
         {t("skip.main")}
       </a>
       <header className="siteHeader">
-        <a className="brandMark" href="/" aria-label={t("brand.home")}>
+        <a className="brandMark" href="/homepage" aria-label={t("brand.home")}>
           <span aria-hidden="true">V</span>
           <b>VisePanda</b>
         </a>
@@ -75,7 +75,7 @@ export function SiteFooter() {
 
   return (
     <footer className="siteFooter">
-      <a className="brandMark" href="/" aria-label={t("brand.home")}>
+      <a className="brandMark" href="/homepage" aria-label={t("brand.home")}>
         <span aria-hidden="true">V</span>
         <b>VisePanda</b>
       </a>
