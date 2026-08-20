@@ -2,7 +2,7 @@
 
 Status: active
 Method: [钱学森 Skills](../methodology/qian-systems-engineering.md)
-Product authority: [V2 frozen baseline](../planning/visepanda-v2-final-architecture.md), amended by [ADR-0023](../adr/ADR-0023-chatbot-execution-core.md)
+Product authority: [V2 frozen baseline](../planning/visepanda-v2-final-architecture.md), amended by [ADR-0023](../adr/ADR-0023-chatbot-execution-core.md) and [ADR-0024](../adr/ADR-0024-planning-execution-workspace.md)
 
 This document is the operational “overall design department” baseline. It does not replace the
 frozen product architecture. It translates that architecture into objectives, controlled
@@ -10,16 +10,18 @@ subsystems, interface baselines, observations, and lifecycle gates used by daily
 
 ## 1. System Mission
 
-VisePanda helps independent foreign travellers execute travel in China reliably. The VisePanda
-Chatbot is the single AI interaction and execution-orchestration surface. Its first product focus is
-the six execution moments: Payment, Show to Local, Entry / Booking, Translate / Communicate, Network,
-and Rescue / Human Help. Planning remains context, not the primary delivery loop.
+VisePanda helps independent foreign travellers plan and execute travel in China reliably. The
+VisePanda Chatbot and Trip Canvas form one workspace: conversation turns goals and changes into typed
+planning/execution outcomes, while Canvas makes the current Trip and its preparation/action state
+inspectable and adjustable. Its first fact-driven delivery focus remains the six execution moments:
+Payment, Show to Local, Entry / Booking, Translate / Communicate, Network, and Rescue / Human Help.
 
 ## 2. System Boundary
 
 ### In scope
 
-- VisePanda Chatbot execution assistance through typed Copilot envelopes and TripPatch.
+- VisePanda Chatbot planning/execution assistance through typed Copilot envelopes and TripPatch, plus
+  a Trip Canvas that renders the materialized state without creating a second mutation path.
 - Trip materialization, history, sharing, and offline-ready consumption.
 - Source-backed execution knowledge used by Copilot, Explore, and search pages.
 - Human Task request, quote, payment evidence, fulfilment, and operational learning.
@@ -40,7 +42,7 @@ and Rescue / Human Help. Planning remains context, not the primary delivery loop
 | --- | --- | --- | --- | --- |
 | Mission | Travellers complete China travel actions with less uncertainty | successful execution flows, support outcomes | operator | release + monthly |
 | Trust | Recommendations are honest, sourced, and reversible | citation coverage, stale-fact exposure, error reports | knowledge + Copilot owners | weekly |
-| Product | VisePanda Chatbot produces source-backed next actions and recovery | cited execution action, unavailable honesty, recovery outcome | Chatbot/Knowledge owners | each release |
+| Product | Chatbot and Trip Canvas produce/reveal a practical, source-backed plan and next action | typed Trip outcome, cited execution action, unavailable honesty, recovery outcome | Chatbot/Trip/Knowledge owners | each release |
 | Commercial | Trusted intent converts to traceable revenue opportunities | outbound trace completeness, task funnel, paid evidence | commerce owner | weekly/monthly |
 | Reliability | Public flows are observable and recoverable | CI, smoke tests, Sentry, rollback rehearsal | platform owner | each release |
 | Efficiency | AI and human work deliver value within budget | token/task cost, retries, handling time | operator + AI owner | weekly |
@@ -54,6 +56,7 @@ real users reach 200 or Human Tasks reach 20, unless a superseding ADR changes t
 | Subsystem | Responsibility | Primary modules | Must not own |
 | --- | --- | --- | --- |
 | VisePanda Chatbot | intent, scoped retrieval, typed generation, citations, structured action, recovery handoff | `packages/ai`, server copilot, web workspace | direct database mutation or unsupported action claims |
+| Trip Canvas | day-by-day Trip, preparation state, visible action availability, and deterministic Patch outcome | domain trip, server trip, web workspace | model-authored direct mutation or invented live availability |
 | Trip | schema, patch validation, event log, materialized snapshot | `packages/domain`, server trip, clients | model prompts or partner routing |
 | Knowledge | scoped execution facts, POIs, gaps, freshness, editorial workflow | domain, server knowledge, Ops, Chatbot | fabricated facts |
 | Human Help | Human Task state machine and fulfilment evidence | domain task, server task, Ops, user surfaces | automatic service guarantees |

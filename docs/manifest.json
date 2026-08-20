@@ -996,6 +996,22 @@
         "apps/ops/src/app/"
       ]
     },
+    {
+      "path": "docs/adr/ADR-0024-planning-execution-workspace.md",
+      "title": "ADR-0024: Planning and Execution Workspace",
+      "category": "decisions",
+      "type": "decision",
+      "status": "accepted",
+      "owner": "product / architecture",
+      "summary": "Defines VisePanda as the planning-and-execution workspace with Chatbot and Trip Canvas as cooperating product cores while retaining fact-first execution gates.",
+      "sourcePrefixes": [
+        "apps/web/src/app/",
+        "packages/domain/src/copilot/",
+        "packages/domain/src/trip/",
+        "apps/server/src/modules/copilot/",
+        "apps/server/src/modules/trip/"
+      ]
+    },
 
     {
       "path": "docs/runbooks/README.md",

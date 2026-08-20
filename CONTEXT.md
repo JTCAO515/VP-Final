@@ -6,20 +6,22 @@ code, Issues, ADRs, runbooks, product copy, and operational discussion. Detailed
 
 ## Product Thesis
 
-VisePanda is the conversational execution companion for independent travel in China. The VisePanda
-Chatbot is the product center: it turns a traveller's message into an honest, structured next action
-for Payment, Show to Local, Entry / Booking, Translate / Communicate, Network, or Rescue / Human Help.
-Planning can attract users, but reliable execution is the current product responsibility. VisePanda is
-not an OTA, a generic itinerary generator, or a collection of unrelated travel tools.
+VisePanda is the AI planning and execution workspace for independent travel in China. The VisePanda
+Chatbot understands a traveller's goals, plans, questions, and changes; the Trip Canvas makes the
+current day-by-day Trip, places, routes, preparation state, and honest execution actions visible.
+Together they carry a traveller from planning through payment, language, transport, entry preparation,
+and recovery when a China trip changes. VisePanda is not an OTA, a generic itinerary generator, or a
+collection of unrelated travel tools.
 
 ## Canonical Terms
 
 | Term | Meaning | Avoid |
 | --- | --- | --- |
-| VisePanda Chatbot | The single user-facing AI interaction and execution-orchestration surface | Butler, bot, separate AI features |
+| VisePanda Chatbot | The single user-facing conversational AI surface for planning, explanation, and execution orchestration | Butler, bot, separate AI features |
 | Copilot | Stable internal module/API name for the VisePanda Chatbot pipeline | A second user-facing product surface |
 | Copilot envelope | Typed response containing a message and optional actions, citations, tools, or handoff | Raw model response |
 | Trip | The current materialized travel plan | Itinerary blob |
+| Trip Canvas | The visible workspace for reviewing and adjusting the current Trip, its preparation state, and available execution actions | A static itinerary export |
 | TripPatch | A typed, validated request to change a Trip | Direct Trip mutation |
 | Trip event | Append-only record of an applied TripPatch | Edit history row |
 | Execution fact | Source-backed, confidence-scored, time-bounded China travel fact | Tip, AI fact |
@@ -48,7 +50,7 @@ not an OTA, a generic itinerary generator, or a collection of unrelated travel t
 ## Relationships
 
 - A user message enters the VisePanda Chatbot through the Copilot pipeline and produces one validated Copilot envelope.
-- A Copilot envelope may contain TripPatch values; deterministic application creates Trip events.
+- The Trip Canvas renders the current Trip and accepts only deterministic, validated TripPatch outcomes; a Copilot envelope may contain one such Patch and deterministic application creates Trip events.
 - Execution facts feed VisePanda Chatbot retrieval first; Explore and search pages are secondary consumers.
 - Unanswered questions create knowledge gaps; reviewed gaps may become execution facts.
 - Commercial actions reference active partners and create outbound clicks through the gateway.
