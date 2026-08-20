@@ -27,9 +27,9 @@ select is(
 );
 
 select lives_ok(
-  $$insert into public.early_access_signups (email, locale, source, ip_hash, retention_expires_at)
-    values ('traveler@example.com', 'en', 'landing', repeat('a', 64), now() + interval '180 days')$$,
-  'A normalized private signup with a bounded deadline is accepted'
+  $$insert into public.early_access_signups (email, locale, source, ip_hash, created_at, retention_expires_at)
+    values ('traveler@example.com', 'en', 'landing', repeat('a', 64), now() - interval '2 days', now() - interval '1 day')$$,
+  'A normalized private signup with an internally consistent bounded deadline is accepted'
 );
 select throws_ok(
   $$insert into public.early_access_signups (email, locale, source, ip_hash, retention_expires_at)
@@ -42,9 +42,6 @@ select throws_ok(
   '23514', null, 'Retention cannot exceed 365 days'
 );
 
-update public.early_access_signups
-set retention_expires_at = now() - interval '1 day'
-where email = 'traveler@example.com';
 select internal.run_retention_purge('early_access_signups');
 select is((select count(*)::integer from public.early_access_signups where email = 'traveler@example.com'), 0, 'Expired signup is purged');
 select is(
