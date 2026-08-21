@@ -30,6 +30,7 @@ New ADRs are append-only and use the next numeric prefix.
 | [ADR-0023](ADR-0023-chatbot-execution-core.md)                           | Accepted | Narrows delivery around the VisePanda Chatbot and six source-backed China-travel execution moments without replacing the accepted technical architecture. |
 | [ADR-0024](ADR-0024-planning-execution-workspace.md)                      | Accepted | Defines VisePanda as the planning-and-execution workspace where Chatbot and Trip Canvas jointly serve independent China travel. |
 | [ADR-0025](ADR-0025-vp-v3-web-experience-layer.md)                     | Accepted | Builds VP-V3 as a parallel experience layer while keeping one repository, one server/data authority, and `apps/web` as the pre-cutover rollback asset. |
+| [ADR-0026](ADR-0026-visepanda-v3-public-release-name.md)                | Accepted | Names VisePanda V3 as the current public repository release while preserving all maturity, runtime, cutover, and historical-record boundaries.       |
 
 ## When to Add an ADR
 

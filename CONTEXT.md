@@ -77,6 +77,14 @@ When documents disagree, use this order:
 
 An inconsistency is a defect. Fix the code or the higher-authority document in the same PR.
 
+## Current Product Version
+
+`VisePanda V3` is the current public release version name under
+[ADR-0026](docs/adr/ADR-0026-visepanda-v3-public-release-name.md). V3 remains the same VisePanda
+product, repository, server, data, identity, and commercial boundary; the version label is not
+evidence that every planned V3 surface is implemented or live. Current maturity comes from the
+generated [documentation index](docs/INDEX.md), module truth, deployment evidence, and active Issues.
+
 ## Current Architecture Name
 
 `Fable-5 architecture` means the accepted VisePanda V2 baseline: TypeScript monorepo, modular

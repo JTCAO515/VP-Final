@@ -2,7 +2,7 @@
 
 Status: active
 Method: [钱学森 Skills](../methodology/qian-systems-engineering.md)
-Product authority: [V2 frozen baseline](../planning/visepanda-v2-final-architecture.md), amended by [ADR-0023](../adr/ADR-0023-chatbot-execution-core.md), [ADR-0024](../adr/ADR-0024-planning-execution-workspace.md), and the [ADR-0025 VP-V3 experience-layer boundary](../adr/ADR-0025-vp-v3-web-experience-layer.md)
+Product authority: [V2 frozen baseline](../planning/visepanda-v2-final-architecture.md), amended by [ADR-0023](../adr/ADR-0023-chatbot-execution-core.md), [ADR-0024](../adr/ADR-0024-planning-execution-workspace.md), the [ADR-0025 V3 experience-layer boundary](../adr/ADR-0025-vp-v3-web-experience-layer.md), and the [ADR-0026 VisePanda V3 public release name](../adr/ADR-0026-visepanda-v3-public-release-name.md)
 
 This document is the operational “overall design department” baseline. It does not replace the
 frozen product architecture. It translates that architecture into objectives, controlled
@@ -65,12 +65,12 @@ real users reach 200 or Human Tasks reach 20, unless a superseding ADR changes t
 | Telemetry & Evals | events, traces, cost, quality and regression evidence | domain telemetry, server, `evals/` | sensitive prompt logging by default |
 | Delivery | builds, environments, deployment, rollback, monitoring | CI, Vercel, Supabase, EAS when active | undocumented manual state |
 
-### VP-V3 Web experience program
+### VisePanda V3 Web experience program
 
-VP-V3 is an internal complete traveler-frontend rewrite program, not a new public product, repository,
-backend, database, or commercial capability. Its planned `apps/web-v3` application may own a parallel,
-re-authored traveler experience and thin Next.js adapters only; it does not wholesale-copy the legacy
-component/CSS tree. `apps/web` remains the current production and rollback application
+VisePanda V3 is the current public release version and a complete traveler-frontend rewrite program,
+not a second product, repository, backend, database, or commercial capability. Its `apps/web-v3`
+application may own a parallel, re-authored traveler experience and thin Next.js adapters only; it
+does not wholesale-copy the legacy component/CSS tree. `apps/web` remains the current production and rollback application
 until the independently accepted cutover gate. Both applications must consume one Domain, server,
 identity, persistence, fact-eligibility, TripPatch, audit, rate, privacy, and retention authority.
 

@@ -1,19 +1,19 @@
 {
   "schemaVersion": 1,
   "updatedAt": "2026-08-21",
-  "updatedBy": "Codex / serialized VP-V3 Early Access and Vercel Preview refresh",
+  "updatedBy": "Codex / VisePanda V3 public release naming refresh",
   "baseBranch": "main",
-  "lastVerifiedCommit": "861d59e Merge pull request #567 from JTCAO515/codex/v3-04-early-access-route; PR #567 head de4402d passed GitHub verify, evals, docs, Database contracts, Vercel Preview Comments, and both existing Web/Ops Vercel checks. It adds no migration or production configuration. The independent VP-V3 deployment evidence is recorded separately under OA-033.",
+  "lastVerifiedCommit": "67c8e0b Merge pull request #568 from JTCAO515/codex/v3-04b-vercel-preview; PR #568 recorded the independent V3 Preview after its required GitHub checks passed. Supabase Preview was skipped and is not counted as green for this zero-schema deployment-documentation change.",
   "currentPhase": "Phase 0 — planning and execution workspace focus",
-  "maturity": "The real-provider Copilot, durable Trip completion, signed anonymous identity, cost/product-event persistence, trusted rate guards, legal pages, retention controls, durable outbound ledger, Admin-only partner configuration, P0-19 telemetry, P0-20 public-runtime controls, and execution-fact safety controls are merged. ADR-0024 defines VisePanda as the AI planning and execution workspace and ADR-0025 freezes VP-V3 as a complete parallel traveler-frontend rewrite. `apps/web-v3` now has the Tailwind v4 Early Access Shell, five UI locales with Arabic RTL, shared Server composition, and the shared Early Access HTTP route; current `apps/web` remains the public Production and rollback. Independent V3 deployment `dpl_3BRHwvfwgmK3vA12g7WU6nsEG7Bt` is explicit Preview/Ready with no custom domain and no Preview environment variables, so the page is visible but signup returns honest `EARLY_ACCESS_UNAVAILABLE`. OA-033 owns later Preview-isolated database/Redis/Resend configuration. The new project's first bare CLI deployment was automatically classified production by Vercel and has only the isolated default alias; it did not touch `go2china.space`. OA-031 still requires the optional concern migration/retention evidence and OA-032 requires controlled real ReSend confirmation. Scoped execution facts, structured Execution Action delivery, and the Payment, Show to Local, and Entry / Booking loops remain unimplemented. Generic Content AI persistence remains paused and external commercial/mobile/VisePod gates remain unavailable without independent evidence.",
-  "lastCompleted": "PR #564 merged ADR-0025 and the #551-#563 V3 issue graph. PR #565 merged the Tailwind v4 Early Access Shell after exact-head Tier B review and responsive/five-locale Browser evidence. PR #566 moved Web composition to the frozen Server subpath with current Web behavior preserved. PR #567 added one shared Early Access HTTP route for current Web and V3; its exact head passed verify, evals, docs, Database contracts, and existing Web/Ops Vercel checks. Vercel project `vp-final-web-v3` was created with Root Directory `apps/web-v3`; explicit deployment `dpl_3BRHwvfwgmK3vA12g7WU6nsEG7Bt` is Preview/Ready and protected smoke returns the expected noindex page, deny-all robots, and honest 503 without configuration. No public domain, Production Web, database row, migration, or real email was changed.",
+  "maturity": "The real-provider Copilot, durable Trip completion, signed anonymous identity, cost/product-event persistence, trusted rate guards, legal pages, retention controls, durable outbound ledger, Admin-only partner configuration, P0-19 telemetry, P0-20 public-runtime controls, and execution-fact safety controls are merged. ADR-0024 defines VisePanda as the AI planning and execution workspace, ADR-0025 freezes the complete parallel traveler-frontend rewrite boundary, and ADR-0026 names VisePanda V3 as the current public repository release without changing capability maturity. `apps/web-v3` now has the Tailwind v4 Early Access Shell, five UI locales with Arabic RTL, shared Server composition, and the shared Early Access HTTP route; current `apps/web` remains the public Production and rollback. Independent V3 deployment `dpl_3BRHwvfwgmK3vA12g7WU6nsEG7Bt` is explicit Preview/Ready with no custom domain and no Preview environment variables, so the page is visible but signup returns honest `EARLY_ACCESS_UNAVAILABLE`. OA-033 owns later Preview-isolated database/Redis/Resend configuration. The new project's first bare CLI deployment was automatically classified production by Vercel and has only the isolated default alias; it did not touch `go2china.space`. OA-031 still requires the optional concern migration/retention evidence and OA-032 requires controlled real ReSend confirmation. Scoped execution facts, structured Execution Action delivery, and the Payment, Show to Local, and Entry / Booking loops remain unimplemented. Generic Content AI persistence remains paused and external commercial/mobile/VisePod gates remain unavailable without independent evidence.",
+  "lastCompleted": "PR #564 merged ADR-0025 and the #551-#563 V3 issue graph. PR #565 merged the Tailwind v4 Early Access Shell after exact-head Tier B review and responsive/five-locale Browser evidence. PR #566 moved Web composition to the frozen Server subpath with current Web behavior preserved. PR #567 added one shared Early Access HTTP route for current Web and V3; its exact head passed verify, evals, docs, Database contracts, and existing Web/Ops Vercel checks. PR #568 serialized the independent Vercel Preview evidence. Vercel project `vp-final-web-v3` uses Root Directory `apps/web-v3`; explicit deployment `dpl_3BRHwvfwgmK3vA12g7WU6nsEG7Bt` is Preview/Ready and protected smoke returns the expected noindex page, deny-all robots, and honest 503 without configuration. No public domain, Production Web, database row, migration, or real email was changed.",
   "activeWork": [
     {
-      "ref": "ADR-0025 / Issues #551-#563 / OA-033",
-      "title": "VP-V3 complete traveler-frontend rewrite",
+      "ref": "ADR-0025 + ADR-0026 / Issues #551-#563 / OA-033",
+      "title": "VisePanda V3 complete traveler-frontend rewrite",
       "state": "Architecture, Early Access Shell, shared composition, and shared Early Access route are merged. An isolated explicit Vercel Preview is Ready, but its runtime remains fail-closed because no Preview database/Redis/Resend variables are configured. The first bare deployment auto-targeted production only inside the isolated V3 project and has no public custom domain.",
       "owner": "Codex for serial implementation and verification; operator for Preview runtime isolation/secrets and any future public cutover",
-      "next": "Close #563 with serialized deployment evidence, then start #556 static Planner while OA-033 remains the separate durable Preview configuration gate."
+      "next": "Start #556 static Planner while OA-033 remains the separate durable Preview configuration gate."
     },
     {
       "ref": "ADR-0023 + ADR-0024 / Issues #521, #537",
@@ -40,7 +40,7 @@
   "nextActions": [
     {
       "priority": "P0",
-      "action": "Continue VP-V3 with #556 static Planner after the #563 deployment snapshot merges; keep the candidate experience zero-write and fact-honest.",
+      "action": "Continue VisePanda V3 with #556 static Planner; keep the candidate experience zero-write and fact-honest.",
       "exitCriteria": "The Planner Preview uses the accepted Tailwind/Red-Gold system, calls no model/map/Trip write, shows explicit empty/unavailable states, and passes responsive/five-locale browser evidence."
     },
     {
@@ -65,7 +65,7 @@
     }
   ],
   "blockers": [
-    "OA-033 remains in progress: VP-V3 Preview is deployed and visually/API smoke-tested, but it has no Preview environment variables and therefore returns honest 503. The first bare Vercel deployment auto-targeted production within the isolated V3 project; it has only the default Vercel alias and was not removed because deletion requires separate confirmation.",
+    "OA-033 remains in progress: VisePanda V3 Preview is deployed and visually/API smoke-tested, but it has no Preview environment variables and therefore returns honest 503. The first bare Vercel deployment auto-targeted production within the isolated V3 project; it has only the default Vercel alias and was not removed because deletion requires separate confirmation.",
     "P0-17 implementation is merged, but OA-006 remains deferred: no legal receiving-entity/payment-route decision or sanitized Stripe activation evidence is recorded. No payment, booking, commission, or paid Human Help capability is live.",
     "Issue #99's Creator contract is merged, but public activation remains blocked on a real approved active Creator record, disclosure/landing facts, and a separately scoped server-side consumer. No Creator redirect, click, report, or commission is live.",
     "SEO publication #59 and #84 through #86 still require an eligibility-driven matrix and no-empty-page gate for any public indexability claim. Commercial Explore #58 requires a real active approved-partner record before a live redirect is rendered; implementation may proceed without fabricating that external status.",
@@ -153,6 +153,10 @@
     {
       "path": "docs/adr/ADR-0025-vp-v3-web-experience-layer.md",
       "reason": "Apply the accepted complete frontend rewrite, shared-runtime, Tailwind token, route, Preview, cutover, and rollback boundary."
+    },
+    {
+      "path": "docs/adr/ADR-0026-visepanda-v3-public-release-name.md",
+      "reason": "Use VisePanda V3 as the current public release name without converting the version label into a capability or Production claim."
     },
     {
       "path": "docs/planning/visepanda-v3-web-plan.md",
