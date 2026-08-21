@@ -35,6 +35,7 @@ In scope:
 
 - `apps/web-v3` experience shell and responsive Red-Gold presentation;
 - complete re-authoring of traveler-facing screens, starting with Early Access;
+- Tailwind CSS v4 utilities with a single `@theme` bridge to the canonical Red-Gold variables;
 - Early Access, Planner, Canvas, Today, Discover, place, preparation, account, and trust route ownership;
 - shared Web runtime composition needed by both Web apps;
 - typed candidates and confirmed Patch proposals;
@@ -116,6 +117,7 @@ forbidden.
 | Security/privacy | Server-derived identity, trusted addresses, secret-safe logging, RLS/service boundaries, and no raw production proxy.    |
 | Performance      | V3 Preview build and interaction observations are recorded; numeric targets wait for a measured baseline.                |
 | UX/accessibility | 375/768/1280, five locales, Arabic RTL, keyboard, reduced motion, contrast, no horizontal overflow or inert controls.    |
+| Style governance | V3 source scan rejects arbitrary-value classes, inline style, JSX style elements, and component color literals; semantic Tailwind utilities resolve through the Red-Gold `@theme` bridge. |
 | Observability    | Preview console and route errors are observable; production monitoring/owner/rollback exists before cutover.             |
 | Compliance       | Existing legal bodies and public-claim restrictions remain authoritative; previews and unavailable states are explicit.  |
 

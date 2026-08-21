@@ -74,6 +74,11 @@ component/CSS tree. `apps/web` remains the current production and rollback appli
 until the independently accepted cutover gate. Both applications must consume one Domain, server,
 identity, persistence, fact-eligibility, TripPatch, audit, rate, privacy, and retention authority.
 
+V3 styling uses Tailwind CSS v4 utilities backed by one `@theme` bridge to the canonical Red-Gold
+variables. Component-local arbitrary colors, inline styles, and JSX style elements are outside the V3
+boundary. Legacy `apps/web` styling remains a separate maintenance line rather than a prerequisite
+mass migration.
+
 The shared Web server composition must be extracted and compatibility-tested before the V3 app
 exposes a real API operation. Copying `apps/web` route implementation, proxying raw traveler data to
 the production deployment, or creating a V3 database/Auth/model Router is outside the system boundary.

@@ -59,7 +59,25 @@ This decision creates no domain, API, event, migration, permission, or runtime c
 `TravelObjectCandidate`, Patch proposal, and Execution Action shapes remain `draft` until their own
 Issues freeze all interface elements and tests.
 
-### 3. Product-surface ownership
+### 3. V3 styling framework
+
+`apps/web-v3` uses Tailwind CSS v4 as its styling framework. Tailwind is a utility and build layer,
+not a new visual authority. #553 must bridge the canonical VisePanda Red-Gold CSS variables through
+Tailwind v4 `@theme`, producing semantic utilities such as `bg-brand-gold`. It MUST NOT define a
+parallel color palette or copy color literals into components.
+
+All authored V3 component/page styling must use Tailwind v4 utility classes. V3 TypeScript/JSX MUST
+NOT use arbitrary-value classes such as `bg-[#D4AF37]`, inline `style`, JSX `<style>` elements, or
+component-local color literals. A required new value must first become a reviewed Red-Gold token and
+then enter the `@theme` bridge. #553 must add repository-local Agent guidance and a mechanical source
+check for these rules.
+
+The legacy `apps/web` styling is not mass-migrated. It remains on the production-maintenance line
+while new `apps/web-v3` code follows the Tailwind rule from its first component. Necessary legacy fixes
+remain separate Issues; their existence does not authorize importing the old CSS/component tree into
+V3.
+
+### 4. Product-surface ownership
 
 The V3 experience has three cooperating modes:
 
@@ -82,7 +100,7 @@ Today   = execute and recover
 Discover, place detail, and preparation are supporting object/fact surfaces. They cannot promote a
 candidate into a reviewed fact or activate booking, payment, navigation, or Human Help.
 
-### 4. Route ledger
+### 5. Route ledger
 
 | V3 route                             | Planned owner           | Initial maturity        | Binding rule                                                                                              |
 | ------------------------------------ | ----------------------- | ----------------------- | --------------------------------------------------------------------------------------------------------- |
@@ -105,7 +123,7 @@ composition (#554), the Early Access page (#555), and an independent Vercel Prev
 browser acceptance (#563). Planner, Canvas, Today, and other traveler surfaces do not begin until that
 Preview gate has passed.
 
-### 5. Legacy routing, cutover, and rollback
+### 6. Legacy routing, cutover, and rollback
 
 Before cutover, `apps/web` keeps its current routes and production authority. Issue #562 owns an exact
 route inventory and classifies every current route as preserve, migrate, retire with `404 + noindex`,
@@ -131,8 +149,8 @@ rollback is implied because V3 must reuse the existing accepted data contracts.
   identity, data, or provider authority.
 - The shared composition extraction in #554 is a required D2 contract/refactor gate, not optional
   cleanup.
-- Tailwind CSS v4 is not authorized by this ADR. #553 may adopt it only if it maps the canonical
-  Red-Gold variables without creating a second token authority and the dependency/build review passes.
+- #553 implements the accepted Tailwind CSS v4 `@theme` bridge and style-policy checks before any
+  later V3 traveler surface is authored.
 - OA-031 and OA-032 remain open external-evidence gates. V3 documentation or Preview behavior cannot
   close them or support a production-live claim.
 

@@ -53,8 +53,14 @@ composition extraction. Until it merges, V3 Shell work has no authority to expos
 - English is default; Chinese, Spanish, Russian, and Arabic are catalogued UI locales. Arabic uses
   RTL. Browser UI localization does not rewrite Trip data, model output, facts, provider errors,
   disclosures, legal bodies, or safety content.
-- The canonical visual authority remains the VisePanda Red-Gold Design System. Tailwind v4, if
-  accepted by #553, maps those variables and does not become a competing token source.
+- Tailwind CSS v4 is the V3 styling framework. Its `@theme` bridge maps the canonical VisePanda
+  Red-Gold variables into semantic utilities such as `bg-brand-gold`; it does not define a competing
+  palette.
+- All authored V3 page/component styles use Tailwind v4 utility classes. Arbitrary-value classes such
+  as `bg-[#D4AF37]`, inline `style`, JSX `<style>` elements, and component-local color literals are
+  prohibited. New values enter the reviewed Red-Gold token authority before the `@theme` bridge.
+- #553 adds an `apps/web-v3/AGENTS.md` rule and a mechanical source test for the styling boundary.
+  The legacy `apps/web` remains on a separate maintenance line and is not mass-migrated or imported.
 - Controls are at least 44 pixels, keyboard-visible, and honest. A planned, disabled, missing,
   conflicted, expired, or unavailable capability is explicit; inert controls and fake success are
   prohibited.
