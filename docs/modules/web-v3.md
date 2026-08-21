@@ -20,6 +20,12 @@ the accepted `/api/early-access` shape but this app intentionally has no API rou
 therefore renders the localized honest unavailable state until #554/#555 land. No Vercel V3 project,
 Preview URL, production route, runtime persistence, or external configuration is claimed.
 
+#554 adds a thin `src/app/api/_server.ts` adapter over the frozen
+`@visepanda/app-server/web-composition` subpath and consumer-compatibility tests. V3 can now reuse the
+same mode, adapter, cache, optional-capability, and error semantics as the current Web without
+importing its source. This is composition availability, not a V3 API route or a successful signup;
+#555 still owns the actual Early Access route consumer.
+
 The first vertical milestone is Early Access only: #553 creates its Shell, #554 provides the shared
 runtime boundary, #555 re-authors the root page, and #563 triggers an independent Vercel Preview and
 browser acceptance. Other traveler surfaces remain blocked until that deployment gate passes.
@@ -84,7 +90,7 @@ composition extraction. Until it merges, V3 Shell work has no authority to expos
 ## Dependencies and Verification
 
 The authoritative dependency graph and acceptance matrix are in
-[the V3 plan](../planning/visepanda-v3-web-plan.md). #553 changes no server, Domain, Auth, database,
+[the V3 plan](../planning/visepanda-v3-web-plan.md). #553/#554 change no Domain, Auth, database,
 Trip, model, payment, or external runtime contract. `packages/ui/tokens.css` is a tested importable
 projection of the canonical TypeScript token payload, allowing V3 to avoid inline and JSX style tags.
 Development CSP permits `unsafe-eval` only for Next React Refresh; non-development builds continue to

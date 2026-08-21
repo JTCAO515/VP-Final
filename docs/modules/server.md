@@ -15,8 +15,9 @@ network digest and bounded user-agent metadata, then uses a unique normalized-em
 configured server-only Resend adapter may send exactly one confirmation after the first durable
 `subscribed` result; no delivery-provider response is retained, a duplicate never sends, and a
 provider failure remains an honest non-success response. The service has no account, mailing-list
-export, browser table access, campaign, or analytics responsibility. The Web composition root supplies
-it only from the durable Postgres adapter outside explicit local-demo/test mode.
+export, browser table access, campaign, or analytics responsibility. The shared
+`@visepanda/app-server/web-composition` boundary supplies it only from the durable Postgres adapter
+outside explicit local-demo/test mode.
 
 ## Chatbot-Core Responsibility
 
@@ -55,6 +56,9 @@ new map/media consumers remain paused until fact-driven execution slices produce
   save either an owned Trip result or an account-level result. The server derives every owner field,
   never accepts free-form narrative, and stops reads at the retention deadline.
 - Runtime dependencies are injected through `ServerContext` or a caller factory.
+- `src/webComposition.ts` owns the frozen, Next-agnostic Web runtime composition and is exported only
+  through `@visepanda/app-server/web-composition`. Current Web and Web V3 keep thin framework
+  adapters; they do not select or copy service implementations.
 - `@visepanda/app-server/runtime` owns explicit mode parsing, database capability metadata, and the
   persistent-object ownership inventory. It does not select a service inside a router.
 - Partner administration is a private Ops composition boundary, not a public root-router procedure.

@@ -43,6 +43,10 @@
     "./router": {
       "types": "./src/router.ts",
       "default": "./dist/router.js"
+    },
+    "./web-composition": {
+      "types": "./src/webComposition.ts",
+      "default": "./dist/webComposition.js"
     }
   },
   "scripts": {

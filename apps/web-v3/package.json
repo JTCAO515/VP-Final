@@ -11,6 +11,7 @@
     "lint": "prettier --check next.config.ts postcss.config.mjs src"
   },
   "dependencies": {
+    "@visepanda/app-server": "workspace:*",
     "@visepanda/domain": "workspace:*",
     "@visepanda/ui": "workspace:*",
     "next": "^15.5.21",
