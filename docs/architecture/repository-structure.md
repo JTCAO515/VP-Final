@@ -8,7 +8,7 @@
 | `packages/ai` | AI runtime | Provider-neutral model router, effort, usage, and cost types | Router skeleton; only static test provider |
 | `packages/api-client` | API | Typed tRPC client derived from the server router | Implemented; external server endpoint is not yet deployed |
 | `packages/ui` | Design system | Shared semantic tokens, tested CSS projection, and web/native primitive contracts | Implemented token contract; no page components |
-| `apps/server` | Backend | Modular tRPC router, services, DB adapters, two-pass Trip completion, and injected AI route executor | Partially implemented |
+| `apps/server` | Backend | Modular tRPC router, services, DB adapters, shared Web composition, two-pass Trip completion, and injected AI route executor | Partially implemented |
 | `apps/web` | Traveler Web | Next.js product and public acquisition surfaces | Implemented MVP shell; not production-ready |
 | `apps/web-v3` | Traveler Web V3 | Parallel Next.js/Tailwind traveler-facing rewrite and thin future route adapters | Early Access Shell implemented; shared runtime and Vercel Preview pending |
 | `apps/ops` | Operations | Fact, gap, and Human Task workflows | Implemented shell; auth and persistence incomplete |
@@ -40,6 +40,8 @@
   not claim a generated `dist` directory.
 - A module exports its supported interface from its index or declared package export. Consumers must
   not depend on internal file layout without an explicit export.
+- Both Web apps consume runtime composition only through the
+  `@visepanda/app-server/web-composition` package subpath and keep thin local framework adapters.
 - Workspace type checking follows the upstream build graph so a clean CI checkout resolves declared
   workspace package exports before a dependent package is typechecked.
 - `apps/web`, `apps/web-v3`, and `apps/ops` declare `@visepanda/ui` as a workspace dependency and

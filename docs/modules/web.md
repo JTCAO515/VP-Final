@@ -126,13 +126,15 @@ recovery code, password, session, or proof. If either configured recovery value 
 the request path reports an honest unavailable state; no email-delivery claim is made until OA-023 has
 sanitized external evidence.
 
-The Next.js API layer creates an in-process server caller through one composition root. Explicit
+The Next.js API layer uses a thin adapter over the frozen
+`@visepanda/app-server/web-composition` boundary to create its in-process server caller. Explicit
 `preview`, `staging`, and `production` modes require `DATABASE_URL` and select only the existing
 Postgres Trip, Knowledge, Agent Trace, Human Task, Commerce, and Readiness adapters. Missing/invalid
 mode or database configuration returns typed 503 `RUNTIME_UNAVAILABLE`; it never selects memory. Tests inject services explicitly. Only explicit
 `local-demo` may use a process-cached, non-durable memory pair. The selected durable service pair is
 also process-cached so requests reuse the Postgres pool; persistence remains in Postgres across cold
-starts.
+starts. The current Web retains every route/error behavior while no longer owning or exposing a
+copyable composition implementation.
 
 The composition root also supplies the private Readiness service to the shared server router. It is
 not a browser table-access path: a later traveler UI uses only server procedures, explicit persistence
