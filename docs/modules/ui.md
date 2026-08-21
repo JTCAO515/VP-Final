@@ -11,9 +11,11 @@ rendering implementations.
 ## Current State
 
 The package exports the active platform-neutral semantic tokens, a root CSS custom-property payload,
-and contrast/drift tests. Web and Ops inject the same token payload at their root layouts and use
-local aliases only as references to `--vp-*` variables. The canonical visual specification remains
-the [Red Gold Design System](../design-system/visepanda-v2-red-gold-design-system.md).
+an importable `tokens.css` projection, and contrast/drift tests. Existing Web and Ops inject the same
+token payload at their root layouts. Web V3 imports the tested CSS projection and maps it through
+Tailwind CSS v4 `@theme inline`, so semantic utility classes consume `--vp-*` without a second color
+source or JSX style tag. The canonical visual specification remains the
+[Red Gold Design System](../design-system/visepanda-v2-red-gold-design-system.md).
 
 ## Intended Scope
 
@@ -21,6 +23,7 @@ the [Red Gold Design System](../design-system/visepanda-v2-red-gold-design-syste
 - Semantic status colors and accessibility requirements.
 - Primitive contracts with separate Web and Native implementations where needed.
 - Shared icons and content tokens only when ownership is clear.
+- Importable CSS projections that are mechanically checked against the canonical TypeScript payload.
 
 ## Non-Scope
 

@@ -1,0 +1,39 @@
+@import "tailwindcss";
+@import "@visepanda/ui/tokens.css";
+
+@theme {
+  --color-*: initial;
+}
+
+@theme inline {
+  --color-brand-bg: var(--vp-bg);
+  --color-brand-app: var(--vp-app);
+  --color-brand-surface: var(--vp-surface);
+  --color-brand-surface-warm: var(--vp-surface-warm);
+  --color-brand-surface-red: var(--vp-surface-red);
+  --color-brand-surface-gold: var(--vp-surface-gold);
+  --color-brand-ink: var(--vp-ink);
+  --color-brand-ink-soft: var(--vp-ink-soft);
+  --color-brand-muted: var(--vp-muted);
+  --color-brand-faint: var(--vp-faint);
+  --color-brand-line: var(--vp-line);
+  --color-brand-line-strong: var(--vp-line-strong);
+  --color-brand-red: var(--vp-china-red);
+  --color-brand-red-hover: var(--vp-china-red-hover);
+  --color-brand-red-soft: var(--vp-china-red-soft);
+  --color-brand-gold: var(--vp-foil-gold);
+  --color-brand-gold-dark: var(--vp-foil-gold-dark);
+  --color-brand-gold-soft: var(--vp-foil-gold-soft);
+  --color-brand-jade: var(--vp-jade);
+  --color-brand-jade-soft: var(--vp-jade-soft);
+  --color-brand-river: var(--vp-river);
+  --color-brand-river-soft: var(--vp-river-soft);
+  --color-brand-on-primary: var(--vp-on-primary);
+  --font-sans: var(--vp-font-sans);
+  --font-mono: var(--vp-font-mono);
+  --shadow-brand-sm: var(--vp-shadow-sm);
+  --shadow-brand-raised: var(--vp-shadow-raised);
+  --radius-brand-xs: var(--vp-radius-xs);
+  --radius-brand-sm: var(--vp-radius-sm);
+  --radius-brand-md: var(--vp-radius-md);
+}

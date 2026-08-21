@@ -470,6 +470,19 @@ Recommended first CSS primitives:
 
 Do not create `packages/ui` page components until another surface needs them.
 
+### 10.3 VP-V3 Tailwind v4 Projection
+
+`apps/web-v3` uses Tailwind CSS v4 utilities. It imports the tested `@visepanda/ui/tokens.css`
+projection, clears Tailwind's default color namespace, and maps the canonical `--vp-*` variables
+through `@theme inline`. V3 component colors therefore use semantic utilities such as
+`bg-brand-red`, `text-brand-ink`, and `border-brand-gold`.
+
+V3 page/component source MUST NOT use arbitrary-value classes, inline `style`, JSX `<style>`
+elements, component-local color literals, or a competing palette. A new visual value is first
+reviewed in `packages/ui`, then added to the bridge. `apps/web-v3/AGENTS.md` and the V3 style-policy
+test enforce this boundary. The legacy `apps/web` remains on its own maintenance line; its CSS is not
+mass-migrated or imported into V3.
+
 ---
 
 ## 11. Acceptance Checklist

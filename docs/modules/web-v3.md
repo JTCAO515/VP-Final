@@ -1,7 +1,7 @@
 # Web V3 Module
 
-Path: `apps/web-v3` (planned; directory does not exist at ADR freeze)
-Status: planned
+Path: `apps/web-v3`
+Status: implemented Shell; shared runtime and Vercel Preview not implemented
 Authority: [ADR-0025](../adr/ADR-0025-vp-v3-web-experience-layer.md)
 Program: [#551](https://github.com/JTCAO515/VP-Final/issues/551)
 
@@ -12,9 +12,13 @@ Discover, place detail, preparation, account, and accepted trust routes. It is a
 framework adapter, not a second business/runtime system, and it does not wholesale-copy the legacy
 `apps/web` component/CSS tree.
 
-Current implementation truth: no `apps/web-v3` directory, deployable, Preview, route, runtime API,
-or production behavior exists. [#553](https://github.com/JTCAO515/VP-Final/issues/553) is the first
-implementation Issue after the architecture baseline merges.
+Current implementation truth: #553 adds the standalone Next.js 15.5.21 / React 19.2.7 App Router
+Shell, Tailwind CSS 4.3.3, the Red-Gold `@theme inline` bridge, English/Chinese/Spanish/Russian/Arabic
+UI copy, Arabic RTL, an Early Access-first root, a truthful static Product Preview, scenarios, FAQ,
+noindex robots, custom planned-route 404, security headers, and style-policy tests. The form consumes
+the accepted `/api/early-access` shape but this app intentionally has no API route yet; a submission
+therefore renders the localized honest unavailable state until #554/#555 land. No Vercel V3 project,
+Preview URL, production route, runtime persistence, or external configuration is claimed.
 
 The first vertical milestone is Early Access only: #553 creates its Shell, #554 provides the shared
 runtime boundary, #555 re-authors the root page, and #563 triggers an independent Vercel Preview and
@@ -38,7 +42,7 @@ composition extraction. Until it merges, V3 Shell work has no authority to expos
 
 | Surface            | Responsibility                                        | First owning Issue                           |
 | ------------------ | ----------------------------------------------------- | -------------------------------------------- |
-| `/`                | one-action Early Access with labelled product preview | #555                                         |
+| `/`                | one-action Early Access Shell and static product preview | #553 Shell; #555 shared real consumer        |
 | `/plan`            | intent input, candidates, honest map/object state     | #556 static; #558 real candidates            |
 | `/trip`            | one owner-scoped Trip Canvas projection               | #559                                         |
 | `/today`           | next eligible action or recovery                      | #561                                         |
@@ -46,7 +50,7 @@ composition extraction. Until it merges, V3 Shell work has no authority to expos
 | `/places/[slug]`   | evidence-gated place detail                           | #553 skeleton; later evidence-gated consumer |
 | `/prepare`         | fixed/reviewed preparation state                      | #553 skeleton; later bounded consumer        |
 | `/account`         | existing server-verified identity consumer            | #553 skeleton; #554 shared composition       |
-| legal/system paths | accepted bodies and exact security adapters           | #553/#554; final inventory #562              |
+| legal/system paths | current canonical Production legal links; no V3 body copy | #553 bridge; final inventory #562          |
 
 ## Planned UI Rules
 
@@ -80,9 +84,11 @@ composition extraction. Until it merges, V3 Shell work has no authority to expos
 ## Dependencies and Verification
 
 The authoritative dependency graph and acceptance matrix are in
-[the V3 plan](../planning/visepanda-v3-web-plan.md). When the module becomes implemented, this document
-must be updated in the same source PR with exact routes, interfaces, tests, runtime maturity,
-deployment ownership, and remaining gaps.
+[the V3 plan](../planning/visepanda-v3-web-plan.md). #553 changes no server, Domain, Auth, database,
+Trip, model, payment, or external runtime contract. `packages/ui/tokens.css` is a tested importable
+projection of the canonical TypeScript token payload, allowing V3 to avoid inline and JSX style tags.
+Development CSP permits `unsafe-eval` only for Next React Refresh; non-development builds continue to
+omit it.
 
 The planned module-level check names are:
 
@@ -92,7 +98,9 @@ pnpm --filter @visepanda/app-web-v3 test
 pnpm --filter @visepanda/app-web-v3 build
 ```
 
-They are not runnable until #553 creates the package. No check is claimed as passed here.
+The #553 implementation runs these commands, plus `pnpm --filter @visepanda/ui test`, the repository
+documentation gates, and Browser-based 1536/1280/768/375, five-locale, Arabic RTL, console, overflow,
+FAQ, custom 404, and honest-unavailable checks. Vercel deployment evidence remains #563.
 
 ## Rollback
 
