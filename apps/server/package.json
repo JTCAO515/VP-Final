@@ -47,6 +47,14 @@
     "./web-composition": {
       "types": "./src/webComposition.ts",
       "default": "./dist/webComposition.js"
+    },
+    "./web-trusted-client": {
+      "types": "./src/webTrustedClient.ts",
+      "default": "./dist/webTrustedClient.js"
+    },
+    "./web-early-access-route": {
+      "types": "./src/webEarlyAccessRoute.ts",
+      "default": "./dist/webEarlyAccessRoute.js"
     }
   },
   "scripts": {

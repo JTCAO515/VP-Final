@@ -270,6 +270,23 @@
       ]
     },
     {
+      "path": "docs/architecture/early-access-web-route-contract.md",
+      "title": "Early Access Web Route Contract",
+      "category": "architecture",
+      "type": "reference",
+      "status": "accepted",
+      "owner": "Server / Early Access / Web runtime",
+      "summary": "Frozen shared Request-to-Response, trusted-address, HMAC, rate, idempotency, delivery, error, and consumer contract for Early Access.",
+      "sourcePrefixes": [
+        "apps/server/src/webEarlyAccessRoute.ts",
+        "apps/server/src/webTrustedClient.ts",
+        "apps/server/package.json",
+        "apps/web/src/app/api/early-access/",
+        "apps/web/src/app/api/copilot/trustedClient.ts",
+        "apps/web-v3/src/app/api/early-access/"
+      ]
+    },
+    {
       "path": "docs/architecture/runtime-data-flows.md",
       "title": "Runtime and Data Flows",
       "category": "architecture",
