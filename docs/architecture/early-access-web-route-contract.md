@@ -58,8 +58,9 @@ outside trusted Vercel evidence fails closed. IPv6 is canonicalized; caller-cont
   external data.
 - OA-031 remains the authority for production migration/RLS/retention evidence.
 - OA-032 remains the authority for a real verified sender, first delivery, and no duplicate resend.
-- #563 owns the independent V3 Vercel project/configuration and deployed Preview evidence. A merged
-  route is not proof that V3 persistence or email delivery is live.
+- #563 created and verified the independent V3 project and a Ready explicit Preview. OA-033 remains
+  in progress because the project has no Preview database/Redis/Resend variables; the deployed route
+  returns honest 503 and is not proof that V3 persistence or email delivery is live.
 
 ## Verification
 

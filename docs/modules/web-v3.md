@@ -1,7 +1,7 @@
 # Web V3 Module
 
 Path: `apps/web-v3`
-Status: implemented Shell; shared runtime and Vercel Preview not implemented
+Status: independent Preview deployed; durable signup/email unavailable
 Authority: [ADR-0025](../adr/ADR-0025-vp-v3-web-experience-layer.md)
 Program: [#551](https://github.com/JTCAO515/VP-Final/issues/551)
 
@@ -16,7 +16,7 @@ Current implementation truth: #553 adds the standalone Next.js 15.5.21 / React 1
 Shell, Tailwind CSS 4.3.3, the Red-Gold `@theme inline` bridge, English/Chinese/Spanish/Russian/Arabic
 UI copy, Arabic RTL, an Early Access-first root, a truthful static Product Preview, scenarios, FAQ,
 noindex robots, custom planned-route 404, security headers, and style-policy tests. No Vercel V3
-project, Preview URL, production route, runtime persistence, or external configuration is claimed.
+public domain, durable Preview persistence, or external email delivery is claimed.
 
 #554 adds a thin `src/app/api/_server.ts` adapter over the frozen
 `@visepanda/app-server/web-composition` subpath and consumer-compatibility tests. V3 can now reuse the
@@ -28,6 +28,14 @@ real same-origin route and preserves the shared validation, trusted-address, HMA
 idempotency, confirmation, and honest error states. Test/local-demo success is implemented; V3
 Preview persistence and delivery remain unverified until #563 supplies the independent Vercel
 project/configuration and OA-031/OA-032 external evidence is applicable there.
+
+#563 created the isolated `vp-final-web-v3` Vercel project with Root Directory `apps/web-v3` and
+verified explicit deployment `dpl_3BRHwvfwgmK3vA12g7WU6nsEG7Bt` as Preview/Ready. Protected CLI smoke
+confirmed the noindex page, `robots.txt` deny-all, and honest `EARLY_ACCESS_UNAVAILABLE` response. The
+project has no Preview environment variables or custom domain, so no durable signup or email claim is
+authorized. OA-033 owns later Preview-isolated database/Redis/Resend configuration. The new project's
+first bare CLI deployment was auto-classified as production and received only the isolated default
+Vercel alias; it did not touch `go2china.space` or the current `vp-final-web` project.
 
 The first vertical milestone is Early Access only: #553 creates its Shell, #554 provides the shared
 runtime boundary, #555 re-authors the root page, and #563 triggers an independent Vercel Preview and
