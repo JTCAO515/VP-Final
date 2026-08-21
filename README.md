@@ -1,105 +1,158 @@
-# VisePanda V2 (VP-Final)
+# VisePanda V3
 
-> **VisePanda is the AI planning and execution workspace for independent travel in China.**
-> VisePanda 是外国自由行游客来中国旅行的 AI 规划与执行工作台。
+> **AI planning and execution workspace for independent travel in China.**
+>
+> 面向来华外国自由行游客的 AI 规划与执行工作台。
 
-面向来华外国自由行游客的 AI 工作台：VisePanda Chatbot 理解城市、日期、兴趣、节奏和现场问题，形成或调整旅行计划；Trip Canvas 把每天的行程、地点、路线、准备状态和可用执行动作放在同一视图。两者共同覆盖“对话 → 计划 → Canvas 审阅/调整 → 支付、预约、网络和交通准备 → 现场执行、调整与恢复”的闭环。支付、向本地人展示目的地、入场/预约、现场沟通、网络与救援仍是当前事实优先的交付重点。不是 OTA，不是自动预订服务，也不是没有状态的攻略生成器。
+VisePanda V3 帮助旅行者把“想去中国”推进到“下一步能真正执行”。VisePanda Chatbot
+理解城市、日期、兴趣、节奏与现场变化；Trip Canvas 保存并展示当前行程、地点、准备状态和
+可用执行动作。产品围绕一个连续闭环构建：
 
-**本仓库是 VisePanda V2 的唯一开发仓库。** V1（`VP-Codex-Final`）自 2026-07-07 起只收尾不开新功能，V2 Web MVP 公开后冻结（见 [ADR-0001](docs/adr/ADR-0001-repo-and-v1-disposition.md)）。V2 为绿地重构，不继承 V1 任何代码、数据与文档。
-
----
-
-## 从这里开始（按序读）
-
-| # | 文档 | 作用 |
-|---|---|---|
-| 1 | [`CONTEXT.md`](CONTEXT.md) | 项目统一语言、边界与真理层级 |
-| 2 | [`docs/INDEX.md`](docs/INDEX.md) | 自动生成的当前接手快照、强制阅读顺序和完整知识库索引 |
-| 3 | [`docs/architecture/top-level-design.md`](docs/architecture/top-level-design.md) | 总体设计基线：目标、子系统、接口、观测和生命周期门禁 |
-| 4 | [`docs/methodology/qian-systems-engineering.md`](docs/methodology/qian-systems-engineering.md) | **钱学森 Skills**：项目永久闭环工程工作流 |
-| 5 | [`docs/governance/composite-engineering-baseline.md`](docs/governance/composite-engineering-baseline.md) | 钱学森 + Matt 文档即代码 + Karpathy 编码纪律的统一基线 |
-| 6 | [`docs/planning/visepanda-v2-final-architecture.md`](docs/planning/visepanda-v2-final-architecture.md) | **冻结产品基线**：定位、架构、商业与路线图 |
-| 7 | [`docs/adr/`](docs/adr/) | 已接受决策；普通 PR 不重复争论 |
-| 8 | [Issues](https://github.com/JTCAO515/VP-Final/issues) | 可执行控制动作；按依赖和优先级认领 |
-
-## 当前状态（2026-08-20）
-
-- 已完成：monorepo、核心 Domain、持久化 Trip/Knowledge/Human Task/Outbound/Telemetry 边界、
-  真实 Provider 路由、成本与产品事件记录、匿名与可信 IP 保护、法律页、Ops RBAC、
-  知识审核工作流、私有 Ops 图片运行时、Web 多语言 UI，以及基础 CI/evals。
-- 当前阶段：**Phase 0/1 的生产加固与受控预览**。公开 Web 与 Ops 具备受限但真实的运行时；
-  所有缺失配置均诚实不可用，绝不以 mock 或占位成功替代。
-- 当前最大产品缺口：经过人工核实、可展示的执行事实仍很少；这不是代码问题，必须按
-  [知识事实审核流程](docs/runbooks/knowledge-fact-review.md)逐条录入、复核和续期。
-- 当前产品开发顺序由 [ADR-0023](docs/adr/ADR-0023-chatbot-execution-core.md) 和 [ADR-0024](docs/adr/ADR-0024-planning-execution-workspace.md) 共同约束：Chatbot 与 Trip Canvas 是一个规划与执行工作台；先让其中的 Payment、Show to Local、Entry / Booking 三个事实驱动闭环可靠，再扩张 Content AI、地图候选、SEO、VisePod 或商业市场。
-- 外部激活仍受事实门槛约束：Stripe 收款、批准合作伙伴跳转、运营服务、公开图片交付、
-  VisePod 设备服务与 Phase 2+ 商业化均未因仓库代码而自动上线。
-- **权威现状**：先读自动生成的 [`docs/INDEX.md`](docs/INDEX.md) handoff 快照、
-  [`docs/governance/operator-action-register.md`](docs/governance/operator-action-register.md) 和
-  当前 GitHub Issues；历史评审文档仅作为当日证据，不作为实时状态来源。
-
-## 仓库结构
-
-```
-packages/domain      唯一真理源：zod schemas + 纯函数（任何功能先改这里）
-packages/api-client  由 server router 生成的类型化客户端
-packages/ai          提示词档案、环境配置化模型路由、输出校验、evals 胶水
-packages/ui          设计 token + 跨端基础组件
-apps/web             Next.js — 公开产品、VisePanda 工作台、SEO 与安全运行时
-apps/mobile          Expo RN — 受控预览的在华执行基础与 Phase 1 扩展面
-apps/server          模块化单体 API：copilot/trip/knowledge/task/commerce/identity/telemetry
-apps/ops             运营台：知识编辑、人工任务调度、商家白名单（V2-13 落地）
-infra/               migrations、seeds、部署配置
-evals/               AI 行为回归：golden set + 跑分脚本（V2-09 落地）
-docs/                architecture / modules / standards / constraints / methodology / runbooks / planning
+```text
+Planner = discover and decide
+Canvas  = remember and manage
+Today   = execute and recover
 ```
 
-## 技术栈
+VisePanda 不是 OTA、自动预订服务或一次性攻略生成器。模型可以提出候选与变更建议，但不能
+绕过事实资格、用户确认、确定性校验、TripPatch、审计和持久化边界直接修改行程。
 
-TypeScript 单语言 monorepo（pnpm + turborepo）。Next.js 15（Web/Ops）· Expo RN（App）· Node
-模块化单体（Server）· Supabase Postgres + Drizzle + pgvector · Upstash Redis/QStash · Stripe +
-RevenueCat · PostHog + Sentry · 环境配置化的多 Provider LLM 路由（DashScope、DeepSeek、Moonshot、
-智谱）；未验证的外部配置始终返回诚实不可用。
+**VisePanda V3 是本仓库当前的公共版本名称。** 版本名称不代表所有 V3 规划能力已经上线；
+下方状态表和自动生成的 [`docs/INDEX.md`](docs/INDEX.md) 才是交付成熟度依据。
 
-**不做**：原生双端、微服务/K8s、单一 LLM 供应商绑定、Agent 编排框架绑定、OTA 交易闭环、开放商家注册。完整反目标清单见基线 §10。
+## 当前状态
 
-## 开发硬规则（CI/评审按此执行）
+| 能力                    | 状态                      | 当前事实                                                                                                                 |
+| ----------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| V3 Early Access Shell   | **Implemented · Preview** | 独立 Next.js App Router 应用、Red-Gold 视觉系统、响应式页面、FAQ 与诚实错误状态已经合并并部署到 Vercel Preview。         |
+| V3 多语言 UI            | **Implemented · Preview** | English、中文、Español、Русский、العربية 已纳入 UI catalog；Arabic 支持 RTL。                                            |
+| 共享服务端入口          | **Implemented**           | `apps/web` 与 `apps/web-v3` 复用同一 Web composition 和 Early Access HTTP handler；V3 没有复制第二套业务后端。           |
+| V3 Preview 持久化与邮件 | **Unavailable**           | Preview 没有 database、Redis 或 Resend 环境变量；提交会诚实返回 `EARLY_ACCESS_UNAVAILABLE`，由 OA-033 管理后续外部配置。 |
+| Planner                 | **Next · #556**           | 静态体验与诚实空态已进入 ready；真实候选、地图或 Trip 写入不在该切片内。                                                 |
+| Canvas / Today          | **Planned**               | 只读 Trip 投影、确认式 Patch、Next Action 与恢复体验仍由 #559–#561 约束，尚未交付。                                      |
+| V3 Production cutover   | **Not started**           | 当前 Production 与回滚资产仍是 `apps/web`；域名、路由矩阵、监控和回滚演练由 #562 单独验收。                              |
 
-1. **Schema first** — 碰领域模型的功能，先在 `packages/domain` 单独提 PR（schema+纯函数+单测），消费方 PR 在后。
-2. **一个 PR 一个边界** — 一个模块 / 一个契约变更 / 一个 UI flow。
-3. **AI 永不直接写数据** — 模型输出是类型化信封+Patch，确定性代码校验后应用；Chat 只在显式 commerce intent 下携带商业链接（管道层强制）。
-4. **凡钱必进账本** — 任何付费/商业行为必须产出 ledger + telemetry 事件，并带测试。
-5. **提示词改动必带 evals** — `packages/ai` 首个 profile 落地后（V2-09），CI evals gate 转为必过。
-6. **禁止跨模块碰表** — server 模块间只走显式服务接口。
-7. **代码动，文档必动** — 运行 `pnpm docs:check` 和 `pnpm docs:impact -- --base <ref>`。
-8. **钱学森 Skills 闭环** — 每项工作明确目标、子系统、观测、偏差、控制动作和复盘证据。
-9. **接手状态永远同步** — 合并后的串行 handoff 动作更新 `docs/handoff.json` 并重新生成 Index；
-   普通功能 PR 只记录 expected handoff delta，避免并行冲突。
-10. **Karpathy 聚焦实现** — 显式假设，选择最小充分方案；每行改动可追溯，每步绑定验证，
-   禁止预设功能、过早抽象和顺手重构。
+实时状态、阻塞项和下一项控制动作以
+[`docs/INDEX.md`](docs/INDEX.md)、
+[`docs/handoff.json`](docs/handoff.json)、
+[`operator-action-register.md`](docs/governance/operator-action-register.md)
+和当前 [GitHub Issues](https://github.com/JTCAO515/VP-Final/issues) 为准。
 
-## 路线图（触发条件驱动，非日历）
+## 可访问环境
 
-| 阶段 | 触发条件 | 内容 |
-|---|---|---|
-| **Phase 0**（进行中） | — | Chatbot + Trip Canvas 规划与执行工作台中的事实驱动闭环；先 Payment，再 Show to Local 与 Entry / Booking；同时保持公开 Web 的受控运行、事实审核与安全/成本/质量证据 |
-| Phase 1 | 周活 ≥200 真实外国用户 或 Human Task ≥20 单 | Expo App（离线行程+Tools 八件套）、知识库扩 6 城、正式 affiliate 谈判 |
-| Phase 2 | 单城定制询价 ≥5 次/月 | Quote 市场（lead fee）、服务者网络、Trip Pass 定价实验 |
-| Phase 3 | 月撮合订单 ≥100 且法务实体就绪 | take rate + 平台内分账 |
+| 环境              | 地址                                                                                       | 所有者与边界                                                           |
+| ----------------- | ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------- |
+| Public Production | [go2china.space](https://www.go2china.space)                                               | `apps/web`；当前公开产品与 V3 切流前回滚资产。                         |
+| V3 Preview        | [vp-final-web-v3 Preview](https://vp-final-web-v3-wito9sdxy-jtcao515s-projects.vercel.app) | `apps/web-v3`；独立、受保护、noindex 的 Vercel Preview，无自定义域名。 |
 
-## Quickstart
+V3 Preview 的页面可用于视觉与交互验收，但当前不构成生产 Early Access 注册或邮件交付证据。
+
+## V3 产品结构
+
+- **VisePanda Chatbot**：唯一用户侧对话式 AI 界面，负责规划、解释、候选建议、执行编排和恢复。
+- **Planner**：发现与决策；只显示有明确来源、资格、缺失或不可用状态的候选，不直接写入 Trip。
+- **Trip Canvas**：记忆与管理；呈现唯一的 owner-scoped Trip、准备状态、Saved 与待确认变更。
+- **Today**：执行与恢复；显示 Today、Next 和最多一个符合资格的实际动作，证据不足时给出安全替代与恢复路径。
+- **Execution Facts**：带来源、置信度、适用范围和时效的事实层，优先服务 Payment、Show to Local、Entry / Booking、Translate / Communicate、Network 与 Rescue / Human Help。
+
+## V3 技术栈
+
+V3 前端位于 `apps/web-v3`，与现有服务端和 Domain 权威共用一个 TypeScript monorepo。
+
+| 层             | 技术与约束                                                                                                           |
+| -------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Frontend       | Next.js 15.5.21 App Router、React 19.2.7、TypeScript                                                                 |
+| Styling        | Tailwind CSS 4.3.3；通过 `@theme inline` 桥接 `packages/ui/tokens.css` 中的 VisePanda Red-Gold tokens                |
+| Workspace      | pnpm 9.15.9、Turborepo 2、Node.js 22+                                                                                |
+| Contracts      | Zod domain schemas、typed service interfaces、TripPatch、fail-closed runtime modes                                   |
+| Server         | Node modular monolith；身份、Trip、Knowledge、Early Access、Telemetry、Commerce 与 Human Help 由 server modules 持有 |
+| Data / Runtime | Supabase Postgres、Drizzle、pgvector、Upstash Redis/QStash、Vercel；外部配置缺失时不得伪造成功                       |
+
+V3 新页面和组件必须使用 Tailwind CSS v4 utility classes。颜色只能引用 `@theme` 桥接后的
+VisePanda token；禁止 arbitrary-value color、行内 `style`、JSX `<style>` 和组件本地颜色字面量。
+旧 `apps/web` 按需渐进维护，不要求一次性迁移。
+
+## Monorepo
+
+```text
+apps/web-v3         VisePanda V3 traveler experience and thin Next.js adapters
+apps/web            current public Production and pre-cutover rollback asset
+apps/server         shared modular-monolith services and Web composition
+apps/ops            private operations console
+apps/mobile         Expo controlled-preview surface
+packages/domain     canonical schemas and deterministic business rules
+packages/api-client typed clients generated from accepted server contracts
+packages/ai         provider-independent model routing, validation and eval glue
+packages/ui         canonical Red-Gold tokens and cross-surface primitives
+infra               append-only migrations, seeds and deployment configuration
+evals               AI safety and behavior regression suites
+docs                architecture, decisions, modules, constraints, plans and runbooks
+```
+
+`apps/web-v3` 只拥有体验层和薄框架适配器。它不能复制 `apps/web` 的服务端 composition、直接查询
+server-owned 表、另建 Auth/数据库/模型 Router，或绕过共享错误语义。
+
+## 本地启动 V3
+
+前置要求：Node.js 22+ 与 pnpm 9.15.9。
 
 ```bash
-# Node >= 22, pnpm 9 (npm i -g pnpm@9)
-pnpm install
-pnpm build && pnpm test && pnpm typecheck && pnpm lint   # 全绿才算环境就绪
-pnpm docs:index && pnpm docs:check                       # 文档索引与知识库校验
-pnpm docs:impact -- --base origin/main                   # 代码与文档同步校验
+pnpm install --frozen-lockfile
+pnpm --filter @visepanda/app-web-v3 dev
 ```
 
-## 协作方式
+默认开发地址由 Next.js 输出。未提供外部运行时配置时，页面应保持可访问，Early Access 提交应返回
+诚实不可用状态；这不是本地环境故障。
 
-本项目由 AI coding agent、架构维护者与操作者协作开发。所有工作遵守
-[复合工程基线](docs/governance/composite-engineering-baseline.md)：目标评审 → 系统分解/接口冻结 →
-Issue → 最小充分设计 → 代码/文档/测试 → 观测和偏差校验 → 复盘归档。Issue/PR 模板是
-强制证据清单，不是形式化备注。
+V3 聚焦检查：
+
+```bash
+pnpm --filter @visepanda/app-web-v3 typecheck
+pnpm --filter @visepanda/app-web-v3 test
+pnpm --filter @visepanda/app-web-v3 lint
+pnpm --filter @visepanda/app-web-v3 build
+```
+
+完整仓库门禁：
+
+```bash
+pnpm typecheck
+pnpm lint
+pnpm test
+pnpm evals
+pnpm build
+pnpm docs:index
+pnpm docs:check
+pnpm docs:impact -- --base origin/main
+```
+
+## 当前工作入口
+
+- [#551 — VisePanda V3 Web 重构总控](https://github.com/JTCAO515/VP-Final/issues/551)
+- [#556 — Planner 静态体验与诚实空态](https://github.com/JTCAO515/VP-Final/issues/556)
+- [V3 Web plan](docs/planning/visepanda-v3-web-plan.md)
+- [Web V3 module truth](docs/modules/web-v3.md)
+- [ADR-0025 — V3 experience-layer boundary](docs/adr/ADR-0025-vp-v3-web-experience-layer.md)
+- [ADR-0026 — VisePanda V3 public release naming](docs/adr/ADR-0026-visepanda-v3-public-release-name.md)
+
+## 阅读顺序
+
+1. [`CONTEXT.md`](CONTEXT.md) — 产品定义、统一术语与事实权威顺序。
+2. [`docs/INDEX.md`](docs/INDEX.md) — 当前 handoff、成熟度、阻塞项与完整文档索引。
+3. [`docs/architecture/top-level-design.md`](docs/architecture/top-level-design.md) — 总体设计、子系统、接口与门禁。
+4. [`docs/adr/`](docs/adr/) — 已接受且不可在普通 PR 中重复争论的决策。
+5. [`docs/modules/web-v3.md`](docs/modules/web-v3.md) — V3 已实现事实、边界与下一步。
+6. [GitHub Issues](https://github.com/JTCAO515/VP-Final/issues) — 可执行工作与依赖关系。
+
+## 工程原则
+
+1. Schema first；跨消费者的领域契约先在 `packages/domain` 冻结。
+2. 一个 PR 只改变一个可评审边界，不捆绑顺手重构。
+3. AI 输出是候选或类型化 Patch，不是事实或直接数据写入。
+4. 缺配置、缺证据、缺权限或 provider 失败时必须 fail closed。
+5. 支付、合作伙伴跳转、Human Help 和其他商业动作必须有账本、审计、披露与真实运营证据。
+6. 页面存在、Preview Ready 或代码合并都不等于生产能力已经成立。
+7. 代码、文档、Issue、测试、部署证据和回滚必须保持可追溯。
+
+本项目由 operator、架构维护者与 AI coding agents 协作。所有公共能力声明以可复现证据为准；
+规划、placeholder、Preview 与 Production 必须明确区分。

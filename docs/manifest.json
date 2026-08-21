@@ -117,7 +117,7 @@
   "documents": [
     {
       "path": "README.md",
-      "title": "VisePanda V2 Repository",
+      "title": "VisePanda V3 Repository",
       "category": "start",
       "type": "explanation",
       "status": "active",
@@ -1070,6 +1070,16 @@
         "packages/ai/",
         "packages/api-client/"
       ]
+    },
+    {
+      "path": "docs/adr/ADR-0026-visepanda-v3-public-release-name.md",
+      "title": "ADR-0026: VisePanda V3 Public Release Name",
+      "category": "decisions",
+      "type": "decision",
+      "status": "accepted",
+      "owner": "operator / product / architecture",
+      "summary": "Names VisePanda V3 as the current public repository release while preserving maturity, runtime, cutover, and historical-record boundaries.",
+      "sourcePrefixes": []
     },
 
     {
