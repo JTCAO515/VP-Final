@@ -29,6 +29,7 @@ New ADRs are append-only and use the next numeric prefix.
 | [ADR-0022](ADR-0022-content-ai-control-boundary.md)                     | Accepted | Freezes Content AI as private Change Set drafting with deterministic retrieval, human all-or-nothing publication, and no model authority. |
 | [ADR-0023](ADR-0023-chatbot-execution-core.md)                           | Accepted | Narrows delivery around the VisePanda Chatbot and six source-backed China-travel execution moments without replacing the accepted technical architecture. |
 | [ADR-0024](ADR-0024-planning-execution-workspace.md)                      | Accepted | Defines VisePanda as the planning-and-execution workspace where Chatbot and Trip Canvas jointly serve independent China travel. |
+| [ADR-0025](ADR-0025-vp-v3-web-experience-layer.md)                     | Accepted | Builds VP-V3 as a parallel experience layer while keeping one repository, one server/data authority, and `apps/web` as the pre-cutover rollback asset. |
 
 ## When to Add an ADR
 

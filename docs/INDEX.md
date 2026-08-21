@@ -163,6 +163,7 @@ Ownership, implementation maturity, interfaces, and gaps for each code module.
 | [Server Module](modules/server.md) | explanation | active | server | tRPC modular monolith, service interfaces, adapters, and production gaps. |
 | [UI Module](modules/ui.md) | explanation | active | design systems | Shared UI package role, maturity, and design-token boundaries. |
 | [Web Module](modules/web.md) | explanation | active | Web | Next.js public product, Copilot workspace, SEO, and current runtime behavior. |
+| [Web V3 Module](modules/web-v3.md) | explanation | active | Web / product architecture | Planned parallel VP-V3 traveler experience and its strict shared-runtime, truthfulness, localization, and rollback boundaries. |
 
 ## Development Standards
 
@@ -243,6 +244,7 @@ Append-only records of accepted and superseded binding decisions.
 | [ADR-0022: Content AI Change Set Control Boundary](adr/ADR-0022-content-ai-control-boundary.md) | decision | accepted | knowledge / operations / AI safety | Freezes Content AI as private typed Change Set drafting with deterministic retrieval, bounded Qwen work, human all-or-nothing publication, and no model authority. |
 | [ADR-0023: Chatbot Execution Core](adr/ADR-0023-chatbot-execution-core.md) | decision | accepted | product / architecture | Narrows VisePanda delivery around one Chatbot and six fact-backed China-travel execution moments while retaining the accepted technical architecture. |
 | [ADR-0024: Planning and Execution Workspace](adr/ADR-0024-planning-execution-workspace.md) | decision | accepted | product / architecture | Defines VisePanda as the planning-and-execution workspace with Chatbot and Trip Canvas as cooperating product cores while retaining fact-first execution gates. |
+| [ADR-0025: VP-V3 Web Experience Layer](adr/ADR-0025-vp-v3-web-experience-layer.md) | decision | accepted | product / architecture | Freezes VP-V3 as a parallel experience layer with one shared server/data authority and apps/web retained as the pre-cutover rollback asset. |
 
 ## Runbooks
 
@@ -292,6 +294,7 @@ Frozen product direction and dated evidence-based project reviews.
 | [Six-City Knowledge Expansion Plan](planning/six-city-knowledge-expansion-plan.md) | planning | active | knowledge operations | Quality-gated six-city POI coverage targets, evidence rules, editorial waves, and bulk-import handoff. |
 | [VisePanda V2 Frozen Product Baseline](planning/visepanda-v2-final-architecture.md) | planning | frozen | operator / architecture | Accepted product thesis, Fable-5 architecture, commercial model, roadmap, and anti-goals. |
 | [VisePanda V2 Project Review — 2026-07-10](planning/visepanda-v2-project-review-2026-07-10.md) | planning | historical | overall design | Evidence-based implementation audit, gaps, architecture corrections, and revised execution path. |
+| [VP-V3 Web Experience Plan](planning/visepanda-v3-web-plan.md) | planning | active | product / architecture / Web | Issue-backed serial plan for the parallel V3 Web experience, shared runtime, typed candidates, Canvas proposals, Today, Preview, and rollback evidence. |
 
 ## Quality and Evals
 

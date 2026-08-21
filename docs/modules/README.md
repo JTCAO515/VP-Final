@@ -6,6 +6,7 @@ limitations, and required verification. Read it before changing that module.
 - [`packages/domain`](domain.md)
 - [`apps/server`](server.md)
 - [`apps/web`](web.md)
+- [`apps/web-v3` (planned)](web-v3.md)
 - [`apps/ops`](ops.md)
 - [`packages/ai`](ai.md)
 - [`packages/api-client`](api-client.md)
