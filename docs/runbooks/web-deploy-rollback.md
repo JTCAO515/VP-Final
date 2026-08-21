@@ -5,9 +5,9 @@ Owner: operator / platform engineer
 
 ## Purpose and Trigger
 
-Deploy `apps/web` through the linked Vercel project, verify the public critical path, or roll back a
-bad deployment. This runbook describes the current Git-linked Next.js flow; update it when deployment
-ownership or topology changes.
+Deploy `apps/web` through the linked Vercel project, deploy `apps/web-v3` to its independent Preview,
+verify the relevant critical path, or roll back a bad deployment. This runbook describes the current
+monorepo Next.js topology; update it when deployment ownership changes.
 
 ## Preconditions
 
@@ -34,6 +34,35 @@ ownership or topology changes.
    outbound denial/safe redirect path as applicable.
 5. Promote/merge only after smoke evidence is attached to the PR or release record.
 
+## VP-V3 Preview Procedure
+
+The isolated project is `vp-final-web-v3`, with Root Directory `apps/web-v3`, Next.js, Node 24, and
+monorepo source files outside the root enabled. It has no `go2china.space` custom domain. The current
+public project remains `vp-final-web` rooted at `apps/web`.
+
+1. From a clean main-based repository, link the exact V3 project. Keep `.vercel/`, `.env.local`, and
+   `.env.*.local` untracked; never print or retain their values.
+2. Run the Web V3 local checks and the full repository gates.
+3. Deploy with an explicit target:
+
+   ```bash
+   pnpm dlx vercel@59.3.0 deploy --yes --target preview --scope jtcao515s-projects
+   ```
+
+   Do not use a bare first `vercel deploy` for a newly created project: Vercel classifies the first
+   deployment as `production` even without `--prod`.
+4. Use `vercel inspect` and protected `vercel curl`; do not disable deployment protection.
+5. Verify the expected commit/page, `noindex`, `robots.txt`, console/browser evidence, and the form's
+   real or honest-unavailable state. Missing Preview database/Redis/Resend settings must remain 503.
+6. Record only project/deployment ids, target/status, environment-variable names, sanitized HTTP
+   outcomes, and verifier. Never retain email, address, key, cookie, bypass token, or provider id.
+
+Current evidence: `dpl_3BRHwvfwgmK3vA12g7WU6nsEG7Bt` is Preview/Ready at the protected Vercel URL.
+It has no Preview environment variables and returns `EARLY_ACCESS_UNAVAILABLE` by design. The first
+bare deployment `dpl_Fdhxx7yJEVNT3BmBajsPLEsYhNXL` was auto-classified production on the isolated V3
+project and has only the default `vp-final-web-v3.vercel.app` alias; it did not change the public Web.
+See OA-033 before further configuration.
+
 ## Verification
 
 - Public URL serves the expected commit, not a bootstrap placeholder.
@@ -50,6 +79,10 @@ ownership or topology changes.
 2. Do not roll back an already-applied migration by editing migration history.
 3. If schema compatibility blocks rollback, deploy a forward-compatible repair or disable the feature.
 4. Record incident, affected SHA, observation, D1-D3 classification, and follow-up Issue.
+
+For V3 before public cutover, rollback means stop using the Preview or remove its runtime variables
+and redeploy an honest unavailable state. Do not promote, attach the public domain, remove the V3
+project/alias, or change the current `vp-final-web` project without an explicit operator decision.
 
 ## Evidence to Retain
 

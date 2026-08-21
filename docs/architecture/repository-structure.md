@@ -35,6 +35,8 @@
 ## Directory Rules
 
 - Generated output (`dist`, `.next`, `.turbo`) is never a source of truth and must not be committed.
+- Local Vercel links and pulled secrets remain in `.vercel/`, `.env.local`, or `.env.*.local`; these
+  exact paths are ignored while `.env.example` remains trackable.
 - Turbo task output globs MUST describe only artifacts that the task really writes. A verification-only
   task such as the mobile TypeScript build declares `outputs: []` and relies on cached logs; it must
   not claim a generated `dist` directory.
