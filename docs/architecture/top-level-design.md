@@ -2,7 +2,7 @@
 
 Status: active
 Method: [钱学森 Skills](../methodology/qian-systems-engineering.md)
-Product authority: [V2 frozen baseline](../planning/visepanda-v2-final-architecture.md), amended by [ADR-0023](../adr/ADR-0023-chatbot-execution-core.md) and [ADR-0024](../adr/ADR-0024-planning-execution-workspace.md)
+Product authority: [V2 frozen baseline](../planning/visepanda-v2-final-architecture.md), amended by [ADR-0023](../adr/ADR-0023-chatbot-execution-core.md), [ADR-0024](../adr/ADR-0024-planning-execution-workspace.md), and the [ADR-0025 VP-V3 experience-layer boundary](../adr/ADR-0025-vp-v3-web-experience-layer.md)
 
 This document is the operational “overall design department” baseline. It does not replace the
 frozen product architecture. It translates that architecture into objectives, controlled
@@ -64,6 +64,27 @@ real users reach 200 or Human Tasks reach 20, unless a superseding ADR changes t
 | Identity | auth, ownership, memory transparency, consent | server identity, Supabase Auth, clients | service-role credentials in clients |
 | Telemetry & Evals | events, traces, cost, quality and regression evidence | domain telemetry, server, `evals/` | sensitive prompt logging by default |
 | Delivery | builds, environments, deployment, rollback, monitoring | CI, Vercel, Supabase, EAS when active | undocumented manual state |
+
+### VP-V3 Web experience program
+
+VP-V3 is an internal complete traveler-frontend rewrite program, not a new public product, repository,
+backend, database, or commercial capability. Its planned `apps/web-v3` application may own a parallel,
+re-authored traveler experience and thin Next.js adapters only; it does not wholesale-copy the legacy
+component/CSS tree. `apps/web` remains the current production and rollback application
+until the independently accepted cutover gate. Both applications must consume one Domain, server,
+identity, persistence, fact-eligibility, TripPatch, audit, rate, privacy, and retention authority.
+
+V3 styling uses Tailwind CSS v4 utilities backed by one `@theme` bridge to the canonical Red-Gold
+variables. Component-local arbitrary colors, inline styles, and JSX style elements are outside the V3
+boundary. Legacy `apps/web` styling remains a separate maintenance line rather than a prerequisite
+mass migration.
+
+The shared Web server composition must be extracted and compatibility-tested before the V3 app
+exposes a real API operation. Copying `apps/web` route implementation, proxying raw traveler data to
+the production deployment, or creating a V3 database/Auth/model Router is outside the system boundary.
+The complete planned route ledger, dependency graph, and rollback gate live in
+[ADR-0025](../adr/ADR-0025-vp-v3-web-experience-layer.md) and the
+[VP-V3 plan](../planning/visepanda-v3-web-plan.md).
 
 ## 5. Interface Baselines
 

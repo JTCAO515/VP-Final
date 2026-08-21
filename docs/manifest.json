@@ -366,6 +366,16 @@
       "sourcePrefixes": ["apps/web/"]
     },
     {
+      "path": "docs/modules/web-v3.md",
+      "title": "Web V3 Module",
+      "category": "modules",
+      "type": "explanation",
+      "status": "active",
+      "owner": "Web / product architecture",
+      "summary": "Planned parallel VP-V3 traveler experience and its strict shared-runtime, truthfulness, localization, and rollback boundaries.",
+      "sourcePrefixes": ["apps/web-v3/"]
+    },
+    {
       "path": "docs/modules/ops.md",
       "title": "Ops Module",
       "category": "modules",
@@ -1012,6 +1022,23 @@
         "apps/server/src/modules/trip/"
       ]
     },
+    {
+      "path": "docs/adr/ADR-0025-vp-v3-web-experience-layer.md",
+      "title": "ADR-0025: VP-V3 Web Experience Layer",
+      "category": "decisions",
+      "type": "decision",
+      "status": "accepted",
+      "owner": "product / architecture",
+      "summary": "Freezes VP-V3 as a parallel experience layer with one shared server/data authority and apps/web retained as the pre-cutover rollback asset.",
+      "sourcePrefixes": [
+        "apps/web-v3/",
+        "apps/web/src/app/api/",
+        "apps/server/",
+        "packages/domain/",
+        "packages/ai/",
+        "packages/api-client/"
+      ]
+    },
 
     {
       "path": "docs/runbooks/README.md",
@@ -1230,6 +1257,16 @@
       "owner": "operator / architecture",
       "summary": "Accepted product thesis, Fable-5 architecture, commercial model, roadmap, and anti-goals.",
       "sourcePrefixes": []
+    },
+    {
+      "path": "docs/planning/visepanda-v3-web-plan.md",
+      "title": "VP-V3 Web Experience Plan",
+      "category": "planning",
+      "type": "planning",
+      "status": "active",
+      "owner": "product / architecture / Web",
+      "summary": "Issue-backed serial plan for the parallel V3 Web experience, shared runtime, typed candidates, Canvas proposals, Today, Preview, and rollback evidence.",
+      "sourcePrefixes": ["apps/web-v3/"]
     },
     {
       "path": "docs/planning/visepanda-v2-project-review-2026-07-10.md",
