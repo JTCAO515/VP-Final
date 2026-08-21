@@ -19,6 +19,11 @@ export, browser table access, campaign, or analytics responsibility. The shared
 `@visepanda/app-server/web-composition` boundary supplies it only from the durable Postgres adapter
 outside explicit local-demo/test mode.
 
+`@visepanda/app-server/web-early-access-route` owns the standard HTTP handler and HMAC digest, while
+`@visepanda/app-server/web-trusted-client` owns the shared Vercel-only address resolver. Both Web apps
+keep thin route adapters. This keeps validation, admission, persistence ordering, email delivery,
+safe codes, and spoof resistance identical without making the Server a separate deployment.
+
 ## Chatbot-Core Responsibility
 
 The Server makes the VisePanda Chatbot operational: it derives trusted identity and bounded context,

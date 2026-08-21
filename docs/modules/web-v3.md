@@ -15,16 +15,19 @@ framework adapter, not a second business/runtime system, and it does not wholesa
 Current implementation truth: #553 adds the standalone Next.js 15.5.21 / React 19.2.7 App Router
 Shell, Tailwind CSS 4.3.3, the Red-Gold `@theme inline` bridge, English/Chinese/Spanish/Russian/Arabic
 UI copy, Arabic RTL, an Early Access-first root, a truthful static Product Preview, scenarios, FAQ,
-noindex robots, custom planned-route 404, security headers, and style-policy tests. The form consumes
-the accepted `/api/early-access` shape but this app intentionally has no API route yet; a submission
-therefore renders the localized honest unavailable state until #554/#555 land. No Vercel V3 project,
-Preview URL, production route, runtime persistence, or external configuration is claimed.
+noindex robots, custom planned-route 404, security headers, and style-policy tests. No Vercel V3
+project, Preview URL, production route, runtime persistence, or external configuration is claimed.
 
 #554 adds a thin `src/app/api/_server.ts` adapter over the frozen
 `@visepanda/app-server/web-composition` subpath and consumer-compatibility tests. V3 can now reuse the
 same mode, adapter, cache, optional-capability, and error semantics as the current Web without
 importing its source. This is composition availability, not a V3 API route or a successful signup;
-#555 still owns the actual Early Access route consumer.
+#555 adds `/api/early-access` as a thin re-export of the same
+`@visepanda/app-server/web-early-access-route` handler used by the current Web. The V3 form now has a
+real same-origin route and preserves the shared validation, trusted-address, HMAC, rate, durable
+idempotency, confirmation, and honest error states. Test/local-demo success is implemented; V3
+Preview persistence and delivery remain unverified until #563 supplies the independent Vercel
+project/configuration and OA-031/OA-032 external evidence is applicable there.
 
 The first vertical milestone is Early Access only: #553 creates its Shell, #554 provides the shared
 runtime boundary, #555 re-authors the root page, and #563 triggers an independent Vercel Preview and
@@ -48,7 +51,7 @@ composition extraction. Until it merges, V3 Shell work has no authority to expos
 
 | Surface            | Responsibility                                        | First owning Issue                           |
 | ------------------ | ----------------------------------------------------- | -------------------------------------------- |
-| `/`                | one-action Early Access Shell and static product preview | #553 Shell; #555 shared real consumer        |
+| `/`                | one-action Early Access and static product preview       | #553 Shell; #555 shared route consumer       |
 | `/plan`            | intent input, candidates, honest map/object state     | #556 static; #558 real candidates            |
 | `/trip`            | one owner-scoped Trip Canvas projection               | #559                                         |
 | `/today`           | next eligible action or recovery                      | #561                                         |

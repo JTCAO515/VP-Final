@@ -137,6 +137,7 @@ Current system shape, boundaries, data flows, and overall design controls.
 | [Architecture Guide](architecture/README.md) | reference | active | architecture | Navigation for architecture explanations and boundaries. |
 | [Content AI v1 Current State and Dependency Map](architecture/content-ai-dependency-map.md) | explanation | active | knowledge / operations / AI safety | Maps reusable knowledge, Ops, and AI foundations, frozen Content AI gaps, walking-skeleton feedback, and guarded delivery. |
 | [Dependency Rules](architecture/dependency-rules.md) | explanation | active | architecture | Allowed package/application dependencies and integration boundaries. |
+| [Early Access Web Route Contract](architecture/early-access-web-route-contract.md) | reference | accepted | Server / Early Access / Web runtime | Frozen shared Request-to-Response, trusted-address, HMAC, rate, idempotency, delivery, error, and consumer contract for Early Access. |
 | [Overall Design Baseline](architecture/top-level-design.md) | explanation | active | overall design | Mission, controlled subsystems, interface baselines, observations, and lifecycle gates. |
 | [Repository Structure](architecture/repository-structure.md) | explanation | active | architecture | Monorepo layout, package ownership, and current maturity. |
 | [Runtime and Data Flows](architecture/runtime-data-flows.md) | explanation | active | architecture | Copilot, Trip, knowledge, commerce, identity, task, and telemetry flows. |

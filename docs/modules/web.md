@@ -49,6 +49,10 @@ unavailable, and saved-but-not-delivered states without exposing an email, provi
 server configuration. `/homepage` remains the unlisted full product overview and `/visepanda` remains
 the canonical interactive workspace.
 
+The current `POST /api/early-access` route is a thin re-export of the frozen
+`@visepanda/app-server/web-early-access-route` handler shared with Web V3. Its request/response,
+trusted-address, HMAC, admission, persistence, delivery, and failure semantics remain unchanged.
+
 ## Locale and Content Boundary
 
 The public Web locale contract is owned by `apps/web/src/i18n`. English (`en`) is the deterministic
